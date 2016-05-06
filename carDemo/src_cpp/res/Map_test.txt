@@ -1,0 +1,51 @@
+
+
+# bottom
+checkpoint   600 450   600 550
+checkpoint   200 450   200 550
+
+# bottom left
+checkpoint   175 425   100 500
+
+# left
+checkpoint   150 400   50 400
+checkpoint   150 200   50 200
+
+# top left
+checkpoint   175 175   100 75
+
+# top
+checkpoint   200 175   200 50
+
+# top left middle
+checkpoint   225 175   300 75
+checkpoint   250 200   350 200
+checkpoint   250 250   350 250
+checkpoint   275 325   350 250
+
+
+# middle
+checkpoint   350 350   350 250
+checkpoint   450 350   450 250
+
+
+# top right middle
+checkpoint   525 325   450 250
+checkpoint   550 250   450 250
+checkpoint   550 200   450 200
+checkpoint   575 175   475 75
+
+# top
+checkpoint   600 175   600 50
+
+# top right
+checkpoint   625 175   700 75
+
+# right
+checkpoint   650 200   750 200
+checkpoint   650 400   750 400
+
+# bottom right
+checkpoint   625 425   700 500
+
+# bottom

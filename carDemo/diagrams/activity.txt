@@ -1,0 +1,57 @@
+
+#
+##
+
+
+@startuml
+
+
+title activity.txt
+
+
+start
+
+
+partition "initialise" {
+
+	:initialise game
+	-> load checkpoints
+	---> custom fitness point
+	-> build the map around
+	---> use checkpoints vertices;
+
+	:create random agents;
+}
+
+repeat
+
+	partition "main loop" {
+
+		repeat
+
+			:execute
+			-> launch the simulation
+			-> rate the genome;
+
+		repeat while (more agent?)
+
+		:proceed to the next generation
+		-> select best genomes
+		-> cross breed best genomes
+		-> mutate some genomes
+		-> also add some random ones;
+
+	}
+
+repeat while (infinite)
+
+
+stop
+
+
+
+@enduml
+
+
+##
+#

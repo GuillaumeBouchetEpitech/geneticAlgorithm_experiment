@@ -1,0 +1,92 @@
+
+#
+##
+
+
+@startuml
+
+
+
+title usecase.txt
+
+
+
+usecase UC_simulation as "
+Simulation
+====
+is a black box, input/output
+----
+update the simulation, update the car
+----
+provide the current status of the simulation
+----
+"
+
+usecase UC_circuit as "
+Circuit
+====
+load the checkpoints
+----
+deduct the walls
+of the circuit
+"
+
+usecase UC_car as "
+Car
+====
+continuously move forward.
+----
+accept left/right as input
+----
+detect the walls of the map
+----
+collect the checkpoints
+"
+
+usecase UC_NN as "
+Neural Network
+====
+update the input of the car.
+----
+can mutate and be cross breed
+"
+
+usecase UC_GenAlgo as "
+Genetic Algotithm
+====
+use the neural network as a genome
+----
+retain and cross breed the best genomes
+----
+handle the generations
+"
+
+usecase UC_Genome as "
+Genome
+====
+store the score of the car
+----
+
+"
+
+UC_simulation ..> UC_circuit : manage
+UC_simulation ..> UC_car : manage
+UC_simulation .right.> UC_GenAlgo : manage
+
+User --> UC_simulation
+UC_car -left-> UC_circuit : use
+UC_car --> UC_NN : use
+
+UC_GenAlgo ..> UC_NN  : manage
+
+UC_Genome <.up. UC_GenAlgo : manage
+UC_Genome -left-> UC_NN : use
+UC_Genome --> UC_car : use
+
+
+
+@enduml
+
+
+##
+#
