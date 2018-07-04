@@ -1,0 +1,59 @@
+
+#
+##
+
+
+@startuml
+
+
+title activity_simple.txt
+
+
+start
+
+
+partition "initialise" {
+
+	:breed a random generation
+	(example: generation of 30 genomes);
+}
+
+repeat
+
+	partition "simulate" {
+
+		:(re-)set the genomes (cars);
+
+		:try all the genomes;
+
+		:rate the genomes;
+	}
+
+	partition "breed" {
+
+		:(natural selection)
+		select the best genomes;
+		
+		:(reproduction)
+		cross breed best genomes;
+
+		:(mutation-diversity)
+		mutate the newly 'baby genomes';
+
+		:(diversity)
+		fill the 'remaining seats'
+		with random genomes;
+	}
+
+repeat while (repeat)
+
+
+stop
+
+
+
+@enduml
+
+
+##
+#

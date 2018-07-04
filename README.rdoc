@@ -1,0 +1,38 @@
+
+= Genetic Algorithm experiment
+
+A simple introduction to how genetic algorithm works.
+
+
+== Online demo 2D
+
+link:http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/carDemo/web/index.html
+
+== Online demo 3D
+
+http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/canonjsDemo/index.html
+
+
+== If you liked it :
+
+You might want to check this other repository
+
+-> https://github.com/GuillaumeBouchetEpitech/NeuralNetwork_experiment
+
+
+== Diagram
+
+link:./carDemo/diagrams/activity_simple.png
+link:./carDemo/diagrams/usecase.png
+
+
+== Credits :
+
+Matthew Robbins:
+
+github: https://github.com/matthewrdev/Neural-Network
+
+youtube: https://www.youtube.com/watch?v=0Str0Rdkxxo
+
+
+== Thanks for watching !

@@ -1,51 +1,74 @@
 
 
-# bottom
-checkpoint   600 450   600 550
-checkpoint   200 450   200 550
-
-# bottom left
-checkpoint   175 425   100 500
-
-# left
-checkpoint   150 400   50 400
-checkpoint   150 200   50 200
-
-# top left
-checkpoint   175 175   100 75
-
-# top
-checkpoint   200 175   200 50
-
-# top left middle
-checkpoint   225 175   300 75
-checkpoint   250 200   350 200
-checkpoint   250 250   350 250
-checkpoint   275 325   350 250
+# straight
+checkpoint   50     0   150     0
+checkpoint   50  -100   150  -100
+checkpoint   50  -300   150  -300
 
 
-# middle
-checkpoint   350 350   350 250
-checkpoint   450 350   450 250
 
 
-# top right middle
-checkpoint   525 325   450 250
-checkpoint   550 250   450 250
-checkpoint   550 200   450 200
-checkpoint   575 175   475 75
 
-# top
-checkpoint   600 175   600 50
+# turn right
+checkpoint   50  -400   150  -350
+checkpoint  150  -500   250  -450
+checkpoint  150  -600   250  -650
 
-# top right
-checkpoint   625 175   700 75
+# turn middle
+checkpoint   50  -700   150  -750
 
-# right
-checkpoint   650 200   750 200
-checkpoint   650 400   750 400
+# turn left
+checkpoint  -50  -800   50  -850
+checkpoint  -50 -1000   50  -950
+checkpoint   50 -1100  150 -1050
 
-# bottom right
-checkpoint   625 425   700 500
 
-# bottom
+# straight
+checkpoint   50 -1300  150 -1300
+
+
+# tight turn right-left
+checkpoint  150 -1400  250 -1400
+checkpoint   50 -1500  150 -1500
+checkpoint  -50 -1600   50 -1600
+checkpoint   50 -1700  150 -1700
+
+# straight
+checkpoint   50 -1900  150 -1900
+
+# spreaded straight
+checkpoint    0 -2000  200 -2000
+checkpoint    0 -2200  200 -2200
+checkpoint   50 -2300  150 -2300
+
+# straight
+checkpoint   50 -2400  150 -2400
+
+# shortened straight
+checkpoint   75 -2500  125 -2500
+checkpoint   75 -2700  125 -2700
+checkpoint   50 -2800  150 -2800
+
+# straight
+checkpoint   50 -2900  150 -2900
+
+
+
+
+# turn right
+checkpoint   50 -3100   150 -3000
+checkpoint  150 -3100   250 -3000
+checkpoint  150 -3200   250 -3300
+
+# turn middle
+checkpoint  100 -3200   100 -3300
+
+# turn left
+checkpoint  -50 -3200    50 -3300
+checkpoint  -50 -3500    50 -3400
+checkpoint   50 -3500   150 -3400
+
+# # straight
+checkpoint   50 -3600   150 -3600
+
+

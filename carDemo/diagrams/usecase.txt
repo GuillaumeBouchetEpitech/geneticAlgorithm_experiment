@@ -14,12 +14,10 @@ title usecase.txt
 usecase UC_simulation as "
 Simulation
 ====
-is a black box, input/output
+update the simulation -> update the cars
 ----
-update the simulation, update the car
-----
-provide the current status of the simulation
-----
+provide the current status of the
+simulation for rendering
 "
 
 usecase UC_circuit as "
@@ -46,17 +44,17 @@ collect the checkpoints
 usecase UC_NN as "
 Neural Network
 ====
-update the input of the car.
+is a black box, input -> output
 ----
-can mutate and be cross breed
+the weights can be get&set
 "
 
 usecase UC_GenAlgo as "
 Genetic Algotithm
 ====
-use the neural network as a genome
+manage the neural networks and genomes
 ----
-retain and cross breed the best genomes
+retrieve and cross breed the best genomes
 ----
 handle the generations
 "
@@ -64,9 +62,11 @@ handle the generations
 usecase UC_Genome as "
 Genome
 ====
-store the score of the car
+store a copy the weights
+of the Neural Network
 ----
-
+store the score (fitness)
+of the car
 "
 
 UC_simulation ..> UC_circuit : manage

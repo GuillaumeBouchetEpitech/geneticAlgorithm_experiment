@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <!-- disable the zoom -->
+        <meta
+            content='width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0'
+            name='viewport' />
+
+
+        <script data-main="app" src="lib/require.js"></script>
+
+    <!--  -->
+
+
+
+        <script id="shader-fs-color" type="x-shader/x-fragment">
+
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+
+                gl_FragColor = vColor;
+            }
+        </script>
+
+        <script id="shader-vs-color" type="x-shader/x-vertex">
+
+            attribute vec3 aVertexPosition;
+            attribute vec3 aVertexColor;
+
+            varying vec4 vColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+            uniform float uColorApha;
+
+            void main(void) {
+
+                vColor = vec4(aVertexColor, uColorApha);
+
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+            }
+        </script>
+
+
+
+    <!--  -->
+
+
+
+        <script id="shader-fs-experimental" type="x-shader/x-fragment">
+
+            precision mediump float;
+
+            varying vec4 vColor;
+
+            void main(void) {
+
+                if (vColor.a == 0.0)
+                    discard;
+                else
+                    gl_FragColor = vColor;
+            }
+        </script>
+
+        <script id="shader-vs-experimental" type="x-shader/x-vertex">
+
+            attribute vec3 aVertexPosition;
+            attribute vec3 aVertexColor;
+            attribute vec3 aVertexNormal;
+            attribute float aVertexIndex;
+
+            varying vec4 vColor;
+
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+            uniform float uColorApha;
+            uniform float uMagikIndex;
+            uniform float uMagikLimit;
+
+            void main(void) {
+
+                vec3    tmp_pos = aVertexPosition;
+
+                if (aVertexIndex <= uMagikIndex)
+                {
+                    vColor = vec4(aVertexColor, uColorApha);
+                }
+                else if (aVertexIndex >= uMagikLimit)
+                {
+                    vColor = vec4(0,0,0, 0);
+                }
+                else
+                {
+                    float ratio = (aVertexIndex - uMagikIndex) / (uMagikLimit - uMagikIndex);
+
+                    float my_alpha = 1.0 - ratio;
+
+                    vColor = vec4(aVertexColor, my_alpha * uColorApha);
+
+                    tmp_pos.x = aVertexPosition.x - aVertexNormal.x * ratio;
+                    tmp_pos.y = aVertexPosition.y - aVertexNormal.y * ratio;
+                    tmp_pos.z = aVertexPosition.z - aVertexNormal.z * ratio;
+                }
+
+                gl_Position = uPMatrix * uMVMatrix * vec4(tmp_pos, 1.0);
+            }
+        </script>
+
+
+
+    <!--  -->
+
+
+
+<style>
+/*  .my_cells {*/
+    #my_table td {
+        background-color: #88f;
+        text-align: center;
+        border: 2px solid black;
+    }
+</style>
+
+    </head>
+
+
+    <body>
+
+                    <div
+                        id="fpsmeter1"
+                        style="position:absolute; left:0px; top:0px"
+                        >
+                    </div>
+                    <div
+                        id="fpsmeter2"
+                        style="position:absolute; left:0px; top:50px"
+                        >
+                    </div>
+
+
+
+        <table border='1'>
+            <tr>
+
+                <td>
+                    <div
+                        id="canvasesdiv"
+                        style="position:relative;width:800px;height:600px"
+                        >
+
+                        <canvas
+                            id="main-canvas"
+                            style="border: none; position:relative; left:0px; top:0px;"
+                            width="800"
+                            height="600"
+                            >
+                        </canvas>
+
+                        <canvas
+                            id="second-canvas"
+                            style="border: none; position:absolute; left:0px; top:0px;"
+                            width="800"
+                            height="600"
+                            >
+                        </canvas>
+
+                    </div>
+                </td>
+<!-- 
+
+                <td>
+
+                    <table id="my_table" cellspacing=2 cellpadding=2 >
+
+                        <tr><th colspan="3">Touch event:</th></tr>
+                        <tr><th colspan="3" id="touch_id"></th></tr>
+
+                        <tr><th colspan="3">Move</th></tr>
+                        <tr><th></th><td>Z/W</td><th></th></tr>
+                        <tr><td>Q/A</td><td>S</td><td>D</td></tr>
+
+                        <tr><th colspan="3">Look</th></tr>
+                        <tr><th></th><td>Up</td><th></th></tr>
+                        <tr><td>Left</td><td>Down</td><td>Right</td></tr>
+                        <tr><td colspan="3">&lt;= or click to use<br/>
+                        your mouse cursor</td></tr>
+
+                    </table>
+
+                    <table>
+
+                        <tr><th colspan="3">Interface</th></tr>
+
+                        <tr><th colspan="3">
+                            <button id="gui_reset">Reset Generation</button>
+                        </th></tr>
+
+                        <tr><th colspan="3">
+                            <button id="gui_fullscreen">Fullscreen mode</button>
+                        </th></tr>
+
+                        <tr>
+                            <th colspan="1"><p>Octaves</p></th>
+                            <th colspan="2">
+                                <input
+                                    id="range_octaves" type="range"
+                                    min="1" max="5" value="1" step="1"/>
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="1"><p>Frequency</p></th>
+                            <th colspan="2">
+                                <input
+                                    id="range_frequency" type="range"
+                                    min="25" max="200" value="100" step="5"/>
+                            </th>
+                        </tr>
+
+                        <tr>
+                            <th colspan="1">
+                                <input
+                                    id="check_tetra" type="checkbox" />
+                            </th>
+                            <th colspan="2"><p>Marching Tetrahedron</p></th>
+                        </tr>
+                    </table>
+
+                </td>
+ -->
+            </tr>
+
+<!-- 
+            <tr>
+                <td>
+                    <textarea rows="20" cols="100">
+                    test
+                    test
+                    test
+                    test
+                    </textarea>
+                </td>
+            </tr>
+ -->
+
+        </table>
+
+    </body>
+
+</html>

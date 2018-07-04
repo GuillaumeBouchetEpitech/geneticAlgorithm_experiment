@@ -1,0 +1,9 @@
+{
+  "name": "browserify_test",
+  "dependencies": {
+    "browserify": "^14.0.0",
+    "gamma": "^1.0.0",
+    "uglifyify": "^3.0.4",
+    "webworkify": "^1.4.0"
+  }
+}

@@ -1,0 +1,18 @@
+
+{
+    "name": "test",
+    "main": "./index.html",
+    "window": {
+        "title": "that's a test :)",
+        // "icon": "link.png",
+        // "toolbar": true,
+        // "frame": false,
+        "width": 900,
+        "height": 700,
+        "position": "mouse",
+        "min_width": 400,
+        "min_height": 200,
+        "max_width": 900,
+        "max_height": 700
+    }
+}
