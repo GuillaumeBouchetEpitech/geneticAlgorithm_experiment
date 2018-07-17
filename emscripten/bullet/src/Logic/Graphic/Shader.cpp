@@ -12,16 +12,6 @@
 
 namespace /* anonymous */
 {
-	// void sCheckGLError()
-	// {
-	// 	GLenum errCode = glGetError();
-	// 	if (errCode != GL_NO_ERROR)
-	// 	{
-	// 		std::cout << "OpenGL error = " << errCode << std::endl;
-	// 		// assert(false);
-	// 	}
-	// }
-
 	GLuint	loadShader(GLenum type, const char *source)
 	{
 		GLuint shader = glCreateShader(type);
@@ -63,11 +53,6 @@ namespace /* anonymous */
 };
 
 
-
-
-// Shader::Shader()
-// {}
-
 Shader::~Shader()
 {
 	if (!m_obj_program)
@@ -87,35 +72,35 @@ Shader*	Shader::build(const t_def& def)
 
 	//
 
-	std::string	vertex_source;
+	std::string	vertexSourceCode;
 #ifdef EMSCRIPTEN
-	vertex_source += "precision mediump float;\n\n";
+	vertexSourceCode += "precision mediump float;\n\n";
 #endif
 	{
-		std::ifstream istr(def.vertex_filename);
+		std::ifstream istr(def.filenames.vertex);
 		std::stringstream sstr;
 		sstr << istr.rdbuf();
-		vertex_source += sstr.str();
+		vertexSourceCode += sstr.str();
 	}
 
 
 	//
 
-	std::string	fragment_source;
+	std::string	fragmentSourceCode;
 #ifdef EMSCRIPTEN
-	fragment_source += "precision mediump float;\n\n";
+	fragmentSourceCode += "precision mediump float;\n\n";
 #endif
 	{
-		std::ifstream istr(def.fragment_filename);
+		std::ifstream istr(def.filenames.fragment);
 		std::stringstream sstr;
 		sstr << istr.rdbuf();
-		fragment_source += sstr.str();
+		fragmentSourceCode += sstr.str();
 	}
 
 	//
 
-	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertex_source.c_str());
-	GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragment_source.c_str());
+	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSourceCode.c_str());
+	GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSourceCode.c_str());
 
 	program = glCreateProgram();
 
@@ -159,12 +144,6 @@ Shader*	Shader::build(const t_def& def)
 
 			for (auto&& uniform : def.uniforms)
 				pNewShader->m_map_uniforms[uniform] = glGetUniformLocation(program, uniform.c_str());
-
-			// m_attr_Position = glGetAttribLocation(program, "a_Position");
-			// m_attr_Color = glGetAttribLocation(program, "a_Color");
-
-			// m_unif_ComposedMatrix = glGetUniformLocation(program, "u_ComposedMatrix");
-			// m_unif_Alpha = glGetUniformLocation(program, "u_Alpha");
 		}
 	}
 
@@ -179,8 +158,6 @@ void	Shader::bind(const Shader* pShader)
 		glUseProgram(pShader->m_obj_program);
 	else
 		glUseProgram(0);
-
-	// sCheckGLError();
 }
 
 //

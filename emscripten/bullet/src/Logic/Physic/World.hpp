@@ -61,7 +61,7 @@ public:
 private:
 	std::vector<Vehicle*>	m_arr_Vehicles;
 public:
-	void	createVehicle();
+	Vehicle*	createVehicle();
 	inline Vehicle*	getVehicle(unsigned int index) { return m_arr_Vehicles.at(index); }
 	inline unsigned int	getVehicleSize() const { return m_arr_Vehicles.size(); }
 

@@ -4,16 +4,9 @@
 #include "../Utility/TraceLogger.hpp"
 
 
-// #include <SDL2/SDL_opengles2.h>
-
-
 SDLStage::SDLStage(int width, int height)
 	: m_ticksPerFrame(1000 / 60)
 {
-
-	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	m_pWindow = SDL_CreateWindow("Test",
@@ -48,8 +41,6 @@ SDLStage::SDLStage(int width, int height)
 
     D_MYLOG("GL_VERSION: " << glGetString(GL_VERSION));
 
-    SDL_GL_SetSwapInterval(1);
-
 	glViewport(0, 0, width, height);
 }
 
@@ -69,18 +60,17 @@ void SDLStage::handleEvent(SDL_Event &event)
 			switch (event.window.event)
 			{
 			case SDL_WINDOWEVENT_SHOWN:
-				m_visible = true;
+				m_isHidden = false;
 				break;
 
 			case SDL_WINDOWEVENT_HIDDEN:
-				m_visible = false;
+				m_isHidden = true;
 				break;
 
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 			{
 				int local_width = 0, local_height = 0;
 				SDL_GL_GetDrawableSize(m_pWindow, &local_width, &local_height);
-				// glViewport(0, 0, local_width, local_height);
 
 				if (m_resizeCallback)
 					m_resizeCallback(local_width, local_height);
@@ -97,7 +87,7 @@ void SDLStage::handleEvent(SDL_Event &event)
 
 void SDLStage::render()
 {
-	if (!m_visible)
+	if (m_isHidden)
 		return;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

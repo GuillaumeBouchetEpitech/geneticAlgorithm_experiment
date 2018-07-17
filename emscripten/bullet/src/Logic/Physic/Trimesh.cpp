@@ -31,7 +31,7 @@ Trimesh::Trimesh(const std::vector<float>& buffer, const std::vector<int>& indic
 	m_pShape = new btBvhTriangleMeshShape(m_pIndexVertexArrays, useQuantizedAabbCompression);
 
 	m_pMotionState = new btDefaultMotionState(btTransform(btQuaternion(0.0, 0.0, 0.0, 1.0), btVector3(0, 0, 0)));
-	
+
 	btScalar mass = 0;
 	btVector3 localInertia(0,0,0);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, m_pMotionState, m_pShape, localInertia);

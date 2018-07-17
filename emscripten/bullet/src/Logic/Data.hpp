@@ -6,22 +6,11 @@
 #include "OpenGLES.hpp"
 
 
-#include "Graphic/Color/ShaderColor.hpp"
-#include "Graphic/Color/GeometryColor.hpp"
+#include "Graphic/BasicGeometry.hpp"
+#include "Graphic/InstancedGeometry.hpp"
 #include "Graphic/StackRenderer.hpp"
-#include "Graphic/BulletDebugDraw.hpp"
-#include "Graphic/Inst/InstShader.hpp"
-#include "Graphic/Inst/InstGeometry.hpp"
 
-#include "Physic/World.hpp"
-#include "Physic/Trimesh.hpp"
-#include "Physic/Vehicle.hpp"
-
-#include "Threading/Producer.hpp"
-
-#include "Wrapper/PhysicWrapper.hpp"
-
-#include "../Simulation/Simulation.hpp"
+#include "Simulation/Simulation.hpp"
 
 
 #include <string>
@@ -33,6 +22,8 @@
 #include <glm/vec3.hpp> // glm::vec3
 #include <glm/mat4x4.hpp> // glm::mat4
 
+
+class Shader;
 
 class Data
 {
@@ -60,78 +51,75 @@ public:
 
 public:
 
-	//
-	// camera
-
-	glm::vec2	m_vec2_rotations = {0.5f, 0.95f};
-	glm::vec3	m_vec3_center = {0.0f, 0.0f, 0.0f};
-	glm::vec3	m_vec3_previous_center = {0.0f, 0.0f, 0.0f};
-
-	int			m_timeout_camera = 0;
-	int			m_index_targetedCar = -1;
-
-	// camera
-	//
-
-
-	//
-	//
-	// experimental
-
-	ShaderColor		m_ShaderColor;
-
-	GeometryColor	m_GeometryColor_circuit_skelton;
-	GeometryColor	m_GeometryColor_circuit_ground;
-	GeometryColor	m_GeometryColor_circuit_walls;
-
-	std::list<GeometryColor>	m_GeometryColor_trails;
-
-	glm::mat4		m_composedMatrix;
-	StackRenderer	m_StackRenderer;
-
-	BulletDebugDraw	m_DebugDraw;
-
-
 	struct t_graphic
 	{
-		glm::vec2		window_size = { 800.0f, 600.0f };
+		struct t_cameraData
+		{
+			glm::vec2		viewportSize = { 800.0f, 600.0f };
 
-		InstShader		m_InstShader;
-		InstGeometry	m_InstGeometry_chassis;
-		InstGeometry	m_InstGeometry_wheel;
+			glm::vec2	rotations = { 0.5f, 0.95f };
+			glm::vec3	center = { 0.0f, 0.0f, 0.0f };
+
+			glm::mat4	composedMatrix;
+		}
+		camera;
+
+		struct t_shaders
+		{
+			Shader*	pBasic = nullptr;
+			Shader*	pInstancing = nullptr;
+		}
+		shaders;
+
+		struct t_geometries
+		{
+			struct t_instanced
+			{
+				InstancedGeometry	chassis;
+				InstancedGeometry	wheels;
+			}
+			instanced;
+
+			struct t_basic
+			{
+				BasicGeometry	circuitSkelton;
+				BasicGeometry	circuitGround;
+				BasicGeometry	circuitWalls;
+			}
+			basic;
+		}
+		geometries;
+
+		StackRenderer	stackRenderer;
 	}
-	m_graphic;
+	graphic;
 
 	//
 
-	Physic::World	m_PhysicWorld;
-	Physic::World	m_PhysicWorld2;
-	Physic::World	m_PhysicWorld3;
+	struct t_logic
+	{
+		Simulation*	pSimulation = nullptr;
 
-	PhysicWrapper*	m_pPhysicWrapper = nullptr;
-	Simulation*		m_pSimulation = nullptr;
+		struct t_leaderCarData
+		{
+			int	timeout = 0;
+			int	index = -1;
+		}
+		leaderCar;
 
-	int				m_simualtion_step = -1;
-
-	//
-
-    Producer	m_Producer;
-    int			m_running = 0;
-
-	// experimental
-	//
-	//
-
+		struct t_carsTrails
+		{
+			std::map< unsigned int, unsigned int >	lookupMap;
+			std::vector< std::vector<float> >		allData;
+			std::list< std::vector<float> >			bestData;
+		}
+		carsTrails;
+	}
+	logic;
 
 	struct t_input
 	{
 		std::map<int, bool>	keys;
 	}
-	m_input;
-
-	// struct t_error
-	// {
-	// 	std::string m_message;
-	// }
-	// m_error;
+	input;
 };

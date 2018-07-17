@@ -1,13 +1,15 @@
 
+#ifndef EMSCRIPTEN
+#	error "=> native currently unsupported, the webworker feature must be replicated first (with multithreading)"
+#endif
 
-#include "Game.hpp"
-
+#include "Experiment.hpp"
 
 int main ()
 {
 	{
-		Game	myGame;
-		myGame.run();
+		Experiment	myExperiment;
+		myExperiment.run();
 	}
 
 	return 0;

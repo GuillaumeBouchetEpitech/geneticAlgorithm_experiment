@@ -4,9 +4,11 @@
 
 #include "Utility/TraceLogger.hpp"
 
+#include "constants.hpp"
 
-Simulation::Simulation(IPhysicWrapper* pPhysicWrapper)
-	: m_pPhysicWrapper(pPhysicWrapper)
+#include <memory> // <= std::unique_ptr
+
+Simulation::Simulation()
 {
 }
 
@@ -15,16 +17,11 @@ Simulation::~Simulation()
 }
 
 void	Simulation::initialise(
-	// const std::vector<float>& arr_left,
-	// const std::vector<float>& arr_right,
-	// Circuit::t_geometry_callback callback,
 	const std::string& filename,
 	CircuitBuilder::t_callback skeleton,
 	CircuitBuilder::t_callback ground,
 	CircuitBuilder::t_callback wall)
 {
-	// m_Circuit.initialise(m_pPhysicWrapper, arr_left, arr_right, callback);
-
 	{
 		CircuitBuilder	circuit;
 		if (!circuit.load(filename))
@@ -33,118 +30,160 @@ void	Simulation::initialise(
 			return /*false*/; // <= TODO
 		}
 
-		circuit.generate_skeleton(skeleton);
+		circuit.generateSkeleton(skeleton);
 		circuit.generate(ground, wall);
 	}
-	
 
-	unsigned int input = 15;
-	std::vector<unsigned int> tmp_hidden = { 10, 5 };
-	unsigned int output = 15;
+	unsigned int layerInput = D_NEURONS_NUMBER_INPUT;
+	std::vector<unsigned int> layerHidden = {
+		D_NEURONS_NUMBER_HIDDEN_1,
+		D_NEURONS_NUMBER_HIDDEN_2
+	};
+	unsigned int layerOutput = D_NEURONS_NUMBER_OUTPUT;
 
-	m_NNTopology.init(input, tmp_hidden, output);
+	m_NeuralNetworkTopology.init(layerInput, layerHidden, layerOutput, D_NEURAL_NETWORK_USE_BIAS);
 
-	m_GenAlgo.init(m_NNTopology);
+	m_GeneticAlgorithm.init(m_NeuralNetworkTopology);
 
-	unsigned int	num_car = m_GenAlgo.getGenomes().size();
-
-	m_pPhysicWrapper->createVehicles(num_car + 1); // plus one for the best car
-
-	Car::initialise(m_pPhysicWrapper);
-
-	m_Cars.reserve(num_car);
-	for (unsigned int ii = 0; ii < num_car; ++ii)
-		m_Cars.push_back(Car(ii));
-
-	m_pBest_car = new Car(num_car);
-}
-
-void	Simulation::update(int world_index, float elapsed_time)
-{
-	// D_MYLOG("world_index=" << world_index);
-
-	m_pPhysicWrapper->step(world_index, elapsed_time);
-
-	// bool	someone_is_alive = false;
-
-	// for (unsigned int i = 0; i < m_Cars.size(); ++i)
-
-	int step = m_Cars.size() / 3;
-	for (unsigned int i = step*world_index; i < step*(world_index+1); ++i)
+	for (int ii = 0; ii < D_WORKERS_NUMBER; ++ii)
 	{
-		if (!m_Cars[i].isAlive())
-			continue;
-
-		// someone_is_alive = true;
-
-		m_Cars[i].update( m_GenAlgo.getNNetworks()[i] );
-	}
-}
-
-void	Simulation::evolve()
-{
-	bool	someone_is_alive = false;
-
-	for (unsigned int i = 0; i < m_Cars.size(); ++i)
-	{
-		if (!m_Cars[i].isAlive())
-			continue;
-
-		someone_is_alive = true;
-
-		// m_Cars[i].update( m_GenAlgo.getNNetworks()[i] );
+		WorkerClient* pWorkerClient = new WorkerClient();
+		m_pWorkerClients.push_back(pWorkerClient);
 	}
 
-	if (someone_is_alive)
+	initialiseSimulation();
+}
+
+void	Simulation::update()
+{
+	// do nothing if the worker(s) are:
+	// => not initialised
+	// => not finished working
+	for (auto* pWorkerClient : m_pWorkerClients)
+		if (!pWorkerClient->isInitialised() || pWorkerClient->isProcessing())
+			return;
+
+	// if this line is reached it mean the worker(s) are now available
+
+	if (m_currentRequest == e_WorkerRequest::eInitialise)
+	{
+		// ask to reset if any worker(s) are not yet updated
+		// => it should only happen the first time
+
+		resetAndProcessSimulation();
 		return;
-
-	// rate genomes
-	for (unsigned int i = 0; i < m_Cars.size(); ++i)
-	{
-		float final_fitness = m_Cars[i].getFitness();
-
-		// this will reward the fastest car once the reaching the end of the circuit
-		final_fitness += static_cast<float>(m_Cars[i].getTotalUpdates()) * 0.00001f;
-
-		m_GenAlgo.rateGenome(i, final_fitness);
 	}
 
-	m_GenAlgo.BreedPopulation();
+	bool	incompleteSimulation = false;
 
-	if (m_GenAlgo.isAGreatGeneration())
+	for (unsigned int ii = 0; ii < D_CARS_NUMBER_TOTAL; ++ii)
 	{
-		Car& car = m_Cars[ m_GenAlgo.getAlpha().m_index ];
+		auto&& carResult = getCarResult(ii);
 
-		m_car_trails.push_back( car.getTrail() );
+		if (!carResult.isAlive)
+			continue;
 
-		while (m_car_trails.size() > 5)
-			m_car_trails.pop_front();
+		incompleteSimulation = true;
 	}
 
-	//
-	//
+	if (m_currentRequest == e_WorkerRequest::eResetAndProcess)
+	{
+		if (m_onResetAndProcessCallback)
+			m_onResetAndProcessCallback();
+	}
+	else if (m_currentRequest == e_WorkerRequest::eProcess)
+	{
+		if (m_onProcessCallback)
+			m_onProcessCallback();
+	}
 
-	for (Car& car : m_Cars)
-		car.reset();
+	if (incompleteSimulation)
+	{
+		// ask the worker(s) to process/update the (physic) simulation
+		processSimulation();
+	}
+	else
+	{
+		for (unsigned int ii = 0; ii < D_CARS_NUMBER_TOTAL; ++ii)
+		{
+			auto&& carResult = getCarResult(ii);
+
+			float fitness = carResult.fitness;
+
+			// // this reward a fast car once reached the end of the circuit
+			// fitness += static_cast<float>(m_Cars[ii].getTotalUpdates()) * 0.00001f;
+
+			m_GeneticAlgorithm.rateGenome(ii, fitness);
+		}
+
+		bool	smarterGeneration = m_GeneticAlgorithm.breedPopulation();
+
+		if (smarterGeneration)
+		{
+			if (m_onSmarterCallback)
+				m_onSmarterCallback();
+		}
+
+		// ask the worker(s) to reset the (physic) simulation
+		resetAndProcessSimulation();
+	}
 }
 
-// void	Simulation::updateBest(float elapsed_time)
-// {
-// 	if (m_GenAlgo.getAlpha().m_fitness == 0.0f)
-// 		return;
+void	Simulation::initialiseSimulation()
+{
+	for (auto* pWorkerClient : m_pWorkerClients)
+		pWorkerClient->initialiseSimulation();
 
-// 	m_pPhysicWrapper->step(elapsed_time);
+	m_currentRequest = e_WorkerRequest::eInitialise;
+}
 
-// 	if (m_pBest_car->isAlive())
-// 	{
-// 		NeuralNetwork	tmp_ann(m_NNTopology);
+void	Simulation::processSimulation()
+{
+	for (auto* pWorkerClient : m_pWorkerClients)
+		pWorkerClient->processSimulation();
 
-// 		tmp_ann.setWeights( m_GenAlgo.getAlpha().m_weights );
+	m_currentRequest = e_WorkerRequest::eProcess;
+}
 
-// 		m_pBest_car->update( tmp_ann );
-// 	}
-// 	else
-// 	{
-// 		m_pBest_car->reset();
-// 	}
-// }
+void	Simulation::resetAndProcessSimulation()
+{
+	const unsigned int	floatWeightsSize = m_NeuralNetworkTopology.getTotalWeights();
+	const unsigned int	byteWeightsSize = floatWeightsSize * sizeof(float);
+	const unsigned int	byteAllWeightsSize = D_CARS_NUMBER_PER_WORKER * byteWeightsSize;
+
+	std::unique_ptr<char[]>	pBuffer(new char[byteAllWeightsSize]);
+	char*	pBufferRaw = pBuffer.get();
+
+	std::vector<float>	weights;
+
+	auto&&	NNetworks = m_GeneticAlgorithm.getNeuralNetworks();
+
+	unsigned int currentNNetworkIndex = 0;
+
+	for (auto* pWorkerClient : m_pWorkerClients)
+	{
+		for (unsigned int ii = 0; ii < D_CARS_NUMBER_PER_WORKER; ++ii)
+		{
+			void*	pDest = &pBufferRaw[byteWeightsSize * ii];
+
+			auto&&	currentNNetwork = NNetworks[currentNNetworkIndex++];
+			currentNNetwork.getWeights(weights);
+
+			memcpy(pDest, &weights[0], byteWeightsSize);
+		}
+
+		pWorkerClient->resetAndProcessSimulation(pBufferRaw, byteAllWeightsSize);
+	}
+
+	m_currentRequest = e_WorkerRequest::eResetAndProcess;
+}
+
+const t_carResult&	Simulation::getCarResult(unsigned int index) const
+{
+	const unsigned int workerIndex = index / D_CARS_NUMBER_PER_WORKER;
+	const unsigned int workerResultIndex = index % D_CARS_NUMBER_PER_WORKER;
+
+	const WorkerClient* pWorkerClient = m_pWorkerClients.at(workerIndex);
+
+	return pWorkerClient->getSimulationResults().carsResult[workerResultIndex];
+}

@@ -8,6 +8,7 @@
 
 
 #include <iostream>
+#include <iomanip>
 
 std::string getTime();
 
@@ -22,14 +23,5 @@ std::string getTime();
 	sstr << "MYLOG [" << getTime() << "] " << D_STACK << " -> " << msg;\
 	std::cout << sstr.str() << std::endl;\
 }
-
-// #define D_MYLOG(msg)\
-// {\
-// 	std::stringstream sstr;\
-// 	sstr << "MYLOG [" << getTime() << "] -> " << msg;\
-// 	std::cout << sstr.str() << std::endl;\
-// }
-
-// #define D_MYLOG(msg)
 
 

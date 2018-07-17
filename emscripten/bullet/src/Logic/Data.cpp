@@ -2,7 +2,11 @@
 
 #include "Data.hpp"
 
+#include "Graphic/Shader.hpp"
+
 #include "Utility/TraceLogger.hpp"
+
+#include "constants.hpp"
 
 //
 //
@@ -12,11 +16,6 @@ Data*	Data::m_pInstance = nullptr;
 
 Data::Data()
 {
-
-	//
-	//
-	// experimental
-
 #define D_PUSH_VERTEX(container, v1,v2,v3, c1,c2,c3)	\
 	(container).push_back(v1);	\
 	(container).push_back(v2);	\
@@ -25,22 +24,48 @@ Data::Data()
 	(container).push_back(c2);	\
 	(container).push_back(c3);	\
 
-	m_ShaderColor.initialise();
-	GeometryColor::initialise(&m_ShaderColor);
+	{ // create the basic shader
 
-	m_StackRenderer.create();
+		Shader::t_def	def;
+	    def.filenames.vertex = "assets/shaders/color.glsl.vert.c";
+	    def.filenames.fragment = "assets/shaders/color.glsl.frag.c";
+		def.attributes.push_back("a_position");
+		def.attributes.push_back("a_color");
+		def.uniforms.push_back("u_composedMatrix");
+		def.uniforms.push_back("u_alpha");
+
+		graphic.shaders.pBasic = Shader::build(def);
+
+		if (!graphic.shaders.pBasic)
+			D_MYLOG("Failed to build the (basic) shader");
+	}
+
+	{ // create the instancing shader
+
+		Shader::t_def	def;
+		def.filenames.vertex = "assets/shaders/instancing.glsl.vert.c";
+		def.filenames.fragment = "assets/shaders/instancing.glsl.frag.c";
+		def.attributes.push_back("a_position");
+		def.attributes.push_back("a_color");
+		def.attributes.push_back("a_transform");
+		def.uniforms.push_back("u_composedMatrix");
+
+		graphic.shaders.pInstancing = Shader::build(def);
+
+		if (!graphic.shaders.pInstancing)
+			D_MYLOG("Failed to build the (instancing) shader");
+	}
+
+	graphic.stackRenderer.create();
 
 	{
-		m_graphic.m_InstShader.initialise();
-		m_graphic.m_InstGeometry_chassis.initialise(&m_graphic.m_InstShader);
-		m_graphic.m_InstGeometry_wheel.initialise(&m_graphic.m_InstShader);
-
+		auto& instanced = graphic.geometries.instanced;
 
 		std::vector<float>  arr_buffer;
 
 		{
-			std::vector<float>	buffer_chassis;
-			buffer_chassis.reserve(400);
+			std::vector<float>	chassisBuffer;
+			chassisBuffer.reserve(128);
 
 	        float side_x = 1;
 	        float side_y = 2;
@@ -68,20 +93,21 @@ Data::Data()
 
 	        //
 
-	        for (int i = 0; i < 24; ++i)
+	        for (int ii = 0; ii < 24; ++ii)
 	        {
-	            int curr_index = indices[i] * 3;
+	            int	index = indices[ii] * 3;
+	            float*	pVertex = &vertices[index];
 
-	            D_PUSH_VERTEX(buffer_chassis, vertices[curr_index+0],vertices[curr_index+1],vertices[curr_index+2], 1,0,0);
+	            D_PUSH_VERTEX(chassisBuffer, pVertex[0],pVertex[1],pVertex[2], 1,0,0);
 	        }
 
-			m_graphic.m_InstGeometry_chassis.update(&buffer_chassis[0], buffer_chassis.size() * sizeof(float));
+			instanced.chassis.initialise();
+			instanced.chassis.updateGeometry(chassisBuffer.data(), chassisBuffer.size());
 		}
-
 
 		{
 			std::vector<float>	buffer_wheel;
-			buffer_wheel.reserve(400);
+			buffer_wheel.reserve(128);
 
 			int quality = 16;
 			float radius = 0.5f;
@@ -89,17 +115,17 @@ Data::Data()
 
 			std::vector<float>	vertices;
 
-	        for (int i = 0; i < quality; ++i)
+	        for (int ii = 0; ii < quality; ++ii)
 	        {
-	            float ratio = static_cast<float>(i) / quality;
+	            float ratio = static_cast<float>(ii) / quality;
 	            vertices.push_back(-length / 2);
 	            vertices.push_back(radius * cosf(M_PI * 2 * ratio));
 	            vertices.push_back(radius * sinf(M_PI * 2 * ratio));
 	        }
 
-	        for (int i = 0; i < quality; ++i)
+	        for (int ii = 0; ii < quality; ++ii)
 	        {
-	            float ratio = static_cast<float>(i) / quality;
+	            float ratio = static_cast<float>(ii) / quality;
 	        	vertices.push_back(+length/2);
 	            vertices.push_back(radius * cosf(M_PI * 2 * ratio));
 	        	vertices.push_back(radius * sinf(M_PI * 2 * ratio));
@@ -118,163 +144,130 @@ Data::Data()
 			std::vector<int>	indices;
 
 	        // wheel side 1
-	        for (int i = 0; i < quality; ++i)
+	        for (int ii = 0; ii < quality; ++ii)
 	        {
-	            indices.push_back(i);
-	            indices.push_back((i + 1) % quality);
+	            indices.push_back(ii);
+	            indices.push_back((ii + 1) % quality);
 	        }
 
 	        // wheel side 2
-	        for (int i = 0; i < quality; ++i)
+	        for (int ii = 0; ii < quality; ++ii)
 	        {
-	            indices.push_back(quality + i);
-	            indices.push_back(quality + (i + 1) % quality);
+	            indices.push_back(quality + ii);
+	            indices.push_back(quality + (ii + 1) % quality);
 	        }
 
-	        // inter wheels
-	        // for (int i = 0; i < quality; ++i)
-	        // {
-	        //     indices.push_back(i);
-	        //     indices.push_back(quality+i);
-	        // }
 	        indices.push_back(0);
 	        indices.push_back(quality);
 
 	        //
 
-	        for (int i = 0; i < indices.size(); ++i)
+	        for (int ii = 0; ii < indices.size(); ++ii)
 	        {
-	            int curr_index = indices[i] * 3;
+	            int index = indices[ii] * 3;
+	            float*	pVertex = &vertices[index];
 
-	            D_PUSH_VERTEX(buffer_wheel, vertices[curr_index+0],vertices[curr_index+1],vertices[curr_index+2], 1,1,0);
+	            D_PUSH_VERTEX(buffer_wheel, pVertex[0],pVertex[1],pVertex[2], 1,1,0);
 	        }
 
-			// m_GeometryColor_wheel.initialise();
-			// m_GeometryColor_wheel.update(&buffer_wheel[0], buffer_wheel.size() * sizeof(float));
-			m_graphic.m_InstGeometry_wheel.update(&buffer_wheel[0], buffer_wheel.size() * sizeof(float));
+			instanced.wheels.initialise();
+			instanced.wheels.updateGeometry(buffer_wheel.data(), buffer_wheel.size());
 		}
 	}
 
 #undef D_PUSH_VERTEX
 
-	// /experimental
-	//
-	//
+	logic.pSimulation = new Simulation();
 
-	//
-	//
-	//
-	// world
-
-	// m_DebugDraw.setDebugMode(
-	// 	BulletDebugDraw::DBG_DrawWireframe |
-	// 	BulletDebugDraw::DBG_DrawContactPoints |
-	// 	BulletDebugDraw::DBG_NoHelpText |
-	// 	BulletDebugDraw::DBG_DrawConstraints |
-	// 	BulletDebugDraw::DBG_DrawConstraintLimits |
-	// 	BulletDebugDraw::DBG_FastWireframe
-	// );
-	// m_PhysicWorld.setDebugDrawer(&m_DebugDraw);
-
-	//
-	//
-	// simulation
-
-	m_pPhysicWrapper = new PhysicWrapper();
-
-	m_pSimulation = new Simulation(m_pPhysicWrapper);
+	logic.carsTrails.allData.resize(D_CARS_NUMBER_TOTAL);
 }
 
 Data::~Data()
 {
-	m_StackRenderer.destroy();
+	graphic.stackRenderer.destroy();
 }
 
 void	Data::initialise()
 {
-    std::vector<float>   buffer_skeleton;
-    buffer_skeleton.reserve(400);
+    std::vector<float>   skeletonBuffer;
+	std::vector<float>	groundBuffer;
+	std::vector<float>	wallsBuffer;
 
-	std::vector<float>	buffer_ground;
-	buffer_ground.reserve(2048);
+    skeletonBuffer.reserve(512);
+	groundBuffer.reserve(2048);
+	wallsBuffer.reserve(2048*2);
 
-	std::vector<float>	buffer_walls;
-	buffer_walls.reserve(2048*2);
-
-    int physic_index = 1;
-
-    const std::string   str_filename_circuit = "assets/circuits/default.txt";
-
-	m_pSimulation->initialise(
-        str_filename_circuit,
-        [&](const std::vector<float>& buf, const std::vector<int>& indices) -> void
+	logic.pSimulation->initialise(
+        D_CIRCUIT_FILENAME,
+        [&](const std::vector<float>& vertices, const std::vector<int>& indices) -> void
         {
             for (int ii = 0; ii < indices.size(); ++ii)
             {
-                int index = indices[ii] * 3;
+                int	index = indices[ii] * 3;
+                const float*	pVertex = &vertices[index];
 
-                buffer_skeleton.push_back( buf[ index+0 ] );
-                buffer_skeleton.push_back( buf[ index+1 ] );
-                buffer_skeleton.push_back( buf[ index+2 ] );
-                buffer_skeleton.push_back(0.6f);
-                buffer_skeleton.push_back(0.6f);
-                buffer_skeleton.push_back(0.6f);
+                skeletonBuffer.push_back(pVertex[0]);
+                skeletonBuffer.push_back(pVertex[1]);
+                skeletonBuffer.push_back(pVertex[2]);
+                skeletonBuffer.push_back(0.6f);
+                skeletonBuffer.push_back(0.6f);
+                skeletonBuffer.push_back(0.6f);
             }
         },
-        [&](const std::vector<float>& buf, const std::vector<int>& indices) -> void
+        [&](const std::vector<float>& vertices, const std::vector<int>& indices) -> void
         {
-            m_pPhysicWrapper->createGround(buf, indices, physic_index++);
-
             for (int ii = 0; ii < indices.size(); ++ii)
             {
-                int index = indices[ii] * 3;
+                int	index = indices[ii] * 3;
+                const float*	pVertex = &vertices[index];
 
-                buffer_ground.push_back( buf[ index+0 ] );
-                buffer_ground.push_back( buf[ index+1 ] );
-                buffer_ground.push_back( buf[ index+2 ] );
+                groundBuffer.push_back(pVertex[0]);
+                groundBuffer.push_back(pVertex[1]);
+                groundBuffer.push_back(pVertex[2]);
 
+                // is it the first line? (for the white colored strip)
                 if (index == 0 ||
                     index == 3)
                 {
-                    buffer_ground.push_back(1.0f);
-                    buffer_ground.push_back(1.0f);
-                    buffer_ground.push_back(1.0f);
+                    groundBuffer.push_back(1.0f);
+                    groundBuffer.push_back(1.0f);
+                    groundBuffer.push_back(1.0f);
                 }
                 else
                 {
-                    buffer_ground.push_back(0.0f);
-                    buffer_ground.push_back(0.0f);
-                    buffer_ground.push_back(1.0f);
+                    groundBuffer.push_back(0.0f);
+                    groundBuffer.push_back(0.0f);
+                    groundBuffer.push_back(1.0f);
                 }
             }
         },
-        [&](const std::vector<float>& buf, const std::vector<int>& indices) -> void
+        [&](const std::vector<float>& vertices, const std::vector<int>& indices) -> void
         {
-            m_pPhysicWrapper->createGhostWall(buf, indices);
-
             for (int ii = 0; ii < indices.size(); ++ii)
             {
                 int index = indices[ii] * 3;
+                const float*	pVertex = &vertices[index];
 
-                buffer_walls.push_back( buf[ index+0 ] );
-                buffer_walls.push_back( buf[ index+1 ] );
-                buffer_walls.push_back( buf[ index+2 ] );
-                buffer_walls.push_back(0.6f);
-                buffer_walls.push_back(0.6f);
-                buffer_walls.push_back(0.6f);
+                wallsBuffer.push_back(pVertex[0]);
+                wallsBuffer.push_back(pVertex[1]);
+                wallsBuffer.push_back(pVertex[2]);
+                wallsBuffer.push_back(0.6f);
+                wallsBuffer.push_back(0.6f);
+                wallsBuffer.push_back(0.6f);
             }
         }
 
 	);
 
-    m_GeometryColor_circuit_skelton.initialise();
-    m_GeometryColor_circuit_skelton.update(&buffer_skeleton[0], buffer_skeleton.size() * sizeof(float));
+	auto& basic = graphic.geometries.basic;
 
-	m_GeometryColor_circuit_ground.initialise();
-	m_GeometryColor_circuit_ground.update(&buffer_ground[0], buffer_ground.size() * sizeof(float));
+    basic.circuitSkelton.initialise();
+	basic.circuitGround.initialise();
+	basic.circuitWalls.initialise();
 
-	m_GeometryColor_circuit_walls.initialise();
-	m_GeometryColor_circuit_walls.update(&buffer_walls[0], buffer_walls.size() * sizeof(float));
+    basic.circuitSkelton.updateGeometry(skeletonBuffer.data(), skeletonBuffer.size());
+	basic.circuitGround.updateGeometry(groundBuffer.data(), groundBuffer.size());
+	basic.circuitWalls.updateGeometry(wallsBuffer.data(), wallsBuffer.size());
 }
 
 //

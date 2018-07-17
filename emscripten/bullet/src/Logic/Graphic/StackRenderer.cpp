@@ -12,11 +12,11 @@
 void	StackRenderer::create()
 {
 	Shader::t_def	def;
-	def.vertex_filename = "assets/shaders/stack.glsl.vert.c";
-	def.fragment_filename = "assets/shaders/stack.glsl.frag.c";
-	def.attributes.push_back("a_Position");
-	def.attributes.push_back("a_Color");
-	def.uniforms.push_back("u_ComposedMatrix");
+	def.filenames.vertex = "assets/shaders/stack.glsl.vert.c";
+	def.filenames.fragment = "assets/shaders/stack.glsl.frag.c";
+	def.attributes.push_back("a_position");
+	def.attributes.push_back("a_color");
+	def.uniforms.push_back("u_composedMatrix");
 
 	m_pShader = Shader::build(def);
 
@@ -67,9 +67,9 @@ void	StackRenderer::flush()
 
 	Shader::bind( m_pShader );
 
-	auto attr_Position = m_pShader->getAttribute("a_Position");
-	auto attr_Color = m_pShader->getAttribute("a_Color");
-	auto unif_ComposedMatrix = m_pShader->getUniforms("u_ComposedMatrix");
+	auto attr_Position = m_pShader->getAttribute("a_position");
+	auto attr_Color = m_pShader->getAttribute("a_color");
+	auto unif_ComposedMatrix = m_pShader->getUniforms("u_composedMatrix");
 
 	glEnableVertexAttribArray(attr_Position);
 	glEnableVertexAttribArray(attr_Color);

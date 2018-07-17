@@ -1,13 +1,13 @@
 
-attribute vec3 a_Position;
-attribute vec3 a_Color;
+attribute vec3 a_position;
+attribute vec3 a_color;
 
-uniform mat4 u_ComposedMatrix;
+uniform mat4 u_composedMatrix;
 
-varying vec3 v_Color;
+varying vec3 v_color;
 
 void main()
 {
-	gl_Position = u_ComposedMatrix * vec4(a_Position, 1.0);
-	v_Color = a_Color;
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+	v_color = a_color;
 }

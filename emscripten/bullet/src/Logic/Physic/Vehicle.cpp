@@ -73,13 +73,11 @@ Vehicle::Vehicle(btDiscreteDynamicsWorld* pDynamicsWorld)
 
 	btTransform tr;
 	tr.setIdentity();
-	// tr.setOrigin(btVector3(10,10,10));
 	tr.setOrigin(btVector3(0,0,10));
 
 	m_pMotionState = new btDefaultMotionState(tr);
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, m_pMotionState, m_pCompound, localInertia);
 	m_pCarChassis = new btRigidBody(cInfo);
-	// pDynamicsWorld->addRigidBody(m_pCarChassis, 0, 0);
 
 
 	//
@@ -93,8 +91,6 @@ Vehicle::Vehicle(btDiscreteDynamicsWorld* pDynamicsWorld)
 
 	// never deactivate the vehicle
 	m_pCarChassis->setActivationState(DISABLE_DEACTIVATION);
-
-	// m_physic.dynamicsWorld->addVehicle(m_pVehicle);
 
 
 	//
@@ -111,23 +107,23 @@ Vehicle::Vehicle(btDiscreteDynamicsWorld* pDynamicsWorld)
 
 	bool isFrontWheel = true;
 
-	btVector3 connectionPointCS0(CUBE_HALF_EXTENTS-(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-	m_pVehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,tuning,isFrontWheel);
+	btVector3 connectionPointCS0(CUBE_HALF_EXTENTS - (0.3f * wheelWidth), 2 * CUBE_HALF_EXTENTS - wheelRadius, connectionHeight);
+	m_pVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, tuning, isFrontWheel);
 
-	connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),2*CUBE_HALF_EXTENTS-wheelRadius, connectionHeight);
-	m_pVehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,tuning,isFrontWheel);
+	connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS + (0.3 * wheelWidth), 2 * CUBE_HALF_EXTENTS - wheelRadius, connectionHeight);
+	m_pVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, tuning, isFrontWheel);
 
 	isFrontWheel = false;
 
-	connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS+(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-	m_pVehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,tuning,isFrontWheel);
+	connectionPointCS0 = btVector3(-CUBE_HALF_EXTENTS + (0.3 * wheelWidth), -2 * CUBE_HALF_EXTENTS + wheelRadius, connectionHeight);
+	m_pVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, tuning, isFrontWheel);
 
-	connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS-(0.3*wheelWidth),-2*CUBE_HALF_EXTENTS+wheelRadius, connectionHeight);
-	m_pVehicle->addWheel(connectionPointCS0,wheelDirectionCS0,wheelAxleCS,suspensionRestLength,wheelRadius,tuning,isFrontWheel);
+	connectionPointCS0 = btVector3(CUBE_HALF_EXTENTS - (0.3 * wheelWidth), -2 * CUBE_HALF_EXTENTS + wheelRadius, connectionHeight);
+	m_pVehicle->addWheel(connectionPointCS0, wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, tuning, isFrontWheel);
 	
-	for (int i = 0; i < m_pVehicle->getNumWheels(); ++i)
+	for (int ii = 0; ii < m_pVehicle->getNumWheels(); ++ii)
 	{
-		btWheelInfo&	wheel = m_pVehicle->getWheelInfo(i);
+		btWheelInfo&	wheel = m_pVehicle->getWheelInfo(ii);
 
 		wheel.m_suspensionStiffness = suspensionStiffness;
 		wheel.m_wheelsDampingRelaxation = wheelsDampingRelaxation;
@@ -137,20 +133,6 @@ Vehicle::Vehicle(btDiscreteDynamicsWorld* pDynamicsWorld)
 	}
 
 #undef	CUBE_HALF_EXTENTS
-
-
-
-	// // btTransform transform;
-	// // m_pCarChassis->getMotionState()->getWorldTransform(transform);
-	// // m_pCarChassis->getMotionState()->setWorldTransform(transform);
-
-	// btTransform initialTransform;
-	// initialTransform.setIdentity();
-	// initialTransform.setOrigin(btVector3(0,0,10));
-	// initialTransform.setRotation(btQuaternion(0,0,1,1));
-
-	// m_pCarChassis->setWorldTransform(initialTransform);
-	// m_pMotionState->setWorldTransform(initialTransform);
 }
 
 Vehicle::~Vehicle()
@@ -167,43 +149,43 @@ Vehicle::~Vehicle()
 
 void	Vehicle::applyEngineForce(float engineForce)
 {
-	int wheelIndex = 2;
-	m_pVehicle->applyEngineForce(engineForce, wheelIndex);
-	wheelIndex = 3;
-	m_pVehicle->applyEngineForce(engineForce, wheelIndex);
+	// rear wheels
+	const int wheelIndex1 = 2;
+	const int wheelIndex2 = 3;
+
+	m_pVehicle->applyEngineForce(engineForce, wheelIndex1);
+	m_pVehicle->applyEngineForce(engineForce, wheelIndex2);
 }
 
 void	Vehicle::setSteeringValue(float vehicleSteering)
 {
-	int wheelIndex = 0;
-	m_pVehicle->setSteeringValue(vehicleSteering, wheelIndex);
-	wheelIndex = 1;
-	m_pVehicle->setSteeringValue(vehicleSteering, wheelIndex);
+	// front wheels
+	const int wheelIndex1 = 0;
+	const int wheelIndex2 = 1;
+
+	m_pVehicle->setSteeringValue(vehicleSteering, wheelIndex1);
+	m_pVehicle->setSteeringValue(vehicleSteering, wheelIndex2);
 }
 
 void	Vehicle::fullBrake()
 {
 	m_pCarChassis->clearForces();
-	btVector3 zeroVector(0,0,0);
+	btVector3 zeroVector(0, 0, 0);
 	m_pCarChassis->setLinearVelocity(zeroVector);
 	m_pCarChassis->setAngularVelocity(zeroVector);
 
-	m_pVehicle->setBrake(100, 0);
-	m_pVehicle->setBrake(100, 1);
-	m_pVehicle->setBrake(100, 2);
-	m_pVehicle->setBrake(100, 3);
+	for (int ii = 0; ii < 4; ++ii)
+		m_pVehicle->setBrake(100, ii);
 
 	m_pVehicle->updateVehicle(0);
 
-	m_pVehicle->setBrake(0, 0);
-	m_pVehicle->setBrake(0, 1);
-	m_pVehicle->setBrake(0, 2);
-	m_pVehicle->setBrake(0, 3);
+	for (int ii = 0; ii < 4; ++ii)
+		m_pVehicle->setBrake(0, ii);
 }
 
-void	Vehicle::setPosition(const float* pVec3_pos)
+void	Vehicle::setPosition(const float* pPosition)
 {
-	btVector3	pos(pVec3_pos[0], pVec3_pos[1], pVec3_pos[2]);
+	btVector3	pos(pPosition[0], pPosition[1], pPosition[2]);
 
 	btTransform initialTransform = m_pCarChassis->getWorldTransform();
 
@@ -213,9 +195,9 @@ void	Vehicle::setPosition(const float* pVec3_pos)
 	m_pMotionState->setWorldTransform(initialTransform);
 }
 
-void	Vehicle::setRotation(const float* pQuat_rot)
+void	Vehicle::setRotation(const float* pRotation)
 {
-	btQuaternion	rot(pQuat_rot[0], pQuat_rot[1], pQuat_rot[2], pQuat_rot[3]);
+	btQuaternion	rot(pRotation[0], pRotation[1], pRotation[2], pRotation[3]);
 
 	btTransform initialTransform = m_pCarChassis->getWorldTransform();
 
@@ -225,9 +207,9 @@ void	Vehicle::setRotation(const float* pQuat_rot)
 	m_pMotionState->setWorldTransform(initialTransform);
 }
 
-void	Vehicle::getOpenGLMatrix(btScalar* mat4)
+void	Vehicle::getOpenGLMatrix(btScalar* pMat4x4)
 {
-	m_pCarChassis->getWorldTransform().getOpenGLMatrix(mat4);
+	m_pCarChassis->getWorldTransform().getOpenGLMatrix(pMat4x4);
 }
 
 //
@@ -237,9 +219,9 @@ int		Vehicle::getNumWheels() const
 	return m_pVehicle->getNumWheels();
 }
 
-void	Vehicle::getWheelMatrix(int index, float* mat4) const
+void	Vehicle::getWheelOpenGLMatrix(int index, float* pMat4x4) const
 {
-	m_pVehicle->getWheelTransformWS(index).getOpenGLMatrix(mat4);
+	m_pVehicle->getWheelTransformWS(index).getOpenGLMatrix(pMat4x4);
 }
 
 

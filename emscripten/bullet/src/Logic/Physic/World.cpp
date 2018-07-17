@@ -89,13 +89,15 @@ void	World::createWall(const std::vector<float>& b, const std::vector<int>& i)
 
 //
 
-void	World::createVehicle()
+Vehicle*	World::createVehicle()
 {
 	Vehicle*	pVehicle = new Vehicle(m_pDynamicsWorld);
 	m_pDynamicsWorld->addRigidBody( pVehicle->m_pCarChassis, 0, 0 );
 	m_pDynamicsWorld->addVehicle( pVehicle->m_pVehicle );
 
 	m_arr_Vehicles.push_back(pVehicle);
+
+	return pVehicle;
 }
 
 //

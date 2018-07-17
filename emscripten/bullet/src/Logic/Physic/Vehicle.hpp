@@ -26,13 +26,13 @@ private:
 	friend World;
 
 private:
-	btCollisionShape*	m_pChassisShape = nullptr;
-	btCompoundShape*	m_pCompound = nullptr;
+	btCollisionShape*		m_pChassisShape = nullptr;
+	btCompoundShape*		m_pCompound = nullptr;
 	btDefaultMotionState*	m_pMotionState = nullptr;
-	btRigidBody*		m_pCarChassis = nullptr;
+	btRigidBody*			m_pCarChassis = nullptr;
 
 	btDefaultVehicleRaycaster*	m_pVehicleRayCaster = nullptr;
-	btRaycastVehicle*	m_pVehicle = nullptr;
+	btRaycastVehicle*		m_pVehicle = nullptr;
 
 private:
 	Vehicle(btDiscreteDynamicsWorld* pDynamicsWorld);
@@ -44,14 +44,14 @@ public:
 	void	fullBrake();
 
 public:
-	void	setPosition(const float* pVec3_pos);
-	void	setRotation(const float* pQuat_rot);
+	void	setPosition(const float* pPosition);
+	void	setRotation(const float* pRotation);
 
 public:
-	void	getOpenGLMatrix(float* mat4);
+	void	getOpenGLMatrix(float* pMat4x4);
 
 	int		getNumWheels() const;
-	void	getWheelMatrix(int index, float* mat4) const;
+	void	getWheelOpenGLMatrix(int index, float* pMat4x4) const;
 
 };
 
