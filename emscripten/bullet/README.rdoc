@@ -1,37 +1,28 @@
 
 = emscripten version
 
-== Disclaimer
 
-The web version of this demo does not currently work anymore.
+== Online demo 3D
 
-It require a feature that got disabled as the feature itself exposed a browser security breach.
+http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html
 
-In case you would like to know more about this:
-=> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer
-=> https://meltdownattack.com/
-
-
-== Online demo 3D (broken unless the SharedArrayBuffer browser feature become available again)
-
-http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/index.html
-
-
-== Build native C++
-
-modify Makefile top variable this way 'cpp_mode=yes'
-
-  make fclean_bullet
-  make bullet -j
-  make fclean
-  make -j
 
 == Build emscripten C++
 
 requirement: emscripten
 
 modify Makefile top variable this way 'cpp_mode=no'
-modify Makefile CXX and AR variables with emscripten
+modify Makefile variable "EMSCRIPTEN_ROOT" with your path to emscripten
+
+  make fclean_bullet
+  make bullet -j
+  make fclean
+  make -j
+
+
+== (BROKEN FOR NOW) Build native C++
+
+modify Makefile top variable this way 'cpp_mode=yes'
 
   make fclean_bullet
   make bullet -j
