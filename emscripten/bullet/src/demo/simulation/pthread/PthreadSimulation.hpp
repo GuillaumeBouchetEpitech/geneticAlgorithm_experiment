@@ -1,0 +1,70 @@
+
+#pragma once
+
+#include "demo/simulation/AbstactSimulation.hpp"
+
+#include "demo/utilities/threading/Producer.hpp"
+
+#include "demo/simulation/machineLearning/NeuralNetwork.hpp"
+
+#include "demo/simulation/logic/Car.hpp"
+
+#include "demo/logic/physic/PhysicWorld.hpp"
+
+#include <list>
+#include <vector>
+#include <array>
+
+class PthreadSimulation
+    : public AbstactSimulation
+{
+private:
+    Producer*	_multithreadProducer;
+
+    std::vector<PhysicWorld>	_physicWorlds;
+
+    unsigned int    _genomesPerCore = 0;
+
+    std::vector<Car>	_cars;
+    t_carsData			_carsData;
+
+private:
+    GeneticAlgorithm			_geneticAlgorithm;
+
+    struct t_callbacks
+    {
+        AbstactSimulation::t_callback onResetAndProcess;
+        AbstactSimulation::t_callback onProcess;
+        AbstactSimulation::t_generationEndCallback onGenerationEnd;
+    }
+    _callbacks;
+
+public:
+    PthreadSimulation() = default;
+    virtual ~PthreadSimulation();
+
+public:
+    virtual void    initialise(const t_def& def) override;
+
+public:
+    virtual void	update() override;
+
+private:
+    void	updateCarResult();
+
+public:
+    virtual const t_carData&	getCarResult(unsigned int index) const override;
+    virtual unsigned int	    getTotalCars() const override;
+
+public:
+
+    virtual void	setOnResetAndProcessCallback(AbstactSimulation::t_callback callback) override;
+    virtual void	setOnProcessCallback(AbstactSimulation::t_callback callback) override;
+    virtual void	setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
+
+public:
+    virtual const GeneticAlgorithm::t_genomes&	getGenomes() const override;
+    virtual const GeneticAlgorithm::t_genome&	getBestGenome() const override;
+    virtual unsigned int                        getGenerationNumber() const override;
+
+};

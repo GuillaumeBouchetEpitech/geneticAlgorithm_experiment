@@ -1,0 +1,7 @@
+
+lib
+obj
+old
+bin/*
+
+src/thirdparty/**/

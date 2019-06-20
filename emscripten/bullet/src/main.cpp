@@ -1,16 +1,15 @@
 
-#ifndef EMSCRIPTEN
-#	error "=> native currently unsupported, the webworker feature must be replicated first (with multithreading)"
-#endif
+#include "demo/Demo.hpp"
 
-#include "Experiment.hpp"
+#include <cstdlib> // <= EXIT_SUCCESS
 
-int main ()
+int	main()
 {
 	{
-		Experiment	myExperiment;
-		myExperiment.run();
+		Demo	myDemo(800, 600);
+
+		myDemo.run();
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

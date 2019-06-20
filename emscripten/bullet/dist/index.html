@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Emscripten-Generated Code</title>
+    <title>AI (loading)</title>
     <style>
       body {
         font-family: arial;
@@ -11,75 +11,19 @@
         padding: none;
       }
 
-      .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
-      div.emscripten { text-align: center; }
-      div.emscripten_border { border: 1px solid black; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
-
-      .spinner {
-        height: 30px;
-        width: 30px;
-        margin: 0;
-        margin-top: 20px;
-        margin-left: 20px;
-        display: inline-block;
-        vertical-align: top;
-
-        -webkit-animation: rotation .8s linear infinite;
-        -moz-animation: rotation .8s linear infinite;
-        -o-animation: rotation .8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-
-        border-left: 5px solid rgb(235, 235, 235);
-        border-right: 5px solid rgb(235, 235, 235);
-        border-bottom: 5px solid rgb(235, 235, 235);
-        border-top: 5px solid rgb(120, 120, 120);
-
-        border-radius: 100%;
-        background-color: rgb(189, 215, 46);
+      #emscriptenCanvas {
+        border: 0px none;
+        background-color: black;
+        margin: 0px auto;
+        padding: 0px none;
       }
 
-      @-webkit-keyframes rotation {
-        from {-webkit-transform: rotate(0deg);}
-        to {-webkit-transform: rotate(360deg);}
-      }
-      @-moz-keyframes rotation {
-        from {-moz-transform: rotate(0deg);}
-        to {-moz-transform: rotate(360deg);}
-      }
-      @-o-keyframes rotation {
-        from {-o-transform: rotate(0deg);}
-        to {-o-transform: rotate(360deg);}
-      }
-      @keyframes rotation {
-        from {transform: rotate(0deg);}
-        to {transform: rotate(360deg);}
-      }
-
-      #status {
-        display: inline-block;
-        vertical-align: top;
-        margin-top: 30px;
-        margin-left: 20px;
-        font-weight: bold;
-        color: rgb(120, 120, 120);
-      }
-
-      #progress {
-        height: 20px;
-        width: 30px;
-      }
-
-      #output {
+      #loggerOutput {
         width: 100%;
-        height: 200px;
         margin: 0 auto;
-        margin-top: 10px;
-        border-left: 0px;
-        border-right: 0px;
-        padding-left: 0px;
-        padding-right: 0px;
+        border: 0px none;
+        padding: 0px none;
         display: block;
         background-color: black;
         color: white;
@@ -90,23 +34,11 @@
   </head>
   <body>
 
-    <div class="spinner" id='spinner'></div>
-    <div class="emscripten" id="status">Downloading...</div>
-
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>
-    </div>
-
     <table>
 
       <tr>
         <td>
-          <div class="emscripten_border">
-            <div id="fpsmeterUpdate" style="position:relative; left:0px; top:0px"></div>
-            <div id="fpsmeterRender" style="position:relative; left:0px; top:40px"></div>
-            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()">
-            </canvas>
-          </div>
+          <canvas id="canvas"></canvas>
         </td>
         <td>
           <h1>Artificial Intelligence</h1>
@@ -145,11 +77,9 @@
     </table>
 
 
-    <textarea id="output" rows="8"></textarea>
+    <textarea id="loggerOutput" rows="10" readonly></textarea>
 
-    <script type="text/javascript" src="external/fpsmeter.js"></script>
-
-    <script type="text/javascript" src="js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
 
   </body>
 </html>

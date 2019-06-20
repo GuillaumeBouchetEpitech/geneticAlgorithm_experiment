@@ -1,0 +1,85 @@
+
+#pragma once
+
+#include "demo/defines.hpp"
+
+#if not defined D_WEB_WEBWORKER_BUILD
+#	error "exclude this file to build natively or with multi thread support"
+#endif
+
+#include "demo/simulation/AbstactSimulation.hpp"
+
+#include "demo/simulation/logic/CircuitBuilder.hpp"
+
+#include "demo/simulation/machineLearning/GeneticAlgorithm.hpp"
+
+#include "producer/WorkerProducer.hpp"
+#include "common.hpp"
+
+#include <list>
+#include <vector>
+#include <array>
+
+class WebWorkersSimulation
+    : public AbstactSimulation
+{
+private:
+	enum class WorkerRequest
+	{
+		eNone,
+		eWorkersLoading,
+		eResetAndProcess,
+		eProcess,
+	}
+	_currentRequest = WorkerRequest::eNone;
+
+	std::vector<WorkerProducer*>	_workerProducers;
+
+    unsigned int    _totalCores = 0;
+    unsigned int    _genomesPerCore = 0;
+	unsigned int    _totalGenomes = 0;
+
+private:
+	NeuralNetworkTopology		_neuralNetworkTopology;
+	GeneticAlgorithm			_geneticAlgorithm;
+
+	struct t_callbacks
+	{
+		AbstactSimulation::t_callback onWorkersReady;
+		AbstactSimulation::t_callback onResetAndProcess;
+		AbstactSimulation::t_callback onProcess;
+		AbstactSimulation::t_generationEndCallback onGenerationEnd;
+	}
+	_callbacks;
+
+public:
+	WebWorkersSimulation() = default;
+	virtual ~WebWorkersSimulation();
+
+public:
+    virtual void    initialise(const t_def& def) override;
+
+public:
+	virtual void	update() override;
+
+private:
+	// void	loadWorkers();
+	void	processSimulation();
+	void	resetAndProcessSimulation();
+
+public:
+	virtual const t_carData&	getCarResult(unsigned int index) const override;
+    virtual unsigned int	    getTotalCars() const override;
+
+public:
+	virtual void	setOnWorkersReadyCallback(AbstactSimulation::t_callback callback) override;
+	virtual void	setOnResetAndProcessCallback(AbstactSimulation::t_callback callback) override;
+	virtual void	setOnProcessCallback(AbstactSimulation::t_callback callback) override;
+    virtual void	setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
+
+public:
+	virtual const GeneticAlgorithm::t_genomes&	getGenomes() const override;
+	virtual const GeneticAlgorithm::t_genome&	getBestGenome() const override;
+    virtual unsigned int                        getGenerationNumber() const override;
+
+};
