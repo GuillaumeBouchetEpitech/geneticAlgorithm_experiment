@@ -8,6 +8,7 @@
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 
 #include "demo/simulation/logic/Car.hpp"
+#include "demo/simulation/logic/CircuitBuilder.hpp"
 
 #include "demo/logic/physic/PhysicWorld.hpp"
 
@@ -19,14 +20,19 @@ class PthreadSimulation
     : public AbstactSimulation
 {
 private:
+    unsigned int    _totalCores = 0;
+
     Producer*	_multithreadProducer;
 
     std::vector<PhysicWorld>	_physicWorlds;
+    std::vector<AbstactSimulation::t_coreState>    _coreStates;
 
     unsigned int    _genomesPerCore = 0;
 
     std::vector<Car>	_cars;
     t_carsData			_carsData;
+
+    CircuitBuilder::t_startTransform    _startTransform;
 
 private:
     GeneticAlgorithm			_geneticAlgorithm;
@@ -53,13 +59,15 @@ private:
     void	updateCarResult();
 
 public:
-    virtual const t_carData&	getCarResult(unsigned int index) const override;
-    virtual unsigned int	    getTotalCars() const override;
+    virtual unsigned int        getTotalCores() const override;
+    virtual const AbstactSimulation::t_coreState&  getCoreState(unsigned int index) const override;
+    virtual const t_carData&    getCarResult(unsigned int index) const override;
+    virtual unsigned int        getTotalCars() const override;
 
 public:
 
-    virtual void	setOnResetAndProcessCallback(AbstactSimulation::t_callback callback) override;
-    virtual void	setOnProcessCallback(AbstactSimulation::t_callback callback) override;
+    virtual void	setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
+    virtual void	setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
     virtual void	setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:

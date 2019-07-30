@@ -7,17 +7,13 @@
 
 #include "WorkerConsumer.hpp"
 
-#include "demo/simulation/logic/CircuitBuilder.hpp"
-#include "demo/simulation/logic/Car.hpp"
-
 #include "demo/logic/physic/PhysicVehicle.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 // #include "demo/utilities/TraceLogger.hpp"
 
-#include "demo/constants.hpp"
-
 #include <memory> // std::unique_ptr
+#include <chrono>
 
 #include <emscripten/emscripten.h> // <= emscripten_worker_respond()
 
@@ -91,8 +87,8 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
 
     message >> layerInput;
 
-    if (isUsingBias)
-        --layerInput;
+    // if (isUsingBias)
+    //     --layerInput;
 
     message >> totalHidden;
     for (unsigned int ii = 0; ii < totalHidden; ++ii)
@@ -100,8 +96,8 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
         unsigned int layerValue = 0;
         message >> layerValue;
 
-        if (isUsingBias)
-            --layerValue;
+        // if (isUsingBias)
+        //     --layerValue;
 
         layerHidden.push_back(layerValue);
     }
@@ -135,12 +131,16 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
         CircuitBuilder circuitBuilder;
         circuitBuilder.load(circuitFilename);
         circuitBuilder.generate(onNewGroundPatch, onNewWallPatch);
+
+        _startTransform = circuitBuilder.getStartTransform();
     }
 
     {
         _cars.reserve(_genomesPerCore);
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _cars.push_back(Car(_physicWorld));
+            _cars.push_back(Car(_physicWorld,
+                                _startTransform.position,
+                                _startTransform.quaternion));
     }
 
     {
@@ -175,7 +175,7 @@ void	WorkerConsumer::resetSimulation(MessageView& message)
         memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
         _neuralNetworks[ii].setWeights(weightsBuffer);
 
-        _cars[ii].reset();
+        _cars[ii].reset(_startTransform.position, _startTransform.quaternion);
     }
 
     // m_contacts.clear();
@@ -184,6 +184,8 @@ void	WorkerConsumer::resetSimulation(MessageView& message)
 void	WorkerConsumer::processSimulation()
 {
     // update the simulation
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     _physicWorld.step();
 
@@ -197,10 +199,21 @@ void	WorkerConsumer::processSimulation()
         car.update(_neuralNetworks[ii]);
     }
 
+    auto finish = std::chrono::high_resolution_clock::now();
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
+    unsigned int delta = milliseconds.count();
+
+    unsigned int genomesAlive = 0;
+    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+        if (_cars[ii].isAlive())
+            ++genomesAlive;
+
     // send back the result
 
     _message.clear();
     _message << char(messages::server::eSimulationResult);
+
+    _message << delta << genomesAlive;
 
     glm::mat4	transform;
 
@@ -210,7 +223,9 @@ void	WorkerConsumer::processSimulation()
     {
         const auto& car = _cars[ii];
 
-        _message << car.isAlive() << car.getFitness() << car.getGroundIndex();
+        _message
+            << car.isAlive() << car.getLife()
+            << car.getFitness() << car.getGroundIndex();
 
         if (!car.isAlive())
             continue;

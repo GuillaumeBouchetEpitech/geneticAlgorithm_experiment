@@ -11,24 +11,52 @@
         padding: none;
       }
 
+      #renderArea {
+        border: 0px none;
+        margin: 0px auto;
+        padding: 0px none;
+        background-color: black;
+        width: 800px;
+        height: 600px;
+      }
+
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       #emscriptenCanvas {
         border: 0px none;
-        background-color: black;
         margin: 0px auto;
         padding: 0px none;
+        display: none;
+        width: 800px; /* <= fix Apple retina display issue(s)*/
+        height: 600px; /* <= fix Apple retina display issue(s)*/
+        display: none;
+      }
+
+      #errorText {
+        position: relative;
+        float: left;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); 
+        margin: 0px auto;
+        padding: 0px none;
+        border: 0px none;
+        color: white;
+        font-family: 'Lucida Console', Monaco, monospace;
+        text-align: center;
+        outline: none;
+        display: inline;
       }
 
       #loggerOutput {
         width: 100%;
-        margin: 0 auto;
+        margin: 0px auto;
         border: 0px none;
         padding: 0px none;
-        display: block;
         background-color: black;
         color: white;
         font-family: 'Lucida Console', Monaco, monospace;
         outline: none;
+        display: block;
       }
     </style>
   </head>
@@ -38,7 +66,10 @@
 
       <tr>
         <td>
-          <canvas id="canvas"></canvas>
+          <div id="renderArea">
+            <canvas id="emscriptenCanvas" width="800" height="600"></canvas>
+            <p id="errorText">Loading</p>
+          </div>
         </td>
         <td>
           <h1>Artificial Intelligence</h1>

@@ -1,18 +1,15 @@
-#version 300 es
+
 precision mediump float;
 
-layout(std140) uniform u_Matrices
-{
-	mat4 u_composedMatrix;
-};
+uniform mat4 u_composedMatrix;
 
-in vec2 a_position;
-in vec2 a_texCoord;
-in vec2 a_offsetPosition;
-in vec2 a_offsetTexCoord;
-in float a_offsetScale;
+attribute vec2 a_position;
+attribute vec2 a_texCoord;
+attribute vec2 a_offsetPosition;
+attribute vec2 a_offsetTexCoord;
+attribute float a_offsetScale;
 
-out vec2 v_texCoord;
+varying vec2 v_texCoord;
 
 void main(void)
 {

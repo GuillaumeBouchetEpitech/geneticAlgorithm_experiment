@@ -16,7 +16,8 @@ namespace /*anonymous*/
 
 /**
  * it's a steeper sigmoid
- * => from [-1, 1] to [0, 1]
+ * => input:  [-1, 1]
+ * => output: [0, 1]
  */
 
 float customSigmoid(float x)
@@ -29,6 +30,9 @@ float customSigmoid(float x)
 NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
 	: _topology(topology)
 {
+	if (!topology.isValid())
+		D_THROW(std::invalid_argument, "invalid neural network topology");
+
 	unsigned int previousLayerSize = _topology.getInput();
 
 	_layerHidden.resize(_topology.getHiddens().size());
@@ -60,6 +64,14 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
 
 void NeuralNetwork::process(const std::vector<float>& input, std::vector<float>& output) const
 {
+	unsigned int requiredInputs = _topology.getInput();
+
+	if (input.size() != requiredInputs)
+		D_THROW(std::invalid_argument,
+				"invalid number of input"
+				<< ", input=" << input.size()
+				<< ", weights=" << requiredInputs);
+
 	output.clear();
 	output.reserve(_layerOutput.size());
 
@@ -87,38 +99,24 @@ void NeuralNetwork::processLayer(const t_layer& layer,
 								 const std::vector<float>& input,
 								 std::vector<float>& output) const
 {
+	output.reserve(layer.size());
+
 	// Cycle over all the neurons and sum their weights against the inputs.
 	for (unsigned int ii = 0; ii < layer.size(); ++ii)
 	{
 		const auto& neuron = layer[ii];
 
-		// if (input.size() != (neuron.weights.size() + (_topology.isUsingBias() ? -1 : 0)))
-		// {
-		// 	D_THROW(std::invalid_argument,
-		// 			"invalid number of weights and input"
-		// 			<< ", input=" << inputSize
-		// 			<< ", weights=" << neuron.weights.size());
-		// }
-
-		// We do the sizeof the weights - 1 so that we can add in the bias to the activation afterwards.
-
-		unsigned int inputSize = input.size();
-		if (_topology.isUsingBias())
-			--inputSize;
-
 		// Sum the weights to the activation value.
 
 		float activation = 0.0f;
-		for (unsigned int jj = 0; jj < inputSize; ++jj)
+		for (unsigned int jj = 0; jj < input.size(); ++jj)
 			activation += input[jj] * neuron.weights[jj];
 
 		// Add the bias, it will act as a threshold value
 
-		const float biasInput = -1.0f;
 		if (_topology.isUsingBias())
-			activation += biasInput * neuron.weights[ inputSize ];
+			activation += 1.0f;
 
-		// output.push_back(activation);
 		output.push_back(customSigmoid(activation));
 	}
 

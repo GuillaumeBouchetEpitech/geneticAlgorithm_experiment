@@ -5,8 +5,6 @@
 
 #include "demo/utilities/ErrorHandler.hpp"
 
-// #include "core/utilities/ErrorHandler.hpp"
-
 //
 
 void    Geometry::initialise(Shader& shader, const t_def& def)

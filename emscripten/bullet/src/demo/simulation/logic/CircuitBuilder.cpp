@@ -32,7 +32,7 @@ void	CircuitBuilder::load(const std::string& filename)
 	//
 	// parse file and extract skeleton
 
-	t_checkpoints	rawCheckpoints;
+	t_knots			rawKnots;
 	glm::vec3		currentColor = { 0.0f, 0.0f, 0.0f };
 
 	std::string textLine;
@@ -49,11 +49,57 @@ void	CircuitBuilder::load(const std::string& filename)
 
 		std::string type;
 		if (!(isstr >> type))
-		{
 			D_THROW(std::runtime_error, "failure to extract the line type");
-		}
 
-		if (type == "CHECKPOINT")
+		if (type == "START_TRANSFORM_POSITION")
+		{
+			auto& value = _startTransform.position;
+			if (!(isstr >> value.x >> value.y >> value.z))
+				D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
+
+			for (int ii = 0; ii < 3; ++ii)
+			{
+				if (glm::isnan(value[ii]))
+					D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
+
+				if (glm::isinf(value[ii]))
+					D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
+			}
+		}
+		else if (type == "START_TRANSFORM_QUATERNION")
+		{
+			auto& value = _startTransform.quaternion;
+			if (!(isstr >> value.x >> value.y >> value.z >> value.w))
+				D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
+
+			for (int ii = 0; ii < 4; ++ii)
+			{
+				if (glm::isnan(value[ii]))
+					D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
+
+				if (glm::isinf(value[ii]))
+					D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
+			}
+		}
+		else if (type == "KNOTS_COLOR")
+		{
+			glm::vec3	color;
+
+			if (!(isstr >> color.x >> color.y >> color.z))
+				D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
+
+			for (int ii = 0; ii < 3; ++ii)
+			{
+				if (glm::isnan(color[ii]))
+					D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
+
+				if (glm::isinf(color[ii]))
+					D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
+			}
+
+			currentColor = color;
+		}
+		else if (type == "KNOTS_DUAL")
 		{
 			glm::vec3	left;
 			glm::vec3	right;
@@ -64,31 +110,13 @@ void	CircuitBuilder::load(const std::string& filename)
 			for (int ii = 0; ii < 3; ++ii)
 			{
 				if (glm::isnan(left[ii]) || glm::isnan(right[ii]))
-					D_THROW(std::runtime_error, "extracted invalid value (NaN), type=" << type);
+					D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
 
 				if (glm::isinf(left[ii]) || glm::isinf(right[ii]))
-					D_THROW(std::runtime_error, "extracted invalid value (inf), type=" << type);
+					D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
 			}
 
-			rawCheckpoints.push_back({ left, right, currentColor });
-		}
-		else if (type == "COLOR")
-		{
-			glm::vec3	color;
-
-			if (!(isstr >> color.x >> color.y >> color.z))
-				D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
-
-			for (int ii = 0; ii < 3; ++ii)
-			{
-				if (glm::isnan(color[ii]))
-					D_THROW(std::runtime_error, "extracted invalid value (NaN), type=" << type);
-
-				if (glm::isinf(color[ii]))
-					D_THROW(std::runtime_error, "extracted invalid value (inf), type=" << type);
-			}
-
-			currentColor = color;
+			rawKnots.push_back({ left, right, currentColor });
 		}
 		else
 		{
@@ -100,20 +128,20 @@ void	CircuitBuilder::load(const std::string& filename)
 	//
 	// concatenate skeleton
 
-	for (unsigned int ii = 0; ii < rawCheckpoints.size(); ++ii)
+	for (unsigned int ii = 0; ii < rawKnots.size(); ++ii)
 	{
-		auto checkpoint = rawCheckpoints[ii];
+		auto knot = rawKnots[ii];
 
 		if (ii > 0)
 		{
-			const auto& prevCheckpoint = _checkpoints[ii - 1];
+			const auto& prevKnot = _knots[ii - 1];
 
-			// concatenate the checkpoint
-			checkpoint.left += prevCheckpoint.left;
-			checkpoint.right += prevCheckpoint.right;
+			// concatenate the knot
+			knot.left += prevKnot.left;
+			knot.right += prevKnot.right;
 		}
 
-		_checkpoints.push_back(checkpoint);
+		_knots.push_back(knot);
 	}
 }
 
@@ -125,24 +153,24 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 	if (!onSkeletonPatch)
 		D_THROW(std::invalid_argument, "no callback provided");
 
-	if (_checkpoints.empty())
+	if (_knots.empty())
 		D_THROW(std::runtime_error, "not initialised");
 
 	t_vertices	vertices;
 	t_colors	colors;
 	t_indices	indices;
 
-	vertices.reserve(_checkpoints.size() * 4);
-	indices.reserve(_checkpoints.size() * 8 + 8);
+	vertices.reserve(_knots.size() * 4);
+	indices.reserve(_knots.size() * 8 + 8);
 
-	for (unsigned int ii = 0; ii < _checkpoints.size(); ++ii)
+	for (unsigned int ii = 0; ii < _knots.size(); ++ii)
 	{
-		const auto& checkpoint = _checkpoints[ii];
+		const auto& knot = _knots[ii];
 
-		vertices.push_back(checkpoint.left);
-		vertices.push_back(checkpoint.right);
-		vertices.push_back({ checkpoint.left.x, checkpoint.left.y, 0.0f });
-		vertices.push_back({ checkpoint.right.x, checkpoint.right.y, 0.0f });
+		vertices.push_back(knot.left);
+		vertices.push_back(knot.right);
+		vertices.push_back({ knot.left.x, knot.left.y, 0.0f });
+		vertices.push_back({ knot.right.x, knot.right.y, 0.0f });
 
 		const int currIndex = ii * 4;
 
@@ -181,10 +209,10 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 	onSkeletonPatch(vertices, indices);
 }
 
-// void	CircuitBuilder::generate(t_callbackNormals2 onNewGroundPatch, t_callbackNormals onNewWallPatch)
-void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNormals onNewWallPatch)
+void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
+								 t_callbackNormals onNewWallPatch)
 {
-	if (_checkpoints.empty())
+	if (_knots.empty())
 		D_THROW(std::runtime_error, "not initialised");
 
 	if (!onNewGroundPatch || !onNewWallPatch)
@@ -194,7 +222,7 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 	//
 	// smooth the circuit
 
-	t_checkpoints smoothedVertices;
+	t_knots smoothedVertices;
 
 	std::vector<float>	left_x;
 	std::vector<float>	left_y;
@@ -206,27 +234,27 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 	std::vector<float>	color_y;
 	std::vector<float>	color_z;
 
-	left_x.reserve(_checkpoints.size());
-	left_y.reserve(_checkpoints.size());
-	left_z.reserve(_checkpoints.size());
-	right_x.reserve(_checkpoints.size());
-	right_y.reserve(_checkpoints.size());
-	right_z.reserve(_checkpoints.size());
-	color_x.reserve(_checkpoints.size());
-	color_y.reserve(_checkpoints.size());
-	color_z.reserve(_checkpoints.size());
+	left_x.reserve(_knots.size());
+	left_y.reserve(_knots.size());
+	left_z.reserve(_knots.size());
+	right_x.reserve(_knots.size());
+	right_y.reserve(_knots.size());
+	right_z.reserve(_knots.size());
+	color_x.reserve(_knots.size());
+	color_y.reserve(_knots.size());
+	color_z.reserve(_knots.size());
 
-	for (const auto& checkpoint : _checkpoints)
+	for (const auto& knot : _knots)
 	{
-		left_x.push_back(checkpoint.left.x);
-		left_y.push_back(checkpoint.left.y);
-		left_z.push_back(checkpoint.left.z);
-		right_x.push_back(checkpoint.right.x);
-		right_y.push_back(checkpoint.right.y);
-		right_z.push_back(checkpoint.right.z);
-		color_x.push_back(checkpoint.color.x);
-		color_y.push_back(checkpoint.color.y);
-		color_z.push_back(checkpoint.color.z);
+		left_x.push_back(knot.left.x);
+		left_y.push_back(knot.left.y);
+		left_z.push_back(knot.left.z);
+		right_x.push_back(knot.right.x);
+		right_y.push_back(knot.right.y);
+		right_z.push_back(knot.right.z);
+		color_x.push_back(knot.color.x);
+		color_y.push_back(knot.color.y);
+		color_z.push_back(knot.color.z);
 	}
 
 	struct t_BSpline3
@@ -252,45 +280,45 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 	splineRight(right_x, right_y, right_z),
 	splineColor(color_x, color_y, color_z);
 
-	CircuitBuilder::t_checkpoint	checkpoint;
+	CircuitBuilder::t_circuitVertex	vertex;
 
 	for (float step = 0.0f; step <= 1.0f; step += 0.001f) // tiny steps
 	{
 
-		splineLeft.calcAt(step, checkpoint.left);
-		splineRight.calcAt(step, checkpoint.right);
+		splineLeft.calcAt(step, vertex.left);
+		splineRight.calcAt(step, vertex.right);
 
 		if (!smoothedVertices.empty())
 		{
-			const auto& latestVertex = smoothedVertices.back();
-			if (glm::length(checkpoint.left - latestVertex.left) < 2.0f ||
-			 	glm::length(checkpoint.right - latestVertex.right) < 2.0f)
+			const auto& lastVertex = smoothedVertices.back();
+			if (glm::length(vertex.left - lastVertex.left) < 2.0f ||
+			 	glm::length(vertex.right - lastVertex.right) < 2.0f)
 				continue;
 		}
 
 		// check for invalid values (it create graphic and physic artifacts)
-		if (glm::length(checkpoint.left) < 0.001f ||
-			glm::length(checkpoint.right) < 0.001f)
+		if (glm::length(vertex.left) < 0.001f ||
+			glm::length(vertex.right) < 0.001f)
 			continue; // TODO: fix it
 
-		splineColor.calcAt(step, checkpoint.color);
+		splineColor.calcAt(step, vertex.color);
 
-		smoothedVertices.push_back(checkpoint);
+		smoothedVertices.push_back(vertex);
 	}
 
 	//
 	//
 	// generate circuit
 
-	const int patchesPerCheckpoint = 6;
+	const int patchesPerKnot = 6;
 
 	t_vertex	prevNormal;
 
-	for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerCheckpoint)
+	for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerKnot)
 	{
 		t_indices	indices;
 
-		struct t_checkpointData
+		struct t_circuitPatchData
 		{
 			t_vertices	vertices;
 			t_normals	normals;
@@ -299,7 +327,7 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 		leftWall,
 		rightWall;
 
-		t_colors	checkpointColors;
+		t_colors	circuitPatchColors;
 
 		//
 		//
@@ -309,7 +337,7 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 
 		for (unsigned int stepIndex = index;
 			 stepIndex < smoothedVertices.size() &&
-			 stepIndex < index + patchesPerCheckpoint;
+			 stepIndex < index + patchesPerKnot;
 			 ++stepIndex)
 		{
 			const int currIndex = indicexIndex++ * 4;
@@ -320,18 +348,19 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 			indices.push_back(3 + currIndex);
 			indices.push_back(2 + currIndex);
 
-			const auto& prevCheckpoint = smoothedVertices[stepIndex - 1];
-			const auto& currCheckpoint = smoothedVertices[stepIndex];
+			const auto& prevKnot = smoothedVertices[stepIndex - 1];
+			const auto& currKnot = smoothedVertices[stepIndex];
 
-			const t_vertex&	prevLeft = prevCheckpoint.left;
-			const t_vertex&	prevRight = prevCheckpoint.right;
-			const t_vertex&	currLeft = currCheckpoint.left;
-			const t_vertex&	currRight = currCheckpoint.right;
+			const t_vertex&	prevLeft = prevKnot.left;
+			const t_vertex&	prevRight = prevKnot.right;
+			const t_vertex&	currLeft = currKnot.left;
+			const t_vertex&	currRight = currKnot.right;
 
-			const glm::vec3&	prevColor = prevCheckpoint.color;
-			const glm::vec3&	currColor = currCheckpoint.color;
+			const glm::vec3&	prevColor = prevKnot.color;
+			const glm::vec3&	currColor = currKnot.color;
 
-		    t_vertex currNormal = glm::normalize(glm::cross(prevLeft - prevRight, currRight - prevRight));
+			// t_vertex currNormal = glm::normalize(glm::cross(prevLeft - prevRight, currRight - prevRight));
+			t_vertex currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
 
 			if (stepIndex == 1) // <= for the first time
 				prevNormal = currNormal;
@@ -348,10 +377,10 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 			ground.vertices.push_back(currRight);
 			ground.vertices.push_back(currLeft);
 
-			checkpointColors.push_back(prevColor);
-			checkpointColors.push_back(prevColor);
-			checkpointColors.push_back(currColor);
-			checkpointColors.push_back(currColor);
+			circuitPatchColors.push_back(prevColor);
+			circuitPatchColors.push_back(prevColor);
+			circuitPatchColors.push_back(currColor);
+			circuitPatchColors.push_back(currColor);
 
 			ground.normals.push_back(prevNormal);
 			ground.normals.push_back(prevNormal);
@@ -399,12 +428,17 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch, t_callbackNorm
 		}
 
 		if (onNewGroundPatch)
-			onNewGroundPatch(ground.vertices, checkpointColors, ground.normals, indices);
+			onNewGroundPatch(ground.vertices, circuitPatchColors, ground.normals, indices);
 
 		if (onNewWallPatch)
 		{
-			onNewWallPatch(leftWall.vertices, checkpointColors, leftWall.normals, indices);
-			onNewWallPatch(rightWall.vertices, checkpointColors, rightWall.normals, indices);
+			onNewWallPatch(leftWall.vertices, circuitPatchColors, leftWall.normals, indices);
+			onNewWallPatch(rightWall.vertices, circuitPatchColors, rightWall.normals, indices);
 		}
 	}
+}
+
+const CircuitBuilder::t_startTransform&	CircuitBuilder::getStartTransform() const
+{
+	return _startTransform;
 }

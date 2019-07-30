@@ -102,17 +102,17 @@ MessageBuffer&	MessageBuffer::operator <<(const std::string& data)
     const char* rawString = data.c_str();
     append(&length, sizeof(length));
 
-    append(rawString, length * sizeof(*rawString));
+    append(rawString, length * sizeof(char));
 
     return *this;
 }
 
 MessageBuffer&	MessageBuffer::operator <<(const glm::vec3& data)
 {
-	return append(&data.x, 3 * sizeof(float));
+	return append(&data.x, sizeof(glm::vec3));
 }
 
 MessageBuffer&	MessageBuffer::operator <<(const glm::mat4& data)
 {
-	return append(glm::value_ptr(data), 16 * sizeof(float));
+	return append(glm::value_ptr(data), sizeof(glm::mat4));
 }

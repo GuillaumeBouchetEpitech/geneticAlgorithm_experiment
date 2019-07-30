@@ -10,7 +10,7 @@ public:
 	Demo(int width, int height);
 	virtual ~Demo();
 
-private:
+protected:
 	virtual void	onEvent(const SDL_Event& event) override;
 	virtual void	onUpdate(long int deltaTime) override;
 	virtual void	onRender(const SDL_Window& screen) override;

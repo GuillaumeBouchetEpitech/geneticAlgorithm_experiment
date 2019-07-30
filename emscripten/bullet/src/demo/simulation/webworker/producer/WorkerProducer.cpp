@@ -10,8 +10,6 @@
 #include "demo/utilities/ErrorHandler.hpp"
 // #include "demo/utilities/TraceLogger.hpp"
 
-#include "demo/constants.hpp"
-
 WorkerProducer::WorkerProducer(const t_def& def)
 {
     _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
@@ -71,9 +69,13 @@ void	WorkerProducer::processMessage(const char* pData, int dataLength)
 
         case messages::server::eSimulationResult:
         {
+            message >> _coreState.delta >> _coreState.genomesAlive;
+
             for (auto& car : _carsData)
             {
-                message >> car.isAlive >> car.fitness >> car.groundIndex;
+                message
+                    >> car.isAlive >> car.life
+                    >> car.fitness >> car.groundIndex;
 
                 if (!car.isAlive)
                     continue;
@@ -127,7 +129,7 @@ void	WorkerProducer::send()
     emscripten_call_worker(_workerHandle, D_WORKER_MAIN, dataPointer, dataSize, callback, (void*)this);
 }
 
-void	WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* pNeuralNetworks)
+void	WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
 {
     _message.clear();
     _message << char(messages::client::eResetAndProcessSimulation);
@@ -136,7 +138,7 @@ void	WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* pNeuralNetwo
 
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
     {
-        pNeuralNetworks[ii].getWeights(weights);
+        neuralNetworks[ii].getWeights(weights);
 
         _message.append(weights.data(), weights.size() * sizeof(float));
     }
@@ -170,6 +172,11 @@ bool	WorkerProducer::isUpdated() const
 const t_carsData&	WorkerProducer::getCarsData() const
 {
     return _carsData;
+}
+
+const AbstactSimulation::t_coreState&   WorkerProducer::getCoreState() const
+{
+    return _coreState;
 }
 
 // const WorkerProducer::t_contacts&	WorkerProducer::getContactsData() const

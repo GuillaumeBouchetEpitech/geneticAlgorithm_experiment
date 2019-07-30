@@ -5,9 +5,6 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
-#include "demo/constants.hpp"
-
-
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
@@ -25,7 +22,17 @@
 
 Data* Data::_instance = nullptr;
 
-Data::Data()
+Data::~Data()
+{
+	delete logic.simulation;
+	delete graphic.shaders.stackRenderer;
+	delete graphic.shaders.instanced;
+	delete graphic.shaders.monoColor;
+	delete graphic.shaders.animatedCircuit;
+	delete graphic.shaders.hudText;
+}
+
+void	Data::initialise()
 {
 	initialiseShaders();
 	initialiseGeometries();
@@ -39,24 +46,11 @@ Data::Data()
 	logic.simulation = new PthreadSimulation();
 
 #endif
-}
 
-Data::~Data()
-{
-	delete logic.simulation;
-	delete graphic.shaders.basic;
-	delete graphic.shaders.instanced;
-	delete graphic.shaders.monoColor;
-	delete graphic.shaders.animatedCircuit;
-	delete graphic.shaders.hudText;
-}
-
-void	Data::initialise()
-{
 	initialiseCircuit();
 	initialiseStates();
 
-	logic.carsTrails.allData.resize(logic.simulation->getTotalCars());
+	logic.carsTrails.allTrailsData.resize(logic.simulation->getTotalCars());
 
 	{
 		std::stringstream sstr;
@@ -69,8 +63,10 @@ void	Data::initialise()
 		else
 		{
 			graphic = reinterpret_cast<const char*>(glVersion);
-			if (graphic.size() > 30)
-				graphic = graphic.substr(0, 30) + "[...]";
+
+			const int messageMaxSize = 30;
+			if (graphic.size() > messageMaxSize)
+				graphic = graphic.substr(0, messageMaxSize) + "[...]";
 		}
 
 		sstr << "Graphic: " << graphic << std::endl;
@@ -113,6 +109,7 @@ void	Data::initialise()
 
 #endif
 
+	graphic.hudText.renderer.initialise();
 }
 
 //

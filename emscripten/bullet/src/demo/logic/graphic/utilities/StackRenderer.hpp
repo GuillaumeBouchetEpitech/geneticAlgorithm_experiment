@@ -10,16 +10,8 @@ struct StackRenderer
 public:
 	struct t_vertex
 	{
-		typedef glm::vec3	t_position;
-		typedef glm::vec3	t_color;
-
-		t_position	position;
-		t_color		color;
-
-		// t_vertex(const t_position& p, const t_color& c)
-		// 	: position(p)
-		// 	, color(c)
-		// {}
+		glm::vec3	position;
+		glm::vec3	color;
 	};
 	typedef std::vector<t_vertex> t_vertices;
 
@@ -34,6 +26,11 @@ public:
 	void	push(const t_vertex& vertex);
 	void	pushLine(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& color);
 	void	pushCross(const glm::vec3& pos, const glm::vec3& color, float halfExtent);
+
+	// 2d
+	void	pushLine(const glm::vec2& posA, const glm::vec2& posB, const glm::vec3& color);
+	void	pushRectangle(const glm::vec2& pos, const glm::vec2& size, const glm::vec3& color);
+	// 2d
 
 	void	flush();
 };

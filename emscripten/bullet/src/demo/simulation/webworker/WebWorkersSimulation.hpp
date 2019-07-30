@@ -46,8 +46,8 @@ private:
 	struct t_callbacks
 	{
 		AbstactSimulation::t_callback onWorkersReady;
-		AbstactSimulation::t_callback onResetAndProcess;
-		AbstactSimulation::t_callback onProcess;
+		AbstactSimulation::t_callback onGenerationReset;
+		AbstactSimulation::t_callback onGenerationStep;
 		AbstactSimulation::t_generationEndCallback onGenerationEnd;
 	}
 	_callbacks;
@@ -68,13 +68,15 @@ private:
 	void	resetAndProcessSimulation();
 
 public:
+    virtual unsigned int        getTotalCores() const override;
+    virtual const AbstactSimulation::t_coreState&  getCoreState(unsigned int index) const override;
 	virtual const t_carData&	getCarResult(unsigned int index) const override;
     virtual unsigned int	    getTotalCars() const override;
 
 public:
 	virtual void	setOnWorkersReadyCallback(AbstactSimulation::t_callback callback) override;
-	virtual void	setOnResetAndProcessCallback(AbstactSimulation::t_callback callback) override;
-	virtual void	setOnProcessCallback(AbstactSimulation::t_callback callback) override;
+	virtual void	setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
+	virtual void	setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
     virtual void	setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:

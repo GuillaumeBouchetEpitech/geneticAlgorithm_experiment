@@ -22,17 +22,18 @@ bool	Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
 
     _size = { surface->w, surface->h };
 
-    // if ((surface->w & (surface->w - 1)) != 0)
-    //     D_THROW(std::runtime_error, "image width not a power of 2, filename=\"" << filename << "\"");
-    // if ((surface->h & (surface->h - 1)) != 0)
-    //     D_THROW(std::runtime_error, "image height not a power of 2, filename=\"" << filename << "\"");
+    if ((surface->w & (surface->w - 1)) != 0)
+        D_THROW(std::runtime_error, "image width not a power of 2, filename=\"" << filename << "\"");
+
+    if ((surface->h & (surface->h - 1)) != 0)
+        D_THROW(std::runtime_error, "image height not a power of 2, filename=\"" << filename << "\"");
 
     glGenTextures(1, &_textureId);
 
     glBindTexture(GL_TEXTURE_2D, _textureId);
 
     int filterValue = (pixelated ? GL_NEAREST : GL_LINEAR);
-    int wrapValue = (repeat ? GL_REPEAT : GL_CLAMP);
+    int wrapValue = (repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterValue);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterValue);

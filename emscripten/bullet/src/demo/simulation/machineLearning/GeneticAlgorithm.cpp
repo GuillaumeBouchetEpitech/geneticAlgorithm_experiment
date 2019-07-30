@@ -5,8 +5,6 @@
 #include "demo/utilities/ErrorHandler.hpp"
 #include "demo/utilities/TraceLogger.hpp"
 
-#include "demo/constants.hpp"
-
 #include <iomanip> // <= std::fixed / setprecision
 #include <ctime> // <= time(NULL)
 #include <algorithm> // <= std::find_if
@@ -63,9 +61,9 @@ bool	GeneticAlgorithm::breedPopulation()
 		D_THROW(std::runtime_error, "not initialised");
 
     t_genomes bestGenomes;
-	getBestGenomes(8, bestGenomes);
+	getBestGenomes(bestGenomes);
 
-	const auto&	latestBestGenome = bestGenomes[0];
+	const auto&	latestBestGenome = bestGenomes.front();
 
 	bool	smarterGeneration = (latestBestGenome.fitness > _bestGenome.fitness);
 	bool	stallingGeneration = (latestBestGenome.fitness == _bestGenome.fitness);
@@ -100,10 +98,15 @@ bool	GeneticAlgorithm::breedPopulation()
 		for (unsigned int jj = ii + 1; jj < bestGenomes.size(); ++jj)
 			parentGenomes.push_back(std::make_pair(ii, jj));
 
+	int maxOffspring = int(_genomes.size() * 0.8f);
 	for (const auto& parentPair : parentGenomes)
 	{
 		// stop here if the offsprings container is already full
 		if (offsprings.size() >= _genomes.size())
+			break;
+
+		// stop here if the max amount of children is reched
+		if (maxOffspring-- <= 0)
 			break;
 
 		const auto&	parentA = bestGenomes[parentPair.first];
@@ -134,7 +137,7 @@ bool	GeneticAlgorithm::breedPopulation()
 	for (int ii = 0; ii < remainingOffsprings; ++ii)
 	{
 		offsprings.push_back(t_genome());
-		auto&	newGenome = offsprings.back();
+		auto& newGenome = offsprings.back();
 
 		newGenome.id = _currentId++;
 
@@ -153,16 +156,12 @@ bool	GeneticAlgorithm::breedPopulation()
 	return smarterGeneration;
 }
 
-void	GeneticAlgorithm::getBestGenomes(unsigned int totalAsked, t_genomes& output) const
+void	GeneticAlgorithm::getBestGenomes(t_genomes& output) const
 {
 	output.clear();
 
 	if (_genomes.empty())
 		return;
-
-	// realistic total outputed genomes
-	if (totalAsked > _genomes.size())
-		totalAsked = _genomes.size();
 
 	typedef std::pair<float, unsigned int>	t_sortPair;
 	std::vector<t_sortPair>	sortedGenomes;
@@ -176,8 +175,8 @@ void	GeneticAlgorithm::getBestGenomes(unsigned int totalAsked, t_genomes& output
         return a.first > b.first;
     });
 
-	output.reserve(totalAsked);
-	for (unsigned int ii = 0; ii < totalAsked; ++ii)
+	output.reserve(_genomes.size());
+	for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
 		output.push_back(_genomes[sortedGenomes[ii].second]);
 }
 

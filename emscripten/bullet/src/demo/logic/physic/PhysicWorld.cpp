@@ -40,22 +40,46 @@ PhysicWorld::PhysicWorld()
 
 PhysicWorld::~PhysicWorld()
 {
-	for (auto& trimesh : _trimeshes)
-		delete trimesh;
+	std::vector<PhysicVehicle*>	oldLiveVehicles;
+	for (auto* vehicle : _liveVehicles)
+		oldLiveVehicles.push_back(vehicle);
+	_liveVehicles.clear();
 
-	for (auto& vehicles : _vehicles)
-		delete vehicles;
+	for (auto* vehicle : oldLiveVehicles)
+	{
+		auto* bbHandle = vehicle->_bullet.carChassis->getBroadphaseHandle();
+		_bullet.broadphase
+					->getOverlappingPairCache()
+					->cleanProxyFromPairs(bbHandle, _bullet.dispatcher);
+
+		_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+		_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+
+		delete vehicle;
+	}
+
+	for (auto* trimesh : _wallsTrimesh)
+	{
+		_bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+		delete trimesh;
+	}
+
+	for (auto* trimesh : _groundsTrimesh)
+	{
+		_bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+		delete trimesh;
+	}
 
 	delete _bullet.dynamicsWorld;
 	delete _bullet.solver;
 	delete _bullet.collisionConfiguration;
-	delete _bullet.dispatcher;
 	delete _bullet.broadphase;
+	delete _bullet.dispatcher;
 }
 
 void	PhysicWorld::step()
 {
-	const int	maxSubSteps = 1; // <= so it's "deterministic"
+	const int	maxSubSteps = 0; // <= so it's "deterministic"
 	const float	fixedTimeStep = 1.0f / 60.0f;
 
 	_bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
@@ -63,113 +87,160 @@ void	PhysicWorld::step()
 
 //
 
-void	PhysicWorld::removeAll()
-{
-	for (auto& trimesh : _trimeshes)
-		_bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
-
-	for (auto& vehicle : _liveVehicles)
-	{
-		_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
-		_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
-	}
-}
-
-void	PhysicWorld::reinsertAll()
-{
-	_bullet.broadphase->resetPool(_bullet.dispatcher);
-
-	_bullet.solver->reset();
-
-	for (auto& vehicle : _vehicles)
-	{
-		vehicle->fullBrake();
-
-		vehicle->_bullet.vehicle->resetSuspension();
-		vehicle->_bullet.vehicle->updateVehicle(0);
-
-		vehicle->_bullet.carChassis->forceActivationState(ACTIVE_TAG);
-		vehicle->_bullet.carChassis->setDeactivationTime(0);
-	}
-
-	for (auto& trimesh : _trimeshes)
-		_bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, trimesh->getGroup(), trimesh->getMask());
-
-	for (auto& vehicle : _vehicles)
-	{
-		_bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, D_GROUP_VEHICLE, D_MASK_VEHICLE);
-		_bullet.dynamicsWorld->addVehicle(vehicle->_bullet.vehicle);
-	}
-}
-
-
-// void	PhysicWorld::setDebugDrawer(btIDebugDraw* pDebugDraw)
+// void	PhysicWorld::removeAll()
 // {
-// 	_bullet.dynamicsWorld->setDebugDrawer(pDebugDraw);
+// 	for (auto& trimesh : _trimeshes)
+// 		_bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+
+// 	for (auto& vehicle : _liveVehicles)
+// 	// {
+// 	// 	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+// 	// 	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+// 	// }
+// 		removeVehicle(*vehicle);
 // }
 
-// void	PhysicWorld::debugDrawWorld()
+// void	PhysicWorld::reinsertAll()
 // {
-// 	_bullet.dynamicsWorld->debugDrawWorld();
+// 	_bullet.broadphase->resetPool(_bullet.dispatcher);
+
+// 	_bullet.solver->reset();
+
+// 	for (auto* trimesh : _trimeshes)
+// 		_bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, trimesh->getGroup(), trimesh->getMask());
+
+// 	for (auto* vehicle : _vehicles)
+// 		addVehicle(*vehicle);
 // }
+
+void	PhysicWorld::reset()
+{
+	// for (auto& vehicle : _liveVehicles)
+	// 	removeVehicle(vehicle);
+	// while (!_liveVehicles.empty())
+	// 	removeVehicle(*_liveVehicles.begin());
+
+	std::vector<PhysicVehicle*>	oldLiveVehicles;
+	for (auto* vehicle : _liveVehicles)
+		oldLiveVehicles.push_back(vehicle);
+	_liveVehicles.clear();
+
+	// for (auto* vehicle : oldLiveVehicles)
+	// {
+	// 	auto* bbHandle = vehicle->_bullet.carChassis->getBroadphaseHandle();
+	// 	_bullet.broadphase
+	// 				->getOverlappingPairCache()
+	// 				->cleanProxyFromPairs(bbHandle, _bullet.dispatcher);
+
+	// 	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+	// 	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+	// }
+
+
+	// _bullet.broadphase->resetPool(_bullet.dispatcher);
+	// _bullet.solver->reset();
+
+	// const int	maxSubSteps = 0; // <= so it's "deterministic"
+	// const float	fixedTimeStep = 0.0f;
+	// _bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
+
+	for (auto* vehicle : _vehicles)
+		addVehicle(vehicle);
+}
 
 //
 
 void	PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indices, int id)
 {
-	PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id, D_GROUP_GROUND, D_MASK_GROUND);
+	// PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id, D_GROUP_GROUND, D_MASK_GROUND);
+	PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id);
 	btRigidBody* body = trimesh->_bullet.body;
 
-	_bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
+	// _bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
+	_bullet.dynamicsWorld->addRigidBody(body, D_GROUP_GROUND, D_MASK_GROUND);
 
 	body->setUserPointer((void*)trimesh);
 
-	_trimeshes.push_back(trimesh);
+	_groundsTrimesh.push_back(trimesh);
 }
 
 void	PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indices)
 {
-	PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1, D_GROUP_WALL, D_MASK_WALL);
+	// PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1, D_GROUP_WALL, D_MASK_WALL);
+	PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1);
 	btRigidBody* body = trimesh->_bullet.body;
 
-	_bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
+	// _bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
+	_bullet.dynamicsWorld->addRigidBody(body, D_GROUP_WALL, D_MASK_WALL);
+
 
 	body->setUserPointer((void*)trimesh);
 
-	_trimeshes.push_back(trimesh);
+	_wallsTrimesh.push_back(trimesh);
 }
 
 //
 
 PhysicVehicle*	PhysicWorld::createVehicle()
 {
-	PhysicVehicle* vehicle = new PhysicVehicle(_bullet.dynamicsWorld);
+	PhysicVehicle* vehicle = new PhysicVehicle(*_bullet.dynamicsWorld);
+
+	// vehicle->reset();
+
+	// _bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, D_GROUP_VEHICLE, D_MASK_VEHICLE);
+	// _bullet.dynamicsWorld->addVehicle(vehicle->_bullet.vehicle);
+
+	// _liveVehicles.insert(vehicle);
+
+	addVehicle(vehicle);
 
 	_vehicles.push_back(vehicle);
 
 	return vehicle;
 }
 
-void	PhysicWorld::addVehicle(PhysicVehicle& vehicle)
+void	PhysicWorld::destroyVehicle(PhysicVehicle* vehicle)
 {
-	auto it = std::find(_liveVehicles.begin(), _liveVehicles.end(), &vehicle);
-	if (it != _liveVehicles.end())
-		return;
+	auto it = std::find(_vehicles.begin(), _vehicles.end(), vehicle);
+	if (it != _vehicles.end())
+		return; // no found
 
-	_bullet.dynamicsWorld->addRigidBody(vehicle._bullet.carChassis, D_GROUP_VEHICLE, D_MASK_VEHICLE);
-	_bullet.dynamicsWorld->addVehicle(vehicle._bullet.vehicle);
-	_liveVehicles.push_back(&vehicle);
+	removeVehicle(vehicle);
+
+	_bullet.broadphase->getOverlappingPairCache()->cleanProxyFromPairs(vehicle->_bullet.carChassis->getBroadphaseHandle(), _bullet.dispatcher);
+
+	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+
+	_vehicles.erase(it);
+
+	delete vehicle;
 }
 
-void	PhysicWorld::removeVehicle(PhysicVehicle& vehicle)
+void	PhysicWorld::addVehicle(PhysicVehicle* vehicle)
 {
-	auto it = std::find(_liveVehicles.begin(), _liveVehicles.end(), &vehicle);
-	if (it == _liveVehicles.end())
+	if (vehicle == nullptr || _liveVehicles.count(vehicle) > 0)
 		return;
 
-	_bullet.dynamicsWorld->removeRigidBody(vehicle._bullet.carChassis);
-	_bullet.dynamicsWorld->removeVehicle(vehicle._bullet.vehicle);
-	_liveVehicles.erase(it);
+	vehicle->reset();
+
+	_bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, D_GROUP_VEHICLE, D_MASK_VEHICLE);
+	_bullet.dynamicsWorld->addVehicle(vehicle->_bullet.vehicle);
+
+	_liveVehicles.insert(vehicle);
+}
+
+void	PhysicWorld::removeVehicle(PhysicVehicle* vehicle)
+{
+	if (vehicle == nullptr || _liveVehicles.count(vehicle) == 0)
+		return;
+
+	_bullet.broadphase->getOverlappingPairCache()->cleanProxyFromPairs(vehicle->_bullet.carChassis->getBroadphaseHandle(), _bullet.dispatcher);
+
+	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+
+	_liveVehicles.erase(vehicle);
 }
 
 const std::vector<PhysicVehicle*>&	PhysicWorld::getVehicles() const

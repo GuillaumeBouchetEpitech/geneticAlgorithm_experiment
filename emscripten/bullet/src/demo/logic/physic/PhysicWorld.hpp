@@ -4,6 +4,7 @@
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
+#include <set>
 #include <functional>
 
 class	btBroadphaseInterface;
@@ -60,12 +61,12 @@ public:
 public:
 	void	step();
 
-public:
-	void	removeAll();
-	void	reinsertAll();
+// public:
+// 	void	removeAll();
+// 	void	reinsertAll();
 
-	// void	setDebugDrawer(btIDebugDraw* pDebugDraw);
-	// void	debugDrawWorld();
+public:
+	void	reset();
 
 	// inline void	setOnContact(const t_onContact& onContact)
 	// {
@@ -77,7 +78,8 @@ public:
 	// trimesh
 
 private:
-	std::vector<PhysicTrimesh*>	_trimeshes;
+	std::vector<PhysicTrimesh*>	_groundsTrimesh;
+	std::vector<PhysicTrimesh*>	_wallsTrimesh;
 public:
 	void	createGround(const t_vertices& vertices, const t_indices& indices, int id);
 	void	createWall(const t_vertices& vertices, const t_indices& indices);
@@ -88,11 +90,12 @@ public:
 
 private:
 	std::vector<PhysicVehicle*>	_vehicles;
-	std::vector<PhysicVehicle*>	_liveVehicles;
+	std::set<PhysicVehicle*>	_liveVehicles;
 public:
 	PhysicVehicle*	createVehicle();
-	void			addVehicle(PhysicVehicle& vehicle);
-	void			removeVehicle(PhysicVehicle& vehicle);
+	void			destroyVehicle(PhysicVehicle* vehicle);
+	void			addVehicle(PhysicVehicle* vehicle);
+	void			removeVehicle(PhysicVehicle* vehicle);
 
 	const std::vector<PhysicVehicle*>&	getVehicles() const;
 

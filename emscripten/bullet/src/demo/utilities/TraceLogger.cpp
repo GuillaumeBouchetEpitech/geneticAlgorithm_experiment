@@ -30,4 +30,5 @@ std::string	TraceLogger::getTime()
 void	TraceLogger::log(const std::string& msg)
 {
 	std::cout << msg << std::endl;
+	// std::cerr << msg << std::endl;
 }

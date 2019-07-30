@@ -21,6 +21,15 @@ private:
 	friend PhysicWorld;
 
 private:
+	enum e_Wheels
+	{
+		eFrontLeft = 0,
+		eFrontRight,
+		eBackLeft,
+		eBackRight,
+		eCount,
+	};
+
 	struct bullet
 	{
 		btCollisionShape*			chassisShape = nullptr;
@@ -34,13 +43,16 @@ private:
 	_bullet;
 
 private:
-	PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld);
+	PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld);
 	~PhysicVehicle();
 
 public:
 	void	applyEngineForce(float engineForce);
 	void	setSteeringValue(float vehicleSteering);
-	void	fullBrake();
+	void	reset();
+
+	// void	disableContactResponse();
+	// void	enableContactResponse();
 
 public:
 	void	setPosition(const glm::vec3& position);

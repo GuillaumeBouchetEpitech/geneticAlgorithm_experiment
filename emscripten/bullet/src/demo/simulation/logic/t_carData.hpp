@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "demo/constants.hpp"
-
 #include "thirdparty/GLMath.hpp"
 
 #include <array>
@@ -11,6 +9,7 @@
 struct t_carData
 {
 	bool		isAlive;
+	float		life;
 	float		fitness;
 	int			groundIndex;
 

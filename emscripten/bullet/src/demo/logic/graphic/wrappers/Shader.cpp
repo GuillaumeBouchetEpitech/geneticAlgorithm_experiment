@@ -24,10 +24,6 @@ namespace /* anonymous */
 
 		source.clear();
 
-// #ifdef __EMSCRIPTEN__
-		// source += "precision mediump float;\n\n";
-// #endif
-
 		source += sstr.str();
 
 		return true;
@@ -177,29 +173,6 @@ Shader::Shader(const t_def& def)
 
 		_uniformsMap[uniform] = location;
 	}
-
-	for (const auto& uniformBlock : def.uniformBlocks)
-	{
-		const auto& name = uniformBlock.name;
-		if (_uniformBlocksMap.count(name) > 0)
-	    	D_THROW(std::runtime_error, "duplicate uniform block"
-					<< ", input=" << name
-	    			<< ", sources: vertex=" << def.filenames.vertex
-	    			<< ", fragment=" << def.filenames.fragment);
-
-		GLint location = glGetUniformBlockIndex(_programId, name.c_str());
-
-		if (location == -1)
-	    	D_THROW(std::runtime_error, "fail to get an uniform block location"
-					<< ", input=" << name
-	    			<< ", sources: vertex=" << def.filenames.vertex
-	    			<< ", fragment=" << def.filenames.fragment);
-
-		glUniformBlockBinding(_programId, location, uniformBlock.layout);
-
-		_uniformBlocksMap[name] = {location, uniformBlock.layout};
-	}
-
 }
 
 Shader::~Shader()
@@ -245,16 +218,6 @@ GLint	Shader::getUniform(const std::string& name) const
 	return it->second;
 }
 
-const Shader::t_uniformBlockData&	Shader::getUniformBlock(const std::string& name) const
-{
-	auto it = _uniformBlocksMap.find(name);
-
-	if (it == _uniformBlocksMap.end())
-    	D_THROW(std::invalid_argument, "unknown uniform block, input=" << name);
-
-	return it->second;
-}
-
 bool	Shader::hasAttribute(const std::string& name) const
 {
 	return (_attributesMap.find(name) != _attributesMap.end());
@@ -263,9 +226,4 @@ bool	Shader::hasAttribute(const std::string& name) const
 bool	Shader::hasUniform(const std::string& name) const
 {
 	return (_uniformsMap.find(name) != _uniformsMap.end());
-}
-
-bool	Shader::hasUniformBlock(const std::string& name) const
-{
-	return (_uniformBlocksMap.find(name) != _uniformBlocksMap.end());
 }

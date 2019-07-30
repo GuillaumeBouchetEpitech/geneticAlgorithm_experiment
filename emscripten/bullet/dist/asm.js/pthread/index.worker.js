@@ -105,8 +105,11 @@ this.onmessage = function(e) {
       selfThreadId = e.data.selfThreadId;
       parentThreadId = e.data.parentThreadId;
       // Establish the stack frame for this thread in global scope
-      STACK_BASE = STACKTOP = e.data.stackBase;
-      STACK_MAX = STACK_BASE + e.data.stackSize;
+      var max = e.data.stackBase + e.data.stackSize;
+      var top = e.data.stackBase;
+      STACK_BASE = e.data.stackBase;
+      STACKTOP = top;
+      STACK_MAX = max;
       // Call inside asm.js/wasm module to set up the stack frame for this pthread in asm.js/wasm module scope
       Module['establishStackSpace'](e.data.stackBase, e.data.stackBase + e.data.stackSize);
 

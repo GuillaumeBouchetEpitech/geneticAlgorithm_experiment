@@ -13,11 +13,19 @@ function onGlobalPageLoad() {
     };
     window.addEventListener("error", onBasicGlobalPageError);
 
-    const canvas = document.getElementById("canvas");
-    canvas.width = 800;
-    canvas.height = 600;
-    canvas.style.width = "800px"; // <= fix Apple retina display issue(s)
-    canvas.style.height = "600px"; // <= fix Apple retina display issue(s)
+    // const renderArea = document.getElementById("renderArea");
+    // renderArea.style.width = "800px";
+    // renderArea.style.height = "600px";
+
+    const errorText = document.getElementById("errorText");
+    // errorText.style.width = "800px";
+    // errorText.style.height = "600px";
+
+    const canvas = document.getElementById("emscriptenCanvas");
+    // canvas.width = 800;
+    // canvas.height = 600;
+    // canvas.style.width = "800px"; // <= fix Apple retina display issue(s)
+    // canvas.style.height = "600px"; // <= fix Apple retina display issue(s)
 
     function onContextCreationError(event) {
 
@@ -31,27 +39,28 @@ function onGlobalPageLoad() {
     function onWebGl2ContextLost(event) {
 
         event.preventDefault();
+
         logger.error("[JS] WebGL context lost. You will need to reload the page.");
     }
-
     canvas.addEventListener("webglcontextlost", onWebGl2ContextLost, false);
 
-    // this forbid right click contextual menu
-    canvas.addEventListener("contextmenu", function onContextMenu(event) {
+    // this prevent the contextual menu to appear on a right click
+    function onContextMenu(event) {
         event.preventDefault();
-    });
+    }
+    canvas.addEventListener("contextmenu", onContextMenu, false);
 
-    let webgl2Ctx;
+    let webglCtx;
 
     try {
 
         if (!window.Worker)
             throw new Error(`missing WebWorker feature`);
 
-        if (!window.WebGL2RenderingContext)
-            throw new Error("missing WebGL2 feature (unsuported)");
+        if (!window.WebGLRenderingContext)
+            throw new Error("missing WebGL feature (unsuported)");
 
-        const contextAttribs = {
+        const renderingContextAttribs = {
             // Boolean that indicates if the canvas contains an alpha buffer.
             alpha: true,
 
@@ -80,87 +89,102 @@ function onGlobalPageLoad() {
             stencil: false,
         };
 
-        webgl2Ctx = (
-            canvas.getContext("webgl2", contextAttribs) ||
-            canvas.getContext("experimental-webgl2", contextAttribs)
+        webglCtx = (
+            canvas.getContext("webgl", renderingContextAttribs) ||
+            canvas.getContext("experimental-webgl", renderingContextAttribs)
         );
 
-        if (!webgl2Ctx)
-            throw new Error("missing WebGL2 feature (initialisation)");
+        if (!webglCtx)
+            throw new Error("missing WebGL feature (initialisation)");
+
+        //
+
+        const webglExtensions = webglCtx.getSupportedExtensions();
+        // for (let ii = 0; ii < webglExtensions.length; ++ii)
+        //     logger.error(`[JS] ${ii}: "${webglExtensions[ii]}"`);
+
+        const mandatoryExtensions = [
+            "instanced_arrays",
+            "vertex_array_object"
+        ];
+
+        for (let ii = 0; ii < mandatoryExtensions.length; ++ii) {
+
+            const extensionName = mandatoryExtensions[ii];
+
+            let found = false;
+            for (let jj = 0; jj < webglExtensions.length; ++jj)
+                if (webglExtensions[jj].indexOf(extensionName)) {
+                    found = true;
+                    break;
+                }
+
+            if (!found)
+                throw new Error(`missing WebGL extension: ${extensionName}`);
+        }
 
     } catch (err) {
 
         logger.error(`[JS] dependencies check failed: message="${err.message}"`);
+
+        errorText.innerHTML = `
+            this browser isn't compatible<br>
+            error message: ${err.message}
+        `;
         return;
     }
 
     let scriptFolder = "asm.js";
 
-    if (window.SharedArrayBuffer !== undefined)
-    {
+    if (window.SharedArrayBuffer !== undefined) {
+    // if (false) {
+
         logger.log("[JS] multithreading: supported");
 
         scriptFolder += "/pthread";
-    }
-    else
-    {
+
+    } else {
+
         logger.log("[JS] multithreading: unsupported (fallback to webworker)");
 
         scriptFolder += "/webworker";
     }
 
     const Module = {
-        preRun: [],
-        postRun: [],
         locateFile: function(url) { return `${scriptFolder}/${url}`; },
         print: function(text) { logger.log(`[C++] ${text}`); },
         printErr: function(text) { logger.error(`[C++] ${text}`); },
-        canvas: canvas,
-        setStatus: function (text) {
+        setStatus: function(text) {
             if (text)
                 logger.log(`[JS] ${text}`);
         },
-        preinitializedWebGLContext: webgl2Ctx,
-        // dependencies: 0,
-        // totalDependencies: 0,
-        // monitorRunDependencies: function(left) {
+        canvas: canvas,
+        preinitializedWebGLContext: webglCtx,
 
-        //     if (left > 0) {
+        // noInitialRun: true,
+        noExitRuntime: true,
+        // onRuntimeInitialized: function() {
+        //     logger.log("main");
 
-        //         if (this.totalDependencies < left) {
-        //             this.totalDependencies = left;
-        //             Module.setStatus(`Adding... (${this.totalDependencies})`);
-        //         } else {
+        // //     const create_demo = Module.cwrap("create_demo", null, [])
+        // //     const update_demo = Module.cwrap("update_demo", null, ["number"])
 
-        //             const lastLog = logger.peekLast();
-        //             if (lastLog.includes("Preparing..."))
-        //                 logger.popLast();
+        // //     create_demo();
 
-        //             this.dependencies = left - 1;
+        // //     let prevTime = Date.now();
 
-        //             const progress = this.totalDependencies - this.dependencies;
-        //             Module.setStatus(`Preparing... (${progress}/${this.totalDependencies})`);
-        //         }
-        //     }
-        //     else if (this.dependencies > 0)
-        //     {
-        //         Module.setStatus("All downloads complete.");
-        //     }
-        // }
+        // //     loop();
 
+        // //     function loop() {
 
+        // //         window.requestAnimationFrame(loop);
 
-        // noImageDecoding: true
+        // //         const currTime = Date.now();
+        // //         const elapsedTime = Math.max(currTime - prevTime, 0);
+        // //         prevTime = currTime;
 
-        // getPreloadedPackage: function(remotePackageName, remotePackageSize) {
-
-        //     // asm.js/pthread/index.data
-
-        //     logger.log(`[JS] remotePackageName=${remotePackageName}`);
-        //     logger.log(`[JS] remotePackageSize=${remotePackageSize}`);
-
-        //     // console.log('Runtime asking for remote package ' + remotePackageName + ', expected size ' + remotePackageSize + 'bytes.');
-        //     return Module.downloadedData;
+        // //         update_demo(elapsedTime);
+        // //     }
         // }
     };
 
@@ -175,10 +199,19 @@ function onGlobalPageLoad() {
 
         logger.error(`[JS] exception, event=${event.message}`);
 
-        Module.setStatus = (text) => {
+        Module.setStatus = function(text) {
             if (text)
                 logger.error(`[JS, post-exception] ${text}`);
         };
+
+        errorText.innerHTML = `
+            Error<br>
+            error message: ${event.message}
+        `;
+        canvas.style.display = "none";
+        errorText.style.display = "inline";
+
+        window.removeEventListener("error", onAdvancedGlobalPageError);
     };
     window.removeEventListener("error", onBasicGlobalPageError);
     window.addEventListener("error", onAdvancedGlobalPageError);
@@ -189,23 +222,12 @@ function onGlobalPageLoad() {
 
     Module.setStatus("Downloading...");
 
-    // downloadData(`./${scriptFolder}/index.data`)
-    //     .then((data) => {
-
-    //         Module.downloadedData = data;
-
-    //         logger.log("[JS] asm.js data: download successful");
-
-    //         loadScript(`./${scriptFolder}/index.js`)
-    //             .then(() => { logger.log("[JS] asm.js script: loading successful"); })
-    //             .catch((err) => logger.error(`[JS] asm.js script: loading failed, err=${err.message}`));
-    //     })
-    //     .catch((err) => logger.error(`[JS] asm.js data: download failed, err=${err.message}`));
-
     loadScript(`./${scriptFolder}/index.js`)
-        .then(() => { logger.log("[JS] asm.js script: loading successful"); })
+        .then(() => {
+            logger.log("[JS] asm.js script: loading successful");
+            canvas.style.display = "inline";
+        })
         .catch((err) => logger.error(`[JS] asm.js script: loading failed, err=${err.message}`));
-
 };
 
 window.addEventListener("load", onGlobalPageLoad);
@@ -215,20 +237,7 @@ function loadScript(src) {
         const scriptElement = document.createElement("script");
         scriptElement.src = src;
         scriptElement.onload = resolve;
-        // scriptElement.onload = function() { resolve(xhr.response); };
         scriptElement.onerror = reject;
         document.head.appendChild(scriptElement);
     });
 }
-
-// function downloadData(src) {
-//     return new Promise(function(resolve, reject) {
-//         const xhr = new XMLHttpRequest();
-//         xhr.open("GET", src, true);
-//         xhr.responseType = "arraybuffer";
-//         // xhr.onload = resolve;
-//         xhr.onload = function() { resolve(xhr.response); };
-//         xhr.onerror = reject;
-//         xhr.send(null);
-//     });
-// }

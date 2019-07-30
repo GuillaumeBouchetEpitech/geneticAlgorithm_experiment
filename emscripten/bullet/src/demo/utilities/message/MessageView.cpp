@@ -110,7 +110,7 @@ MessageView&	MessageView::operator >>(std::string& data)
 	auto buffer = std::make_unique<char[]>(length + 1);
     char* rawBuffer = buffer.get();
 	std::memset(rawBuffer, 0, length + 1);
-	read(rawBuffer, length * sizeof(*rawBuffer));
+	read(rawBuffer, length * sizeof(char));
 
 	data = rawBuffer;
 
@@ -119,10 +119,10 @@ MessageView&	MessageView::operator >>(std::string& data)
 
 MessageView&	MessageView::operator >>(glm::vec3& data)
 {
-	return read(&data.x, 3 * sizeof(float));
+	return read(&data.x, sizeof(glm::vec3));
 }
 
 MessageView&	MessageView::operator >>(glm::mat4& data)
 {
-	return read(glm::value_ptr(data), 16 * sizeof(float));
+	return read(glm::value_ptr(data), sizeof(glm::mat4));
 }

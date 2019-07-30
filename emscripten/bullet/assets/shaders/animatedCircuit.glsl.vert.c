@@ -1,28 +1,17 @@
-#version 300 es
+
 precision mediump float;
 
-layout(std140) uniform u_Matrices
-{
-	mat4 u_composedMatrix;
-};
+uniform mat4 u_composedMatrix;
+uniform float u_alpha;
+uniform float u_lowerLimit;
+uniform float u_upperLimit;
 
-layout(std140) uniform u_Blending
-{
-	uniform float u_alpha;
-};
+attribute vec3 a_position;
+attribute vec3 a_color;
+attribute vec3 a_normal;
+attribute float a_index;
 
-layout(std140) uniform u_Animation
-{
-	uniform float u_lowerLimit;
-	uniform float u_upperLimit;
-};
-
-in vec3 a_position;
-in vec3 a_color;
-in vec3 a_normal;
-in float a_index;
-
-out vec4 v_color;
+varying vec4 v_color;
 
 void main(void)
 {

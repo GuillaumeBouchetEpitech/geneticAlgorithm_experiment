@@ -7,7 +7,8 @@ public:
 	static void renderSimple();
 	static void renderAll();
 
-	static void setUniforms();
+private:
+	static void updateMatrices();
 
 	static void clear();
 

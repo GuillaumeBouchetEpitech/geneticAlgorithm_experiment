@@ -4,4 +4,4 @@ obj
 old
 bin/*
 
-src/thirdparty/**/
+src/thirdparty/

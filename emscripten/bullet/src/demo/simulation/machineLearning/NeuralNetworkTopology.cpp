@@ -28,18 +28,6 @@ void	NeuralNetworkTopology::init(unsigned int input, const t_hiddenLayers& hidde
 
 	//
 
-	if (_useBias)
-	{
- 		// bias neuron on the input
- 		++_input;
-
- 		// bias neuron on the hidden
-		for (unsigned int& num_neuron : _hiddens)
-			++num_neuron;
-	}
-
-	//
-
 	unsigned int prev_layer_num_neuron = _input;
 	for (unsigned int num_neuron : _hiddens)
 	{

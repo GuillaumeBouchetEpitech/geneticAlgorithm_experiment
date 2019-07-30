@@ -49,7 +49,7 @@ public: // methods
 	bool	breedPopulation();
 
 private: // methods
-	void	getBestGenomes(unsigned int totalAsked, t_genomes& output) const;
+	void	getBestGenomes(t_genomes& output) const;
 	void	crossBreed(const t_genome& g1, const t_genome& g2, t_genome& offspring1, t_genome& offspring2);
 	void	mutate(t_genome& genome) const;
 

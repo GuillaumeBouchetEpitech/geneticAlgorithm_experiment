@@ -4,8 +4,6 @@
 #include "demo/logic/physic/PhysicTrimesh.hpp"
 #include "demo/logic/physic/PhysicVehicle.hpp"
 
-#include "demo/constants.hpp"
-
 #include <cmath> // <= M_PI
 #include <iostream>
 
@@ -16,12 +14,16 @@ namespace /*anonymous*/
     int     k_healthMaxValue = 200;
 };
 
-Car::Car(PhysicWorld& physicWorld)
+Car::Car(PhysicWorld& physicWorld,
+         const glm::vec3& position,
+         const glm::vec4& quaternion)
     : _physicWorld(physicWorld)
 {
     _vehicle = _physicWorld.createVehicle();
 
-    reset();
+    // _physicWorld.addVehicle(*_vehicle);
+
+    reset(position, quaternion);
 }
 
 void	Car::update(const NeuralNetwork& neuralNetwork)
@@ -33,9 +35,12 @@ void	Car::update(const NeuralNetwork& neuralNetwork)
     this->collideEyeSensors();
     this->collideGroundSensor();
 
-    // check again as the collideGroundSensor() method can change that
-    if (!_isAlive)
+    if (_health <= 0)
+    {
+        _isAlive = false;
+        _physicWorld.removeVehicle(_vehicle);
         return;
+    }
 
     // TODO: that might be slow, to profile and make as a static attribut?
     std::vector<float>	input;
@@ -67,53 +72,59 @@ void	Car::update(const NeuralNetwork& neuralNetwork)
 
 void	Car::updateSensors()
 {
-    const float	eyeMaxRange = 50.0f;
-    const float	eyeHeight = 1.0f;
-    const float	eyeElevation = 6.0f;
-    const float	eyeWidth = float(M_PI) / 8.0f;
-
-    const float	groundMaxRange = 10.0f; // <= ground sensor
-    const float	groundHeight = 1.0f;
-
-    const std::array<float, 3> eyeElevations = {
-        -eyeElevation,
-        0.0f,
-        +eyeElevation,
-    };
-
-    const std::array<float, 5> eyeAngles = {
-        -eyeWidth * 2.0f,
-        -eyeWidth,
-        0.0f,
-        +eyeWidth,
-        +eyeWidth * 2.0f
-    };
-
     glm::mat4 transform;
     _vehicle->getOpenGLMatrix(transform);
 
-    glm::vec4 newNearValue = transform * glm::vec4(0, 0, eyeHeight, 1);
+    { // eye sensor
 
-    int sensorIndex = 0;
+        const float	eyeMaxRange = 50.0f;
+        const float	eyeHeight = 1.0f;
+        const float	eyeElevation = 6.0f;
+        const float	eyeWidth = float(M_PI) / 8.0f;
 
-    for (const auto& eyeElevation : eyeElevations)
-        for (const auto& eyeAngle : eyeAngles)
-        {
-            auto& eyeSensor = _eyeSensors[sensorIndex++];
+        const std::array<float, 3> eyeElevations = {
+            -eyeElevation,
+            0.0f,
+            +eyeElevation,
+        };
 
-            glm::vec4 newFarValue = {
-                eyeMaxRange * sinf(eyeAngle),
-                eyeMaxRange * cosf(eyeAngle),
-                eyeHeight + eyeElevation,
-                1.0f
-            };
+        const std::array<float, 5> eyeAngles = {
+            -eyeWidth * 2.0f,
+            -eyeWidth,
+            0.0f,
+            +eyeWidth,
+            +eyeWidth * 2.0f
+        };
 
-            eyeSensor.near = newNearValue;
-            eyeSensor.far = transform * newFarValue;
-        }
+        glm::vec4 newNearValue = transform * glm::vec4(0, 0, eyeHeight, 1);
 
-    _groundSensor.near = transform * glm::vec4(0, 0, groundHeight, 1);
-    _groundSensor.far = transform * glm::vec4(0, 0, groundHeight - groundMaxRange, 1);
+        int sensorIndex = 0;
+
+        for (const auto& eyeElevation : eyeElevations)
+            for (const auto& eyeAngle : eyeAngles)
+            {
+                auto& eyeSensor = _eyeSensors[sensorIndex++];
+
+                glm::vec4 newFarValue = {
+                    eyeMaxRange * sinf(eyeAngle),
+                    eyeMaxRange * cosf(eyeAngle),
+                    eyeHeight + eyeElevation,
+                    1.0f
+                };
+
+                eyeSensor.near = newNearValue;
+                eyeSensor.far = transform * newFarValue;
+            }
+    }
+
+    { // ground sensor
+
+        const float	groundMaxRange = 10.0f; // <= ground sensor
+        const float	groundHeight = 1.0f;
+
+        _groundSensor.near = transform * glm::vec4(0, 0, groundHeight, 1);
+        _groundSensor.far = transform * glm::vec4(0, 0, groundHeight - groundMaxRange, 1);
+    }
 }
 
 
@@ -150,62 +161,52 @@ void	Car::collideGroundSensor()
 
     bool hasHitGround = _physicWorld.raycast(params);
 
-    int	hasHitGroundIndex = -1;
-
     if (hasHitGround)
     {
         _groundSensor.far = params.result.impactPoint;
-        hasHitGroundIndex = params.result.impactIndex;
+        int	hasHitGroundIndex = params.result.impactIndex;
+
+        if (_groundIndex + 1 == hasHitGroundIndex)
+        {
+            _groundIndex = hasHitGroundIndex;
+
+            // restore health to full
+            _health = k_healthMaxValue;
+
+            // reward the genome
+            ++_fitness;
+        }
+        // else if (_groundIndex + 1 > hasHitGroundIndex)
+        // {
+        //     _vehicle->disableContactResponse();
+        // }
     }
 
     // reduce the health over time
-    --_health;
-
-    if (!hasHitGround)
-    {
-        // reduce the health again
-        // => the car does not touch the ground
-        // => faster discard of a most probably dying genome
-        --_health;
-    }
-    else if (_groundIndex + 1 == hasHitGroundIndex)
-    {
-        _groundIndex = hasHitGroundIndex;
-
-        // restore health to full
-        _health = k_healthMaxValue;
-
-        // reward the genome
-        ++_fitness;
-    }
-
-    if (_health <= 0)
-    {
-        _isAlive = false;
-        _physicWorld.removeVehicle(*_vehicle);
-    }
+    // => reduce more if the car does not touch the ground
+    // => faster discard of a most probably dying genome
+    _health -= hasHitGround ? 1 : 2;
 }
 
-void	Car::reset() const
+void	Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
 {
-    Car* self = const_cast<Car*>(this);
+    _isAlive = true;
+    _fitness = 0;
+    _totalUpdateNumber = 0;
+    _health = k_healthMaxValue;
+    _groundIndex = 0;
 
-    self->_isAlive = true;
-    self->_fitness = 0;
-    self->_totalUpdateNumber = 0;
-    self->_health = k_healthMaxValue;
-    self->_groundIndex = 0;
+    _output.steer = 0.0f;
+    _output.speed = 0.0f;
 
-    self->_output.steer = 0.0f;
-    self->_output.speed = 0.0f;
+    _vehicle->reset();
+    _vehicle->setPosition({ position.x, position.y, position.z });
+    _vehicle->setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
 
-    _vehicle->fullBrake();
-    _vehicle->setPosition({ 0.0f, 0.0f, 1.4f });
-    _vehicle->setRotation({ 0.0f, 0.0f, -1.0f, 1.0f });
+    updateSensors();
 
-    self->updateSensors();
-
-    _physicWorld.addVehicle(*_vehicle);
+    // _physicWorld.removeVehicle(*_vehicle);
+    _physicWorld.addVehicle(_vehicle); // ensure vehicle presence
 }
 
 const Car::t_sensors&	Car::getEyeSensors() const
@@ -241,4 +242,9 @@ const Car::t_neuralNetworkOutput&	Car::getNeuralNetworkOutput() const
 const PhysicVehicle&	Car::getVehicle() const
 {
     return *_vehicle;
+}
+
+float	Car::getLife() const
+{
+    return float(_health) / k_healthMaxValue;
 }

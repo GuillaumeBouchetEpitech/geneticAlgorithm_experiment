@@ -30,6 +30,12 @@ public:
         t_def() = default;
     };
 
+    struct t_coreState
+    {
+        unsigned int delta = 0;
+        unsigned int genomesAlive = 0;
+    };
+
 public:
     virtual ~AbstactSimulation() {};
 
@@ -41,8 +47,10 @@ public:
     virtual void	update() = 0;
 
 public:
-    virtual const t_carData&	getCarResult(unsigned int index) const = 0;
-    virtual unsigned int	    getTotalCars() const = 0;
+    virtual unsigned int        getTotalCores() const = 0;
+    virtual const t_coreState&  getCoreState(unsigned int index) const = 0;
+    virtual const t_carData&    getCarResult(unsigned int index) const = 0;
+    virtual unsigned int        getTotalCars() const = 0;
 
 public:
 
@@ -52,8 +60,8 @@ public:
 
 #endif
 
-    virtual void	setOnResetAndProcessCallback(t_callback callback) = 0;
-    virtual void	setOnProcessCallback(t_callback callback) = 0;
+    virtual void	setOnGenerationResetCallback(t_callback callback) = 0;
+    virtual void	setOnGenerationStepCallback(t_callback callback) = 0;
     virtual void	setOnGenerationEndCallback(t_generationEndCallback callback) = 0;
 
 public:

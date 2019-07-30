@@ -147,6 +147,9 @@ void	State_Running::update(int deltaTime)
 	{
 		int	simualtionStep = (logic.isAccelerated ? 50 : 1);
 
+		for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
+			logic.cores.statesData[ii].delta = 0;
+
 		for (int ii = 0; ii < simualtionStep; ++ii)
 			simulation.update();
 	}
@@ -226,7 +229,7 @@ void	State_Running::update(int deltaTime)
 
 	} // camera
 
-	{ // animation
+	{ // circuit animation
 
 		auto&	leaderCar = logic.leaderCar;
 		auto&	animation = logic.circuitAnimation;
@@ -298,15 +301,23 @@ void	State_Running::update(int deltaTime)
 		animatedCircuit.ground.setPrimitiveCount(indexValue);
 		animatedCircuit.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
 
-	} // animation
+	} // circuit animation
 
 	{ // update instancing matrices
 
 		unsigned int totalCars = simulation.getTotalCars();
 
-		std::vector<glm::mat4> chassisMatrices, wheelsMatrices;
+		struct t_attributes
+		{
+			glm::mat4	tranform;
+			glm::vec4	color;
+		};
+
+		std::vector<t_attributes> chassisMatrices, wheelsMatrices;
 		chassisMatrices.reserve(totalCars);
 		wheelsMatrices.reserve(totalCars * 4);
+
+		glm::vec3	chassisHeight(0.0f, 0.0f, 1.0f);
 
 		for (unsigned int ii = 0; ii < totalCars; ++ii)
 		{
@@ -315,22 +326,22 @@ void	State_Running::update(int deltaTime)
 			if (!carData.isAlive)
 				continue;
 
-			glm::vec3	chassisHeight(0.0f, 0.0f, 1.0f);
+			// const float colorMax = 0.85f;
+			const float colorMax = 1.0f;
+			// float revLife = (1.0f - carData.life) * colorMax;
+			float revLife = 0.0f;
+			glm::vec4	chassisColor(colorMax, revLife, revLife, 1.0f);
+			glm::vec4	wheelsColor(colorMax, colorMax, revLife, 1.0f);
+
 			glm::mat4	carTransform = glm::translate(carData.transform, chassisHeight);
 
-			chassisMatrices.push_back(carTransform);
+			chassisMatrices.push_back({ carTransform, chassisColor });
 
 			for (const auto& wheelTransform : carData.wheelsTransform)
-				wheelsMatrices.push_back(wheelTransform);
+				wheelsMatrices.push_back({ wheelTransform, wheelsColor });
 		}
 
 		auto&	instanced = graphic.geometries.instanced;
-		// auto&	instanced2 = graphic.geometries.instanced2;
-
-		// instanced.chassis.updateMatrix(chassisMatrices);
-		// // instanced2.chassis.updateMatrix(chassisMatrices);
-		// instanced.wheels.updateMatrix(wheelsMatrices);
-		// // instanced2.wheels.updateMatrix(wheelsMatrices);
 
 		instanced.chassis.updateBuffer(1, chassisMatrices);
 		instanced.wheels.updateBuffer(1, wheelsMatrices);

@@ -1,31 +1,34 @@
 
-# target_mode=native_pthread
-# target_mode=web_asmjs_webworker
-target_mode=web_asmjs_pthread
+# build_target=native_pthread
+build_target=web_asmjs_webworker
+# build_target=web_asmjs_pthread
+
+build_mode=release
+# build_mode=debug
 
 #
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
-$(info target_mode is valid, value=$(target_mode))
+$(info build_target is valid, value=$(build_target))
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
-$(info target_mode is valid, value=$(target_mode))
+$(info build_target is valid, value=$(build_target))
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
-$(info target_mode is valid, value=$(target_mode))
+$(info build_target is valid, value=$(build_target))
 
 else
 
-$(error unsupported value for "target_mode", value=$(target_mode))
+$(error unsupported value for "build_target", value=$(build_target))
 
 endif
 
 #
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 	DIR_TARGET=	./bin
 	DIR_LIB=	./lib/native
@@ -35,7 +38,7 @@ ifeq ($(target_mode),native_pthread)
 	NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_collision.a
 	NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_dynamics.a
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 	DIR_TARGET=	./dist/asm.js/pthread
 	DIR_LIB=	./lib/web
@@ -45,7 +48,7 @@ else ifeq ($(target_mode),web_asmjs_pthread)
 	NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_collision.bc
 	NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_dynamics.bc
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 	DIR_TARGET=	./dist/asm.js/webworker
 	DIR_LIB=	./lib/web
@@ -70,17 +73,17 @@ DIR_BULLET=		$(DIR_THIRDPARTY)/bullet3/src
 
 
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 DIR_OBJ=			./obj/native
 OBJDIR_NATIVE=		$(DIR_OBJ)
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 DIR_OBJ=			./obj/web
 OBJDIR_WEB_PTHREAD=	$(DIR_OBJ)/pthread
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 DIR_OBJ=			./obj/web
 OBJDIR_WEB_MAIN=	$(DIR_OBJ)/main
@@ -97,7 +100,7 @@ OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
 
 #### SRC
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 # common src
 SRC_NATIVE=			$(wildcard \
@@ -112,6 +115,7 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/utilities/threading/*.cpp \
 						$(DIR_SRC)/demo/logic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
+						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
 						$(DIR_SRC)/demo/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
@@ -119,7 +123,7 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 # common src
 SRC_WEB_PTHREAD=	$(wildcard \
@@ -134,6 +138,7 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/utilities/threading/*.cpp \
 						$(DIR_SRC)/demo/logic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
+						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
 						$(DIR_SRC)/demo/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
@@ -141,35 +146,36 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 SRC_WEB_MAIN=	$(wildcard \
-					$(DIR_SRC)/*.cpp \
-					$(DIR_SRC)/demo/*.cpp \
-					$(DIR_SRC)/demo/states/*.cpp \
-					$(DIR_SRC)/demo/utilities/*.cpp \
-					$(DIR_SRC)/demo/utilities/sdl/*.cpp \
-					$(DIR_SRC)/demo/utilities/math/*.cpp \
-					$(DIR_SRC)/demo/utilities/message/*.cpp \
-					$(DIR_SRC)/demo/utilities/string/*.cpp \
-					$(DIR_SRC)/demo/logic/*.cpp \
-					$(DIR_SRC)/demo/logic/graphic/*.cpp \
-					$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-					$(DIR_SRC)/demo/simulation/*.cpp \
-					$(DIR_SRC)/demo/simulation/logic/*.cpp \
-					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
-					$(DIR_SRC)/demo/simulation/webworker/*.cpp \
-					$(DIR_SRC)/demo/simulation/webworker/producer/*.cpp)
+						$(DIR_SRC)/*.cpp \
+						$(DIR_SRC)/demo/*.cpp \
+						$(DIR_SRC)/demo/states/*.cpp \
+						$(DIR_SRC)/demo/utilities/*.cpp \
+						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
+						$(DIR_SRC)/demo/utilities/math/*.cpp \
+						$(DIR_SRC)/demo/utilities/message/*.cpp \
+						$(DIR_SRC)/demo/utilities/string/*.cpp \
+						$(DIR_SRC)/demo/logic/*.cpp \
+						$(DIR_SRC)/demo/logic/graphic/*.cpp \
+						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
+						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+						$(DIR_SRC)/demo/simulation/*.cpp \
+						$(DIR_SRC)/demo/simulation/logic/*.cpp \
+						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
+						$(DIR_SRC)/demo/simulation/webworker/*.cpp \
+						$(DIR_SRC)/demo/simulation/webworker/producer/*.cpp)
 
 SRC_WEB_WORKER=	$(wildcard \
-					$(DIR_SRC)/demo/utilities/*.cpp \
-					$(DIR_SRC)/demo/utilities/math/*.cpp \
-					$(DIR_SRC)/demo/utilities/message/*.cpp \
-					$(DIR_SRC)/demo/utilities/string/*.cpp \
-					$(DIR_SRC)/demo/logic/physic/*.cpp \
-					$(DIR_SRC)/demo/simulation/logic/*.cpp \
-					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
-					$(DIR_SRC)/demo/simulation/webworker/consumer/*.cpp)
+						$(DIR_SRC)/demo/utilities/*.cpp \
+						$(DIR_SRC)/demo/utilities/math/*.cpp \
+						$(DIR_SRC)/demo/utilities/message/*.cpp \
+						$(DIR_SRC)/demo/utilities/string/*.cpp \
+						$(DIR_SRC)/demo/logic/physic/*.cpp \
+						$(DIR_SRC)/demo/simulation/logic/*.cpp \
+						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
+						$(DIR_SRC)/demo/simulation/webworker/consumer/*.cpp)
 
 endif
 
@@ -191,19 +197,19 @@ SRC_BULLET_DYNAMICS=	$(wildcard \
 
 #
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 OBJ_NATIVE=		$(patsubst %.cpp, \
 					$(OBJDIR_NATIVE)/%.o, \
 					$(SRC_NATIVE))
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 OBJ_WEB_PTHREAD=	$(patsubst %.cpp, \
 						$(OBJDIR_WEB_PTHREAD)/%.o, \
 						$(SRC_WEB_PTHREAD))
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 OBJ_WEB_MAIN=	$(patsubst %.cpp, \
 					$(OBJDIR_WEB_MAIN)/%.o, \
@@ -238,23 +244,31 @@ OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, \
 #######
 
 
-OPTIMISATION_FLAG=	-O3
-# OPTIMISATION_FLAG=	-g3
+ifeq ($(build_mode),release)
 
-ifeq ($(target_mode),native_pthread)
+	BUILD_FLAG=		-O3
+
+else
+
+	BUILD_FLAG=		-g3
+
+endif
+
+
+ifeq ($(build_target),native_pthread)
 
 	CXX=g++
 	AR=ar
 
-	CXXFLAGS_NATIVE=	$(OPTIMISATION_FLAG) \
-						-std=c++14 \
+	CXXFLAGS_NATIVE=	$(BUILD_FLAG) \
+						-std=c++17 \
 						-Wall -W -Wextra -Wunused \
 						-I$(DIR_SRC) \
 						-I$(DIR_BULLET) \
 						\
 						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
-	LDFLAGS_NATIVE=		$(OPTIMISATION_FLAG) \
+	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
 						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
@@ -265,22 +279,31 @@ ifeq ($(target_mode),native_pthread)
 						$(NAME_BULLET_COLLISION) \
 						$(NAME_BULLET_LINEARMATH)
 
-	CXXFLAGS_BULLET=	$(OPTIMISATION_FLAG) \
-						-std=c++14 \
+	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
+						-std=c++17 \
 						-I$(DIR_BULLET)
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 	CXX=em++
 	AR=emar
 
-	COMMON_FLAGS=	$(OPTIMISATION_FLAG) \
+	# COMMON_FLAGS=	$(BUILD_FLAG) \
+	# 				-s USE_SDL=2 \
+	# 				-s USE_SDL_IMAGE=2 \
+	# 				-s SDL2_IMAGE_FORMATS='["png"]' \
+	# 				-s FULL_ES3=1 \
+	# 				-s USE_WEBGL2=1 \
+	# 				-s GL_PREINITIALIZED_CONTEXT=1
+
+	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
 					-s USE_SDL_IMAGE=2 \
 					-s SDL2_IMAGE_FORMATS='["png"]' \
-					-s FULL_ES3=1 \
-					-s USE_WEBGL2=1 \
 					-s GL_PREINITIALIZED_CONTEXT=1
+
+	# COMMON_FLAGS+=	-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
+	# 				-s "EXPORTED_FUNCTIONS=['_create_demo','_update_demo']"
 
 	### those flags are left unused on purpose
 	### the "SharedArrayBuffer" feature is disabled everywhere for secutiry reasons (since Jan 2018)
@@ -290,7 +313,7 @@ else ifeq ($(target_mode),web_asmjs_pthread)
 					-s PTHREAD_HINT_NUM_CORES=4
 
 	CXXFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
-							-std=c++14 \
+							-std=c++17 \
 							-Wall -W -Wextra -Wunused \
 							-I$(DIR_SRC) \
 							-I$(DIR_BULLET) \
@@ -302,7 +325,7 @@ else ifeq ($(target_mode),web_asmjs_pthread)
 							$(NAME_BULLET_DYNAMICS) \
 							$(NAME_BULLET_COLLISION) \
 							$(NAME_BULLET_LINEARMATH)
-
+							
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
@@ -314,8 +337,8 @@ else ifeq ($(target_mode),web_asmjs_pthread)
 	# => This works
 	LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
 
-	# disable the internal emscripten version (is this still useful?)
-	LDFLAGS_WEB_PTHREAD+=	-s USE_BULLET=0
+	# # disable the internal emscripten version (is this still useful?)
+	# LDFLAGS_WEB_PTHREAD+=	-s USE_BULLET=0
 
 	# no wasm, only asm.js for now
 	LDFLAGS_WEB_PTHREAD+=	-s WASM=0
@@ -327,16 +350,28 @@ else ifeq ($(target_mode),web_asmjs_pthread)
 	# LDFLAGS_WEB_PTHREAD+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
 	# 						-s ELIMINATE_DUPLICATE_FUNCTIONS=1
 
-	CXXFLAGS_BULLET=	$(OPTIMISATION_FLAG) \
-						-std=c++14 \
+	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
+						-std=c++17 \
 						-I$(DIR_BULLET)
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+# ifeq ($(build_mode),debug)
+
+# 	LDFLAGS_WEB_PTHREAD+=	-s DEMANGLE_SUPPORT=1
+	
+# 	#  \
+# 	# 						-s GL_ASSERTIONS=1 \
+# 	# 						-s GL_DEBUG=1
+
+# 							# -s DISABLE_EXCEPTION_CATCHING=2 \
+
+# endif
+
+else ifeq ($(build_target),web_asmjs_webworker)
 
 	CXX=em++
 	AR=emar
 
-	COMMON_LDFLAGS=		$(OPTIMISATION_FLAG)
+	COMMON_LDFLAGS=		$(BUILD_FLAG)
 
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
@@ -356,14 +391,14 @@ else ifeq ($(target_mode),web_asmjs_webworker)
 	# Link Time Optimisation (LTO)
 	COMMON_LDFLAGS+=	--llvm-lto 1
 
-	# disable the internal emscripten version (is this still useful?)
-	COMMON_LDFLAGS+=	-s USE_BULLET=0
+	# # disable the internal emscripten version (is this still useful?)
+	# COMMON_LDFLAGS+=	-s USE_BULLET=0
 
 	# no wasm, only asm.js for now
 	COMMON_LDFLAGS+=	-s WASM=0
 
-	CXXFLAGS_COMMON=	$(OPTIMISATION_FLAG) \
-						-std=c++14 \
+	CXXFLAGS_COMMON=	$(BUILD_FLAG) \
+						-std=c++17 \
 						-Wall -W -Wextra -Wunused \
 						-I$(DIR_SRC) \
 						\
@@ -371,19 +406,27 @@ else ifeq ($(target_mode),web_asmjs_webworker)
 						-DD_WORKER_SCRIPT_URL='"asm.js/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
+	# FLAGS_WEB_MAIN=		-s USE_SDL=2 \
+	# 					-s USE_SDL_IMAGE=2 \
+	# 					-s SDL2_IMAGE_FORMATS='["png"]' \
+	# 					-s FULL_ES3=1 \
+	# 					-s USE_WEBGL2=1 \
+	# 					-s GL_PREINITIALIZED_CONTEXT=1
+
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
-						-s FULL_ES3=1 \
-						-s USE_WEBGL2=1 \
 						-s GL_PREINITIALIZED_CONTEXT=1
+
+	# FLAGS_WEB_MAIN+=	-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
+	# 					-s "EXPORTED_FUNCTIONS=['_create_demo','_update_demo']"
 
 	FLAGS_WEB_WORKER=	-s BUILD_AS_WORKER=1 \
 						\
 						$(NAME_BULLET_DYNAMICS) \
 						$(NAME_BULLET_COLLISION) \
 						$(NAME_BULLET_LINEARMATH)
-
+						
 	CXXFLAGS_WEB_MAIN=	$(CXXFLAGS_COMMON) \
 						$(FLAGS_WEB_MAIN)
 
@@ -399,6 +442,20 @@ else ifeq ($(target_mode),web_asmjs_webworker)
 	LDFLAGS_WEB_WORKER=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_WORKER)
 
+ifeq ($(build_mode),debug)
+
+	LDFLAGS_WEB_MAIN+=		-s DEMANGLE_SUPPORT=1 \
+							-s GL_ASSERTIONS=1 \
+							-s GL_DEBUG=1
+
+							# -s DISABLE_EXCEPTION_CATCHING=2 \
+
+	LDFLAGS_WEB_WORKER+=	-s DEMANGLE_SUPPORT=1
+	
+							# -s DISABLE_EXCEPTION_CATCHING=2
+
+endif
+
 endif
 
 
@@ -410,15 +467,15 @@ RM=			rm -rf
 #
 ## RULE(S)
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 all:	native_pthread
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 all:	web_pthread
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 all:	web_main web_worker
 
@@ -428,19 +485,19 @@ ensurefolders:
 				@mkdir -p $(DIR_TARGET)
 				@mkdir -p $(DIR_LIB)
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 native_pthread:	ensurefolders $(OBJ_NATIVE)
 				@mkdir -p `dirname $(NAME_NATIVE)`	
 				$(CXX) $(CXXFLAGS_NATIVE) $(OBJ_NATIVE) -o $(NAME_NATIVE) $(LDFLAGS_NATIVE)
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 web_pthread:	ensurefolders $(OBJ_WEB_PTHREAD)
 				@mkdir -p `dirname $(NAME_WEB_PTHREAD)`	
 				$(CXX) $(CXXFLAGS_WEB_PTHREAD) $(OBJ_WEB_PTHREAD) -o $(NAME_WEB_PTHREAD) $(LDFLAGS_WEB_PTHREAD)
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 web_main:		ensurefolders $(OBJ_WEB_MAIN)
 				@mkdir -p `dirname $(NAME_WEB_MAIN)`	
@@ -469,19 +526,19 @@ bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
 # => ensure the "obj" folder(s)
 # => compile in a ".o" file
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 $(OBJDIR_NATIVE)/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	$(CXX) $(CXXFLAGS_NATIVE) $< -c -o $@
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 $(OBJDIR_WEB_PTHREAD)/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	$(CXX) $(CXXFLAGS_WEB_PTHREAD) $< -c -o $@
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
 $(OBJDIR_WEB_MAIN)/%.o: %.cpp
 	@mkdir -p `dirname $@`
@@ -507,7 +564,7 @@ $(OBJDIR_BULLET_DYNAMICS)/%.o: %.cpp
 
 #
 
-ifeq ($(target_mode),native_pthread)
+ifeq ($(build_target),native_pthread)
 
 clean:
 		$(RM) $(OBJDIR_NATIVE)
@@ -515,7 +572,7 @@ clean:
 fclean:	clean
 		$(RM) $(NAME_NATIVE)
 
-else ifeq ($(target_mode),web_asmjs_pthread)
+else ifeq ($(build_target),web_asmjs_pthread)
 
 clean:
 		$(RM) $(OBJDIR_WEB_PTHREAD)
@@ -523,19 +580,15 @@ clean:
 fclean:	clean
 		$(RM) $(NAME_WEB_PTHREAD)
 
-else ifeq ($(target_mode),web_asmjs_webworker)
+else ifeq ($(build_target),web_asmjs_webworker)
 
-clean_web_main:
-					$(RM) $(OBJDIR_WEB_MAIN)
-clean_web_worker:
-					$(RM) $(OBJDIR_WEB_WORKER)
-clean:				clean_web_main clean_web_worker
+clean:
+		$(RM) $(OBJDIR_WEB_MAIN)
+		$(RM) $(OBJDIR_WEB_WORKER)
 
-fclean_web_main:	clean_web_main
-					$(RM) $(NAME_WEB_MAIN)
-fclean_web_worker:	clean_web_worker
-					$(RM) $(NAME_WEB_WORKER)
-fclean:				fclean_web_main fclean_web_worker
+fclean:	clean
+		$(RM) $(NAME_WEB_MAIN)
+		$(RM) $(NAME_WEB_WORKER)
 
 endif
 
@@ -554,11 +607,7 @@ re:			fclean all
 			main \
 			worker \
 			clean \
-			clean_web_main \
-			clean_web_worker \
 			fclean \
-			fclean_web_main \
-			fclean_web_worker \
 			re \
 			bullet \
 			bullet_linearmath \

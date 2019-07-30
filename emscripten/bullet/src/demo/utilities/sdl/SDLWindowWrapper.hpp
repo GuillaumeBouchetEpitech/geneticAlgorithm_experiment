@@ -31,10 +31,10 @@ public:
 	void	run();
 	void	stop();
 
-private:
+public:
 	void	process(unsigned int deltaTime);
 
-private:
+protected:
 	virtual void	onEvent(const SDL_Event& event) = 0;
 	virtual void	onUpdate(long int deltaTime) = 0;
 	virtual void	onRender(const SDL_Window& screen) = 0;

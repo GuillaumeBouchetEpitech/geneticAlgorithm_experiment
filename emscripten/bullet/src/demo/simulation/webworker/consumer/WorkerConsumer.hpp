@@ -12,6 +12,7 @@
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 
 #include "demo/simulation/logic/Car.hpp"
+#include "demo/simulation/logic/CircuitBuilder.hpp"
 
 #include "demo/simulation/webworker/common.hpp"
 
@@ -32,6 +33,8 @@ private:
 
 	NeuralNetworkTopology		_neuralNetworkTopology;
 	std::vector<NeuralNetwork>	_neuralNetworks;
+
+    CircuitBuilder::t_startTransform    _startTransform;
 
 	// std::vector<std::pair<glm::vec3, glm::vec3>>	m_contacts;
 

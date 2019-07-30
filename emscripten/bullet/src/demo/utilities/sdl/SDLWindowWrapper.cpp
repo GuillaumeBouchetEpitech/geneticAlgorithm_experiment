@@ -31,7 +31,7 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
 
             EmscriptenWebGLContextAttributes attr;
             emscripten_webgl_init_context_attributes(&attr);
-            attr.majorVersion = 2;
+            attr.majorVersion = 1;
             attr.minorVersion = 0;
 
             // NOTE: it returns the WebGLContext if any provided
@@ -67,7 +67,7 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
     IMG_Init(IMG_INIT_PNG); 
 
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -159,6 +159,8 @@ void	SDLWindowWrapper::run()
 #if defined __EMSCRIPTEN__
 
     emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 0, true);
+    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 60, true);
+    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 30, true);
 
 #else
 
@@ -167,7 +169,6 @@ void	SDLWindowWrapper::run()
         const unsigned int currentTime = SDL_GetTicks(); // in millisecond
         const unsigned int delta = currentTime - _startTime;
 
-        // this->onUpdate(delta);
         process(delta);
 
         _startTime = currentTime;
@@ -184,14 +185,13 @@ void	SDLWindowWrapper::stop()
 {
     if (!_running)
         return;
+    _running = false;
 
 #if defined __EMSCRIPTEN__
 
     emscripten_cancel_main_loop();
 
 #endif
-
-    _running = false;
 }
 
 //
@@ -233,9 +233,9 @@ void	SDLWindowWrapper::process(unsigned int deltaTime)
                         if (width == 0 || height == 0)
                             SDL_GetWindowSize(_window, &width, &height);
 
-                        if (width == 0)
+                        if (width <= 0)
                             width = 1;
-                        if (height == 0)
+                        if (height <= 0)
                             height = 1;
 
                         onResize(width, height);

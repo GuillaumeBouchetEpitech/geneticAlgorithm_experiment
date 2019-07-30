@@ -3,7 +3,9 @@
 
 #include "thirdparty/BulletPhysics.hpp"
 
-PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
+#include <array>
+
+PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld)
 {
 	//
 	//
@@ -13,7 +15,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 	btVector3 wheelAxleCS(1.0f, 0.0f, 0.0f); // rotation axis: +X
 	float wheelRadius = 0.5f;
 	float wheelWidth = 0.2f;
-	float wheelSide = 0.3f * wheelWidth;
+	float wheelSide = wheelWidth * 0.3f;
 
 	// The maximum length of the suspension (metres)
 	float	suspensionRestLength = 0.3f;
@@ -58,15 +60,14 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 	float height = 0.5f; // <= Z
 	btVector3 chassisHalfExtents(width, front, height);
 	_bullet.chassisShape = new btBoxShape(chassisHalfExtents);
-	_bullet.compound = new btCompoundShape();
 
 	btTransform localTrans;
 	localTrans.setIdentity();
 	localTrans.setOrigin(btVector3(0.0f, 0.0f, 0.9f)); // <= elevate chassis
+	_bullet.compound = new btCompoundShape();
 	_bullet.compound->addChildShape(localTrans, _bullet.chassisShape);
 
-
-	btScalar	mass = 5.0f;
+	btScalar mass = 5.0f;
 	btVector3 localInertia(0.0f, 0.0f, 0.0f);
 	_bullet.compound->calculateLocalInertia(mass, localInertia);
 
@@ -74,7 +75,8 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 	tr.setIdentity();
 	tr.setOrigin(btVector3(0.0f, 0.0f, 10.0f));
 
-	_bullet.motionState = new btDefaultMotionState(tr);
+	// _bullet.motionState = new btDefaultMotionState(tr);
+	_bullet.motionState = nullptr;
 	btRigidBody::btRigidBodyConstructionInfo cInfo(mass, _bullet.motionState, _bullet.compound, localInertia);
 	_bullet.carChassis = new btRigidBody(cInfo);
 
@@ -88,7 +90,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 	// VEHICLE
 
 	btRaycastVehicle::btVehicleTuning	tuning;
-	_bullet.vehicleRayCaster = new btDefaultVehicleRaycaster(dynamicsWorld);
+	_bullet.vehicleRayCaster = new btDefaultVehicleRaycaster(&dynamicsWorld);
 
 	_bullet.vehicle = new btRaycastVehicle(tuning, _bullet.carChassis, _bullet.vehicleRayCaster);
 
@@ -108,12 +110,12 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 	int forwardIndex = 1; // <= Y
 	_bullet.vehicle->setCoordinateSystem(rightIndex, upIndex, forwardIndex);
 
-	struct
+	struct t_wheel
 	{
 		btVector3	connectionPoint;
 		bool		isFrontWheel;
-	}
-	wheels[] = {
+	};
+	std::array<t_wheel, e_Wheels::eCount>	wheels{{
 		// front right
 		{ { chassisHalfExtents[0] - wheelSide,
 			chassisHalfExtents[1] - wheelRadius,
@@ -130,28 +132,25 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld* dynamicsWorld)
 		{ { -chassisHalfExtents[0] + wheelSide,
 			-chassisHalfExtents[1] + wheelRadius,
 			connectionHeight }, false }
-	};
+	}};
 
-	for (int ii = 0; ii < 4; ++ii)
+	for (auto& wheel : wheels)
 	{
-		auto connectionPoint = wheels[ii].connectionPoint;
+		auto connectionPoint = wheel.connectionPoint;
 
-		_bullet.vehicle->addWheel(
-			connectionPoint, wheelDirectionCS0, wheelAxleCS,
-			suspensionRestLength, wheelRadius, tuning,
-			wheels[ii].isFrontWheel);
-	}
+		btWheelInfo& wheelInfo = _bullet.vehicle->addWheel(
+											connectionPoint, wheelDirectionCS0,
+											wheelAxleCS, suspensionRestLength,
+											wheelRadius, tuning,
+											wheel.isFrontWheel
+										);
 
-	for (int ii = 0; ii < _bullet.vehicle->getNumWheels(); ++ii)
-	{
-		btWheelInfo&	wheel = _bullet.vehicle->getWheelInfo(ii);
-
-		wheel.m_suspensionStiffness = suspensionStiffness;
-		wheel.m_maxSuspensionTravelCm = maxSuspensionTravelCm;
-		wheel.m_wheelsDampingRelaxation = wheelsDampingRelaxation;
-		wheel.m_wheelsDampingCompression = wheelsDampingCompression;
-		wheel.m_frictionSlip = wheelFriction;
-		wheel.m_rollInfluence = rollInfluence;
+		wheelInfo.m_suspensionStiffness = suspensionStiffness;
+		wheelInfo.m_maxSuspensionTravelCm = maxSuspensionTravelCm;
+		wheelInfo.m_wheelsDampingRelaxation = wheelsDampingRelaxation;
+		wheelInfo.m_wheelsDampingCompression = wheelsDampingCompression;
+		wheelInfo.m_frictionSlip = wheelFriction;
+		wheelInfo.m_rollInfluence = rollInfluence;
 	}
 }
 
@@ -162,6 +161,7 @@ PhysicVehicle::~PhysicVehicle()
 
 	delete _bullet.carChassis;
 	delete _bullet.motionState;
+
 	delete _bullet.compound;
 	delete _bullet.chassisShape;
 }
@@ -171,38 +171,48 @@ PhysicVehicle::~PhysicVehicle()
 void	PhysicVehicle::applyEngineForce(float engineForce)
 {
 	// rear wheels
-	const int wheelIndex1 = 2;
-	const int wheelIndex2 = 3;
-
-	_bullet.vehicle->applyEngineForce(engineForce, wheelIndex1);
-	_bullet.vehicle->applyEngineForce(engineForce, wheelIndex2);
+	_bullet.vehicle->applyEngineForce(engineForce, eBackLeft);
+	_bullet.vehicle->applyEngineForce(engineForce, eBackRight);
 }
 
 void	PhysicVehicle::setSteeringValue(float vehicleSteering)
 {
 	// front wheels
-	const int wheelIndex1 = 0;
-	const int wheelIndex2 = 1;
-
-	_bullet.vehicle->setSteeringValue(vehicleSteering, wheelIndex1);
-	_bullet.vehicle->setSteeringValue(vehicleSteering, wheelIndex2);
+	_bullet.vehicle->setSteeringValue(vehicleSteering, eFrontLeft);
+	_bullet.vehicle->setSteeringValue(vehicleSteering, eFrontRight);
 }
 
-void	PhysicVehicle::fullBrake()
+void	PhysicVehicle::reset()
 {
 	_bullet.carChassis->clearForces();
-	btVector3 zeroVector(0, 0, 0);
-	_bullet.carChassis->setLinearVelocity(zeroVector);
-	_bullet.carChassis->setAngularVelocity(zeroVector);
+	_bullet.carChassis->setLinearVelocity(btVector3(0, 0, 0));
+	_bullet.carChassis->setAngularVelocity(btVector3(0, 0, 0));
+	_bullet.carChassis->forceActivationState(ACTIVE_TAG);
+	_bullet.carChassis->setDeactivationTime(0);
 
-	for (int ii = 0; ii < 4; ++ii)
-		_bullet.vehicle->setBrake(100, ii);
+	for (int ii = 0; ii < e_Wheels::eCount; ++ii)
+		_bullet.vehicle->setBrake(1000, ii);
 
+	_bullet.vehicle->resetSuspension();
 	_bullet.vehicle->updateVehicle(0);
 
-	for (int ii = 0; ii < 4; ++ii)
+	for (int ii = 0; ii < e_Wheels::eCount; ++ii)
 		_bullet.vehicle->setBrake(0, ii);
+
+	// enableContactResponse();
 }
+
+// void	PhysicVehicle::disableContactResponse()
+// {
+// 	int newFlags = _bullet.carChassis->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE;
+// 	_bullet.carChassis->setCollisionFlags(newFlags);
+// }
+
+// void	PhysicVehicle::enableContactResponse()
+// {
+// 	int newFlags = _bullet.carChassis->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+// 	_bullet.carChassis->setCollisionFlags(newFlags);
+// }
 
 void	PhysicVehicle::setPosition(const glm::vec3& position)
 {
@@ -213,7 +223,7 @@ void	PhysicVehicle::setPosition(const glm::vec3& position)
 	initialTransform.setOrigin(pos);
 
 	_bullet.carChassis->setWorldTransform(initialTransform);
-	_bullet.motionState->setWorldTransform(initialTransform);
+	// _bullet.motionState->setWorldTransform(initialTransform);
 }
 
 void	PhysicVehicle::setRotation(const glm::vec4& rotation)
@@ -225,7 +235,7 @@ void	PhysicVehicle::setRotation(const glm::vec4& rotation)
 	initialTransform.setRotation(rot);
 
 	_bullet.carChassis->setWorldTransform(initialTransform);
-	_bullet.motionState->setWorldTransform(initialTransform);
+	// _bullet.motionState->setWorldTransform(initialTransform);
 }
 
 const glm::mat4&	PhysicVehicle::getOpenGLMatrix(glm::mat4& mat4x4) const

@@ -9,8 +9,6 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
-#include "demo/constants.hpp"
-
 WebWorkersSimulation::~WebWorkersSimulation()
 {
 }
@@ -88,13 +86,15 @@ void	WebWorkersSimulation::update()
 
 	if (_currentRequest == WorkerRequest::eResetAndProcess)
 	{
-		if (_callbacks.onResetAndProcess)
-			_callbacks.onResetAndProcess();
+		if (_callbacks.onGenerationReset)
+			_callbacks.onGenerationReset();
 	}
 	else if (_currentRequest == WorkerRequest::eProcess)
 	{
-		if (_callbacks.onProcess)
-			_callbacks.onProcess();
+		// auto& coreState = _coreStates[threadIndex];
+
+		if (_callbacks.onGenerationStep)
+			_callbacks.onGenerationStep();
 	}
 
 	if (incompleteSimulation)
@@ -143,6 +143,16 @@ void	WebWorkersSimulation::resetAndProcessSimulation()
 	_currentRequest = WorkerRequest::eResetAndProcess;
 }
 
+unsigned int    WebWorkersSimulation::getTotalCores() const
+{
+    return _totalCores;
+}
+
+const AbstactSimulation::t_coreState&   WebWorkersSimulation::getCoreState(unsigned int index) const
+{
+	return _workerProducers.at(index)->getCoreState();
+}
+
 const t_carData&	WebWorkersSimulation::getCarResult(unsigned int index) const
 {
 	const unsigned int	workerIndex = index / _genomesPerCore;
@@ -163,14 +173,14 @@ void	WebWorkersSimulation::setOnWorkersReadyCallback(AbstactSimulation::t_callba
 	_callbacks.onWorkersReady = callback;
 }
 
-void	WebWorkersSimulation::setOnResetAndProcessCallback(AbstactSimulation::t_callback callback)
+void	WebWorkersSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callback callback)
 {
-	_callbacks.onResetAndProcess = callback;
+	_callbacks.onGenerationReset = callback;
 }
 
-void	WebWorkersSimulation::setOnProcessCallback(AbstactSimulation::t_callback callback)
+void	WebWorkersSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
 {
-	_callbacks.onProcess = callback;
+	_callbacks.onGenerationStep = callback;
 }
 
 void	WebWorkersSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)

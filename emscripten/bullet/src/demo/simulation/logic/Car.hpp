@@ -48,12 +48,13 @@ private: // attributs
 	t_neuralNetworkOutput	_output;
 
 public: // ctor/dtor
-	// Car();
-	Car(PhysicWorld& physicWorld);
+	Car(PhysicWorld& physicWorld,
+		const glm::vec3& position,
+		const glm::vec4& quaternion);
 
 public: // methods
 	void	update(const NeuralNetwork& nn);
-	void	reset() const;
+	void	reset(const glm::vec3& position, const glm::vec4& quaternion);
 
 private: // methods
 	void	updateSensors();
@@ -61,12 +62,12 @@ private: // methods
 	void	collideGroundSensor();
 
 public: // setter/getter
-	const	t_sensors&	getEyeSensors() const;
-	const	t_sensor&	getGroundSensor() const;
-	float	getFitness() const;
-	bool	isAlive() const;
-	int		getGroundIndex() const;
-	const	t_neuralNetworkOutput&	getNeuralNetworkOutput() const;
-	const	PhysicVehicle&	getVehicle() const;
-
+	const t_sensors&				getEyeSensors() const;
+	const t_sensor&					getGroundSensor() const;
+	float							getFitness() const;
+	bool							isAlive() const;
+	int								getGroundIndex() const;
+	const t_neuralNetworkOutput&	getNeuralNetworkOutput() const;
+	const PhysicVehicle&			getVehicle() const;
+	float							getLife() const;
 };

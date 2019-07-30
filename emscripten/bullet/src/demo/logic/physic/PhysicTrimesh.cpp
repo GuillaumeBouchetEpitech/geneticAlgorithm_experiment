@@ -4,22 +4,20 @@
 #include "thirdparty/BulletPhysics.hpp"
 
 PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
-				 const std::vector<int>& indices,
-				 int index,
-				 int group,
-				 int mask)
+							 const std::vector<int>& indices,
+							 int index/*, int group, int mask*/)
 	: _index(index)
-	, _group(group)
-	, _mask(mask)
+	// , _group(group)
+	// , _mask(mask)
 {
 	unsigned int vertNumber = vertices.size() * 3;
 	_vertices = new float[vertices.size() * 3];
-	memcpy(_vertices, &vertices[0].x, vertices.size() * 3 * sizeof(float));
-	int vertStride = 3 * sizeof(float);
+	std::memcpy(_vertices, vertices.data(), vertices.size() * sizeof(glm::vec3));
+	int vertStride = sizeof(glm::vec3);
 
 	unsigned int triangleNumber = indices.size() / 3;
 	_indices = new int[indices.size()];
-	memcpy(_indices, &indices[0], indices.size() * sizeof(int));
+	std::memcpy(_indices, indices.data(), indices.size() * sizeof(int));
 	int indexStride = 3 * sizeof(int);
 
 	_bullet.indexVertexArrays = new btTriangleIndexVertexArray(
@@ -58,12 +56,12 @@ int	PhysicTrimesh::getIndex() const
 	return _index;
 }
 
-int	PhysicTrimesh::getGroup() const
-{
-	return _group;
-}
+// int	PhysicTrimesh::getGroup() const
+// {
+// 	return _group;
+// }
 
-int	PhysicTrimesh::getMask() const
-{
-	return _mask;
-}
+// int	PhysicTrimesh::getMask() const
+// {
+// 	return _mask;
+// }

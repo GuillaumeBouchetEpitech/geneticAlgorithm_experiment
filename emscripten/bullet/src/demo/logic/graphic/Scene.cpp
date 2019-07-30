@@ -6,6 +6,9 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
+#include "./utilities/sceneToScreen.hpp"
+
+
 #include "thirdparty/GLMath.hpp"
 
 #include <memory> // <= make_unique
@@ -14,26 +17,55 @@
 #include <iomanip>
 #include <sstream>
 
+void writeTime(std::stringstream& sstr, unsigned int time, bool isMS)
+{
+	if (isMS)
+	{
+		if (time < 1000)
+		{
+			sstr << time << "ms";
+		}
+		else
+		{
+			sstr
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000) << "s ";
+		}
+	}
+	else
+	{
+		if (time < 1000)
+		{
+			sstr << time << "us";
+		}
+		else if (time < 1000000)
+		{
+			sstr
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000) << "ms";
+		}
+		else
+		{
+			sstr
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000000) << "s";
+		}
+	}
+}
+
+
 void	Scene::renderSimple()
 {
-	auto& graphic = Data::get()->graphic;
-	GLint baseAlignment = sizeof(float);
-	int rawMatrixSize = baseAlignment * 16;
-
-	Scene::setUniforms();
+	Scene::updateMatrices();
 
 	Scene::clear();
 
 	{ // scene
 
-		graphic.ubo.bindRange(e_uboTypes::eMatrices, rawMatrixSize * 0, rawMatrixSize);
-
 		Scene::renderCircuitSkeleton();
 	}
 
 	{ // HUD
-
-		graphic.ubo.bindRange(e_uboTypes::eMatrices, rawMatrixSize * 1, rawMatrixSize);
 
 		Scene::renderHUD();
 	}
@@ -43,17 +75,11 @@ void	Scene::renderSimple()
 
 void	Scene::renderAll()
 {
-	auto& graphic = Data::get()->graphic;
-	GLint baseAlignment = sizeof(float);
-	int rawMatrixSize = baseAlignment * 16;
-
-	Scene::setUniforms();
+	Scene::updateMatrices();
 
 	Scene::clear();
 
 	{ // scene
-
-		graphic.ubo.bindRange(e_uboTypes::eMatrices, rawMatrixSize * 0, rawMatrixSize);
 
 		if (!Data::get()->logic.isAccelerated)
 			Scene::renderLeadingCarSensors();
@@ -66,91 +92,48 @@ void	Scene::renderAll()
 
 	{ // HUD
 
-		graphic.ubo.bindRange(e_uboTypes::eMatrices, rawMatrixSize * 1, rawMatrixSize);
-
 		Scene::renderHUD();
 	}
 
 	Shader::unbind();
 }
 
-void	Scene::setUniforms()
+void	Scene::updateMatrices()
 {
-	const auto&	data = *Data::get();
-	const auto&	animation = data.logic.circuitAnimation;
-	const auto&	graphic = data.graphic;
-	const auto&	camera = graphic.camera;
-	const auto&	ubo = graphic.ubo;
+	auto&	camera = Data::get()->graphic.camera;
 
-	GLint offsetValue = UniformBufferObject::getOffsetAlignment();
-	GLint baseAlignment = sizeof(float);
+	{ // scene
 
-	//
-	// matrices
-	//
+		const float fovy = glm::radians(70.0f);
+		const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
 
-	{
+		glm::mat4	projectionMatrix = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+		glm::mat4	viewMatrix = glm::mat4(1.0f); // <= identity matrix
+		glm::mat4	modelMatrix = glm::mat4(1.0f); // <= identity matrix
 
-		int rawMatrixSize = baseAlignment * 16;
-		int rawBufSize = rawMatrixSize * 2;
-		auto scopedBuffer = std::make_unique<char[]>(rawBufSize);
+		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
+		viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(-1.0f, 0.0f, 0.0f));
+		viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
 
-		char* rawBufferPtr = scopedBuffer.get();
+		modelMatrix = glm::translate(modelMatrix, camera.center);
 
-		std::memset(rawBufferPtr, 0, rawBufSize);
+		camera.projectionMatrix = projectionMatrix;
+		camera.modeviewMatrix = viewMatrix * modelMatrix;
 
-		{
-			const float fovy = glm::radians(70.0f);
-			const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
-
-			glm::mat4	projectionMatrix = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
-			glm::mat4	viewMatrix = glm::mat4(1.0f); // <= identity matrix
-			glm::mat4	modelMatrix = glm::mat4(1.0f); // <= identity matrix
-
-			viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
-			viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(-1.0f, 0.0f, 0.0f));
-			viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
-
-			modelMatrix = glm::translate(modelMatrix, camera.center);
-
-			glm::mat4 sceneMatrix = projectionMatrix * viewMatrix * modelMatrix;
-
-			std::memcpy(rawBufferPtr + 0 * rawMatrixSize, glm::value_ptr(sceneMatrix), rawMatrixSize);
-		}
-
-		{
-			const auto& vSize = camera.viewportSize;
-			glm::mat4	projectionMatrix = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -10.0f, 10.0f);
-
-			glm::vec3	eye = { 0, 0, 1 };
-			glm::vec3	center = { 0, 0, 0 };
-			glm::vec3	upAxis = { 0, 1, 0 };
-			glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
-
-			glm::mat4 hudMatrix = projectionMatrix * viewMatrix;
-
-			std::memcpy(rawBufferPtr + 1 * rawMatrixSize, glm::value_ptr(hudMatrix), rawMatrixSize);
-		}
-
-		ubo.updateBuffer(e_uboTypes::eMatrices, rawBufferPtr, rawBufSize, true);
+		camera.sceneMatrix = projectionMatrix * viewMatrix * modelMatrix;
 	}
 
-	//
-	// animation
-	//
+	{ // hud
 
-	{
-		int rawBufSize = offsetValue * baseAlignment;
-		auto scopedBuffer = std::make_unique<char[]>(rawBufSize);
+		const auto& vSize = camera.viewportSize;
+		glm::mat4	projectionMatrix = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
-		char* rawBufferPtr = scopedBuffer.get();
+		glm::vec3	eye = { 0.0f, 0.0f, 0.5f };
+		glm::vec3	center = { 0.0f, 0.0f, 0.0f };
+		glm::vec3	upAxis = { 0.0f, 1.0f, 0.0f };
+		glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
 
-		std::memset(rawBufferPtr, 0, rawBufSize);
-
-		std::memcpy(rawBufferPtr + 0 * baseAlignment, &animation.lowerValue, sizeof(animation.lowerValue));
-		std::memcpy(rawBufferPtr + 1 * baseAlignment, &animation.upperValue, sizeof(animation.upperValue));
-
-		ubo.updateBuffer(e_uboTypes::eAnimation, rawBufferPtr, rawBufSize, true);
+		camera.hudMatrix = projectionMatrix * viewMatrix;
 	}
 }
 
@@ -167,16 +150,18 @@ void	Scene::clear()
 void	Scene::renderLeadingCarSensors()
 {
 	auto&		data = *Data::get();
-	const auto&	leaderCar = data.logic.leaderCar;
-	const auto&	simulation = data.logic.simulation;
-	auto&		stackRenderer = data.graphic.stackRenderer;
-	const auto&	shader = *data.graphic.shaders.basic;
+	const auto&	logic = data.logic;
+	const auto&	leaderCar = logic.leaderCar;
+	const auto&	simulation = *logic.simulation;
+	auto&		graphic = data.graphic;
+	auto&		stackRenderer = graphic.stackRenderer;
+	const auto&	shader = *graphic.shaders.stackRenderer;
 
 	// valid leading car?
 	if (leaderCar.index < 0)
 		return;
 
-	const auto& carData = simulation->getCarResult(leaderCar.index);
+	const auto& carData = simulation.getCarResult(leaderCar.index);
 
 	// leading car alive?
 	if (!carData.isAlive)
@@ -184,8 +169,16 @@ void	Scene::renderLeadingCarSensors()
 
 	shader.bind();
 
-	const glm::vec3	greenColor(0.0f, 1.0f, 0.0f);
-	const glm::vec3	redColor(1.0f, 0.0f, 0.0f);
+	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
+	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+
+
+	// float revLife = 1.0f - carData.life;
+	float revLife = 0.0f;
+
+	const glm::vec3	greenColor(revLife, 1.0f, revLife);
+	const glm::vec3	orangeColor(1.0f, 0.5f, 0.0f);
 
 	for (const auto& sensor : carData.eyeSensors)
 	{
@@ -194,8 +187,8 @@ void	Scene::renderLeadingCarSensors()
 	}
 
 	const auto& groundSensor = carData.groundSensor;
-	stackRenderer.pushLine(groundSensor.near, groundSensor.far, redColor);
-	stackRenderer.pushCross(groundSensor.far, redColor, 1.0f);
+	stackRenderer.pushLine(groundSensor.near, groundSensor.far, orangeColor);
+	stackRenderer.pushCross(groundSensor.far, orangeColor, 1.0f);
 
 	stackRenderer.flush();
 }
@@ -207,19 +200,20 @@ void	Scene::renderCars()
 	const auto&	graphic = Data::get()->graphic;
 	const auto&	shader = *graphic.shaders.instanced;
 	const auto&	instanced = graphic.geometries.instanced;
-	const auto&	ubo = graphic.ubo;
-
-	GLint offsetValue = UniformBufferObject::getOffsetAlignment();
-	GLint baseAlignment = sizeof(float);
-	int bufPageSize = offsetValue * baseAlignment;
 
 	shader.bind();
 
-	ubo.bindRange(e_uboTypes::eColors, bufPageSize * 0, bufPageSize);
+	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
+	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+
+	// GLint colorLocation = shader.getUniform("u_color");
+
+	// glUniform4f(colorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
 
 	instanced.chassis.render();
 
-	ubo.bindRange(e_uboTypes::eColors, bufPageSize * 1, bufPageSize);
+	// glUniform4f(colorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
 
 	instanced.wheels.render();
 }
@@ -244,24 +238,25 @@ void	Scene::renderMonoColorGeometries(bool circuit /*= true*/, bool trails /*= t
 	const auto&	graphic = Data::get()->graphic;
 	const auto&	shader = *graphic.shaders.monoColor;
 	const auto&	monoColor = graphic.geometries.monoColor;
-	const auto&	ubo = graphic.ubo;
-
-	GLint offsetValue = UniformBufferObject::getOffsetAlignment();
-	GLint baseAlignment = sizeof(float);
-	int bufPageSize = offsetValue * baseAlignment;
 
 	shader.bind();
 
+	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
+	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+
+	GLint colorLocation = shader.getUniform("u_color");
+
 	if (circuit)
 	{
-		ubo.bindRange(e_uboTypes::eColors, bufPageSize * 2, bufPageSize);
+		glUniform4f(colorLocation, 0.6f, 0.6f, 0.6f, 1.0f);
 
 		monoColor.circuitSkelton.render();
 	}
 
 	if (trails)
 	{
-		ubo.bindRange(e_uboTypes::eColors, bufPageSize * 3, bufPageSize);
+		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 
 		for (const auto& geometry : monoColor.bestCarsTrails)
 			geometry.render();
@@ -275,20 +270,27 @@ void	Scene::renderAnimatedCircuit()
 	const auto&	graphic = Data::get()->graphic;
 	const auto&	shader = *graphic.shaders.animatedCircuit;
 	const auto&	animatedCircuit = graphic.geometries.animatedCircuit;
-	const auto&	ubo = graphic.ubo;
-
-	GLint offsetValue = UniformBufferObject::getOffsetAlignment();
-	int bufPageSize = offsetValue;
 
 	shader.bind();
 
-	ubo.bindRange(e_uboTypes::eBlending, 0, bufPageSize);
+	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
+	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+
+	const auto&	animation = Data::get()->logic.circuitAnimation;
+	GLint lowerLimitLocation = shader.getUniform("u_lowerLimit");
+	GLint upperLimitLocation = shader.getUniform("u_upperLimit");
+	glUniform1f(lowerLimitLocation, animation.lowerValue);
+	glUniform1f(upperLimitLocation, animation.upperValue);
+
+	GLint alphaLocation = shader.getUniform("u_alpha");
+	glUniform1f(alphaLocation, 0.8f);
 
 	animatedCircuit.ground.render();
 
 	glDisable(GL_DEPTH_TEST); // <= prevent "blending artifact"
 
-	ubo.bindRange(e_uboTypes::eBlending, bufPageSize, bufPageSize);
+	glUniform1f(alphaLocation, 0.2f);
 
 	animatedCircuit.walls.render();
 
@@ -299,57 +301,367 @@ void	Scene::renderHUD()
 {
 	auto&		data = *Data::get();
 	auto&		graphic = data.graphic;
-	const auto&	shader = *graphic.shaders.hudText;
-	const auto&	simulation = data.logic.simulation;
-	const auto&	hudText = data.logic.hudText;
-
-	shader.bind();
+	auto&		logic = data.logic;
 
 	glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
-	glEnable(GL_TEXTURE_2D);
-
-	graphic.textures.textFont.bind();
-
-	graphic.textRenderer.clear();
-	graphic.textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
-
-	if (!hudText.pthreadWarning.empty())
-		graphic.textRenderer.push({ 800 - 19 * 16, 2 * 16 }, hudText.pthreadWarning, 1.0f);
 
 	{
-		const unsigned int	totalCars = simulation->getTotalCars();
-		unsigned int		carsLeft = 0;
-		float				localBestFitness = 0.0f;
-		for (unsigned int ii = 0; ii < totalCars; ++ii)
+		const auto&	shader = *graphic.shaders.hudText;
+		auto&		textRenderer = graphic.hudText.renderer;
+		const auto&	simulation = *logic.simulation;
+		const auto&	hudText = logic.hudText;
+
+		shader.bind();
+
+		const auto&	hudMatrix = graphic.camera.hudMatrix;
+		GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(hudMatrix));
+
+		graphic.textures.textFont.bind();
+
+		textRenderer.clear();
+		textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
+
+		if (!hudText.pthreadWarning.empty())
+			textRenderer.push({ 800 - 19 * 16, 2 * 16 }, hudText.pthreadWarning, 1.0f);
+
 		{
-			const auto& carData = simulation->getCarResult(ii);
+			std::stringstream sstr;
 
-			if (carData.isAlive)
-				++carsLeft;
+#if defined D_WEB_WEBWORKER_BUILD
+			bool isMillisecond = true;
+#else
+			bool isMillisecond = false;
+#endif
 
-			if (localBestFitness < carData.fitness)
-				localBestFitness = carData.fitness;
+			sstr << "update: ";
+			writeTime(sstr, logic.metrics.updateTime, isMillisecond);
+			sstr << std::endl << "render: ";
+			writeTime(sstr, logic.metrics.renderTime, isMillisecond);
+
+
+			std::string str = sstr.str();
+
+			textRenderer.push({ 8, 600 - 5 * 16 - 8 }, str, 1.0f);
 		}
 
-		std::stringstream sstr;
+		{
+			const unsigned int	totalCars = logic.cores.totalCars;
+			unsigned int		carsLeft = 0;
+			float				localBestFitness = 0.0f;
+			for (unsigned int ii = 0; ii < totalCars; ++ii)
+			{
+				const auto& carData = simulation.getCarResult(ii);
 
-		sstr
-			<< "Generation: " << simulation->getGenerationNumber() << std::endl
-			<< "Cars: " << std::setw(2) << carsLeft << "/" << totalCars << std::endl
-			<< "fitness:" << std::endl
-			<< "->current:" << std::setw(3) << localBestFitness << std::endl
-			<< "->best:   " << std::setw(3) << simulation->getBestGenome().fitness;
+				if (carData.isAlive)
+					++carsLeft;
 
-		std::string str = sstr.str();
+				if (localBestFitness < carData.fitness)
+					localBestFitness = carData.fitness;
+			}
 
-		graphic.textRenderer.push({ 8, 8 + 4 * 16 }, str, 1.0f);
+			std::stringstream sstr;
+
+			sstr
+				<< "Generation: " << simulation.getGenerationNumber() << std::endl
+				<< "Fitness: " << localBestFitness << "/" << simulation.getBestGenome().fitness << std::endl
+				<< "Cars: " << carsLeft << "/" << totalCars;
+
+			std::string str = sstr.str();
+
+			textRenderer.push({ 8, 8 + 2 * 16 }, str, 1.0f);
+		}
+
+		{
+			/**
+			{
+				const auto& camera = graphic.camera;
+
+				glm::vec3 screenCoord;
+
+				const unsigned int	totalCars = logic.cores.totalCars;
+				for (unsigned int ii = 0; ii < totalCars; ++ii)
+				{
+					const auto& carData = simulation.getCarResult(ii);
+
+					if (!carData.isAlive)
+						continue;
+
+					const glm::vec3 pos = carData.transform * glm::vec4(0,0,0,1);
+
+					sceneToScreen(
+						pos,
+						camera.modeviewMatrix, camera.projectionMatrix,
+						glm::vec2(0,0), glm::vec2(800, 600),
+						screenCoord
+					);
+
+					if (screenCoord.z > 1.0f)
+						continue;
+
+					std::stringstream sstr;
+
+					sstr
+						<< "id" << ii << std::endl
+						<< carData.life << std::endl
+						<< carData.fitness;
+
+					std::string str = sstr.str();
+
+					textRenderer.push({ screenCoord.x, screenCoord.y }, str, 0.75f);
+
+					// if (localBestFitness < carData.fitness)
+					// 	localBestFitness = carData.fitness;
+				}
+			}
+
+			// const auto& camera = graphic.camera;
+
+			// glm::vec3 screenCoord;
+
+			// bool result = sceneToScreen(
+			// 	glm::vec3(0, 0, 0),
+			// 	camera.modeviewMatrix, camera.projectionMatrix,
+			// 	glm::vec2(0,0), glm::vec2(800, 600),
+			// 	screenCoord
+			// );
+
+			// if (screenCoord.z < 1.0f)
+			// {
+			// 	std::stringstream sstr;
+
+			// 	sstr
+			// 		<< "result: " << result << std::endl
+			// 		<< "coord:" << std::endl
+			// 		<< screenCoord.x << std::endl
+			// 		<< screenCoord.y << std::endl
+			// 		<< screenCoord.z;
+
+			// 	std::string str = sstr.str();
+
+			// 	textRenderer.push({ screenCoord.x, screenCoord.y }, str, 1.0f);
+			// }
+			//*/
+		}
+
+		/**
+		{
+			std::stringstream sstr;
+
+			for (unsigned int ii = 0; ii < logic.cores.statesData.size(); ++ii)
+			{
+				const auto& coreState = logic.cores.statesData[ii];
+
+				sstr << "worker: " << ii;
+
+				for (int jj = 0; jj < 6; ++jj)
+					sstr << std::endl;
+
+#if defined D_WEB_WEBWORKER_BUILD
+				// sstr << std::setw(3) << coreState.delta << "ms";
+				if (coreState.delta < 1000)
+				{
+					sstr
+						<< std::setw(4)
+						<< coreState.delta << "ms";
+				}
+				else
+				{
+					sstr
+						<< std::fixed << std::setprecision(1)
+						<< std::setw(4)
+						<< (float(coreState.delta) / 1000) << "s ";
+				}
+#else
+				if (coreState.delta < 1000)
+				{
+					sstr
+						<< std::setw(4)
+						<< coreState.delta << "us";
+				}
+				else if (coreState.delta < 1000000)
+				{
+					sstr
+						<< std::fixed << std::setprecision(1)
+						<< std::setw(4)
+						<< (float(coreState.delta) / 1000) << "ms";
+				}
+				else
+				{
+					sstr
+						<< std::fixed << std::setprecision(1)
+						<< std::setw(4)
+						<< (float(coreState.delta) / 1000000) << "s";
+				}
+#endif
+
+				sstr
+					<< " "
+					<< std::setw(2)
+					<< coreState.genomesAlive << "car(s)"
+					<< std::endl
+					<< std::endl;
+			}
+
+			std::string str = sstr.str();
+
+			// textRenderer.push({ 8, 8 + 15 * 16 }, str, 1.0f);
+			textRenderer.push({ 16, 8 + 30 * 16 }, str, 1.0f);
+		}
+		//*/
+
+		{
+			std::stringstream sstr;
+
+			for (unsigned int ii = 0; ii < logic.cores.statesData.size(); ++ii)
+			{
+				const auto& coreState = logic.cores.statesData[ii];
+
+#if defined D_WEB_WEBWORKER_BUILD
+
+				sstr << "WORKER_" << (ii + 1) << std::endl;
+
+				sstr << ">time: ";
+				writeTime(sstr, coreState.delta, true);
+
+				// // sstr << std::setw(3) << coreState.delta << "ms";
+				// if (coreState.delta < 1000)
+				// {
+				// 	sstr << coreState.delta << "ms";
+				// }
+				// else
+				// {
+				// 	sstr
+				// 		<< std::fixed << std::setprecision(1)
+				// 		<< (float(coreState.delta) / 1000) << "s ";
+				// }
+#else
+				sstr << "THREAD_" << (ii + 1) << std::endl;
+
+				sstr << ">time: ";
+				writeTime(sstr, coreState.delta, false);
+
+				// if (coreState.delta < 1000)
+				// {
+				// 	sstr
+				// 		<< coreState.delta << "us";
+				// }
+				// else if (coreState.delta < 1000000)
+				// {
+				// 	sstr
+				// 		<< std::fixed << std::setprecision(1)
+				// 		<< (float(coreState.delta) / 1000) << "ms";
+				// }
+				// else
+				// {
+				// 	sstr
+				// 		<< std::fixed << std::setprecision(1)
+				// 		<< (float(coreState.delta) / 1000000) << "s";
+				// }
+#endif
+
+				sstr
+					<< std::endl
+					<< ">cars: " << coreState.genomesAlive << std::endl
+					<< std::endl;
+			}
+
+			std::string str = sstr.str();
+
+			textRenderer.push({ 8, 8 + 15 * 16 }, str, 1.0f);
+		}
+
+		if (logic.isPaused)
+			textRenderer.push({ 400 - 3 * 16 * 5, 300 - 8 * 5 }, "PAUSED", 5.0f);
+
+		textRenderer.render();
 	}
 
-	if (data.logic.isPaused)
-		graphic.textRenderer.push({ 400 - 3 * 16 * 5, 300 - 8 * 5 }, "PAUSED", 5.0f);
+	/**
+	{
+		auto&		stackRenderer = graphic.stackRenderer;
+		const auto&	shader = *graphic.shaders.stackRenderer;
 
-	graphic.textRenderer.render();
+		shader.bind();
 
-	glDisable(GL_TEXTURE_2D);
+		const auto&	hudMatrix = graphic.camera.hudMatrix;
+		GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(hudMatrix));
+
+		const glm::vec3	whiteColor(1.0f, 1.0f, 1.0f);
+		const glm::vec3	redColor(0.75f, 0.0f, 0.0f);
+		const glm::vec3	greenColor(0.0f, 0.75f, 0.0f);
+
+		glm::vec2	borderPos(20, 410);
+		glm::vec2	borderSize(150, 75);
+
+		const auto& cores = data.logic.cores;
+
+		for (unsigned core = 0; core < cores.statesHistory.size(); ++core)
+		{
+			const auto& stateHistory = cores.statesHistory[core];
+
+			unsigned int maxDelta = 0;
+			for (unsigned int ii = 0; ii < stateHistory.size(); ++ii)
+				maxDelta = std::max(maxDelta, stateHistory[ii].delta);
+
+			//
+			//
+
+			const glm::vec2	currPos = {
+				borderPos.x,
+				borderPos.y - core * (borderSize.y + 52)
+			};
+
+			stackRenderer.pushRectangle(currPos, borderSize, whiteColor);
+
+			//
+			//
+
+			float widthStep = borderSize.x / cores.maxStateHistory;
+
+			for (unsigned int ii = 0; ii + 1 < cores.maxStateHistory; ++ii)
+			{
+				unsigned int prevIndex = (ii + cores.currHistoryIndex) % cores.maxStateHistory;
+				unsigned int currIndex = (ii + 1 + cores.currHistoryIndex) % cores.maxStateHistory;
+
+				const auto& prevState = stateHistory[prevIndex];
+				const auto& currState = stateHistory[currIndex];
+
+				//
+
+				float prevRatio = float(prevState.delta) / maxDelta;
+				float currRatio = float(currState.delta) / maxDelta;
+
+				// maxDelta
+				glm::vec2	prevCoord(ii * widthStep, borderSize.y * prevRatio);
+				glm::vec2	currCoord((ii + 1) * widthStep, borderSize.y * currRatio);
+				glm::vec3	color = glm::mix(greenColor, redColor, currRatio);
+
+				stackRenderer.pushLine(currPos + prevCoord, currPos + currCoord, color);
+			}
+		}
+
+        // unsigned int maxGenomesAlive = cores.genomesPerCore;
+
+		// for (unsigned int ii = 0; ii < cores.maxStateHistory; ++ii)
+		// {
+		// 	unsigned int index = (ii + cores.currHistoryIndex) % cores.maxStateHistory;
+
+		// 	const auto& stateHistory = cores.statesHistory[index];
+
+		// 	stateHistory;
+
+		// }
+
+		// const unsigned int	maxStateHistory = 60;
+		// unsigned int		currHistoryIndex = 0;
+		// t_statesData		statesData;
+		// t_statesHistory		statesHistory;
+
+		stackRenderer.flush();
+	}
+	//*/
+
 	glEnable(GL_DEPTH_TEST);
 }

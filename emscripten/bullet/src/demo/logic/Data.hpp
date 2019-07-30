@@ -4,11 +4,9 @@
 #include "thirdparty/OpenGLES.hpp"
 #include "thirdparty/GLMath.hpp"
 
-#include "graphic/StackRenderer.hpp"
-#include "graphic/TextRenderer.hpp"
-
+#include "graphic/utilities/StackRenderer.hpp"
+#include "graphic/utilities/TextRenderer.hpp"
 #include "graphic/wrappers/Geometry.hpp"
-#include "graphic/wrappers/UniformBufferObject.hpp"
 #include "graphic/wrappers/Texture.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
@@ -16,16 +14,6 @@
 #include <string>
 #include <list>
 #include <map>
-
-enum e_uboTypes
-{
-	eMatrices = 0,
-	eColors,
-	eBlending,
-	eAnimation,
-
-	eCount
-};
 
 class Shader;
 
@@ -39,7 +27,7 @@ class Data
 private:
 	static Data* _instance;
 
-	Data();
+	Data() = default;
 	~Data();
 private:
 	void	initialise();
@@ -63,8 +51,6 @@ public:
 
 	struct t_graphic
 	{
-		UniformBufferObject	ubo;
-
 		struct t_cameraData
 		{
 			glm::vec2	viewportSize = { 800.0f, 600.0f };
@@ -72,12 +58,17 @@ public:
 			glm::vec2	rotations = { 0.5f, 0.95f };
 			glm::vec3	center = { 0.0f, 0.0f, 0.0f };
 			float		distance = 0.0f;
+
+			glm::mat4	projectionMatrix;
+			glm::mat4	modeviewMatrix;
+			glm::mat4	sceneMatrix;
+			glm::mat4	hudMatrix;
 		}
 		camera;
 
 		struct t_shaders
 		{
-			Shader*	basic = nullptr;
+			Shader*	stackRenderer = nullptr;
 			Shader*	instanced = nullptr;
 			Shader*	monoColor = nullptr;
 			Shader*	animatedCircuit = nullptr;
@@ -100,11 +91,11 @@ public:
 			}
 			instanced;
 
-			struct t_basic
+			struct t_stackRenderer
 			{
-				Geometry	stackRenderer;
+				Geometry	lines;
 			}
-			basic;
+			stackRenderer;
 
 			struct t_monoColor
 			{
@@ -129,7 +120,15 @@ public:
 		geometries;
 
 		StackRenderer	stackRenderer;
-		TextRenderer	textRenderer;
+
+		struct t_hudText
+		{
+			const glm::vec2 textureSize = { 256, 256 };
+			const glm::vec2 gridSize = { 16, 16 };
+
+			TextRenderer	renderer;
+		}
+		hudText;
 	}
 	graphic;
 
@@ -137,7 +136,30 @@ public:
 
 	struct t_logic
 	{
+		struct t_metrics
+		{
+			unsigned int	updateTime = 0;
+			unsigned int	renderTime = 0;
+		}
+		metrics;
+
 		AbstactSimulation*	simulation = nullptr;
+
+		struct t_cores
+		{
+			typedef std::vector<AbstactSimulation::t_coreState>	t_statesData;
+			typedef std::vector<t_statesData>					t_statesHistory;
+
+			const unsigned int	maxStateHistory = 60;
+			unsigned int		currHistoryIndex = 0;
+			t_statesData		statesData;
+			t_statesHistory		statesHistory;
+
+			unsigned int		genomesPerCore = 0;
+			unsigned int		totalCores = 0;
+			unsigned int		totalCars = 0;
+		}
+		cores;
 
 		bool		isPaused = false;
 		bool		isAccelerated = false;
@@ -160,10 +182,10 @@ public:
 
 		struct t_carsTrails
 		{
-			std::map<unsigned int, unsigned int>	lookupMap;
-			std::vector<std::vector<glm::vec3>>		allData;
+			std::map<unsigned int, unsigned int>	genomeIndexMap;
+			std::vector<std::vector<glm::vec3>>		allTrailsData;
 
-			unsigned int	currentIndex = 0;
+			unsigned int	currentTrailIndex = 0;
 		}
 		carsTrails;
 

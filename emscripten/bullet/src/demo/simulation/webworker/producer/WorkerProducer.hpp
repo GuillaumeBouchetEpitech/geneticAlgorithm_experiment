@@ -16,6 +16,8 @@
 
 #include "demo/simulation/logic/t_carData.hpp"
 
+#include "demo/simulation/AbstactSimulation.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 #include <bitset>
@@ -47,6 +49,8 @@ private:
 
     std::bitset<e_Status::eCount>	_flags;
 
+    AbstactSimulation::t_coreState  _coreState;
+
     t_carsData	_carsData;
 
     // typedef std::pair<glm::vec3, glm::vec3>	t_contact;
@@ -77,6 +81,9 @@ public:
     bool				isProcessing() const;
     bool				isUpdated() const;
     const t_carsData&	getCarsData() const;
+
+    const AbstactSimulation::t_coreState& getCoreState() const;
+
     // const t_contacts&	getContactsData() const;
     // void				clearContactsData();
 
