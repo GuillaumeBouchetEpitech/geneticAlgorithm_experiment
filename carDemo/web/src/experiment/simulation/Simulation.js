@@ -1,22 +1,24 @@
 
-import Circuit from "./circuit.js";
-import Car from "./car.js";
-import GeneticAlgorithm from "../ai/geneticAlgorithm.js";
+const Circuit = require("./logic/Circuit.js");
+const Car = require("./logic/Car.js");
+const GeneticAlgorithm = require("./machineLearning/GeneticAlgorithm.js");
+
+const circuitData = require("./circuits/default.js");
 
 //
 
 class Simulation {
 
-	constructor(circuitDataId) {
+	constructor() {
 
 		//
 		// circuit
 
-		const genomeSize = 40;
+		const genomeSize = 200;
 		this._ann_topology = [5, 3, 2];
 
 		this._geneticAlgorithm = new GeneticAlgorithm( genomeSize, this._ann_topology );
-		this._circuit = new Circuit(circuitDataId);
+		this._circuit = new Circuit(circuitData);
 
 		//
 		// cars
@@ -40,7 +42,7 @@ class Simulation {
 
 	update(delta) {
 
-		let readyToBreed = false;
+		let readyToBreed = true;
 
 		for (let ii = 0; ii < this._cars.length; ++ii) {
 
@@ -49,12 +51,12 @@ class Simulation {
 
 			this._cars[ii].update(delta, this._circuit.walls, this._geneticAlgorithm.ANNs[ii]);
 
-			readyToBreed = true;
+			readyToBreed = false;
 		}
 
 		// end of the current generation?
 
-		if (readyToBreed)
+		if (!readyToBreed)
 			return; // no
 
 		// rate the genome
@@ -93,4 +95,6 @@ class Simulation {
 
 }
 
-export default Simulation;
+//
+
+module.exports = Simulation;

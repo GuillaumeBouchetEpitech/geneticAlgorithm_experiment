@@ -1,0 +1,15 @@
+{
+  "name": "test",
+  "scripts": {
+    "build": "npm run quick-build",
+    "quick-build": "browserify ./src/main.js > ./dist/bundle.js",
+    "locally-minified-build": "browserify -g ./node_modules/uglifyify/index.js ./src/main.js > ./dist/bundle.js",
+    "globally-minified-build": "browserify -t ./node_modules/uglifyify/index.js ./src/main.js > ./dist/bundle.js"
+  },
+  "dependencies": {
+    "browserify": "^16.2.3",
+    "fpsmeter": "^0.3.1",
+    "uglifyify": "^5.0.1",
+    "webworkify": "^1.5.0"
+  }
+}

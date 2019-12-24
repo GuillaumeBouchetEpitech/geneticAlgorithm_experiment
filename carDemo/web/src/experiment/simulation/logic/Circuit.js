@@ -1,5 +1,5 @@
 
-import { MathUtils } from "../utils/index.js";
+const MathUtils = require('../../utilities/MathUtils.js');
 
 //
 
@@ -127,4 +127,4 @@ class Circuit {
 
 //
 
-export default Circuit;
+module.exports = Circuit;

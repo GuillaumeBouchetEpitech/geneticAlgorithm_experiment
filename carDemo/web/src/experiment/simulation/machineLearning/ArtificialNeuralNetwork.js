@@ -1,4 +1,10 @@
 
+function steeperSigmoid(x)
+{
+	return 1.0 / (1.0 + Math.exp(-4.9 * x));
+}
+
+
 class ArtificialNeuralNetwork {
 
 	constructor(topology) {
@@ -124,11 +130,15 @@ class ArtificialNeuralNetwork {
 			for (let jj = 0; jj < inputs.length; ++jj)
 				activation += inputs[jj] * connections[jj];
 
-			output.push(activation);
+			// if (Number.isNaN(activation))
+			// 	activation = 0;
+
+			// output.push(activation);
+			output.push(steeperSigmoid(activation));
 		}
 	}
 
-	set weights(arr_weights) {
+	setWeights(arr_weights) {
 
 		if (arr_weights.length != this._totalWeights)
 			throw new Error(`invalid weights, input=${arr_weights.length}, expected=${this._totalWeights}`);
@@ -157,7 +167,11 @@ class ArtificialNeuralNetwork {
 		}
 	}
 
-	get weights() {
+	set weights(arr_weights) {
+		this.setWeights(arr_weights);
+	}
+
+	getWeights() {
 
 		const out_weights = [];
 
@@ -185,7 +199,12 @@ class ArtificialNeuralNetwork {
 		return out_weights;
 	}
 
+	get weights() {
+		return this.getWeights();
+	}
+
 	get totalWeights() { return this._totalWeights; }
 }
 
-export default ArtificialNeuralNetwork;
+// export default ArtificialNeuralNetwork;
+module.exports = ArtificialNeuralNetwork;

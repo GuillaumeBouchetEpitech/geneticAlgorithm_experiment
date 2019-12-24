@@ -1,8 +1,10 @@
 
-import Renderer from "./graphic/renderer.js";
-import Simulation from "./logic/simulation.js";
+const Renderer = require('./graphic/Renderer.js');
+const Simulation = require('./simulation/Simulation.js');
 
-import { MathUtils } from "./utils/index.js";
+const MathUtils = require('./utilities/MathUtils.js');
+
+//
 
 class Experiment {
 
@@ -11,19 +13,19 @@ class Experiment {
         this._renderer = new Renderer(canvas);
         this._simulation = new Simulation(circuitData);
 
-        this._car_index = -1;
-        this._center_x = 0;
-        this._center_y = 0;
+        this._leadingCar = { index: -1, timeout: 0 };
+        this._cameraOrigin = { x: 0, y: 0 };
     }
 
     update() {
 
-        const delta = 0.25;
+        const fixedDelta = 0.025;
+        const simulationDelta = fixedDelta * 10;
 
         for (let ii = 0; ii < 3; ++ii)
-            this._simulation.update(delta);
+            this._simulation.update(simulationDelta);
 
-        this._updateCamera();
+        this._updateCamera(fixedDelta);
     }
 
     render() {
@@ -61,7 +63,7 @@ class Experiment {
 
         const cars = this._simulation.cars;
         for (let ii = 0; ii < cars.length; ++ii)
-            this._renderCar(cars[ii], "#00ff00", (ii == this._car_index));
+            this._renderCar(cars[ii], "#00ff00", (ii == this._leadingCar.index));
 
         //
         // render trails
@@ -84,34 +86,40 @@ class Experiment {
         this._renderHUD();
     }
 
-    _updateCamera() {
+    _updateCamera(delta) {
 
-        let target_x = 0;
-        let target_y = 0;
+        this._leadingCar.timeout -= delta;
 
-        if (this._simulation.cars.length > 0) {
+        if (this._leadingCar.index == -1 || this._leadingCar.timeout <= 0) {
 
-            let index = 0;
-            for (; index < this._simulation.cars.length; ++index)
-                if (this._simulation.cars[index].alive)
-                    break;
+            this._leadingCar.index = -1;
+            this._leadingCar.timeout = 0.5;
 
-            if (index < this._simulation.cars.length) {
+            let currentBest;
+            for (let ii = 0; ii < this._simulation.cars.length; ++ii) {
 
-                this._car_index = index;
+                const currentCar = this._simulation.cars[ii];
 
-                target_x = this._simulation.cars[index].position.x;
-                target_y = this._simulation.cars[index].position.y;
+                if (!currentCar.alive)
+                    continue;
+
+                if (currentBest && currentBest.fitness > currentCar.fitness)
+                    continue;
+
+                currentBest = currentCar;
+                this._leadingCar.index = ii;
             }
         }
 
-        const diff_x = target_x - (this._center_x);
-        const diff_y = target_y - (this._center_y);
+        let target;
+        if (this._leadingCar.index != -1)
+            target = this._simulation.cars[this._leadingCar.index].position;
+        else
+            target = { x: 0, y: 0 };
 
-        this._center_x = this._center_x + diff_x * 0.1;
-        this._center_y = this._center_y + diff_y * 0.1;
+        this._cameraOrigin = MathUtils.lerp(this._cameraOrigin, target, 0.1);
 
-        this._renderer.setCenter(-this._center_x+500, -this._center_y+300);
+        this._renderer.setCenter(-this._cameraOrigin.x, -this._cameraOrigin.y);
     }
 
     _renderCar(car, alive_color, show_sensors) {
@@ -180,7 +188,7 @@ class Experiment {
         if (!tmp_weights)
             return;
 
-        this._renderer.setCenter(50, 150);
+        this._renderer.setOrigin(50, 200);
 
         let windex = 0;
 
@@ -231,4 +239,6 @@ class Experiment {
     }
 }
 
-export default Experiment;
+//
+
+module.exports = Experiment;

@@ -1,5 +1,7 @@
 
-import { MathUtils } from "../utils/index.js";
+const MathUtils = require('../../utilities/MathUtils.js');
+
+//
 
 class Car {
 
@@ -24,14 +26,14 @@ class Car {
 
 		this._alive = true;
 		this._fitness = 0;
-		this._nextCheckpoint = 0;
+		this._nextCheckpointIndex = 0;
 		this._healthInTicks = this._maxHealthInTicks;
 
 		this._totalTicks = 0;
 		this._trail = [];
 	}
 
-	update(delta, walls, ann) {
+	update(delta, walls, artificialNeuralNetwork) {
 
 		if (!this._alive)
 			return;
@@ -47,26 +49,22 @@ class Car {
 		}
 
 		//
-		// min update
+		// update
+
+		const speedMax = 15;
+		const steerMax = Math.PI / 32.0;
 
 		const input = [];
 
 		for (let ii = 0; ii < this._sensors.length; ++ii)
 			input.push(this._sensors[ii].result);
 
-		const output = ann.process( input );
+		const output = artificialNeuralNetwork.process( input );
 
-		const leftTheta = output[0];
-		const rightTheta = output[1];
-
-		if (Number.isNaN(leftTheta))	leftTheta = 0;
-		if (Number.isNaN(rightTheta))	rightTheta = 0;
-
-		const speedMax = 15;
-		const steerMax = Math.PI / 32.0;
-
-		this._angle += Math.max(-steerMax, Math.min(steerMax, leftTheta * steerMax));
-		const speed = Math.max(-speedMax, Math.min(speedMax, rightTheta * speedMax));
+		// this._angle += MathUtils.clamp(output[0], -1, 1) * steerMax * delta;
+		// const speed = MathUtils.clamp(output[1], -1, 1) * speedMax;
+		this._angle += (output[0] * 2 - 1) * steerMax * delta;
+		const speed = (output[1] * 2 - 1) * speedMax;
 
 		this._position.x += (speed * Math.cos(this._angle)) * delta;
 		this._position.y += (speed * Math.sin(this._angle)) * delta;
@@ -76,11 +74,15 @@ class Car {
 		//
 
 		this._collideWalls(walls);
-		this._updateSensors();
-		this._collideSensors(walls);
-		this._collideCheckpoints();
 
-		++this._totalTicks;
+		if (this._alive) {
+
+			this._updateSensors();
+			this._collideSensors(walls);
+			this._collideCheckpoints();
+
+			++this._totalTicks;
+		}
 	}
 
 	_collideWalls(walls) {
@@ -93,7 +95,7 @@ class Car {
 			}
 	}
 
-	_updateSensors(walls) {
+	_updateSensors() {
 
 		this._sensors.length = 0;
 		for (let ii = 0; ii < this._sensorsAngle.length; ++ii) {
@@ -148,19 +150,19 @@ class Car {
 
 	_collideCheckpoints() {
 
-		if (this._nextCheckpoint < this._checkpoints.length) {
+		if (this._nextCheckpointIndex < this._checkpoints.length) {
 
-			const nextCheckpoint = this._checkpoints[this._nextCheckpoint];
+			const nextCheckpoint = this._checkpoints[this._nextCheckpointIndex];
 
 			if (MathUtils.collisionSegmentCercle(nextCheckpoint.p1, nextCheckpoint.p2, this._position, 5.0)) {
 
 				this._healthInTicks = this._maxHealthInTicks;
 				++this._fitness;
-				++this._nextCheckpoint;
+				++this._nextCheckpointIndex;
 			}
 		}
 
-		if (this._nextCheckpoint >= this._checkpoints.length) {
+		if (this._nextCheckpointIndex >= this._checkpoints.length) {
 
 			// this will add an extra reward if it complete the circuit
 			// -> it help to reward the faster cars
@@ -191,4 +193,6 @@ Car.prototype._sensorsAngle = [
 	sensorsSpread * +2,
 ];
 
-export default Car;
+//
+
+module.exports = Car;

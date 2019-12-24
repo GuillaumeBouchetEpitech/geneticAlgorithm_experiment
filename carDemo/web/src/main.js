@@ -1,42 +1,40 @@
 
-import "./externals/fpsmeter.js";
+require("fpsmeter");
 
-import Experiment from "./experiment/index.js";
+const Experiment = require('./experiment/Experiment.js');
 
-window.onload = () => {
+//
+
+window.addEventListener("load", onGlobalLoad, false);
+window.addEventListener("error", onGlobalError, false);
+
+function onGlobalError(err) {
+
+    alert(`error=${err.message}`);
+}
+
+function onGlobalLoad() {
 
     //
     // init
 
-	const canvas = document.getElementById("main-canvas");
-
-    const circuitDataText = document.getElementById("circuit-data").innerHTML;
-    const circuitData = JSON.parse(circuitDataText);
-
-    const myExperiment = new Experiment(canvas, circuitData);
+	const canvas = addCanvas(0, 0, 800, 600);
+    const currentExperiment = new Experiment(canvas);
 
     //
 
-    const myFpsmeterUpdateElement = document.getElementById('fpsmeter_update');
-    const myFpsmeterUpdate = new window.FPSMeter(
-        myFpsmeterUpdateElement,
-        window.FPSMeter.theme.transparent
-    );
-    myFpsmeterUpdate.toggle(); // <= switch from FPS to ms
-
-    const myFpsmeterRenderElement = document.getElementById('fpsmeter_render');
-    const myFpsmeterRender = new window.FPSMeter(
-        myFpsmeterRenderElement,
-        window.FPSMeter.theme.transparent
-    );
-    myFpsmeterRender.toggle(); // <= switch from FPS to ms
+    const fpsmeters = {
+        main: addFpsMeter(0, 0),
+        update: addFpsMeter(0, 50, true),
+        render: addFpsMeter(0, 100, true)
+    };
 
     //
     // main loop
 
     let isRunning = true;
 
-    window.onerror = () => {
+    function handleGlobalError(err) {
 
         // this will stop the main loop when an error occur
         // -> depending of what's wrong, it eat up the cpu and freeze some browser(s)
@@ -44,27 +42,65 @@ window.onload = () => {
         isRunning = false;
     };
 
-    const tick = (in_event) => {
+    window.addEventListener("error", handleGlobalError, false);
+
+    function tick() {
 
         if (isRunning)
-            requestAnimationFrame( tick );
+            requestAnimationFrame(tick);
+
+            fpsmeters.main.tick();
+            fpsmeters.main.tickStart();
 
         //
 
-        myFpsmeterUpdate.tickStart();
+        fpsmeters.update.tickStart();
 
-        myExperiment.update();
+        currentExperiment.update();
 
-        myFpsmeterUpdate.tick();
+        fpsmeters.update.tick();
 
         //
 
-        myFpsmeterRender.tickStart();
+        fpsmeters.render.tickStart();
 
-        myExperiment.render();
+        currentExperiment.render();
 
-        myFpsmeterRender.tick();
+        fpsmeters.render.tick();
     };
 
     tick();
-};
+}
+
+function addFpsMeter(x, y, toggleIt) {
+
+    const domElement = document.createElement("div");
+    domElement.style.position = "absolute";
+    domElement.style.left = `${x || 0}px`;
+    domElement.style.top = `${y || 0}px`;
+
+    document.body.appendChild(domElement);
+
+    const theme = FPSMeter.theme.transparent;
+    const newFpsMeter = new FPSMeter( domElement, theme );
+
+    // switch from FPS to ms
+    if (toggleIt)
+        newFpsMeter.toggle();
+
+    return newFpsMeter;
+}
+
+function addCanvas(x, y, width, height) {
+
+    const canvas = document.createElement("canvas");
+    canvas.style.position = "absolute";
+    canvas.style.left = `${x || 0}px`;
+    canvas.style.top = `${y || 0}px`;
+    canvas.width = `${width || 800}`;
+    canvas.height = `${height || 600}`;
+
+    document.body.appendChild(canvas);
+
+    return canvas; 
+}
