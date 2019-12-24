@@ -6,12 +6,12 @@
 #include "demo/utilities/TraceLogger.hpp"
 
 #include <iomanip> // <= std::fixed / setprecision
-#include <ctime> // <= time(NULL)
+// #include <ctime> // <= time(NULL)
 #include <algorithm> // <= std::find_if
+#include <chrono>
 
 GeneticAlgorithm::GeneticAlgorithm()
 {
-	t_RNG::setSeed(time(NULL));
 }
 
 void	GeneticAlgorithm::initialise(const t_def& def)
@@ -24,35 +24,19 @@ void	GeneticAlgorithm::initialise(const t_def& def)
 	if (!def.topology.isValid())
     	D_THROW(std::invalid_argument, "received invalid topology");
 
+	//
+
+	auto currTime = std::chrono::high_resolution_clock::now();
+	auto seed = currTime.time_since_epoch().count();
+	t_RNG::setSeed(static_cast<unsigned int>(seed));
+
+	//
+
 	_genomes.resize(def.totalGenomes);
 
 	_neuralNetworkTopology = def.topology;
 
 	generateRandomPopulation();
-}
-
-void	GeneticAlgorithm::generateRandomPopulation()
-{
-	if (_genomes.empty())
-		D_THROW(std::runtime_error, "not initialised");
-
-	// set the genomes and their neural network
-
-	_neuralNetworks.reserve(_genomes.size());
-
-	for (auto& genome : _genomes)
-	{
-		genome.id = _currentId++;
-
-		genome.weights.resize(_neuralNetworkTopology.getTotalWeights());
-
-		for (float& weight : genome.weights)
-			weight = t_RNG::getRangedValue(-1.0f, 1.0f);
-
-
-		_neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
-		_neuralNetworks.back().setWeights(genome.weights);
-	}
 }
 
 bool	GeneticAlgorithm::breedPopulation()
@@ -81,7 +65,7 @@ bool	GeneticAlgorithm::breedPopulation()
 	if (smarterGeneration)
 		_bestGenome = latestBestGenome;
 
-	t_genomes	offsprings;
+	t_genomes offsprings;
 	offsprings.reserve(_genomes.size());
 
 	// elitism: keep the current best
@@ -98,6 +82,14 @@ bool	GeneticAlgorithm::breedPopulation()
 		for (unsigned int jj = ii + 1; jj < bestGenomes.size(); ++jj)
 			parentGenomes.push_back(std::make_pair(ii, jj));
 
+	// sort pair by summed fitness
+	auto cmpFunc = [&bestGenomes](const t_parentPair& a, const t_parentPair& b) {
+		float fitnessA = bestGenomes[a.first].fitness + bestGenomes[a.second].fitness;
+		float fitnessB = bestGenomes[b.first].fitness + bestGenomes[b.second].fitness;
+		return (fitnessA > fitnessB); // the higher the better
+	};
+	std::sort(parentGenomes.begin(), parentGenomes.end(), cmpFunc);
+
 	int maxOffspring = int(_genomes.size() * 0.8f);
 	for (const auto& parentPair : parentGenomes)
 	{
@@ -112,21 +104,13 @@ bool	GeneticAlgorithm::breedPopulation()
 		const auto&	parentA = bestGenomes[parentPair.first];
 		const auto&	parentB = bestGenomes[parentPair.second];
 
-		t_genome	offspringA, offspringB;
+		t_genome	offspring;
 
-		crossBreed(parentA, parentB, offspringA, offspringB);
+		reproduce(parentA, parentB, offspring);
 
-		offspringA.id = _currentId++;
-		mutate(offspringA);
-		offsprings.push_back(offspringA);
-
-		// stop here if the offsprings container is already full
-		if (offsprings.size() >= _genomes.size())
-			break;
-
-		offspringB.id = _currentId++;
-		mutate(offspringB);
-		offsprings.push_back(offspringB);
+		offspring.id = _currentId++;
+		mutate(offspring);
+		offsprings.push_back(offspring);
 	}
 
 	// diversity: add random genomes
@@ -146,7 +130,7 @@ bool	GeneticAlgorithm::breedPopulation()
 			weight = t_RNG::getRangedValue(-1.0f, 1.0f);
 	}
 
-	_genomes = offsprings; // TODO: "std::move" instead of a hard copy?
+	_genomes = std::move(offsprings);
 
 	for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
 		_neuralNetworks[ii].setWeights(_genomes[ii].weights);
@@ -156,54 +140,79 @@ bool	GeneticAlgorithm::breedPopulation()
 	return smarterGeneration;
 }
 
+void	GeneticAlgorithm::generateRandomPopulation()
+{
+	// set the genomes and their neural network
+
+	_neuralNetworks.reserve(_genomes.size());
+
+	for (auto& genome : _genomes)
+	{
+		genome.id = _currentId++;
+
+		genome.weights.resize(_neuralNetworkTopology.getTotalWeights());
+
+		for (float& weight : genome.weights)
+			weight = t_RNG::getRangedValue(-1.0f, 1.0f);
+
+
+		_neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
+		_neuralNetworks.back().setWeights(genome.weights);
+	}
+}
+
 void	GeneticAlgorithm::getBestGenomes(t_genomes& output) const
 {
 	output.clear();
 
-	if (_genomes.empty())
-		return;
-
-	typedef std::pair<float, unsigned int>	t_sortPair;
+	struct t_sortPair
+	{
+		float			fitness;
+		unsigned int	index;
+	};
 	std::vector<t_sortPair>	sortedGenomes;
 
 	sortedGenomes.reserve(_genomes.size());
 	for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
-		sortedGenomes.push_back(std::make_pair(_genomes[ii].fitness, ii));
+		sortedGenomes.push_back({ _genomes[ii].fitness, ii });
 
-	// sort by fitness: the higher the better
+	// sort by fitness
     std::sort(sortedGenomes.begin(), sortedGenomes.end(), [](t_sortPair a, t_sortPair b) {
-        return a.first > b.first;
+        return a.fitness > b.fitness; // the higher the better
     });
 
 	output.reserve(_genomes.size());
-	for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
-		output.push_back(_genomes[sortedGenomes[ii].second]);
+	for (const auto& sortedGenome : sortedGenomes)
+		output.push_back(_genomes[sortedGenome.index]);
 }
 
-void	GeneticAlgorithm::crossBreed(const t_genome& parentA, const t_genome& parentB, t_genome& offspringA, t_genome& offspringB)
+void	GeneticAlgorithm::reproduce(const t_genome& parentA,
+									const t_genome& parentB,
+									t_genome& offspring) const
 {
-	const unsigned int totalWeights = _neuralNetworkTopology.getTotalWeights();
-	const unsigned int crossoverIndex = t_RNG::getRangedValue(0.0f, 0.99f) * totalWeights;
+	offspring.weights.resize(_neuralNetworkTopology.getTotalWeights());
 
-	offspringA.weights.resize(totalWeights);
-	offspringB.weights.resize(totalWeights);
+	// 50/50 chances for both parents
+	int chancesForParentA = 50;
 
-	for (unsigned int ii = 0; ii < crossoverIndex; ++ii)
+	// 70/30 chances for the fittest parent
+	if (parentA.fitness > parentB.fitness)
+		chancesForParentA = 70;
+	else if (parentA.fitness < parentB.fitness)
+		chancesForParentA = 30;
+
+	for (unsigned int ii = 0; ii < offspring.weights.size(); ++ii)
 	{
-		offspringA.weights[ii] = parentA.weights[ii];
-		offspringB.weights[ii] = parentB.weights[ii];
-	}
-
-	for (unsigned int ii = crossoverIndex; ii < totalWeights; ++ii)
-	{
-		offspringA.weights[ii] = parentB.weights[ii];
-		offspringB.weights[ii] = parentA.weights[ii];
+		if (t_RNG::getRangedValue(0, 100) < chancesForParentA)
+			offspring.weights[ii] = parentA.weights[ii];
+		else
+			offspring.weights[ii] = parentB.weights[ii];
 	}
 }
 
 void	GeneticAlgorithm::mutate(t_genome& genome) const
 {
-	const float	mutationMaxChance = 0.2f;
+	const float	mutationMaxChance = 0.1f;
 	const float	mutationMaxEffect = 0.2f;
 
 	for (float& weight : genome.weights)

@@ -41,9 +41,9 @@ void	PthreadSimulation::initialise(const t_def& def)
         // generateCircuit()
 
         int groundIndex = 0;
-        auto onNewPhysicGroundPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                                          const CircuitBuilder::t_colors& colors,
-                                          const CircuitBuilder::t_normals& normals,
+        auto onNewPhysicGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                                          const CircuitBuilder::t_vec3Array& colors,
+                                          const CircuitBuilder::t_vec3Array& normals,
                                           const CircuitBuilder::t_indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
@@ -57,9 +57,9 @@ void	PthreadSimulation::initialise(const t_def& def)
                 def.onNewGroundPatch(vertices, colors, normals, indices);
         };
 
-        auto onNewPhysicWallPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                                        const CircuitBuilder::t_colors& colors,
-                                        const CircuitBuilder::t_normals& normals,
+        auto onNewPhysicWallPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                                        const CircuitBuilder::t_vec3Array& colors,
+                                        const CircuitBuilder::t_vec3Array& normals,
                                         const CircuitBuilder::t_indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
@@ -145,15 +145,23 @@ void	PthreadSimulation::update()
             break;
         }
 
-    if (!generationCompleted)
+    updateCarResult();
+
+    if (_isFirstFrame)
     {
-        updateCarResult();
+        _isFirstFrame = false;
 
-        if (_callbacks.onProcess)
-            _callbacks.onProcess();
-
-        return;
+        if (_callbacks.onResetAndProcess)
+            _callbacks.onResetAndProcess();
     }
+    else
+    {
+        if (_callbacks.onProcessStep)
+            _callbacks.onProcessStep();
+    }
+
+    if (!generationCompleted)
+        return;
 
     // rate genomes
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
@@ -167,8 +175,8 @@ void	PthreadSimulation::update()
     //
     //
 
-    for (auto& physicWorld : _physicWorlds)
-        physicWorld.reset();
+    // for (auto& physicWorld : _physicWorlds)
+    //     physicWorld.reset();
 
     for (Car& car : _cars)
         car.reset(_startTransform.position, _startTransform.quaternion);
@@ -182,11 +190,7 @@ void	PthreadSimulation::update()
     // for (auto& physicWorld : _physicWorlds)
     //     physicWorld.reinsertAll();
 
-    updateCarResult();
-
-    if (_callbacks.onResetAndProcess)
-        _callbacks.onResetAndProcess();
-
+    _isFirstFrame = true;
 }
 
 void	PthreadSimulation::updateCarResult()
@@ -259,7 +263,7 @@ void    PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::t_cal
 
 void    PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
 {
-    _callbacks.onProcess = callback;
+    _callbacks.onProcessStep = callback;
 }
 
 void    PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)

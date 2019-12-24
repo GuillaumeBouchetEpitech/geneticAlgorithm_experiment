@@ -6,24 +6,23 @@
 
 class BSpline
 {
-private:
+public:
+	struct t_def
+	{
+		const float*	knotsData;
+		std::size_t		knotsLength;
+		unsigned int	dimension;
+		unsigned int	degree;
+	};
 
+public:
+	void	initialise(const t_def& def);
+	float	calcAt(float coef, unsigned int dimension);
+
+private:
 	typedef	float (*t_baseFunc)(float);
 
-	const std::vector<float>&	_points;
-	unsigned int				_dimension;
-	unsigned int				_degree;
-	t_baseFunc					_baseFunc = nullptr;
-	unsigned int				_baseFuncRangeInterval;
-
-public:
-	BSpline(const std::vector<float>& points, unsigned int dimension, unsigned int degree);
-
-private:
-	std::function<float(float)>		seqAt(unsigned int dim);
-	float							getInterpol(std::function<float(float)> seq, float t);
-
-public:
-	void	calcAt(float t, float* out_arr);
-
+	t_def			_def;
+	t_baseFunc		_baseFunc = nullptr;
+	unsigned int	_rangeInterval;
 };

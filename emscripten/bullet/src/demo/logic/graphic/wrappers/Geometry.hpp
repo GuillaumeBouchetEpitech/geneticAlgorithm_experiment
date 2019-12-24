@@ -59,6 +59,7 @@ private:
 	VertexArrayObject	_vao;
 	VertexBufferObject	_vbo;
     GLint               _primitiveType = GL_LINES;
+	unsigned int		_primitiveStart = 0;
 	unsigned int		_primitiveCount = 0;
 	unsigned int		_instanceCount = 0;
     bool                _isInstanced = false;
@@ -80,6 +81,7 @@ public:
         updateBuffer(index, static_cast<const void*>(data.data()), data.size() * sizeof(T), dynamic);
     }
 
+    void setPrimitiveStart(unsigned int start);
     void setPrimitiveCount(unsigned int count);
     void setInstancedCount(unsigned int count);
 };

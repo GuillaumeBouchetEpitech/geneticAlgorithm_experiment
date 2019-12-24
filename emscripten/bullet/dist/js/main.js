@@ -13,36 +13,39 @@ function onGlobalPageLoad() {
     };
     window.addEventListener("error", onBasicGlobalPageError);
 
-    // const renderArea = document.getElementById("renderArea");
-    // renderArea.style.width = "800px";
-    // renderArea.style.height = "600px";
-
     const errorText = document.getElementById("errorText");
-    // errorText.style.width = "800px";
-    // errorText.style.height = "600px";
-
     const canvas = document.getElementById("emscriptenCanvas");
-    // canvas.width = 800;
-    // canvas.height = 600;
-    // canvas.style.width = "800px"; // <= fix Apple retina display issue(s)
-    // canvas.style.height = "600px"; // <= fix Apple retina display issue(s)
+
+    function showErrorText(htmlText) {
+        canvas.style.display = "none"; // hide
+        errorText.innerHTML = htmlText;
+        errorText.style.display = "block"; // show
+    }
+    function showCanvas() {
+        errorText.style.display = "none"; // hide
+        canvas.style.display = "block"; // show
+    }
+
+    //
+    //
+    // setup the webgl context
 
     function onContextCreationError(event) {
 
         event.preventDefault();
 
         const statusMessage = event.statusMessage || "Unknown error";
-        logger.error(`[JS] could not create a WebGL2 context, statusMessage=${statusMessage}.`);
+        logger.error(`[JS] could not create a WebGL context, statusMessage=${statusMessage}.`);
     }
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
 
-    function onWebGl2ContextLost(event) {
+    function onWebGlContextLost(event) {
 
         event.preventDefault();
 
         logger.error("[JS] WebGL context lost. You will need to reload the page.");
     }
-    canvas.addEventListener("webglcontextlost", onWebGl2ContextLost, false);
+    canvas.addEventListener("webglcontextlost", onWebGlContextLost, false);
 
     // this prevent the contextual menu to appear on a right click
     function onContextMenu(event) {
@@ -57,8 +60,12 @@ function onGlobalPageLoad() {
         if (!window.Worker)
             throw new Error(`missing WebWorker feature`);
 
+        logger.log("[JS] WebWorker feature => supported");
+
         if (!window.WebGLRenderingContext)
             throw new Error("missing WebGL feature (unsuported)");
+
+        logger.log("[JS] WebGL feature => supported");
 
         const renderingContextAttribs = {
             // Boolean that indicates if the canvas contains an alpha buffer.
@@ -67,25 +74,35 @@ function onGlobalPageLoad() {
             // Boolean that indicates whether or not to perform anti-aliasing.
             antialias: false,
 
-            // Boolean that indicates that the drawing buffer has a depth buffer of at least 16 bits.
+            // Boolean that indicates that the drawing buffer has a depth
+            // buffer of at least 16 bits.
             depth: true,
 
-            // Boolean that indicates if a context will be created if the system performance is low.
+            // Boolean that indicates if a context will be created if the
+            // system performance is low.
             failIfMajorPerformanceCaveat: false,
 
-            // A hint to the user agent indicating what configuration of GPU is suitable for the WebGL context. Possible values are:
-            // "default": Let the user agent decide which GPU configuration is most suitable. This is the default value.
-            // "high-performance": Prioritizes rendering performance over power consumption.
-            // "low-power": Prioritizes power saving over rendering performance.
+            // A hint to the user agent indicating what configuration of GPU is
+            // suitable for the WebGL context. Possible values are:
+            // "default":
+            //     Let the user agent decide which GPU configuration is most
+            //     suitable. This is the default value.
+            // "high-performance":
+            //     Prioritizes rendering performance over power consumption.
+            // "low-power":
+            //     Prioritizes power saving over rendering performance.
             powerPreference: "high-performance",
 
-            //Boolean that indicates that the page compositor will assume the drawing buffer contains colors with pre-multiplied alpha.
-            premultipliedAlpha: false,
+            // Boolean that indicates that the page compositor will assume the
+            // drawing buffer contains colors with pre-multiplied alpha.
+            premultipliedAlpha: true,
 
-            //If the value is true the buffers will not be cleared and will preserve their values until cleared or overwritten by the author.
+            // If the value is true the buffers will not be cleared and will
+            // preserve their values until cleared or overwritten by the author.
             preserveDrawingBuffer: true,
 
-            // Boolean that indicates that the drawing buffer has a stencil buffer of at least 8 bits.
+            // Boolean that indicates that the drawing buffer has a
+            // stencil buffer of at least 8 bits.
             stencil: false,
         };
 
@@ -95,60 +112,68 @@ function onGlobalPageLoad() {
         );
 
         if (!webglCtx)
-            throw new Error("missing WebGL feature (initialisation)");
+            throw new Error("WebGL context failed (initialisation)");
+
+        logger.log("[JS] WebGL context => initialised");
 
         //
 
-        const webglExtensions = webglCtx.getSupportedExtensions();
-        // for (let ii = 0; ii < webglExtensions.length; ++ii)
-        //     logger.error(`[JS] ${ii}: "${webglExtensions[ii]}"`);
+        const webGLExtensions = webglCtx.getSupportedExtensions();
+        // for (let ii = 0; ii < webGLExtensions.length; ++ii)
+        //     logger.error(`[JS] ${ii}: "${webGLExtensions[ii]}"`);
 
-        const mandatoryExtensions = [
+        const mandatoryWebGLExtensions = [
             "instanced_arrays",
             "vertex_array_object"
         ];
 
-        for (let ii = 0; ii < mandatoryExtensions.length; ++ii) {
-
-            const extensionName = mandatoryExtensions[ii];
+        mandatoryWebGLExtensions.forEach((extensionName) => {
 
             let found = false;
-            for (let jj = 0; jj < webglExtensions.length; ++jj)
-                if (webglExtensions[jj].indexOf(extensionName)) {
+            for (let jj = 0; jj < webGLExtensions.length; ++jj)
+                if (webGLExtensions[jj].indexOf(extensionName)) {
                     found = true;
                     break;
                 }
 
             if (!found)
                 throw new Error(`missing WebGL extension: ${extensionName}`);
-        }
+
+            logger.log(`[JS] WebGL extension "${extensionName}" => supported`);
+        });
 
     } catch (err) {
 
         logger.error(`[JS] dependencies check failed: message="${err.message}"`);
 
-        errorText.innerHTML = `
+        return showErrorText(`
             this browser isn't compatible<br>
-            error message: ${err.message}
-        `;
-        return;
+            error message:<br>
+            => ${err.message}
+        `);
     }
 
-    let scriptFolder = "asm.js";
+    let scriptFolder = "wasm";
 
-    if (window.SharedArrayBuffer !== undefined) {
-    // if (false) {
+    const supportMultithreading = (window.SharedArrayBuffer !== undefined);
 
-        logger.log("[JS] multithreading: supported");
+    if (supportMultithreading) {
+
+        logger.log("[JS] multithreading => supported");
 
         scriptFolder += "/pthread";
 
     } else {
 
-        logger.log("[JS] multithreading: unsupported (fallback to webworker)");
+        logger.log("[JS] multithreading => unsupported");
+        logger.log("[JS]                => fallback to webworker version");
 
         scriptFolder += "/webworker";
     }
+
+    //
+    //
+    // setup the wasm module
 
     const Module = {
         locateFile: function(url) { return `${scriptFolder}/${url}`; },
@@ -160,35 +185,10 @@ function onGlobalPageLoad() {
         },
         canvas: canvas,
         preinitializedWebGLContext: webglCtx,
-
-        // noInitialRun: true,
         noExitRuntime: true,
-        // onRuntimeInitialized: function() {
-        //     logger.log("main");
-
-        // //     const create_demo = Module.cwrap("create_demo", null, [])
-        // //     const update_demo = Module.cwrap("update_demo", null, ["number"])
-
-        // //     create_demo();
-
-        // //     let prevTime = Date.now();
-
-        // //     loop();
-
-        // //     function loop() {
-
-        // //         window.requestAnimationFrame(loop);
-
-        // //         const currTime = Date.now();
-        // //         const elapsedTime = Math.max(currTime - prevTime, 0);
-        // //         prevTime = currTime;
-
-        // //         update_demo(elapsedTime);
-        // //     }
-        // }
     };
 
-    // this is needed by the asm.js side
+    // this is needed by the wasm side
     window.Module = Module;
 
     //
@@ -197,6 +197,9 @@ function onGlobalPageLoad() {
 
     function onAdvancedGlobalPageError(event) {
 
+        // we only want this callback to be called once
+        window.removeEventListener("error", onAdvancedGlobalPageError);
+
         logger.error(`[JS] exception, event=${event.message}`);
 
         Module.setStatus = function(text) {
@@ -204,15 +207,9 @@ function onGlobalPageLoad() {
                 logger.error(`[JS, post-exception] ${text}`);
         };
 
-        errorText.innerHTML = `
-            Error<br>
-            error message: ${event.message}
-        `;
-        canvas.style.display = "none";
-        errorText.style.display = "inline";
-
-        window.removeEventListener("error", onAdvancedGlobalPageError);
+        showErrorText(`Error<br>message:<br>${event.message}`);
     };
+    // replace old global error callback by the new one
     window.removeEventListener("error", onBasicGlobalPageError);
     window.addEventListener("error", onAdvancedGlobalPageError);
 
@@ -224,10 +221,10 @@ function onGlobalPageLoad() {
 
     loadScript(`./${scriptFolder}/index.js`)
         .then(() => {
-            logger.log("[JS] asm.js script: loading successful");
-            canvas.style.display = "inline";
+            logger.log("[JS] wasm script: loading successful");
+            showCanvas();
         })
-        .catch((err) => logger.error(`[JS] asm.js script: loading failed, err=${err.message}`));
+        .catch((err) => logger.error(`[JS] wasm script: loading failed, err=${err.message}`));
 };
 
 window.addEventListener("load", onGlobalPageLoad);
@@ -236,6 +233,9 @@ function loadScript(src) {
     return new Promise(function(resolve, reject) {
         const scriptElement = document.createElement("script");
         scriptElement.src = src;
+        scriptElement.onprogress = (event) => {
+            logger.log("event", event);
+        };
         scriptElement.onload = resolve;
         scriptElement.onerror = reject;
         document.head.appendChild(scriptElement);

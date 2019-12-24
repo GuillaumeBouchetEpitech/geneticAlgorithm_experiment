@@ -10,10 +10,7 @@
 class CircuitBuilder
 {
 public:
-	typedef glm::vec3				t_vertex;
-	typedef std::vector<t_vertex>	t_vertices;
-	typedef std::vector<glm::vec3>	t_colors;
-	typedef std::vector<t_vertex>	t_normals;
+	typedef std::vector<glm::vec3>	t_vec3Array;
 	typedef std::vector<int>		t_indices;
 
 	struct t_startTransform
@@ -23,12 +20,12 @@ public:
 	};
 
 public:
-	typedef std::function<void(const t_vertices& vertices,
+	typedef std::function<void(const t_vec3Array& vertices,
 							   const t_indices& indices)> t_callbackNoNormals;
 
-	typedef std::function<void(const t_vertices& vertices,
-							   const t_colors& colors,
-							   const t_normals& normals,
+	typedef std::function<void(const t_vec3Array& vertices,
+							   const t_vec3Array& colors,
+							   const t_vec3Array& normals,
 							   const t_indices& indices)> t_callbackNormals;
 
 private:

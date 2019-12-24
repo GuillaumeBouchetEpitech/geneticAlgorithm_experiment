@@ -87,17 +87,11 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
 
     message >> layerInput;
 
-    // if (isUsingBias)
-    //     --layerInput;
-
     message >> totalHidden;
     for (unsigned int ii = 0; ii < totalHidden; ++ii)
     {
         unsigned int layerValue = 0;
         message >> layerValue;
-
-        // if (isUsingBias)
-        //     --layerValue;
 
         layerHidden.push_back(layerValue);
     }
@@ -106,9 +100,9 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
     {
         int physicIndex = 0;
 
-        auto onNewGroundPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                                    const CircuitBuilder::t_colors& colors,
-                                    const CircuitBuilder::t_normals& normals,
+        auto onNewGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                                    const CircuitBuilder::t_vec3Array& colors,
+                                    const CircuitBuilder::t_vec3Array& normals,
                                     const CircuitBuilder::t_indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
@@ -117,9 +111,9 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
             _physicWorld.createGround(vertices, indices, physicIndex++);
         };
 
-        auto onNewWallPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                                const CircuitBuilder::t_colors& colors,
-                                const CircuitBuilder::t_normals& normals,
+        auto onNewWallPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                                const CircuitBuilder::t_vec3Array& colors,
+                                const CircuitBuilder::t_vec3Array& normals,
                                 const CircuitBuilder::t_indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
@@ -230,7 +224,7 @@ void	WorkerConsumer::processSimulation()
         if (!car.isAlive())
             continue;
 
-        auto* vehicle = vehicles.at(ii);
+        auto* vehicle = vehicles[ii];
 
         // record the transformation matrix of the car
         _message << vehicle->getOpenGLMatrix(transform);

@@ -7,44 +7,32 @@
 
 struct t_animatedVertex
 {
-    typedef glm::vec3	t_postion;
-    typedef glm::vec3	t_color;
-    typedef glm::vec3	t_normal;
-
-    t_postion	postion;
-    t_color		color;
-    t_normal	normal;
-
-    float		limitId;
-
-    t_animatedVertex(const t_postion& p, const t_color& c, const t_normal& n, float l)
-        : postion(p)
-        , color(c)
-        , normal(n)
-        , limitId(l)
-    {}
+    glm::vec3	postion;
+    glm::vec3	color;
+    glm::vec3	normal; // <= animation
+    float		limitId; // <= animation
 };
 typedef std::vector<t_animatedVertex>	t_animatedVertices;
 
 void	Data::initialiseCircuit()
 {
-    std::vector<glm::vec3>				skeletonVertices;
-    t_animatedVertices	groundVertices;
-    t_animatedVertices	wallsVertices;
+    std::vector<glm::vec3>  skeletonVertices;
+    t_animatedVertices      groundVertices;
+    t_animatedVertices      wallsVertices;
 
     skeletonVertices.reserve(128);
     groundVertices.reserve(2048);
-    wallsVertices.reserve(groundVertices.capacity() * 2);
+    wallsVertices.reserve(groundVertices.capacity() * 2); // <= 1 ground 2 walls
 
-     const glm::vec3	greyColor = { 0.6f, 0.6f, 0.6f };
-    const glm::vec3	whiteColor = { 1.0f, 1.0f, 1.0f };
+     const glm::vec3    greyColor = { 0.6f, 0.6f, 0.6f };
+    const glm::vec3     whiteColor = { 1.0f, 1.0f, 1.0f };
 
     const float maxFloat = std::numeric_limits<float>::max();
     auto& boundaries = logic.circuitAnimation.boundaries;
     boundaries.min = glm::vec3(+maxFloat, +maxFloat, +maxFloat);
     boundaries.max = glm::vec3(-maxFloat, -maxFloat, -maxFloat);
 
-    auto onSkeletonPatch = [&](const CircuitBuilder::t_vertices& vertices,
+    auto onSkeletonPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
                                const CircuitBuilder::t_indices& indices) -> void {
 
         for (int index : indices)
@@ -63,17 +51,19 @@ void	Data::initialiseCircuit()
         }
     };
 
-    float	latestSize = 0;
+    float       latestSize = 0;
+    const float maxDeformation = 0.3f;
 
-    auto onGroundPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                             const CircuitBuilder::t_colors& colors,
-                             const CircuitBuilder::t_normals& normals,
+    auto onGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                             const CircuitBuilder::t_vec3Array& colors,
+                             const CircuitBuilder::t_vec3Array& normals,
                              const CircuitBuilder::t_indices& indices) -> void {
 
+        // save it for "onWallPatch" bellow
         latestSize = float(groundVertices.size());
 
-        float	limitValue = latestSize / indices.size();
-        float	limitStep = 1.0f / indices.size();
+        float       limitValue = latestSize / indices.size();
+        const float limitStep = 1.0f / indices.size();
 
         for (int index : indices)
         {
@@ -81,10 +71,10 @@ void	Data::initialiseCircuit()
 
             const auto&	color = (firstLine ? whiteColor : colors[index]);
 
-            glm::vec3	deformation = {
-                t_RNG::getRangedValue(-0.2f, 0.2f),
-                t_RNG::getRangedValue(-0.2f, 0.2f),
-                t_RNG::getRangedValue(-0.2f, 0.2f)
+            glm::vec3 deformation = {
+                t_RNG::getRangedValue(-maxDeformation, maxDeformation),
+                t_RNG::getRangedValue(-maxDeformation, maxDeformation),
+                t_RNG::getRangedValue(-maxDeformation, maxDeformation)
             };
 
             glm::vec3	normal = (normals[index] + deformation) * 4.0f;
@@ -97,9 +87,9 @@ void	Data::initialiseCircuit()
         logic.circuitAnimation.maxUpperValue += 1.0f;
     };
 
-    auto onWallPatch = [&](const CircuitBuilder::t_vertices& vertices,
-                           const CircuitBuilder::t_colors& colors,
-                           const CircuitBuilder::t_normals& normals,
+    auto onWallPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
+                           const CircuitBuilder::t_vec3Array& colors,
+                           const CircuitBuilder::t_vec3Array& normals,
                            const CircuitBuilder::t_indices& indices) -> void {
 
         static_cast<void>(colors); // <= unused
@@ -129,6 +119,7 @@ void	Data::initialiseCircuit()
 
     unsigned int layerInput = 15;
     std::vector<unsigned int> layerHidden = { 10, 5 };
+    // std::vector<unsigned int> layerHidden = {};
     unsigned int layerOutput = 2;
     bool useBiasNeuron = true;
 
@@ -136,7 +127,11 @@ void	Data::initialiseCircuit()
     topology.init(layerInput, layerHidden, layerOutput, useBiasNeuron);
 
 
-    logic.cores.genomesPerCore = 30;
+// #ifdef D_NATIVE_PTHREAD_BUILD
+    logic.cores.genomesPerCore = 90;
+// #else
+//     logic.cores.genomesPerCore = 30;
+// #endif
     logic.cores.totalCores = 3;
     logic.cores.totalCars = logic.cores.totalCores * logic.cores.genomesPerCore;
 
@@ -162,34 +157,42 @@ void	Data::initialiseCircuit()
 
     boundaries.center = (boundaries.min - boundaries.max) * 0.5f;
 
+    graphic.camera.center = boundaries.center;
+    graphic.camera.distance = 200.0f;
+
+
     //
 
     {
-        auto& monoColor = graphic.geometries.monoColor;
-        auto& shader = *graphic.shaders.monoColor;
+        auto& wireframes = graphic.geometries.wireframes;
+        auto& shader = *graphic.shaders.wireframes;
 
         {
             Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs.push_back({ "a_position", Geometry::e_attrType::eVec3f });
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f }
+            };
 
             Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
 
             //
 
-            monoColor.circuitSkelton.initialise(shader, geomDef);
-            monoColor.circuitSkelton.updateBuffer(0, skeletonVertices);
-            monoColor.circuitSkelton.setPrimitiveCount(skeletonVertices.size());
+            wireframes.circuitSkelton.initialise(shader, geomDef);
+            wireframes.circuitSkelton.updateBuffer(0, skeletonVertices);
+            wireframes.circuitSkelton.setPrimitiveCount(skeletonVertices.size());
         }
 
         //
 
         {
             Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs.push_back({ "a_position", Geometry::e_attrType::eVec3f });
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f }
+            };
 
             Geometry::t_def geomDef = { { vboGeometry }, GL_LINE_STRIP };
 
-            auto& bestCarsTrails = graphic.geometries.monoColor.bestCarsTrails;
+            auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
 
             bestCarsTrails.resize(5);
             for (auto& geometry : bestCarsTrails)
@@ -205,10 +208,12 @@ void	Data::initialiseCircuit()
         auto& shader = *graphic.shaders.animatedCircuit;
 
         Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs.push_back({ "a_position", Geometry::e_attrType::eVec3f, 0 });
-        vboGeometry.attrs.push_back({ "a_color", Geometry::e_attrType::eVec3f, 3 });
-        vboGeometry.attrs.push_back({ "a_normal", Geometry::e_attrType::eVec3f, 6 });
-        vboGeometry.attrs.push_back({ "a_index", Geometry::e_attrType::eFloat, 9 });
+        vboGeometry.attrs = {
+            { "a_position", Geometry::e_attrType::eVec3f, 0 },
+            { "a_color",    Geometry::e_attrType::eVec3f, 3 },
+            { "a_normal",   Geometry::e_attrType::eVec3f, 6 },
+            { "a_index",    Geometry::e_attrType::eFloat, 9 },
+        };
 
         Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
 

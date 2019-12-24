@@ -17,41 +17,54 @@
 #include <iomanip>
 #include <sstream>
 
-void writeTime(std::stringstream& sstr, unsigned int time, bool isMS)
+namespace /*anonymous*/
 {
-	if (isMS)
+
+	void writeTime(std::stringstream& sstr, unsigned int time, bool isMillisecond)
 	{
-		if (time < 1000)
+		if (isMillisecond)
 		{
-			sstr << time << "ms";
+			if (time < 1000)
+			{
+				sstr
+					<< std::setw(5)
+					<< std::fixed << std::setprecision(1)
+					<< time << "ms";
+			}
+			else
+			{
+				sstr
+					<< std::setw(5)
+					<< std::fixed << std::setprecision(1)
+					<< (float(time) / 1000) << "s ";
+			}
 		}
 		else
 		{
-			sstr
-				<< std::fixed << std::setprecision(1)
-				<< (float(time) / 1000) << "s ";
+			if (time < 1000)
+			{
+				sstr
+					<< std::setw(5)
+					<< time << "us";
+			}
+			else if (time < 1000000)
+			{
+				sstr
+					<< std::setw(5)
+					<< std::fixed << std::setprecision(1)
+					<< (float(time) / 1000) << "ms";
+			}
+			else
+			{
+				sstr
+					<< std::setw(5)
+					<< std::fixed << std::setprecision(1)
+					<< (float(time) / 1000000) << "s";
+			}
 		}
 	}
-	else
-	{
-		if (time < 1000)
-		{
-			sstr << time << "us";
-		}
-		else if (time < 1000000)
-		{
-			sstr
-				<< std::fixed << std::setprecision(1)
-				<< (float(time) / 1000) << "ms";
-		}
-		else
-		{
-			sstr
-				<< std::fixed << std::setprecision(1)
-				<< (float(time) / 1000000) << "s";
-		}
-	}
-}
+
+} // namespace /*anonymous*/
 
 
 void	Scene::renderSimple()
@@ -81,12 +94,16 @@ void	Scene::renderAll()
 
 	{ // scene
 
-		if (!Data::get()->logic.isAccelerated)
+		const auto& logic = Data::get()->logic;
+
+		if (!logic.isAccelerated)
 			Scene::renderLeadingCarSensors();
 
+		Scene::renderParticles();
 		Scene::renderCars();
-		Scene::renderCircuitSkeleton();
-		Scene::renderBestCarsTrails();
+		// Scene::renderCircuitSkeleton();
+		// Scene::renderBestCarsTrails();
+		Scene::renderWireframesGeometries();
 		Scene::renderAnimatedCircuit();
 	}
 
@@ -101,15 +118,19 @@ void	Scene::renderAll()
 void	Scene::updateMatrices()
 {
 	auto&	camera = Data::get()->graphic.camera;
+	auto&	matrices = camera.matrices;
 
 	{ // scene
 
 		const float fovy = glm::radians(70.0f);
 		const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
 
-		glm::mat4	projectionMatrix = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+		matrices.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
 		glm::mat4	viewMatrix = glm::mat4(1.0f); // <= identity matrix
 		glm::mat4	modelMatrix = glm::mat4(1.0f); // <= identity matrix
+
+		// clamp vertical rotation [0..PI]
+		camera.rotations.y = std::max(0.0f, std::min(3.14f, camera.rotations.y));
 
 		viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
 		viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(-1.0f, 0.0f, 0.0f));
@@ -117,23 +138,24 @@ void	Scene::updateMatrices()
 
 		modelMatrix = glm::translate(modelMatrix, camera.center);
 
-		camera.projectionMatrix = projectionMatrix;
-		camera.modeviewMatrix = viewMatrix * modelMatrix;
+		matrices.modelView = viewMatrix * modelMatrix;
 
-		camera.sceneMatrix = projectionMatrix * viewMatrix * modelMatrix;
+		matrices.scene = matrices.projection * matrices.modelView;
+
+		camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
 	}
 
 	{ // hud
 
 		const auto& vSize = camera.viewportSize;
-		glm::mat4	projectionMatrix = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
+		const glm::mat4	projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
-		glm::vec3	eye = { 0.0f, 0.0f, 0.5f };
-		glm::vec3	center = { 0.0f, 0.0f, 0.0f };
-		glm::vec3	upAxis = { 0.0f, 1.0f, 0.0f };
-		glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
+		const glm::vec3	eye = { 0.0f, 0.0f, 0.5f };
+		const glm::vec3	center = { 0.0f, 0.0f, 0.0f };
+		const glm::vec3	upAxis = { 0.0f, 1.0f, 0.0f };
+		const glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
 
-		camera.hudMatrix = projectionMatrix * viewMatrix;
+		matrices.hud = projection * viewMatrix;
 	}
 }
 
@@ -169,28 +191,70 @@ void	Scene::renderLeadingCarSensors()
 
 	shader.bind();
 
-	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
-	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+	const auto&	sceneMatrix = graphic.camera.matrices.scene;
+	GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-
-	// float revLife = 1.0f - carData.life;
-	float revLife = 0.0f;
-
-	const glm::vec3	greenColor(revLife, 1.0f, revLife);
+	const glm::vec3	greenColor(0.0f, 1.0f, 0.0f);
+	const glm::vec3	yellowColor(1.0f, 1.0f, 0.0f);
 	const glm::vec3	orangeColor(1.0f, 0.5f, 0.0f);
+	const glm::vec3	redColor(1.0f, 0.0f, 0.0f);
+	const glm::vec3	whiteColor(1.0f, 1.0f, 1.0f);
 
+	// eye sensors
 	for (const auto& sensor : carData.eyeSensors)
 	{
-		stackRenderer.pushLine(sensor.near, sensor.far, greenColor);
-		stackRenderer.pushCross(sensor.far, greenColor, 1.0f);
+		glm::vec3 color = greenColor;
+		if (sensor.value < 0.125f)
+			color = redColor;
+		else if (sensor.value < 0.25f)
+			color = orangeColor;
+		else if (sensor.value < 0.5f)
+			color = yellowColor;
+
+		stackRenderer.pushLine(sensor.near, sensor.far, color);
+		stackRenderer.pushCross(sensor.far, color, 1.0f);
 	}
 
+	// ground sensor
 	const auto& groundSensor = carData.groundSensor;
-	stackRenderer.pushLine(groundSensor.near, groundSensor.far, orangeColor);
-	stackRenderer.pushCross(groundSensor.far, orangeColor, 1.0f);
+	stackRenderer.pushLine(groundSensor.near, groundSensor.far, whiteColor);
+	stackRenderer.pushCross(groundSensor.far, whiteColor, 1.0f);
 
 	stackRenderer.flush();
+
+	{ // render trail live
+
+		// // leaderCar.index
+		// auto& currentTrail = logic.carsTrails.allTrailsData[leaderCar.index].trail;
+
+		// int startIndex = std::max(int(1), int(currentTrail.size()) - 100);
+		// for (unsigned int ii = startIndex; ii < currentTrail.size(); ++ii)
+		// {
+		// 	stackRenderer.pushLine(currentTrail[ii - 1], currentTrail[ii], whiteColor);
+		// }
+
+	} // render trail live
+}
+
+void	Scene::renderParticles()
+{
+	// instanced geometrie(s)
+
+	const auto&	graphic = Data::get()->graphic;
+	const auto&	sceneMatrix = graphic.camera.matrices.scene;
+
+	{
+		const auto&	shader = *graphic.shaders.particles;
+		const auto&	geometry = graphic.geometries.particles.firework;
+
+		shader.bind();
+
+		GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+
+		geometry.render();
+	}
 }
 
 void	Scene::renderCars()
@@ -198,37 +262,45 @@ void	Scene::renderCars()
 	// instanced geometrie(s)
 
 	const auto&	graphic = Data::get()->graphic;
-	const auto&	shader = *graphic.shaders.instanced;
-	const auto&	instanced = graphic.geometries.instanced;
+	const auto&	sceneMatrix = graphic.camera.matrices.scene;
 
-	shader.bind();
+	{
+		// const auto&	shader = *graphic.shaders.instanced;
+		// const auto&	instanced = graphic.geometries.instanced;
 
-	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
-	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+		// shader.bind();
 
-	// GLint colorLocation = shader.getUniform("u_color");
+		// GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+		// glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-	// glUniform4f(colorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+		// instanced.chassis.render();
 
-	instanced.chassis.render();
+		// instanced.wheels.render();
+	}
 
-	// glUniform4f(colorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
+	{
+		graphic.shaders.model->bind();
 
-	instanced.wheels.render();
+		GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+
+		graphic.geometries.model.car.render();
+		graphic.geometries.model.wheel.render();
+	}
+
 }
 
 void	Scene::renderCircuitSkeleton()
 {
-	Scene::renderMonoColorGeometries(true, false);
+	Scene::renderWireframesGeometries(true, false);
 }
 
 void	Scene::renderBestCarsTrails()
 {
-	Scene::renderMonoColorGeometries(false, true);
+	Scene::renderWireframesGeometries(false, true);
 }
 
-void	Scene::renderMonoColorGeometries(bool circuit /*= true*/, bool trails /*= true*/)
+void	Scene::renderWireframesGeometries(bool circuit /*= true*/, bool trails /*= true*/)
 {
 	// static geometrie(s) (mono color)
 
@@ -236,29 +308,29 @@ void	Scene::renderMonoColorGeometries(bool circuit /*= true*/, bool trails /*= t
 		return;
 
 	const auto&	graphic = Data::get()->graphic;
-	const auto&	shader = *graphic.shaders.monoColor;
-	const auto&	monoColor = graphic.geometries.monoColor;
+	const auto&	shader = *graphic.shaders.wireframes;
+	const auto&	wireframes = graphic.geometries.wireframes;
 
 	shader.bind();
 
-	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
-	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+	const auto&	sceneMatrix = graphic.camera.matrices.scene;
+	GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-	GLint colorLocation = shader.getUniform("u_color");
+	GLint colorLoc = shader.getUniform("u_color");
 
 	if (circuit)
 	{
-		glUniform4f(colorLocation, 0.6f, 0.6f, 0.6f, 1.0f);
+		glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
 
-		monoColor.circuitSkelton.render();
+		wireframes.circuitSkelton.render();
 	}
 
 	if (trails)
 	{
-		glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+		glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		for (const auto& geometry : monoColor.bestCarsTrails)
+		for (const auto& geometry : wireframes.bestCarsTrails)
 			geometry.render();
 	}
 }
@@ -267,30 +339,31 @@ void	Scene::renderAnimatedCircuit()
 {
 	// static geometrie(s) (animated)
 
-	const auto&	graphic = Data::get()->graphic;
+	const auto&	data = *Data::get();
+	const auto&	graphic = data.graphic;
 	const auto&	shader = *graphic.shaders.animatedCircuit;
 	const auto&	animatedCircuit = graphic.geometries.animatedCircuit;
+	const auto&	circuitAnimation = data.logic.circuitAnimation;
 
 	shader.bind();
 
-	const auto&	sceneMatrix = graphic.camera.sceneMatrix;
-	GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-	glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(sceneMatrix));
+	const auto&	sceneMatrix = graphic.camera.matrices.scene;
+	GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+	glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-	const auto&	animation = Data::get()->logic.circuitAnimation;
-	GLint lowerLimitLocation = shader.getUniform("u_lowerLimit");
-	GLint upperLimitLocation = shader.getUniform("u_upperLimit");
-	glUniform1f(lowerLimitLocation, animation.lowerValue);
-	glUniform1f(upperLimitLocation, animation.upperValue);
+	GLint lowerLimitLoc = shader.getUniform("u_lowerLimit");
+	GLint upperLimitLoc = shader.getUniform("u_upperLimit");
+	glUniform1f(lowerLimitLoc, circuitAnimation.lowerValue);
+	glUniform1f(upperLimitLoc, circuitAnimation.upperValue);
 
-	GLint alphaLocation = shader.getUniform("u_alpha");
-	glUniform1f(alphaLocation, 0.8f);
+	GLint alphaLoc = shader.getUniform("u_alpha");
+	glUniform1f(alphaLoc, 0.8f);
 
 	animatedCircuit.ground.render();
 
 	glDisable(GL_DEPTH_TEST); // <= prevent "blending artifact"
 
-	glUniform1f(alphaLocation, 0.2f);
+	glUniform1f(alphaLoc, 0.2f);
 
 	animatedCircuit.walls.render();
 
@@ -313,9 +386,9 @@ void	Scene::renderHUD()
 
 		shader.bind();
 
-		const auto&	hudMatrix = graphic.camera.hudMatrix;
-		GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-		glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(hudMatrix));
+		const auto&	hudMatrix = graphic.camera.matrices.hud;
+		GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
 		graphic.textures.textFont.bind();
 
@@ -323,13 +396,14 @@ void	Scene::renderHUD()
 		textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
 
 		if (!hudText.pthreadWarning.empty())
-			textRenderer.push({ 800 - 19 * 16, 2 * 16 }, hudText.pthreadWarning, 1.0f);
+			textRenderer.push({ 800 - 26 * 16 - 8, 3 * 16 - 8 }, hudText.pthreadWarning, 1.0f);
 
 		{
 			std::stringstream sstr;
 
 #if defined D_WEB_WEBWORKER_BUILD
-			bool isMillisecond = true;
+			// bool isMillisecond = true;
+			bool isMillisecond = false;
 #else
 			bool isMillisecond = false;
 #endif
@@ -391,7 +465,7 @@ void	Scene::renderHUD()
 
 					sceneToScreen(
 						pos,
-						camera.modeviewMatrix, camera.projectionMatrix,
+						camera.matrices.modelView, camera.matrices.projection,
 						glm::vec2(0,0), glm::vec2(800, 600),
 						screenCoord
 					);
@@ -421,7 +495,7 @@ void	Scene::renderHUD()
 
 			// bool result = sceneToScreen(
 			// 	glm::vec3(0, 0, 0),
-			// 	camera.modeviewMatrix, camera.projectionMatrix,
+			// 	camera.modelViewMatrix, camera.matrices.projection,
 			// 	glm::vec2(0,0), glm::vec2(800, 600),
 			// 	screenCoord
 			// );
@@ -521,7 +595,7 @@ void	Scene::renderHUD()
 
 				sstr << "WORKER_" << (ii + 1) << std::endl;
 
-				sstr << ">time: ";
+				sstr << "> ";
 				writeTime(sstr, coreState.delta, true);
 
 				// // sstr << std::setw(3) << coreState.delta << "ms";
@@ -538,7 +612,7 @@ void	Scene::renderHUD()
 #else
 				sstr << "THREAD_" << (ii + 1) << std::endl;
 
-				sstr << ">time: ";
+				sstr << "> ";
 				writeTime(sstr, coreState.delta, false);
 
 				// if (coreState.delta < 1000)
@@ -562,7 +636,8 @@ void	Scene::renderHUD()
 
 				sstr
 					<< std::endl
-					<< ">cars: " << coreState.genomesAlive << std::endl
+					<< "> " << std::setw(2) << coreState.genomesAlive
+					<< " car(s)" << std::endl
 					<< std::endl;
 			}
 
@@ -584,9 +659,9 @@ void	Scene::renderHUD()
 
 		shader.bind();
 
-		const auto&	hudMatrix = graphic.camera.hudMatrix;
-		GLint composedMatrixLocation = shader.getUniform("u_composedMatrix");
-		glUniformMatrix4fv(composedMatrixLocation, 1, false, glm::value_ptr(hudMatrix));
+		const auto&	hudMatrix = graphic.camera.matrices.hud;
+		GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
 		const glm::vec3	whiteColor(1.0f, 1.0f, 1.0f);
 		const glm::vec3	redColor(0.75f, 0.0f, 0.0f);

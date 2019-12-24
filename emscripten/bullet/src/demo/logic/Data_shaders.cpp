@@ -8,7 +8,7 @@
 void	Data::initialiseShaders()
 {
 
-	{
+	{ // shaders
 
 		{ // create the stackRenderer shader
 
@@ -34,16 +34,16 @@ void	Data::initialiseShaders()
 			graphic.shaders.instanced = new Shader(def);
 		}
 
-		{ // create the mono color shader
+		{ // create the wireframes shader
 
 			Shader::t_def	def;
 
-			def.filenames.vertex = "assets/shaders/monoColor.glsl.vert.c";
-			def.filenames.fragment = "assets/shaders/monoColor.glsl.frag.c";
+			def.filenames.vertex = "assets/shaders/wireframes.glsl.vert.c";
+			def.filenames.fragment = "assets/shaders/wireframes.glsl.frag.c";
 			def.attributes = { "a_position" };
 			def.uniforms = { "u_composedMatrix", "u_color" };
 
-			graphic.shaders.monoColor = new Shader(def);
+			graphic.shaders.wireframes = new Shader(def);
 		}
 
 		{ // create the animated circuit shader
@@ -73,10 +73,37 @@ void	Data::initialiseShaders()
 			graphic.shaders.hudText = new Shader(def);
 		}
 
-	}
+		{
+			Shader::t_def	def;
+			def.filenames.vertex = "assets/shaders/particles.glsl.vert.c";
+			def.filenames.fragment = "assets/shaders/particles.glsl.frag.c";
+			def.attributes = {
+				"a_position",
+				"a_offsetPosition", "a_offsetScale", "a_offsetColor"
+			};
+			def.uniforms = { "u_composedMatrix" };
 
-	{
+			graphic.shaders.particles = new Shader(def);
+		}
+
+		{
+			Shader::t_def	def;
+			def.filenames.vertex = "assets/shaders/model.glsl.vert.c";
+			def.filenames.fragment = "assets/shaders/model.glsl.frag.c";
+			def.attributes = { "a_position", "a_color", "a_transform" };
+			def.uniforms = { "u_composedMatrix" };
+
+			graphic.shaders.model = new Shader(def);
+		}
+
+	} // shaders
+
+	{ // textures
+
+		// font textre
 		bool pixelated = true;
 		graphic.textures.textFont.load("assets/textures/ascii_font.png", pixelated);
-	}
+
+	} // textures
+
 }

@@ -156,8 +156,8 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 	if (_knots.empty())
 		D_THROW(std::runtime_error, "not initialised");
 
-	t_vertices	vertices;
-	t_colors	colors;
+	t_vec3Array	vertices;
+	t_vec3Array	colors;
 	t_indices	indices;
 
 	vertices.reserve(_knots.size() * 4);
@@ -167,10 +167,14 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 	{
 		const auto& knot = _knots[ii];
 
+		// "real" value
 		vertices.push_back(knot.left);
 		vertices.push_back(knot.right);
+		// "on the floor" value
 		vertices.push_back({ knot.left.x, knot.left.y, 0.0f });
 		vertices.push_back({ knot.right.x, knot.right.y, 0.0f });
+
+		// from "the floor" to the "real" value
 
 		const int currIndex = ii * 4;
 
@@ -189,6 +193,8 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 		if (ii == 0)
 			continue;
 
+		// from the "previous" to the "current" value
+
 		const int prevIndex = (ii - 1) * 4;
 
 		indices.push_back(currIndex + 0); // upper 0-1 left
@@ -203,8 +209,6 @@ void	CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 		indices.push_back(currIndex + 3); // lower 0-1 right
 		indices.push_back(prevIndex + 3);
 	}
-
-#undef D_PUSH_VERTEX
 
 	onSkeletonPatch(vertices, indices);
 }
@@ -223,87 +227,50 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 	// smooth the circuit
 
 	t_knots smoothedVertices;
+	smoothedVertices.reserve(512); // <= ease the reallocation
 
-	std::vector<float>	left_x;
-	std::vector<float>	left_y;
-	std::vector<float>	left_z;
-	std::vector<float>	right_x;
-	std::vector<float>	right_y;
-	std::vector<float>	right_z;
-	std::vector<float>	color_x;
-	std::vector<float>	color_y;
-	std::vector<float>	color_z;
-
-	left_x.reserve(_knots.size());
-	left_y.reserve(_knots.size());
-	left_z.reserve(_knots.size());
-	right_x.reserve(_knots.size());
-	right_y.reserve(_knots.size());
-	right_z.reserve(_knots.size());
-	color_x.reserve(_knots.size());
-	color_y.reserve(_knots.size());
-	color_z.reserve(_knots.size());
-
-	for (const auto& knot : _knots)
 	{
-		left_x.push_back(knot.left.x);
-		left_y.push_back(knot.left.y);
-		left_z.push_back(knot.left.z);
-		right_x.push_back(knot.right.x);
-		right_y.push_back(knot.right.y);
-		right_z.push_back(knot.right.z);
-		color_x.push_back(knot.color.x);
-		color_y.push_back(knot.color.y);
-		color_z.push_back(knot.color.z);
-	}
+		unsigned int	dimension = 9; // <= 3 * vec3 = 9 (float)
+		unsigned int	degree = 3;
+		const float*	knotsData = &_knots.front().left.x; // <= float*
+		std::size_t		knotsLength = _knots.size() * dimension; // <= float*
 
-	struct t_BSpline3
-	{
-		BSpline	x, y, z;
+		BSpline	smootherBSpline;
+		smootherBSpline.initialise({ knotsData, knotsLength, dimension, degree });
 
-		t_BSpline3(const std::vector<float>& pointsX,
-				   const std::vector<float>& pointsY,
-				   const std::vector<float>& pointsZ)
-			: x(pointsX, 1, 3)
-			, y(pointsY, 1, 3)
-			, z(pointsZ, 1, 3)
-		{}
+		CircuitBuilder::t_circuitVertex	vertex;
 
-		void calcAt(float step, glm::vec3& position)
+		const unsigned int maxIterations = 1000;
+		const float step = 1.0f / maxIterations;
+
+		for (float coef = 0.0f; coef <= 1.0f; coef += step) // tiny steps
 		{
-			x.calcAt(step, &position.x);
-			y.calcAt(step, &position.y);
-			z.calcAt(step, &position.z);
+			vertex.left.x = smootherBSpline.calcAt(coef, 0);
+			vertex.left.y = smootherBSpline.calcAt(coef, 1);
+			vertex.left.z = smootherBSpline.calcAt(coef, 2);
+			vertex.right.x = smootherBSpline.calcAt(coef, 3);
+			vertex.right.y = smootherBSpline.calcAt(coef, 4);
+			vertex.right.z = smootherBSpline.calcAt(coef, 5);
+
+			if (!smoothedVertices.empty())
+			{
+				const auto& lastVertex = smoothedVertices.back();
+				if (glm::length(vertex.left - lastVertex.left) < 2.0f ||
+					glm::length(vertex.right - lastVertex.right) < 2.0f)
+					continue;
+			}
+
+			// check for invalid values (it create graphic and physic artifacts)
+			if (glm::length(vertex.left) < 0.001f ||
+				glm::length(vertex.right) < 0.001f)
+				continue; // TODO: fix it
+
+			vertex.color.x = smootherBSpline.calcAt(coef, 6);
+			vertex.color.y = smootherBSpline.calcAt(coef, 7);
+			vertex.color.z = smootherBSpline.calcAt(coef, 8);
+
+			smoothedVertices.push_back(vertex);
 		}
-	}
-	splineLeft(left_x, left_y, left_z),
-	splineRight(right_x, right_y, right_z),
-	splineColor(color_x, color_y, color_z);
-
-	CircuitBuilder::t_circuitVertex	vertex;
-
-	for (float step = 0.0f; step <= 1.0f; step += 0.001f) // tiny steps
-	{
-
-		splineLeft.calcAt(step, vertex.left);
-		splineRight.calcAt(step, vertex.right);
-
-		if (!smoothedVertices.empty())
-		{
-			const auto& lastVertex = smoothedVertices.back();
-			if (glm::length(vertex.left - lastVertex.left) < 2.0f ||
-			 	glm::length(vertex.right - lastVertex.right) < 2.0f)
-				continue;
-		}
-
-		// check for invalid values (it create graphic and physic artifacts)
-		if (glm::length(vertex.left) < 0.001f ||
-			glm::length(vertex.right) < 0.001f)
-			continue; // TODO: fix it
-
-		splineColor.calcAt(step, vertex.color);
-
-		smoothedVertices.push_back(vertex);
 	}
 
 	//
@@ -312,7 +279,7 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
 	const int patchesPerKnot = 6;
 
-	t_vertex	prevNormal;
+	glm::vec3	prevNormal;
 
 	for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerKnot)
 	{
@@ -320,14 +287,14 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
 		struct t_circuitPatchData
 		{
-			t_vertices	vertices;
-			t_normals	normals;
+			t_vec3Array	vertices;
+			t_vec3Array	normals;
 		}
 		ground,
 		leftWall,
 		rightWall;
 
-		t_colors	circuitPatchColors;
+		t_vec3Array	circuitPatchColors;
 
 		//
 		//
@@ -351,24 +318,23 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 			const auto& prevKnot = smoothedVertices[stepIndex - 1];
 			const auto& currKnot = smoothedVertices[stepIndex];
 
-			const t_vertex&	prevLeft = prevKnot.left;
-			const t_vertex&	prevRight = prevKnot.right;
-			const t_vertex&	currLeft = currKnot.left;
-			const t_vertex&	currRight = currKnot.right;
+			const glm::vec3&	prevLeft = prevKnot.left;
+			const glm::vec3&	prevRight = prevKnot.right;
+			const glm::vec3&	currLeft = currKnot.left;
+			const glm::vec3&	currRight = currKnot.right;
 
 			const glm::vec3&	prevColor = prevKnot.color;
 			const glm::vec3&	currColor = currKnot.color;
 
-			// t_vertex currNormal = glm::normalize(glm::cross(prevLeft - prevRight, currRight - prevRight));
-			t_vertex currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
+			glm::vec3 currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
 
 			if (stepIndex == 1) // <= for the first time
 				prevNormal = currNormal;
 
-			t_vertex	prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);
-			t_vertex	currNormalLeft(currNormal.x, currNormal.z, currNormal.y);
-			t_vertex	prevNormalRight = -prevNormalLeft;
-			t_vertex	currNormalRight = -currNormalLeft;
+			glm::vec3	prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);
+			glm::vec3	currNormalLeft(currNormal.x, currNormal.z, currNormal.y);
+			glm::vec3	prevNormalRight = -prevNormalLeft;
+			glm::vec3	currNormalRight = -currNormalLeft;
 
 			//
 
@@ -389,13 +355,13 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
 			//
 
-			t_vertex	prevHeight = prevNormal * 10.0f;
-			t_vertex	currHeight = currNormal * 10.0f;
+			glm::vec3	prevHeight = prevNormal * 10.0f;
+			glm::vec3	currHeight = currNormal * 10.0f;
 
 			//
 
-			t_vertex	prevTopLeft = prevLeft + prevHeight;
-			t_vertex	currTopLeft = currLeft + currHeight;
+			glm::vec3	prevTopLeft = prevLeft + prevHeight;
+			glm::vec3	currTopLeft = currLeft + currHeight;
 
 			leftWall.vertices.push_back(prevLeft);
 			leftWall.vertices.push_back(prevTopLeft);
@@ -409,8 +375,8 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
 			//
 
-			t_vertex	prevTopRight = prevRight + prevHeight;
-			t_vertex	currTopRight = currRight + currHeight;
+			glm::vec3	prevTopRight = prevRight + prevHeight;
+			glm::vec3	currTopRight = currRight + currHeight;
 
 			rightWall.vertices.push_back(prevRight);
 			rightWall.vertices.push_back(prevTopRight);

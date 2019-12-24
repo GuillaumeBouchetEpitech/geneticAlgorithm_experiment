@@ -34,13 +34,15 @@ private:
 
     CircuitBuilder::t_startTransform    _startTransform;
 
+    bool _isFirstFrame = true;
+
 private:
     GeneticAlgorithm			_geneticAlgorithm;
 
     struct t_callbacks
     {
         AbstactSimulation::t_callback onResetAndProcess;
-        AbstactSimulation::t_callback onProcess;
+        AbstactSimulation::t_callback onProcessStep;
         AbstactSimulation::t_generationEndCallback onGenerationEnd;
     }
     _callbacks;

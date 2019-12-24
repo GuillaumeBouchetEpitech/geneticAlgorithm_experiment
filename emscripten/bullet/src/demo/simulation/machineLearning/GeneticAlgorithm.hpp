@@ -42,22 +42,22 @@ public: // ctor/dtor
 public: // methods
 	void	initialise(const t_def& def);
 
-private: // methods
-	void	generateRandomPopulation();
-
 public: // methods
 	bool	breedPopulation();
 
 private: // methods
+	void	generateRandomPopulation();
 	void	getBestGenomes(t_genomes& output) const;
-	void	crossBreed(const t_genome& g1, const t_genome& g2, t_genome& offspring1, t_genome& offspring2);
+	void	reproduce(const t_genome& parentA,
+					  const t_genome& parentB,
+					  t_genome& offspring) const;
 	void	mutate(t_genome& genome) const;
 
 public: // getter(s)
 	const t_NeuralNetworks&	getNeuralNetworks() const;
-	const t_genomes&	getGenomes() const;
-	const t_genome&		getBestGenome() const;
-	unsigned int		getGenerationNumber() const;
+	const t_genomes&		getGenomes() const;
+	const t_genome&			getBestGenome() const;
+	unsigned int			getGenerationNumber() const;
 
 public: // setter(s)
 	void rateGenome(unsigned int index, float fitness);

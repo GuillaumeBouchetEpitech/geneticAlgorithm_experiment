@@ -10,6 +10,8 @@
 #include "State_Running.hpp"
 #include "State_Paused.hpp"
 
+#include "demo/utilities/TraceLogger.hpp"
+
 //
 //
 // singleton
@@ -38,8 +40,8 @@ StateManager::~StateManager()
 {
 	// deallocate states
 
-	for (auto& sate : _states)
-		delete sate;
+	for (auto& state : _states)
+		delete state;
 }
 
 //

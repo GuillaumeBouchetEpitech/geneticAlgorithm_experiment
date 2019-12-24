@@ -65,8 +65,8 @@ public:
 // 	void	removeAll();
 // 	void	reinsertAll();
 
-public:
-	void	reset();
+// public:
+// 	void	reset();
 
 	// inline void	setOnContact(const t_onContact& onContact)
 	// {

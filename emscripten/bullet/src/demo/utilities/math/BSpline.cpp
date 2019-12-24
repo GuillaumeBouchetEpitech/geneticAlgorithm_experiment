@@ -1,6 +1,8 @@
 
 #include "BSpline.hpp"
 
+#include "../ErrorHandler.hpp"
+
 #include <cmath>
 
 namespace /*anonymous*/
@@ -68,70 +70,67 @@ float basisDeg5(float x)
 
 };
 
-//
-
-BSpline::BSpline(const std::vector<float>& points, unsigned int dimension, unsigned int degree)
-    : _points(points)
-    , _dimension(dimension)
-    , _degree(degree)
+void BSpline::initialise(const BSpline::t_def& def)
 {
-    if (degree <= 2)
+    _def = def;
+
+    if (_def.knotsData == nullptr)
+        D_THROW(std::invalid_argument, "BSpline need knots, nullptr");
+    if (_def.knotsLength == 0)
+        D_THROW(std::invalid_argument, "BSpline need knots, emtpy length");
+    if (_def.dimension == 0)
+        D_THROW(std::invalid_argument, "BSpline need >0 dimension");
+
+    if (_def.degree <= 2)
     {
         _baseFunc = &basisDeg2;
-        _baseFuncRangeInterval = 2;
+        _rangeInterval = 2;
     }
-    else if (degree == 3)
+    else if (_def.degree == 3)
     {
         _baseFunc = &basisDeg3;
-        _baseFuncRangeInterval = 2;
+        _rangeInterval = 2;
     }
-    else if (degree == 4)
+    else if (_def.degree == 4)
     {
         _baseFunc = &basisDeg4;
-        _baseFuncRangeInterval = 3;
+        _rangeInterval = 3;
     }
-    else if (degree > 4)
+    else if (_def.degree > 4)
     {
         _baseFunc = &basisDeg5;
-        _baseFuncRangeInterval = 3;
+        _rangeInterval = 3;
     } 
 }
 
-//
-
-std::function<float(float)> BSpline::seqAt(unsigned int dim)
+float    BSpline::calcAt(float coef, unsigned int dimension)
 {
-    return [this, dim](float n) -> float {
+    if (_baseFunc == nullptr)
+        D_THROW(std::invalid_argument, "not initialised");
+    if (dimension >= _def.dimension)
+        D_THROW(std::invalid_argument, "dimension out of bound");
+    if (coef < 0.0f || coef > 1.0f)
+        D_THROW(std::invalid_argument, "coef must be in [0,1], input=" << coef);
 
-        float margin = _degree + 1;
+    float margin = _def.degree + 1;
 
-        if (n < margin)
-            return _points[dim];
-
-        if (_points.size() / _dimension + margin <= n)
-            return _points[(_points.size() / _dimension - 1) * _dimension + dim];
-
-        return _points[(n - margin) * _dimension + dim];
-    };
-}
-
-float   BSpline::getInterpol(std::function<float(float)> seq, float tt)
-{
-    unsigned int rangeInterval = _baseFuncRangeInterval;
-    unsigned int tInterval = std::floor(tt);
+    coef = coef * (margin * 2 + float(_def.knotsLength) / _def.dimension);
+    unsigned int coefInterval = std::floor(coef);
 
     float result = 0.0f;
-    for (unsigned int ii = tInterval - rangeInterval; ii <= tInterval + rangeInterval; ++ii)
-        result += seq(ii) * _baseFunc(tt - ii);
+    for (unsigned int jj = coefInterval - _rangeInterval; jj <= coefInterval + _rangeInterval; ++jj)
+    {
+        float value = 0.0f;
+
+        if (jj < margin)
+            value = _def.knotsData[dimension];
+        else if (jj >= _def.knotsLength / _def.dimension + margin)
+            value = _def.knotsData[(_def.knotsLength / _def.dimension - 1) * _def.dimension + dimension];
+        else
+            value = _def.knotsData[int(jj - margin) * _def.dimension + dimension];
+
+        result += value * _baseFunc(coef - jj);
+    }
 
     return result;
-}
-
-void    BSpline::calcAt(float tt, float* out_arr)
-{
-    // t must be in [0,1]
-    tt = tt * ((_degree + 1) * 2 + _points.size() / _dimension);
-
-    for (unsigned int ii = 0; ii < _dimension; ++ii)
-        out_arr[ii] = getInterpol(seqAt(ii), tt);
 }

@@ -155,10 +155,14 @@ void	State_Running::update(int deltaTime)
 	}
 #endif
 
-	{ // camera
+	{
+		graphic.particleManager.update(elapsedTime);
+	}
 
-		glm::vec3	cameraNextCenter = { 0.0f, 0.0f, 0.0f };
-		float		cameraNextDistance = 30.0f;
+	{ // camera tracking
+
+		glm::vec3	cameraNextCenter = logic.circuitAnimation.boundaries.center;
+		float		cameraNextDistance = 200.0f;
 
 		//
 		//
@@ -169,39 +173,115 @@ void	State_Running::update(int deltaTime)
 		{
 			leaderCar.timeout = 0.0f;
 			leaderCar.index = -1;
-
-			cameraNextCenter = logic.circuitAnimation.boundaries.center;
-			cameraNextDistance = 200.0f;
 		}
 		else
 		{
-			cameraNextDistance = 30.0f;
+			// cameraNextDistance = 10.0f;
+			// cameraNextDistance = 30.0f;
+			cameraNextDistance = 40.0f;
 
-			leaderCar.timeout -= elapsedTime;
+			if (leaderCar.timeout > 0)
+				leaderCar.timeout -= elapsedTime;
 
-			// timeout of the camera focus on the currently best car
-			if (leaderCar.timeout <= 0.0f)
+			if (// no leader yet
+				leaderCar.index == -1 ||
+				// the current leader is dead
+				simulation.getCarResult(leaderCar.index).isAlive == false ||
+				// time to check for a potentially better leader
+				leaderCar.timeout <= 0.0f)
 			{
 				// reset the timeout
-				leaderCar.timeout = 0.5f; // <= half a second
+				leaderCar.timeout = 1.0f; // <= one second
 
 				// refresh the currently best car
 
 				unsigned int totalCars = simulation.getTotalCars();
 
+				float bestFitness = 0.0f;
 				leaderCar.index = -1;
-				int	bestGroundIndex = -1;
 				for (unsigned int ii = 0; ii < totalCars; ++ii)
 				{
 					const auto& carData = simulation.getCarResult(ii);
 
-					if (!carData.isAlive || bestGroundIndex > carData.groundIndex)
+					if (!carData.isAlive)
 						continue;
 
-					bestGroundIndex = carData.groundIndex;
+					if (leaderCar.index != -1 &&
+						!(carData.fitness > bestFitness + 2.0f))
+						continue;
+
+					bestFitness = carData.groundIndex;
 					leaderCar.index = ii;
 				}
 			}
+
+			{
+				// cameraNextDistance = 50.0f;
+
+				// glm::vec3		carsSummedPosition;
+				// unsigned int	carsAlive = 0;
+
+				// const unsigned int totalCars = simulation.getTotalCars();
+				// for (unsigned int ii = 0; ii < totalCars; ++ii)
+				// {
+				// 	const auto& carData = simulation.getCarResult(ii);
+
+				// 	if (!carData.isAlive)
+				// 		continue;
+
+				// 	//
+
+				// 	glm::vec3	sensorsHeight(0.0f, 0.0f, 2.0f);
+				// 	glm::mat4	carTransform = glm::translate(carData.transform, sensorsHeight);
+				// 	glm::vec4	carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+
+				// 	carsSummedPosition += glm::vec3(carOrigin);
+
+				// 	++carsAlive;
+				// }
+
+				// D_MYLOG("carsAlive=" << carsAlive);
+
+				// if (carsAlive > 0)
+				// {
+				// 	cameraNextCenter = carsSummedPosition / float(carsAlive);
+
+				// 	// graphic.camera.frustumCulling
+
+				// 	unsigned int	carsVisible = 0;
+				// 	for (unsigned int ii = 0; ii < totalCars; ++ii)
+				// 	{
+				// 		const auto& carData = simulation.getCarResult(ii);
+
+				// 		if (!carData.isAlive)
+				// 			continue;
+
+				// 		//
+
+				// 		glm::vec3	sensorsHeight(0.0f, 0.0f, 2.0f);
+				// 		glm::mat4	carTransform = glm::translate(carData.transform, sensorsHeight);
+				// 		glm::vec4	carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+
+				// 		if (graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 30.0f))
+				// 			++carsVisible;
+				// 	}
+
+				// 	if (carsVisible < carsAlive)
+				// 	{
+				// 		cameraNextDistance = camera.distance - 50.0f;
+				// 		if (cameraNextDistance < 30.0f)
+				// 			cameraNextDistance = 30.0f;
+				// 	}
+				// 	else
+				// 	{
+				// 		cameraNextDistance = camera.distance + 50.0f;
+				// 		if (cameraNextDistance > 100.0f)
+				// 			cameraNextDistance = 100.0f;
+				// 	}
+				// }
+			}
+
+
 		}
 
 		// do we have a car to focus the camera on?
@@ -212,9 +292,10 @@ void	State_Running::update(int deltaTime)
 			// this part elevate where the camera look along the up axis of the car
 			// => without it the camera look at the ground
 			// => mostly useful for a shoulder camera (TODO)
-			glm::vec3	sensorsHeight(0.0f, 0.0f, 2.0f);
-			glm::mat4	carTransform = glm::translate(carResult.transform, sensorsHeight);
-			glm::vec4	carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+			// glm::vec3	sensorsHeight(0.0f, 0.0f, 2.0f);
+			// glm::mat4	carTransform = glm::translate(carResult.transform, sensorsHeight);
+			// glm::vec4	carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+			glm::vec4	carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
 
 			cameraNextCenter = glm::vec3(carOrigin);
 		}
@@ -222,16 +303,25 @@ void	State_Running::update(int deltaTime)
 		//
 		//
 
+		// D_MYLOG("cameraNextCenter="
+		// 		<< cameraNextCenter.x << "/"
+		// 		<< cameraNextCenter.y << "/"
+		// 		<< cameraNextCenter.z);
+		// D_MYLOG("camera.center="
+		// 		<< camera.center.x << "/"
+		// 		<< camera.center.y << "/"
+		// 		<< camera.center.z);
+
 		const float	lerpRatio = 0.1f;
 
-		camera.center -= (camera.center - cameraNextCenter) * lerpRatio;
-		camera.distance -= (camera.distance - cameraNextDistance) * lerpRatio;
+		camera.center += (cameraNextCenter - camera.center) * lerpRatio;
+		camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
 
-	} // camera
+	} // camera tracking
 
 	{ // circuit animation
 
-		auto&	leaderCar = logic.leaderCar;
+		// auto&	leaderCar = logic.leaderCar;
 		auto&	animation = logic.circuitAnimation;
 
 		if (logic.isAccelerated)
@@ -244,57 +334,75 @@ void	State_Running::update(int deltaTime)
 		{
 			animation.targetValue = 3.0f; // <= default value
 
+			int bestGroundIndex = -1;
+			for (unsigned int ii = 0; ii < simulation.getTotalCars(); ++ii)
+			{
+				const auto& carData = simulation.getCarResult(ii);
+
+				if (!carData.isAlive || bestGroundIndex > carData.groundIndex)
+					continue;
+
+				bestGroundIndex = carData.groundIndex;
+			}
+
 			// do we have a car to focus the camera on?
-			if (leaderCar.index >= 0)
-			{
-				const auto& car = simulation.getCarResult(leaderCar.index);
+			if (bestGroundIndex >= 0)
+				animation.targetValue += bestGroundIndex;
 
-				animation.targetValue += car.groundIndex;
-			}
+			// lower value, closest from the cars
 
-			if (animation.lowerValue < animation.targetValue)
+			if (animation.lowerValue > animation.targetValue + 10.0f)
 			{
-				animation.lowerValue += 0.1f; // rise slowly
-				if (animation.lowerValue > animation.targetValue)
-					animation.lowerValue = animation.targetValue;
-			}
-			else if (animation.lowerValue > animation.targetValue + 10.0f)
-			{
-				animation.lowerValue -= 1.5f; // fall really quickly
+				// fall really quickly
+				animation.lowerValue -= 1.0f;
 				if (animation.lowerValue < animation.targetValue)
 					animation.lowerValue = animation.targetValue;
 			}
 			else if (animation.lowerValue > animation.targetValue)
 			{
-				animation.lowerValue -= 0.3f; // fall quickly
+				// fall quickly
+				animation.lowerValue -= 0.3f;
 				if (animation.lowerValue < animation.targetValue)
 					animation.lowerValue = animation.targetValue;
 			}
-
-			if (animation.upperValue < animation.targetValue)
+			else
 			{
-				animation.upperValue += 0.3f; // rise quickly
-				if (animation.upperValue > animation.targetValue)
-					animation.upperValue = animation.targetValue;
+				// rise slowly
+				animation.lowerValue += 0.1f;
+				if (animation.lowerValue > animation.targetValue)
+					animation.lowerValue = animation.targetValue;
 			}
-			else if (animation.upperValue > animation.targetValue + 10.0f)
+
+			// upper value, farthest from the cars
+
+			if (animation.upperValue > animation.targetValue + 10.0f)
 			{
-				animation.upperValue -= 1.0f; // fall really quickly
+				// fall really quickly
+				animation.upperValue -= 0.6f;
 				if (animation.upperValue < animation.targetValue)
 					animation.upperValue = animation.targetValue;
 			}
 			else if (animation.upperValue > animation.targetValue)
 			{
-				animation.upperValue -= 0.1f; // fall slowly
+				// fall slowly
+				animation.upperValue -= 0.1f;
 				if (animation.upperValue < animation.targetValue)
 					animation.upperValue = animation.targetValue;
 			}
+			else
+			{
+				// rise really quickly
+				animation.upperValue += 0.6f;
+				if (animation.upperValue > animation.targetValue)
+					animation.upperValue = animation.targetValue;
+			}
+
 		}
 
 		auto& animatedCircuit = graphic.geometries.animatedCircuit;
 
-		// <= 3 * 12 triangles
-		int indexValue = std::ceil(animation.upperValue) * 36;
+		const unsigned int verticesLength = 36; // <= 3 * 12 triangles
+		int indexValue = std::ceil(animation.upperValue) * verticesLength;
 		if (indexValue > animation.maxPrimitiveCount)
 			indexValue = animation.maxPrimitiveCount;
 
@@ -317,7 +425,11 @@ void	State_Running::update(int deltaTime)
 		chassisMatrices.reserve(totalCars);
 		wheelsMatrices.reserve(totalCars * 4);
 
-		glm::vec3	chassisHeight(0.0f, 0.0f, 1.0f);
+		std::vector<glm::mat4> modelsChassisMatrices;
+		std::vector<glm::mat4> modelWheelsMatrices;
+
+		// glm::vec3	chassisHeight(0.0f, 0.0f, 1.0f);
+		glm::vec3	modelHeight(0.0f, 0.0f, 0.2f);
 
 		for (unsigned int ii = 0; ii < totalCars; ++ii)
 		{
@@ -326,27 +438,42 @@ void	State_Running::update(int deltaTime)
 			if (!carData.isAlive)
 				continue;
 
-			// const float colorMax = 0.85f;
-			const float colorMax = 1.0f;
-			// float revLife = (1.0f - carData.life) * colorMax;
-			float revLife = 0.0f;
-			glm::vec4	chassisColor(colorMax, revLife, revLife, 1.0f);
-			glm::vec4	wheelsColor(colorMax, colorMax, revLife, 1.0f);
+			// // const float colorMax = 0.85f;
+			// const float colorMax = 1.0f;
+			// // float revLife = (1.0f - carData.life) * colorMax;
+			// float revLife = 0.0f;
+			// glm::vec4	chassisColor(colorMax, revLife, revLife, 1.0f);
+			// glm::vec4	wheelsColor(colorMax, colorMax, revLife, 1.0f);
 
-			glm::mat4	carTransform = glm::translate(carData.transform, chassisHeight);
+			// glm::mat4	carTransform = glm::translate(carData.transform, chassisHeight);
+			// chassisMatrices.push_back({ carTransform, chassisColor });
 
-			chassisMatrices.push_back({ carTransform, chassisColor });
+			// for (const auto& wheelTransform : carData.wheelsTransform)
+			// 	wheelsMatrices.push_back({ wheelTransform, wheelsColor });
+
+			glm::mat4	modelTransform = glm::translate(carData.transform, modelHeight);
+			modelsChassisMatrices.push_back(modelTransform);
 
 			for (const auto& wheelTransform : carData.wheelsTransform)
-				wheelsMatrices.push_back({ wheelTransform, wheelsColor });
+				modelWheelsMatrices.push_back(wheelTransform);
 		}
 
-		auto&	instanced = graphic.geometries.instanced;
+		// auto&	instanced = graphic.geometries.instanced;
 
-		instanced.chassis.updateBuffer(1, chassisMatrices);
-		instanced.wheels.updateBuffer(1, wheelsMatrices);
-		instanced.chassis.setInstancedCount(chassisMatrices.size());
-		instanced.wheels.setInstancedCount(wheelsMatrices.size());
+		// instanced.chassis.updateBuffer(1, chassisMatrices);
+		// instanced.chassis.setInstancedCount(chassisMatrices.size());
+
+		// instanced.wheels.updateBuffer(1, wheelsMatrices);
+		// instanced.wheels.setInstancedCount(wheelsMatrices.size());
+
+
+		graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);
+		graphic.geometries.model.car.setInstancedCount(modelsChassisMatrices.size());
+
+		graphic.geometries.model.wheel.updateBuffer(1, modelWheelsMatrices);
+		graphic.geometries.model.wheel.setInstancedCount(modelWheelsMatrices.size());
+
+
 	}
 
 #if defined D_WEB_WEBWORKER_BUILD

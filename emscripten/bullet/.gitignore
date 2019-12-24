@@ -3,5 +3,6 @@ lib
 obj
 old
 bin/*
+tools
 
 src/thirdparty/

@@ -6,6 +6,9 @@
 
 #include "graphic/utilities/StackRenderer.hpp"
 #include "graphic/utilities/TextRenderer.hpp"
+#include "graphic/utilities/ParticleManager.hpp"
+#include "graphic/utilities/FrustumCulling.hpp"
+
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
 
@@ -46,6 +49,7 @@ private:
 	void	initialiseGeometries();
 	void	initialiseCircuit();
 	void	initialiseStates();
+	void	initialiseSimulation();
 
 public:
 
@@ -59,10 +63,16 @@ public:
 			glm::vec3	center = { 0.0f, 0.0f, 0.0f };
 			float		distance = 0.0f;
 
-			glm::mat4	projectionMatrix;
-			glm::mat4	modeviewMatrix;
-			glm::mat4	sceneMatrix;
-			glm::mat4	hudMatrix;
+			struct t_matricesData
+			{
+				glm::mat4	projection;
+				glm::mat4	modelView;
+				glm::mat4	scene;
+				glm::mat4	hud;
+			}
+			matrices;
+
+			FrustumCulling	frustumCulling;
 		}
 		camera;
 
@@ -70,9 +80,11 @@ public:
 		{
 			Shader*	stackRenderer = nullptr;
 			Shader*	instanced = nullptr;
-			Shader*	monoColor = nullptr;
+			Shader*	wireframes = nullptr;
 			Shader*	animatedCircuit = nullptr;
 			Shader*	hudText = nullptr;
+			Shader*	particles = nullptr;
+			Shader*	model = nullptr;
 		}
 		shaders;
 
@@ -91,18 +103,24 @@ public:
 			}
 			instanced;
 
+			struct t_particles
+			{
+				Geometry	firework;
+			}
+			particles;
+
 			struct t_stackRenderer
 			{
 				Geometry	lines;
 			}
 			stackRenderer;
 
-			struct t_monoColor
+			struct t_wireframes
 			{
 				Geometry				circuitSkelton;
 				std::vector<Geometry>	bestCarsTrails;
 			}
-			monoColor;
+			wireframes;
 
 			struct t_animatedCircuit
 			{
@@ -116,10 +134,19 @@ public:
 				Geometry	letters;
 			}
 			hudText;
+
+			struct t_model
+			{
+				Geometry	car;
+				Geometry	wheel;
+			}
+			model;
 		}
 		geometries;
 
 		StackRenderer	stackRenderer;
+
+		ParticleManager	particleManager;
 
 		struct t_hudText
 		{
@@ -182,8 +209,13 @@ public:
 
 		struct t_carsTrails
 		{
+			struct t_carsData
+			{
+				bool isAlive;
+				std::vector<glm::vec3>	trail;
+			};
 			std::map<unsigned int, unsigned int>	genomeIndexMap;
-			std::vector<std::vector<glm::vec3>>		allTrailsData;
+			std::vector<t_carsData>					allTrailsData;
 
 			unsigned int	currentTrailIndex = 0;
 		}

@@ -80,7 +80,11 @@ PhysicWorld::~PhysicWorld()
 void	PhysicWorld::step()
 {
 	const int	maxSubSteps = 0; // <= so it's "deterministic"
-	const float	fixedTimeStep = 1.0f / 60.0f;
+	// const int		maxSubSteps = 3;
+	// const float		fixedTimeStep = 1.0f / 60.0f;
+	const float		fixedTimeStep = 1.0f / 60.0f;
+	// const float		fixedTimeStep = 0.025f;
+	// const float		fixedTimeStep = 0.0f;
 
 	_bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
 }
@@ -113,40 +117,40 @@ void	PhysicWorld::step()
 // 		addVehicle(*vehicle);
 // }
 
-void	PhysicWorld::reset()
-{
-	// for (auto& vehicle : _liveVehicles)
-	// 	removeVehicle(vehicle);
-	// while (!_liveVehicles.empty())
-	// 	removeVehicle(*_liveVehicles.begin());
+// void	PhysicWorld::reset()
+// {
+// 	// for (auto& vehicle : _liveVehicles)
+// 	// 	removeVehicle(vehicle);
+// 	// while (!_liveVehicles.empty())
+// 	// 	removeVehicle(*_liveVehicles.begin());
 
-	std::vector<PhysicVehicle*>	oldLiveVehicles;
-	for (auto* vehicle : _liveVehicles)
-		oldLiveVehicles.push_back(vehicle);
-	_liveVehicles.clear();
+// 	std::vector<PhysicVehicle*>	oldLiveVehicles;
+// 	for (auto* vehicle : _liveVehicles)
+// 		oldLiveVehicles.push_back(vehicle);
+// 	_liveVehicles.clear();
 
-	// for (auto* vehicle : oldLiveVehicles)
-	// {
-	// 	auto* bbHandle = vehicle->_bullet.carChassis->getBroadphaseHandle();
-	// 	_bullet.broadphase
-	// 				->getOverlappingPairCache()
-	// 				->cleanProxyFromPairs(bbHandle, _bullet.dispatcher);
+// 	// for (auto* vehicle : oldLiveVehicles)
+// 	// {
+// 	// 	auto* bbHandle = vehicle->_bullet.carChassis->getBroadphaseHandle();
+// 	// 	_bullet.broadphase
+// 	// 				->getOverlappingPairCache()
+// 	// 				->cleanProxyFromPairs(bbHandle, _bullet.dispatcher);
 
-	// 	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
-	// 	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
-	// }
+// 	// 	_bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+// 	// 	_bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+// 	// }
 
 
-	// _bullet.broadphase->resetPool(_bullet.dispatcher);
-	// _bullet.solver->reset();
+// 	// _bullet.broadphase->resetPool(_bullet.dispatcher);
+// 	// _bullet.solver->reset();
 
-	// const int	maxSubSteps = 0; // <= so it's "deterministic"
-	// const float	fixedTimeStep = 0.0f;
-	// _bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
+// 	// const int	maxSubSteps = 0; // <= so it's "deterministic"
+// 	// const float	fixedTimeStep = 0.0f;
+// 	// _bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
 
-	for (auto* vehicle : _vehicles)
-		addVehicle(vehicle);
-}
+// 	for (auto* vehicle : _vehicles)
+// 		addVehicle(vehicle);
+// }
 
 //
 

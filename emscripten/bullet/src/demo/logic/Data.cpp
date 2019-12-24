@@ -27,9 +27,11 @@ Data::~Data()
 	delete logic.simulation;
 	delete graphic.shaders.stackRenderer;
 	delete graphic.shaders.instanced;
-	delete graphic.shaders.monoColor;
+	delete graphic.shaders.wireframes;
 	delete graphic.shaders.animatedCircuit;
 	delete graphic.shaders.hudText;
+	delete graphic.shaders.particles;
+	delete graphic.shaders.model;
 }
 
 void	Data::initialise()
@@ -49,8 +51,11 @@ void	Data::initialise()
 
 	initialiseCircuit();
 	initialiseStates();
+	initialiseSimulation();
 
 	logic.carsTrails.allTrailsData.resize(logic.simulation->getTotalCars());
+	for (auto& trail : logic.carsTrails.allTrailsData)
+		trail.isAlive = true;
 
 	{
 		std::stringstream sstr;
@@ -74,13 +79,13 @@ void	Data::initialise()
 #if defined D_WEB_PTHREAD_BUILD
 
 		sstr
-			<< "Type: C++ (asm.js)" << std::endl
+			<< "Type: C++ (wasm)" << std::endl
 			<< "Mode: pthread";
 
 #elif defined D_WEB_WEBWORKER_BUILD
 
 		sstr
-			<< "Type: C++ (asm.js)" << std::endl
+			<< "Type: C++ (wasm)" << std::endl
 			<< "Mode: webworker (as a fallback)";
 
 #elif defined D_NATIVE_PTHREAD_BUILD
@@ -99,10 +104,14 @@ void	Data::initialise()
 	{
 		std::stringstream sstr;
 
+		// sstr
+		// 	<< "WebWorker fallback " << std::endl
+		// 	<< "for pthread support" << std::endl
+		// 	<< "try Chrome Desktop ";
 		sstr
-			<< "WebWorker fallback " << std::endl
-			<< "for pthread support" << std::endl
-			<< "try Chrome Desktop ";
+			<< "WebWorker as a fallback " << std::endl
+			<< "=> for pthread support" << std::endl
+			<< "=> consider Chrome Desktop";
 
 		logic.hudText.pthreadWarning = sstr.str();
 	}

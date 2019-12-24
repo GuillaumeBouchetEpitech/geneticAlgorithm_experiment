@@ -1,34 +1,34 @@
 
-# build_target=native_pthread
-build_target=web_asmjs_webworker
-# build_target=web_asmjs_pthread
+build_platform=native_pthread
+# build_platform=web_wasm_webworker
+# build_platform=web_wasm_pthread
 
 build_mode=release
 # build_mode=debug
 
 #
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
-$(info build_target is valid, value=$(build_target))
+$(info build_platform is valid, value=$(build_platform))
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
-$(info build_target is valid, value=$(build_target))
+$(info build_platform is valid, value=$(build_platform))
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
-$(info build_target is valid, value=$(build_target))
+$(info build_platform is valid, value=$(build_platform))
 
 else
 
-$(error unsupported value for "build_target", value=$(build_target))
+$(error unsupported value for "build_platform", value=$(build_platform))
 
 endif
 
 #
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 	DIR_TARGET=	./bin
 	DIR_LIB=	./lib/native
@@ -38,9 +38,9 @@ ifeq ($(build_target),native_pthread)
 	NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_collision.a
 	NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_dynamics.a
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
-	DIR_TARGET=	./dist/asm.js/pthread
+	DIR_TARGET=	./dist/wasm/pthread
 	DIR_LIB=	./lib/web
 
 	NAME_WEB_PTHREAD=		$(DIR_TARGET)/index.js
@@ -48,9 +48,9 @@ else ifeq ($(build_target),web_asmjs_pthread)
 	NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_collision.bc
 	NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_dynamics.bc
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
-	DIR_TARGET=	./dist/asm.js/webworker
+	DIR_TARGET=	./dist/wasm/webworker
 	DIR_LIB=	./lib/web
 
 	NAME_WEB_MAIN=			$(DIR_TARGET)/index.js
@@ -73,17 +73,17 @@ DIR_BULLET=		$(DIR_THIRDPARTY)/bullet3/src
 
 
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 DIR_OBJ=			./obj/native
 OBJDIR_NATIVE=		$(DIR_OBJ)
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 DIR_OBJ=			./obj/web
 OBJDIR_WEB_PTHREAD=	$(DIR_OBJ)/pthread
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 DIR_OBJ=			./obj/web
 OBJDIR_WEB_MAIN=	$(DIR_OBJ)/main
@@ -100,7 +100,7 @@ OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
 
 #### SRC
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 # common src
 SRC_NATIVE=			$(wildcard \
@@ -123,7 +123,7 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 # common src
 SRC_WEB_PTHREAD=	$(wildcard \
@@ -146,7 +146,7 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 SRC_WEB_MAIN=	$(wildcard \
 						$(DIR_SRC)/*.cpp \
@@ -197,19 +197,19 @@ SRC_BULLET_DYNAMICS=	$(wildcard \
 
 #
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 OBJ_NATIVE=		$(patsubst %.cpp, \
 					$(OBJDIR_NATIVE)/%.o, \
 					$(SRC_NATIVE))
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 OBJ_WEB_PTHREAD=	$(patsubst %.cpp, \
 						$(OBJDIR_WEB_PTHREAD)/%.o, \
 						$(SRC_WEB_PTHREAD))
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 OBJ_WEB_MAIN=	$(patsubst %.cpp, \
 					$(OBJDIR_WEB_MAIN)/%.o, \
@@ -255,7 +255,7 @@ else
 endif
 
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 	CXX=g++
 	AR=ar
@@ -283,7 +283,7 @@ ifeq ($(build_target),native_pthread)
 						-std=c++17 \
 						-I$(DIR_BULLET)
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 	CXX=em++
 	AR=emar
@@ -325,11 +325,11 @@ else ifeq ($(build_target),web_asmjs_pthread)
 							$(NAME_BULLET_DYNAMICS) \
 							$(NAME_BULLET_COLLISION) \
 							$(NAME_BULLET_LINEARMATH)
-							
+
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
-	LDFLAGS_WEB_PTHREAD+=	-s TOTAL_MEMORY=64Mb
+	LDFLAGS_WEB_PTHREAD+=	-s TOTAL_MEMORY=128Mb
 
 	# assets loading
 	# => This cannot be used with pthread
@@ -337,11 +337,21 @@ else ifeq ($(build_target),web_asmjs_pthread)
 	# => This works
 	LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
 
+	# hacky hack to make the multithreading works with wasm
+	LDFLAGS_WEB_PTHREAD+=	-Wl,--shared-memory,--no-check-features
+
+	# => embed the "index/worker.mem" in the "index/worker.mem"
+	# COMMON_LDFLAGS+=	-s SINGLE_FILE=1
+
+
+
 	# # disable the internal emscripten version (is this still useful?)
 	# LDFLAGS_WEB_PTHREAD+=	-s USE_BULLET=0
 
-	# no wasm, only asm.js for now
-	LDFLAGS_WEB_PTHREAD+=	-s WASM=0
+	# now using wasm as faster than asm.js
+	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1 -s BINARYEN_TRAP_MODE="clamp"
+	LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1
+	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1
 
 	# Link Time Optimisation (LTO)
 	LDFLAGS_WEB_PTHREAD+=	--llvm-lto 1
@@ -354,19 +364,17 @@ else ifeq ($(build_target),web_asmjs_pthread)
 						-std=c++17 \
 						-I$(DIR_BULLET)
 
-# ifeq ($(build_mode),debug)
+ifeq ($(build_mode),debug)
 
-# 	LDFLAGS_WEB_PTHREAD+=	-s DEMANGLE_SUPPORT=1
-	
-# 	#  \
-# 	# 						-s GL_ASSERTIONS=1 \
-# 	# 						-s GL_DEBUG=1
+	LDFLAGS_WEB_PTHREAD+=	-s DEMANGLE_SUPPORT=1 \
+							-s GL_ASSERTIONS=1 \
+							-s GL_DEBUG=1
 
-# 							# -s DISABLE_EXCEPTION_CATCHING=2 \
+							# -s DISABLE_EXCEPTION_CATCHING=2 \
 
-# endif
+endif
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 	CXX=em++
 	AR=emar
@@ -376,13 +384,16 @@ else ifeq ($(build_target),web_asmjs_webworker)
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
-	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=32Mb
+	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=64Mb
 
 	# assets loading
 	# => This cannot be used with pthread
-	# COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
+	COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
 	# => This works
-	COMMON_LDFLAGS+=	--embed-file ./assets/
+	# COMMON_LDFLAGS+=	--embed-file ./assets/
+
+	# => embed the "index/worker.mem" in the "index/worker.mem"
+	# COMMON_LDFLAGS+=	-s SINGLE_FILE=1
 
 	# # final file size optimisation
 	# COMMON_LDFLAGS+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
@@ -394,8 +405,8 @@ else ifeq ($(build_target),web_asmjs_webworker)
 	# # disable the internal emscripten version (is this still useful?)
 	# COMMON_LDFLAGS+=	-s USE_BULLET=0
 
-	# no wasm, only asm.js for now
-	COMMON_LDFLAGS+=	-s WASM=0
+	# now using wasm as faster than asm.js
+	COMMON_LDFLAGS+=	-s WASM=1
 
 	CXXFLAGS_COMMON=	$(BUILD_FLAG) \
 						-std=c++17 \
@@ -403,7 +414,7 @@ else ifeq ($(build_target),web_asmjs_webworker)
 						-I$(DIR_SRC) \
 						\
 						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"' \
-						-DD_WORKER_SCRIPT_URL='"asm.js/webworker/worker.js"' \
+						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
 	# FLAGS_WEB_MAIN=		-s USE_SDL=2 \
@@ -426,7 +437,7 @@ else ifeq ($(build_target),web_asmjs_webworker)
 						$(NAME_BULLET_DYNAMICS) \
 						$(NAME_BULLET_COLLISION) \
 						$(NAME_BULLET_LINEARMATH)
-						
+
 	CXXFLAGS_WEB_MAIN=	$(CXXFLAGS_COMMON) \
 						$(FLAGS_WEB_MAIN)
 
@@ -451,7 +462,7 @@ ifeq ($(build_mode),debug)
 							# -s DISABLE_EXCEPTION_CATCHING=2 \
 
 	LDFLAGS_WEB_WORKER+=	-s DEMANGLE_SUPPORT=1
-	
+
 							# -s DISABLE_EXCEPTION_CATCHING=2
 
 endif
@@ -467,15 +478,15 @@ RM=			rm -rf
 #
 ## RULE(S)
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 all:	native_pthread
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 all:	web_pthread
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 all:	web_main web_worker
 
@@ -485,22 +496,22 @@ ensurefolders:
 				@mkdir -p $(DIR_TARGET)
 				@mkdir -p $(DIR_LIB)
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 native_pthread:	ensurefolders $(OBJ_NATIVE)
-				@mkdir -p `dirname $(NAME_NATIVE)`	
+				@mkdir -p `dirname $(NAME_NATIVE)`
 				$(CXX) $(CXXFLAGS_NATIVE) $(OBJ_NATIVE) -o $(NAME_NATIVE) $(LDFLAGS_NATIVE)
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 web_pthread:	ensurefolders $(OBJ_WEB_PTHREAD)
-				@mkdir -p `dirname $(NAME_WEB_PTHREAD)`	
+				@mkdir -p `dirname $(NAME_WEB_PTHREAD)`
 				$(CXX) $(CXXFLAGS_WEB_PTHREAD) $(OBJ_WEB_PTHREAD) -o $(NAME_WEB_PTHREAD) $(LDFLAGS_WEB_PTHREAD)
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 web_main:		ensurefolders $(OBJ_WEB_MAIN)
-				@mkdir -p `dirname $(NAME_WEB_MAIN)`	
+				@mkdir -p `dirname $(NAME_WEB_MAIN)`
 				$(CXX) $(CXXFLAGS_WEB_MAIN) $(OBJ_WEB_MAIN) -o $(NAME_WEB_MAIN) $(LDFLAGS_WEB_MAIN)
 
 web_worker:		ensurefolders $(OBJ_WEB_WORKER)
@@ -526,19 +537,19 @@ bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
 # => ensure the "obj" folder(s)
 # => compile in a ".o" file
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 $(OBJDIR_NATIVE)/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	$(CXX) $(CXXFLAGS_NATIVE) $< -c -o $@
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 $(OBJDIR_WEB_PTHREAD)/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	$(CXX) $(CXXFLAGS_WEB_PTHREAD) $< -c -o $@
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 $(OBJDIR_WEB_MAIN)/%.o: %.cpp
 	@mkdir -p `dirname $@`
@@ -564,7 +575,7 @@ $(OBJDIR_BULLET_DYNAMICS)/%.o: %.cpp
 
 #
 
-ifeq ($(build_target),native_pthread)
+ifeq ($(build_platform),native_pthread)
 
 clean:
 		$(RM) $(OBJDIR_NATIVE)
@@ -572,7 +583,7 @@ clean:
 fclean:	clean
 		$(RM) $(NAME_NATIVE)
 
-else ifeq ($(build_target),web_asmjs_pthread)
+else ifeq ($(build_platform),web_wasm_pthread)
 
 clean:
 		$(RM) $(OBJDIR_WEB_PTHREAD)
@@ -580,7 +591,7 @@ clean:
 fclean:	clean
 		$(RM) $(NAME_WEB_PTHREAD)
 
-else ifeq ($(build_target),web_asmjs_webworker)
+else ifeq ($(build_platform),web_wasm_webworker)
 
 clean:
 		$(RM) $(OBJDIR_WEB_MAIN)

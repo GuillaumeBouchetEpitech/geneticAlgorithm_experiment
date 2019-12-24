@@ -13,18 +13,20 @@ attribute float a_index;
 
 varying vec4 v_color;
 
+const vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
+
 void main(void)
 {
 	float deformationCoef = 0.0;
 
 	if (a_index <= u_lowerLimit)
 	{
-		// not deformed
+		// not deformed (straigth walls)
 		deformationCoef = 0.0;
 	}
 	else if (a_index > u_upperLimit)
 	{
-		// fully deformed
+		// fully deformed (shattered walls)
 		deformationCoef = 1.0;
 	}
 	else
@@ -37,14 +39,17 @@ void main(void)
 
 	if (deformationCoef == 1.0)
 	{
+		// invisible
 		v_color = vec4(0.0);
 	}
 	else
 	{
-		v_color = mix(vec4(a_color, u_alpha), vec4(1.0), deformationCoef);
+		v_color = mix(vec4(a_color, u_alpha), white, deformationCoef);
+		// v_color = vec4(a_color, u_alpha * (0.5 + 0.5 * (1.0 - deformationCoef)));
+		// v_color = vec4(a_color, u_alpha);
 
-		if (deformationCoef > 0.0)
-			position -= a_normal * deformationCoef;
+		// if (deformationCoef > 0.0)
+		position -= a_normal * deformationCoef;
 	}
 
 	gl_Position = u_composedMatrix * vec4(position, 1.0);

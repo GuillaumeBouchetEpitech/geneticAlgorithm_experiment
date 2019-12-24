@@ -55,7 +55,7 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
             {
                 D_MYLOG("WebGLContext (pthread) => workaround failed");
             }
-            
+
         }
     }
 
@@ -64,7 +64,7 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
      if (SDL_Init(SDL_INIT_VIDEO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
-    IMG_Init(IMG_INIT_PNG); 
+    IMG_Init(IMG_INIT_PNG);
 
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -75,7 +75,8 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
 
     const int	posX = SDL_WINDOWPOS_UNDEFINED;
     const int	posY = SDL_WINDOWPOS_UNDEFINED;
-    const int	flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    // const int	flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    const int	flags = SDL_WINDOW_OPENGL;
 
     // SDL_SetRelativeMouseMode(SDL_TRUE);
 
@@ -138,8 +139,6 @@ void	SDLWindowWrapper::step(void* pData)
 {
     SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
-    // self->process();
-
     const unsigned int currentTime = SDL_GetTicks(); // in millisecond
     const unsigned int deltaTime = currentTime - self->_startTime;
 
@@ -159,8 +158,8 @@ void	SDLWindowWrapper::run()
 #if defined __EMSCRIPTEN__
 
     emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 0, true);
-    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 60, true);
-    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 30, true);
+
+    // unreacahble <= `emscripten_set_main_loop_arg` does that
 
 #else
 

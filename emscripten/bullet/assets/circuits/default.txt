@@ -1,8 +1,8 @@
 
-# above the first straight
+# above the first straight of the crcuit
 START_TRANSFORM_POSITION    10.0 10.0 5.3
 
-# cars are facing Y+ axis, rotate car toward X
+# cars are facing Y+ axis, rotate car toward X+ axis
 START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
 
 #
@@ -11,8 +11,17 @@ START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
 
 KNOTS_COLOR 0.25 0.25 0.75
 
-KNOTS_DUAL   5  15  5       5    5  5
-KNOTS_DUAL  90   0  0      90    0  0
+KNOTS_DUAL   5  15  5       5   5  5
+KNOTS_DUAL  90   0  0      90   0  0
+
+
+# KNOTS_DUAL  20   3  0      20   0  0
+# KNOTS_DUAL  40  45  0      40  45  0
+# KNOTS_DUAL  80 -93  0      80 -93  0
+# KNOTS_DUAL  40  45  0      40  45  0
+# KNOTS_DUAL  20   0  0      20   3  0
+# KNOTS_DUAL  90   0  0      90   0  0
+
 
 # infinity loop
 
@@ -29,15 +38,19 @@ KNOTS_DUAL  90   0  0      90    0  0
         KNOTS_DUAL  50 -50 6    60 -60 6
 
 
-        KNOTS_DUAL  50 50 6     60 60 6
-        KNOTS_DUAL  -50 50 6    -60 60 6
+#        KNOTS_DUAL  50 50 6     60 60 6
+#        KNOTS_DUAL  -50 50 6    -60 60 6
 
-        KNOTS_DUAL  -50 -50 6   -60 -60 6
-        KNOTS_DUAL  50 -50 6    60 -60 6
+#        KNOTS_DUAL  -50 -50 6   -60 -60 6
+#        KNOTS_DUAL  50 -50 6    60 -60 6
 
     KNOTS_COLOR 0.15 0.15 0.15
 
-    KNOTS_DUAL 40 0 14     40 0 0
+#    KNOTS_DUAL 40 0 14     40 0 0
+
+    KNOTS_DUAL 40 0 7     40 0 0
+    KNOTS_DUAL 80 0 0     80 0 0
+    KNOTS_DUAL 40 0 7     40 0 0
 
         KNOTS_COLOR 0.75 0.25 0.75
 
@@ -48,11 +61,11 @@ KNOTS_DUAL  90   0  0      90    0  0
         KNOTS_DUAL  60 60 6     50 50 6
 
 
-        KNOTS_DUAL  60 -60 6    50 -50 6
-        KNOTS_DUAL  -60 -60 6   -50 -50 6
+#        KNOTS_DUAL  60 -60 6    50 -50 6
+#        KNOTS_DUAL  -60 -60 6   -50 -50 6
 
-        KNOTS_DUAL  -60 60 6    -50 50 6
-        KNOTS_DUAL  60 60 6     50 50 6
+#        KNOTS_DUAL  -60 60 6    -50 50 6
+#        KNOTS_DUAL  60 60 6     50 50 6
 
     KNOTS_COLOR 0.15 0.15 0.15
     KNOTS_DUAL  30 0 -7     30 0 0
@@ -67,8 +80,8 @@ KNOTS_DUAL 90 0 0     90 0 0
 
     KNOTS_COLOR 0.75 0.25 0.25
 
-	KNOTS_DUAL 40 0 40     40 0 40
-	KNOTS_DUAL -40 0 45     -40 0 40
+	KNOTS_DUAL 45 0 60     45 0 60
+	KNOTS_DUAL -45 0 55   -45 0 50
 
 	KNOTS_DUAL  -40 30 -5    -40 40 -15
 	KNOTS_DUAL  0 40 -10    20 40 0

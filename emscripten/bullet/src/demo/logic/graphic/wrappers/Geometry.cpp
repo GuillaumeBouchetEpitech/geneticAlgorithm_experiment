@@ -143,15 +143,16 @@ void Geometry::render() const
     _vao.bind();
 
     if (_isInstanced)
-    {
-        glDrawArraysInstanced(_primitiveType, 0, _primitiveCount, _instanceCount);
-    }
+        glDrawArraysInstanced(_primitiveType, _primitiveStart, _primitiveCount, _instanceCount);
     else
-    {
-        glDrawArrays(_primitiveType, 0, _primitiveCount);
-    }
+        glDrawArrays(_primitiveType, _primitiveStart, _primitiveCount);
 
     _vao.unbind();
+}
+
+void Geometry::setPrimitiveStart(unsigned int start)
+{
+    _primitiveStart = start;
 }
 
 void Geometry::setPrimitiveCount(unsigned int count)

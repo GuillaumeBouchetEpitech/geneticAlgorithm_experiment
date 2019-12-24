@@ -28,7 +28,7 @@ int	RandomNumberGenerator::getValue()
 
 float   RandomNumberGenerator::getNormalisedValue()
 {
-    return float(RandomNumberGenerator::getValue()) / _max;
+    return float(RandomNumberGenerator::getValue()) / float(_max);
 }
 
 int     RandomNumberGenerator::getRangedValue(int min, int max)

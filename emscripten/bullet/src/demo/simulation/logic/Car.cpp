@@ -10,8 +10,28 @@
 namespace /*anonymous*/
 {
     float   k_steeringMaxValue = M_PI / 8.0f;
-    float   k_speedMaxValue = 20.0f;
+    float   k_speedMaxValue = 10.0f;
     int     k_healthMaxValue = 200;
+
+    const float	k_eyeMaxRange = 50.0f;
+    const float	k_eyeHeight = 1.0f;
+    const float	k_eyeElevation = 6.0f;
+    const float	k_eyeWidthStep = float(M_PI) / 8.0f;
+
+    const std::array<float, 3> k_eyeElevations = {
+        -k_eyeElevation,
+        0.0f,
+        +k_eyeElevation,
+    };
+
+    const std::array<float, 5> k_eyeAngles = {
+        -k_eyeWidthStep * 2.0f,
+        -k_eyeWidthStep,
+        0.0f,
+        +k_eyeWidthStep,
+        +k_eyeWidthStep * 2.0f
+    };
+
 };
 
 Car::Car(PhysicWorld& physicWorld,
@@ -42,21 +62,21 @@ void	Car::update(const NeuralNetwork& neuralNetwork)
         return;
     }
 
-    // TODO: that might be slow, to profile and make as a static attribut?
     std::vector<float>	input;
     input.reserve(_eyeSensors.size());
     for (const auto& eyeSensor : _eyeSensors)
+    {
+        // input range is [0, 1]
         input.push_back(eyeSensor.value);
+    }
 
     std::vector<float> output;
 
     neuralNetwork.process(input, output);
 
-    _output.steer = output[0]; // the range is [0, 1]
-    _output.speed = output[1]; // the range is [0, 1]
-
-    // if (std::isnan(_output.steer))	_output.steer = 0.5f;
-    // if (std::isnan(_output.speed))	_output.speed = 0.5f;
+    // output range is [0, 1]
+    _output.steer = output[0];
+    _output.speed = output[1];
 
     _output.steer = std::min(1.0f, std::max(0.0f, _output.steer));
     _output.speed = std::min(1.0f, std::max(0.0f, _output.speed));
@@ -77,38 +97,19 @@ void	Car::updateSensors()
 
     { // eye sensor
 
-        const float	eyeMaxRange = 50.0f;
-        const float	eyeHeight = 1.0f;
-        const float	eyeElevation = 6.0f;
-        const float	eyeWidth = float(M_PI) / 8.0f;
-
-        const std::array<float, 3> eyeElevations = {
-            -eyeElevation,
-            0.0f,
-            +eyeElevation,
-        };
-
-        const std::array<float, 5> eyeAngles = {
-            -eyeWidth * 2.0f,
-            -eyeWidth,
-            0.0f,
-            +eyeWidth,
-            +eyeWidth * 2.0f
-        };
-
-        glm::vec4 newNearValue = transform * glm::vec4(0, 0, eyeHeight, 1);
+        glm::vec4 newNearValue = transform * glm::vec4(0, 0, k_eyeHeight, 1);
 
         int sensorIndex = 0;
 
-        for (const auto& eyeElevation : eyeElevations)
-            for (const auto& eyeAngle : eyeAngles)
+        for (const auto& k_eyeElevation : k_eyeElevations)
+            for (const auto& eyeAngle : k_eyeAngles)
             {
                 auto& eyeSensor = _eyeSensors[sensorIndex++];
 
                 glm::vec4 newFarValue = {
-                    eyeMaxRange * sinf(eyeAngle),
-                    eyeMaxRange * cosf(eyeAngle),
-                    eyeHeight + eyeElevation,
+                    k_eyeMaxRange * sinf(eyeAngle),
+                    k_eyeMaxRange * cosf(eyeAngle),
+                    k_eyeHeight + k_eyeElevation,
                     1.0f
                 };
 
@@ -130,15 +131,14 @@ void	Car::updateSensors()
 
 void	Car::collideEyeSensors()
 {
-    const float	sensorMaxRange = 50.0f;
-
     for (auto& sensor : _eyeSensors)
     {
         sensor.value = 1.0f;
 
+        // eye sensors collide ground + walls
         PhysicWorld::t_raycastParams params(sensor.near, sensor.far);
         params.collisionGroup = D_GROUP_SENSOR;
-        params.collisionMask = D_GROUP_GROUND | D_GROUP_WALL; // collide ground and walls
+        params.collisionMask = D_GROUP_GROUND | D_GROUP_WALL;
 
         bool hasHit = _physicWorld.raycast(params);
 
@@ -147,17 +147,18 @@ void	Car::collideEyeSensors()
 
         sensor.far = params.result.impactPoint;
 
-        sensor.value = glm::length(sensor.far - sensor.near) / sensorMaxRange;
+        sensor.value = glm::length(sensor.far - sensor.near) / k_eyeMaxRange;
     }
 }
 
 void	Car::collideGroundSensor()
 {
-    // raycast to get the checkpoints validation
+    // raycast the ground to get the checkpoints validation
 
+    // ground sensor collide only ground
     PhysicWorld::t_raycastParams	params(_groundSensor.near, _groundSensor.far);
     params.collisionGroup = D_GROUP_SENSOR;
-    params.collisionMask = D_GROUP_GROUND; // collide with the ground only
+    params.collisionMask = D_GROUP_GROUND;
 
     bool hasHitGround = _physicWorld.raycast(params);
 
@@ -166,8 +167,10 @@ void	Car::collideGroundSensor()
         _groundSensor.far = params.result.impactPoint;
         int	hasHitGroundIndex = params.result.impactIndex;
 
+        // is this the next "ground geometry" index?
         if (_groundIndex + 1 == hasHitGroundIndex)
         {
+            // update so it only get rewarded at the next "ground geometry"
             _groundIndex = hasHitGroundIndex;
 
             // restore health to full
