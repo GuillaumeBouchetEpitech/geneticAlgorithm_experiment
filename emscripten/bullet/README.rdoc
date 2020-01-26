@@ -7,27 +7,34 @@
 http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html
 
 
-== Build emscripten C++
+== Build emscripten C++ pthread (for Chrome on desktop only)
 
-requirement: emscripten
+  sh sh_install_thirdparties.sh
+  sh sh_install_tools.sh
+  sh sh_build.sh (select "bullet", then platform "web pthread", then mode "release", then rebuild "yes")
+  sh sh_build.sh (select "experiment", then platform "web pthread", then mode "release", then rebuild "yes")
+  node dumbFileServer.js
 
-modify Makefile top variable this way 'cpp_mode=no'
-modify Makefile variable "EMSCRIPTEN_ROOT" with your path to emscripten
+then use firefox/chrome to load `http://127.0.0.1:9000/dist/index.html`
 
-  make fclean_bullet
-  make bullet -j
-  make fclean
-  make -j
+== Build emscripten C++ webworker (mobile & firefox friendly)
 
+  sh sh_install_thirdparties.sh
+  sh sh_install_tools.sh
+  sh sh_build.sh (select "bullet", then platform "web worker", then mode "release", then rebuild "yes")
+  sh sh_build.sh (select "experiment", then platform "web worker", then mode "release", then rebuild "yes")
+  node dumbFileServer.js
 
-== (BROKEN FOR NOW) Build native C++
+then use firefox/chrome to load `http://127.0.0.1:9000/dist/index.html`
+
+== Build native C++ pthread
 
 modify Makefile top variable this way 'cpp_mode=yes'
 
-  make fclean_bullet
-  make bullet -j
-  make fclean
-  make -j
+  sh sh_install_thirdparties.sh
+  sh sh_build.sh (select "bullet", then platform "native", then mode "release", then rebuild "yes")
+  sh sh_build.sh (select "experiment", then platform "native", then mode "release", then rebuild "yes")
 
+then run `./bin/exec`
 
 == Thanks for watching !
