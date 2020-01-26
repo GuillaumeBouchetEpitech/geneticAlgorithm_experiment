@@ -15,12 +15,30 @@ KNOTS_DUAL   5  15  5       5   5  5
 KNOTS_DUAL  90   0  0      90   0  0
 
 
+
+# death tube
+
+# KNOTS_DUAL  40   0   0      40   0   0
+# KNOTS_DUAL  40   0  10      40  10   0
+# KNOTS_DUAL  40 -10   0      40   0  10
+# KNOTS_DUAL  40   0 -10      40 -10   0
+# KNOTS_DUAL  40  10   0      40   0 -10
+# KNOTS_DUAL  40   0   0      40   0   0
+
+# /death tube
+
+
+
+# zig-zag
+
 # KNOTS_DUAL  20   3  0      20   0  0
 # KNOTS_DUAL  40  45  0      40  45  0
 # KNOTS_DUAL  80 -93  0      80 -93  0
 # KNOTS_DUAL  40  45  0      40  45  0
 # KNOTS_DUAL  20   0  0      20   3  0
 # KNOTS_DUAL  90   0  0      90   0  0
+
+# /zig-zag
 
 
 # infinity loop
@@ -112,26 +130,26 @@ KNOTS_COLOR 0.25 0.25 0.75
 KNOTS_DUAL 30 0 0     30 0 0
 KNOTS_DUAL 30 0 0     30 0 0
 
-# vertical corner
+# # vertical corner
 
-    KNOTS_COLOR 0.75 0.75 0.25
-    KNOTS_DUAL 30 0 0     30 0 0
+#     KNOTS_COLOR 0.75 0.75 0.25
+#     KNOTS_DUAL 30 0 0     30 0 0
 
-    KNOTS_DUAL 30 0 30     30 0 30
+#     KNOTS_DUAL 30 0 30     30 0 30
 
-    KNOTS_DUAL 10 0 40     10 0 40
+#     KNOTS_DUAL 10 0 40     10 0 40
 
-    KNOTS_DUAL  10 20 15        10 30 30
-    KNOTS_DUAL  -10 20 -15      -10 30 -30
+#     KNOTS_DUAL  10 20 15        10 30 30
+#     KNOTS_DUAL  -10 20 -15      -10 30 -30
 
-    KNOTS_DUAL -10 0 -40     -10 0 -40
+#     KNOTS_DUAL -10 0 -40     -10 0 -40
 
-    KNOTS_DUAL -30 0 -30     -30 0 -30
+#     KNOTS_DUAL -30 0 -30     -30 0 -30
 
-    KNOTS_DUAL -30 0 0     -30 0 0
+#     KNOTS_DUAL -30 0 0     -30 0 0
 
-# /vertical corner
+# # /vertical corner
 
-KNOTS_COLOR 0.25 0.25 0.75
-KNOTS_DUAL -30 0 0     -30 0 0
+# KNOTS_COLOR 0.25 0.25 0.75
+# KNOTS_DUAL -30 0 0     -30 0 0
 

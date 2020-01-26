@@ -176,8 +176,6 @@ void	State_Running::update(int deltaTime)
 		}
 		else
 		{
-			// cameraNextDistance = 10.0f;
-			// cameraNextDistance = 30.0f;
 			cameraNextDistance = 40.0f;
 
 			if (leaderCar.timeout > 0)
@@ -415,18 +413,26 @@ void	State_Running::update(int deltaTime)
 
 		unsigned int totalCars = simulation.getTotalCars();
 
+		// struct t_attributes
+		// {
+		// 	glm::mat4	tranform;
+		// 	glm::vec4	color;
+		// };
+
+		// std::vector<t_attributes> chassisMatrices, wheelsMatrices;
+		// chassisMatrices.reserve(totalCars);
+		// wheelsMatrices.reserve(totalCars * 4);
+
 		struct t_attributes
 		{
 			glm::mat4	tranform;
-			glm::vec4	color;
+			glm::vec3	color;
+
+			t_attributes() = default;
 		};
 
-		std::vector<t_attributes> chassisMatrices, wheelsMatrices;
-		chassisMatrices.reserve(totalCars);
-		wheelsMatrices.reserve(totalCars * 4);
-
-		std::vector<glm::mat4> modelsChassisMatrices;
-		std::vector<glm::mat4> modelWheelsMatrices;
+		std::vector<t_attributes> modelsChassisMatrices;
+		std::vector<t_attributes> modelWheelsMatrices;
 
 		// glm::vec3	chassisHeight(0.0f, 0.0f, 1.0f);
 		glm::vec3	modelHeight(0.0f, 0.0f, 0.2f);
@@ -451,11 +457,20 @@ void	State_Running::update(int deltaTime)
 			// for (const auto& wheelTransform : carData.wheelsTransform)
 			// 	wheelsMatrices.push_back({ wheelTransform, wheelsColor });
 
-			glm::mat4	modelTransform = glm::translate(carData.transform, modelHeight);
-			modelsChassisMatrices.push_back(modelTransform);
+			glm::vec3 color;
+
+			if (carData.life > 0.5f)
+				color = { 1.0f, 1.0f, 1.0f }; // white
+			else if (carData.life > 0.25f)
+				color = { 1.0f, 0.5f, 0.0f }; // red-ish
+			else
+				color = { 1.0f, 0.0f, 0.0f }; // red
+
+			glm::mat4 modelTransform = glm::translate(carData.transform, modelHeight);
+			modelsChassisMatrices.push_back({ modelTransform, color });
 
 			for (const auto& wheelTransform : carData.wheelsTransform)
-				modelWheelsMatrices.push_back(wheelTransform);
+				modelWheelsMatrices.push_back({ wheelTransform, color });
 		}
 
 		// auto&	instanced = graphic.geometries.instanced;
@@ -472,8 +487,6 @@ void	State_Running::update(int deltaTime)
 
 		graphic.geometries.model.wheel.updateBuffer(1, modelWheelsMatrices);
 		graphic.geometries.model.wheel.setInstancedCount(modelWheelsMatrices.size());
-
-
 	}
 
 #if defined D_WEB_WEBWORKER_BUILD

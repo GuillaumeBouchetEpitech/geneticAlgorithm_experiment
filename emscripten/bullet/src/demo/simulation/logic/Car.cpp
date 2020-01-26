@@ -11,7 +11,7 @@ namespace /*anonymous*/
 {
     float   k_steeringMaxValue = M_PI / 8.0f;
     float   k_speedMaxValue = 10.0f;
-    int     k_healthMaxValue = 200;
+    int     k_healthMaxValue = 250;
 
     const float	k_eyeMaxRange = 50.0f;
     const float	k_eyeHeight = 1.0f;

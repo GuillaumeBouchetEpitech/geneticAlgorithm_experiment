@@ -59,7 +59,7 @@ public:
 		{
 			glm::vec2	viewportSize = { 800.0f, 600.0f };
 
-			glm::vec2	rotations = { 0.5f, 0.95f };
+			glm::vec2	rotations = { 0.75f, 1.15f };
 			glm::vec3	center = { 0.0f, 0.0f, 0.0f };
 			float		distance = 0.0f;
 
@@ -72,14 +72,14 @@ public:
 			}
 			matrices;
 
-			FrustumCulling	frustumCulling;
+			// FrustumCulling	frustumCulling;
 		}
 		camera;
 
 		struct t_shaders
 		{
 			Shader*	stackRenderer = nullptr;
-			Shader*	instanced = nullptr;
+			// Shader*	instanced = nullptr;
 			Shader*	wireframes = nullptr;
 			Shader*	animatedCircuit = nullptr;
 			Shader*	hudText = nullptr;
@@ -96,12 +96,12 @@ public:
 
 		struct t_geometries
 		{
-			struct t_instanced
-			{
-				Geometry	chassis;
-				Geometry	wheels;
-			}
-			instanced;
+			// struct t_instanced
+			// {
+			// 	Geometry	chassis;
+			// 	Geometry	wheels;
+			// }
+			// instanced;
 
 			struct t_particles
 			{
@@ -245,6 +245,13 @@ public:
 			std::string pthreadWarning;
 		}
 		hudText;
+
+		struct t_fitnessStats
+		{
+			const unsigned int maxStats = 10;
+			std::vector<float> allStats;
+		}
+		fitnessStats;
 	}
 	logic;
 

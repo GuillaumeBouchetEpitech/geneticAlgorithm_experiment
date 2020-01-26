@@ -5,10 +5,17 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>AI (loading)</title>
     <style>
-      body, h1, p {
+      body, h1, p, li {
         border: 0px 0px 0px 0px;
         margin: 0px 0px 0px 0px;
         padding: 0px 0px 0px 0px;
+        font-family: arial;
+      }
+
+      ul {
+        /* border: 0px 0px 0px 0px; */
+        margin: 0px 0px 0px 0px;
+        /* padding: 0px 0px 0px 0px; */
         font-family: arial;
       }
 
@@ -84,6 +91,12 @@
 
           <h2>Note</h2>
           <p>The 'success' of the AI is quite random, which mean that sometime <b>you might want to reload this page</b> and hope for a smarter AI.</p>
+          <h2>Change the total amount of cars:</h2>
+          <p>
+            <button onclick="window.reloadWithDifferentCarAmount(10)">try with 30 cars</button>
+            <button onclick="window.reloadWithDifferentCarAmount(30)">try with 90 cars</button>
+            <button onclick="window.reloadWithDifferentCarAmount(90)">try with 270 cars</button>
+          </p>
 
           <h2>FAQ:</h2>
           <p>

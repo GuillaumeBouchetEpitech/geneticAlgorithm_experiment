@@ -28,7 +28,8 @@ function onFileRequest(req, res) {
         '.mp3': 'audio/mpeg',
         '.svg': 'image/svg+xml',
         '.pdf': 'application/pdf',
-        '.doc': 'application/msword'
+        '.doc': 'application/msword',
+        '.wasm': 'application/wasm',
     };
 
     fs.exists(pathname, function (exist) {

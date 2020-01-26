@@ -9,14 +9,9 @@ BULLET3_TAG=2.87
 GLM_DIR=glm
 GLM_URL=g-truc/glm
 GLM_TAG=0.9.9.2
-
 TINYOBJ_DIR=tinyobjloader
 TINYOBJ_URL=syoyo/tinyobjloader
 TINYOBJ_TAG=v1.0.6
-
-syoyo/tinyobjloader
-
-
 
 mkdir -p $DIR_THIRDPARTY
 
@@ -25,6 +20,7 @@ mkdir -p $DIR_THIRDPARTY
 
 cd $DIR_THIRDPARTY
 
+# reset
 rm -rf $BULLET3_DIR
 
 git clone \
@@ -38,6 +34,7 @@ git clone \
 
 cd $DIR_THIRDPARTY
 
+# reset
 rm -rf $GLM_DIR
 
 git clone \
@@ -51,6 +48,7 @@ git clone \
 
 cd $DIR_THIRDPARTY
 
+# reset
 rm -rf $TINYOBJ_DIR
 
 git clone \

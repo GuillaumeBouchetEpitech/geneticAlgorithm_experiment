@@ -127,11 +127,18 @@ void	Data::initialiseCircuit()
     topology.init(layerInput, layerHidden, layerOutput, useBiasNeuron);
 
 
-// #ifdef D_NATIVE_PTHREAD_BUILD
+// // #ifdef D_NATIVE_PTHREAD_BUILD
+//     logic.cores.genomesPerCore = 90;
+// // #else
+// //     logic.cores.genomesPerCore = 30;
+// // #endif
+
+#if defined D_WEB_BUILD
+    logic.cores.genomesPerCore = EM_ASM_INT(return window.genomesPerCore || 30);
+#else
     logic.cores.genomesPerCore = 90;
-// #else
-//     logic.cores.genomesPerCore = 30;
-// #endif
+#endif
+
     logic.cores.totalCores = 3;
     logic.cores.totalCars = logic.cores.totalCores * logic.cores.genomesPerCore;
 

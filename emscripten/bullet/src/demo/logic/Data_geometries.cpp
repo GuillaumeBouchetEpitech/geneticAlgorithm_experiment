@@ -33,10 +33,8 @@ void loadWheelModel(std::vector<t_modelVertex>& vertices)
 
 void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices)
 {
-    // std::string objFile = "./assets/model/Car.obj";
-    // std::string objFile = "./assets/model/model2.obj";
-    std::string objFile = "./assets/model/" + filename;
-    std::string mtlDir = "./assets/model/";
+    const std::string objFile = "./assets/model/" + filename;
+    const std::string mtlDir = "./assets/model/";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -101,184 +99,212 @@ void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices
 namespace /*anonymous*/
 {
 
-void generateCubeVertices(const glm::vec3& size,
-                          std::vector<glm::vec3>& vertices)
+// void generateCubeVerticesWireframe(const glm::vec3& size,
+//                                    std::vector<glm::vec3>& vertices)
+// {
+//     const glm::vec3 hsize = size * 0.5f;
+//     std::array<glm::vec3, 8> cubeVertices{{
+//         // 0 (top)
+//         { +hsize.x, +hsize.y, +hsize.z },
+//         { -hsize.x, +hsize.y, +hsize.z },
+//         { +hsize.x, -hsize.y, +hsize.z },
+//         { -hsize.x, -hsize.y, +hsize.z },
+//         // 4 (bottom)
+//         { +hsize.x, +hsize.y, -hsize.z },
+//         { -hsize.x, +hsize.y, -hsize.z },
+//         { +hsize.x, -hsize.y, -hsize.z },
+//         { -hsize.x, -hsize.y, -hsize.z }
+//     }};
+
+//     std::array<int, 24> indices{{
+//         0,1,  1,3,  3,2,  2,0,
+//         4,5,  5,7,  7,6,  6,4,
+//         0,4,  1,5,  3,7,  2,6,
+//     }};
+
+//     //
+
+//     vertices.reserve(indices.size());
+//     for (int index : indices)
+//         vertices.push_back(cubeVertices[index]);
+// }
+
+// void generateCubeVerticesFilled(const glm::vec3& size,
+//                                 std::vector<glm::vec3>& vertices)
+// {
+//     const glm::vec3 hsize = size * 0.5f;
+//     std::array<glm::vec3, 8> cubeVertices{{
+//         // 0 (top)
+//         { +hsize.x, +hsize.y, +hsize.z },
+//         { -hsize.x, +hsize.y, +hsize.z },
+//         { +hsize.x, -hsize.y, +hsize.z },
+//         { -hsize.x, -hsize.y, +hsize.z },
+//         // 4 (bottom)
+//         { +hsize.x, +hsize.y, -hsize.z },
+//         { -hsize.x, +hsize.y, -hsize.z },
+//         { +hsize.x, -hsize.y, -hsize.z },
+//         { -hsize.x, -hsize.y, -hsize.z }
+//     }};
+
+//     std::array<int, 36> indices{{
+//         0,6,4,  0,2,6,
+//         0,3,2,  0,1,3,
+//         2,7,6,  2,3,7,
+//         4,6,7,  4,7,5,
+//         0,4,5,  0,5,1,
+//         1,5,7,  1,7,3,
+//     }};
+
+//     //
+
+//     vertices.reserve(indices.size());
+//     for (int index : indices)
+//         vertices.push_back(cubeVertices[index]);
+// }
+
+void generateSphereVerticesFilled(float radius,
+                                  std::vector<glm::vec3>& vertices)
 {
-    const glm::vec3 hsize = size * 0.5f;
-    std::array<glm::vec3, 8> cubeVertices{{
-        // 0 (top)
-        { +hsize.x, +hsize.y, +hsize.z },
-        { -hsize.x, +hsize.y, +hsize.z },
-        { +hsize.x, -hsize.y, +hsize.z },
-        { -hsize.x, -hsize.y, +hsize.z },
-        // 4 (bottom)
-        { +hsize.x, +hsize.y, -hsize.z },
-        { -hsize.x, +hsize.y, -hsize.z },
-        { +hsize.x, -hsize.y, -hsize.z },
-        { -hsize.x, -hsize.y, -hsize.z }
-    }};
+    const float X = 0.525731112119133606f * radius;
+    const float Z = 0.850650808352039932f * radius;
+    const float N = 0.0f;
 
-    std::array<int, 24> indices{{
-        0,1,  1,3,  3,2,  2,0,
-        4,5,  5,7,  7,6,  6,4,
-        0,4,  1,5,  3,7,  2,6,
-    }};
+    static const std::vector<glm::vec3> positions = {
+        {-X, N, Z}, { X, N, Z}, {-X, N,-Z}, { X, N,-Z},
+        { N, Z, X}, { N, Z,-X}, { N,-Z, X}, { N,-Z,-X},
+        { Z, X, N}, {-Z, X, N}, { Z,-X, N}, {-Z,-X, N}
+    };
 
-    //
+    static const std::vector<glm::ivec3> indices = {
+        { 0, 4, 1}, { 0, 9, 4}, { 9, 5, 4}, { 4, 5, 8}, { 4, 8, 1},
+        { 8,10, 1}, { 8, 3,10}, { 5, 3, 8}, { 5, 2, 3}, { 2, 7, 3},
+        { 7,10, 3}, { 7, 6,10}, { 7,11, 6}, {11, 0, 6}, { 0, 1, 6},
+        { 6, 1,10}, { 9, 0,11}, { 9,11, 2}, { 9, 2, 5}, { 7, 2,11}
+    };
 
-    vertices.reserve(indices.size());
-    for (int index : indices)
-        vertices.push_back(cubeVertices[index]);
-}
-
-void generateCubeVertices2(const glm::vec3& size,
-                           std::vector<glm::vec3>& vertices)
-{
-    const glm::vec3 hsize = size * 0.5f;
-    std::array<glm::vec3, 8> cubeVertices{{
-        // 0 (top)
-        { +hsize.x, +hsize.y, +hsize.z },
-        { -hsize.x, +hsize.y, +hsize.z },
-        { +hsize.x, -hsize.y, +hsize.z },
-        { -hsize.x, -hsize.y, +hsize.z },
-        // 4 (bottom)
-        { +hsize.x, +hsize.y, -hsize.z },
-        { -hsize.x, +hsize.y, -hsize.z },
-        { +hsize.x, -hsize.y, -hsize.z },
-        { -hsize.x, -hsize.y, -hsize.z }
-    }};
-
-    std::array<int, 36> indices{{
-        0,6,4,  0,2,6,
-        0,3,2,  0,1,3,
-        2,7,6,  2,3,7,
-        4,6,7,  4,7,5,
-        0,4,5,  0,5,1,
-        1,5,7,  1,7,3,
-    }};
-
-    //
-
-    vertices.reserve(indices.size());
-    for (int index : indices)
-        vertices.push_back(cubeVertices[index]);
+    vertices.reserve(indices.size() * 3);
+    for (const glm::ivec3& index : indices) {
+        vertices.push_back(positions[index.x]);
+        vertices.push_back(positions[index.y]);
+        vertices.push_back(positions[index.z]);
+    }
 }
 
 };
 
 void	Data::initialiseGeometries()
 {
-    { // instanced geometries
+    // { // instanced geometries
 
-        auto& shader = *graphic.shaders.instanced;
+    //     auto& shader = *graphic.shaders.instanced;
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f }
-        };
+    //     Geometry::t_def::t_vbo vboGeometry;
+    //     vboGeometry.attrs = {
+    //         { "a_position", Geometry::e_attrType::eVec3f }
+    //     };
 
-        Geometry::t_def::t_vbo vboInstance;
-        vboInstance.attrs = {
-            { "a_transform", Geometry::e_attrType::eMat4f, 0 },
-            { "a_color", Geometry::e_attrType::eVec4f, 16 }
-        };
-        vboInstance.instanced = true;
+    //     Geometry::t_def::t_vbo vboInstance;
+    //     vboInstance.attrs = {
+    //         { "a_transform", Geometry::e_attrType::eMat4f, 0 },
+    //         { "a_color", Geometry::e_attrType::eVec4f, 16 }
+    //     };
+    //     vboInstance.instanced = true;
 
-        Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_LINES };
-        // Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
+    //     Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_LINES };
+    //     // Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
 
-        auto& instanced = graphic.geometries.instanced;
+    //     auto& instanced = graphic.geometries.instanced;
 
-        { // chassis geometry (instanced)
+    //     { // chassis geometry (instanced)
 
-            std::vector<glm::vec3> chassisVertices;
+    //         std::vector<glm::vec3> chassisVertices;
 
-            glm::vec3 chassisSize = { 2.0f, 4.0f, 1.0f };
-            generateCubeVertices(chassisSize, chassisVertices);
+    //         glm::vec3 chassisSize = { 2.0f, 4.0f, 1.0f };
+    //         generateCubeVerticesWireframe(chassisSize, chassisVertices);
 
-            instanced.chassis.initialise(shader, geomDef);
-            instanced.chassis.updateBuffer(0, chassisVertices);
-            instanced.chassis.setPrimitiveCount(chassisVertices.size());
-        }
+    //         instanced.chassis.initialise(shader, geomDef);
+    //         instanced.chassis.updateBuffer(0, chassisVertices);
+    //         instanced.chassis.setPrimitiveCount(chassisVertices.size());
+    //     }
 
-        { // wheel geometry (instanced)
+    //     { // wheel geometry (instanced)
 
-            const int	wheelQuality = 8;
-            const float	wheelRadius = 0.5f;
-            const float	wheelWidth = 0.2f;
-            const float	wheelHWidth = wheelWidth * 0.5f;
+    //         const int	wheelQuality = 8;
+    //         const float	wheelRadius = 0.5f;
+    //         const float	wheelWidth = 0.2f;
+    //         const float	wheelHWidth = wheelWidth * 0.5f;
 
-            std::vector<glm::vec3> vertices;
-            vertices.reserve(wheelQuality * 2 + 2);
+    //         std::vector<glm::vec3> vertices;
+    //         vertices.reserve(wheelQuality * 2 + 2);
 
-            for (int ii = 0; ii < wheelQuality; ++ii)
-            {
-                float coef = float(ii) / wheelQuality;
-                vertices.push_back({
-                    -wheelHWidth,
-                    wheelRadius * cosf(M_PI * 2.0f * coef),
-                    wheelRadius * sinf(M_PI * 2.0f * coef)
-                });
-            }
+    //         for (int ii = 0; ii < wheelQuality; ++ii)
+    //         {
+    //             float coef = float(ii) / wheelQuality;
+    //             vertices.push_back({
+    //                 -wheelHWidth,
+    //                 wheelRadius * cosf(M_PI * 2.0f * coef),
+    //                 wheelRadius * sinf(M_PI * 2.0f * coef)
+    //             });
+    //         }
 
-            for (int ii = 0; ii < wheelQuality; ++ii)
-            {
-                float coef = float(ii) / wheelQuality;
-                vertices.push_back({
-                    +wheelHWidth,
-                    wheelRadius * cosf(M_PI * 2.0f * coef),
-                    wheelRadius * sinf(M_PI * 2.0f * coef)
-                });
-            }
+    //         for (int ii = 0; ii < wheelQuality; ++ii)
+    //         {
+    //             float coef = float(ii) / wheelQuality;
+    //             vertices.push_back({
+    //                 +wheelHWidth,
+    //                 wheelRadius * cosf(M_PI * 2.0f * coef),
+    //                 wheelRadius * sinf(M_PI * 2.0f * coef)
+    //             });
+    //         }
 
-            vertices.push_back(vertices[0]);
-            vertices.push_back(vertices[wheelQuality]);
+    //         vertices.push_back(vertices[0]);
+    //         vertices.push_back(vertices[wheelQuality]);
 
-            vertices.push_back({ -wheelHWidth, 0, 0 });
-            vertices.push_back({ +wheelHWidth, 0, 0 });
+    //         vertices.push_back({ -wheelHWidth, 0, 0 });
+    //         vertices.push_back({ +wheelHWidth, 0, 0 });
 
-            //
+    //         //
 
-            std::vector<int> indices;
-            indices.reserve(wheelQuality * 2 + 2);
+    //         std::vector<int> indices;
+    //         indices.reserve(wheelQuality * 2 + 2);
 
-            // wheel side 1
-            for (int ii = 0; ii < wheelQuality; ++ii)
-            {
-                indices.push_back(ii);
-                indices.push_back((ii + 1) % wheelQuality);
-            }
+    //         // wheel side 1
+    //         for (int ii = 0; ii < wheelQuality; ++ii)
+    //         {
+    //             indices.push_back(ii);
+    //             indices.push_back((ii + 1) % wheelQuality);
+    //         }
 
-            // wheel side 2
-            for (int ii = 0; ii < wheelQuality; ++ii)
-            {
-                indices.push_back(wheelQuality + ii);
-                indices.push_back(wheelQuality + (ii + 1) % wheelQuality);
-            }
+    //         // wheel side 2
+    //         for (int ii = 0; ii < wheelQuality; ++ii)
+    //         {
+    //             indices.push_back(wheelQuality + ii);
+    //             indices.push_back(wheelQuality + (ii + 1) % wheelQuality);
+    //         }
 
-            // wheel bridge
-            indices.push_back(0);
-            indices.push_back(wheelQuality);
+    //         // wheel bridge
+    //         indices.push_back(0);
+    //         indices.push_back(wheelQuality);
 
-            indices.push_back(0);
-            indices.push_back(vertices.size() - 2);
-            indices.push_back(wheelQuality);
-            indices.push_back(vertices.size() - 1);
+    //         indices.push_back(0);
+    //         indices.push_back(vertices.size() - 2);
+    //         indices.push_back(wheelQuality);
+    //         indices.push_back(vertices.size() - 1);
 
-            //
+    //         //
 
-            std::vector<glm::vec3> wheelVertices;
-            wheelVertices.reserve(indices.size());
+    //         std::vector<glm::vec3> wheelVertices;
+    //         wheelVertices.reserve(indices.size());
 
-            for (int index : indices)
-                wheelVertices.push_back(vertices[index]);
+    //         for (int index : indices)
+    //             wheelVertices.push_back(vertices[index]);
 
-            instanced.wheels.initialise(shader, geomDef);
-            instanced.wheels.updateBuffer(0, wheelVertices);
-            instanced.wheels.setPrimitiveCount(wheelVertices.size());
-        }
+    //         instanced.wheels.initialise(shader, geomDef);
+    //         instanced.wheels.updateBuffer(0, wheelVertices);
+    //         instanced.wheels.setPrimitiveCount(wheelVertices.size());
+    //     }
 
-    } // instanced geometries
+    // } // instanced geometries
 
     { // particles geometries
 
@@ -305,8 +331,9 @@ void	Data::initialiseGeometries()
 
             std::vector<glm::vec3> particlesVertices;
 
-            glm::vec3 particleSize = { 0.5f, 0.5f, 0.5f };
-            generateCubeVertices2(particleSize, particlesVertices);
+            // glm::vec3 particleSize = { 1.0f, 1.0f, 1.0f };
+            // generateCubeVerticesFilled(particleSize, particlesVertices);
+            generateSphereVerticesFilled(0.5f, particlesVertices);
 
             firework.initialise(shader, geomDef);
             firework.updateBuffer(0, particlesVertices);
@@ -397,7 +424,8 @@ void	Data::initialiseGeometries()
 
         Geometry::t_def::t_vbo vboInstance;
         vboInstance.attrs = {
-            { "a_transform", Geometry::e_attrType::eMat4f },
+            { "a_offsetTransform", Geometry::e_attrType::eMat4f, 0 },
+            { "a_offsetColor", Geometry::e_attrType::eVec3f, 16 },
         };
         vboInstance.instanced = true;
 

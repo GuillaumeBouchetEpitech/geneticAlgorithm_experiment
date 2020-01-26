@@ -30,7 +30,8 @@ public:
     void    initialise();
 
 public:
-    void	push(const glm::vec2& position, const std::string& message,
+    void	push(const glm::vec2& position,
+                 const std::string& message,
                  float scale = 1.0f);
 
     void	clear();

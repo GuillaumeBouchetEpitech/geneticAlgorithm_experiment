@@ -230,10 +230,10 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 	smoothedVertices.reserve(512); // <= ease the reallocation
 
 	{
-		unsigned int	dimension = 9; // <= 3 * vec3 = 9 (float)
-		unsigned int	degree = 3;
-		const float*	knotsData = &_knots.front().left.x; // <= float*
-		std::size_t		knotsLength = _knots.size() * dimension; // <= float*
+		const unsigned int	dimension = 9; // <= 3 * vec3 = 9 (float)
+		const unsigned int	degree = 3;
+		const float*		knotsData = &_knots.front().left.x; // <= float*
+		const std::size_t	knotsLength = _knots.size() * dimension; // <= float*
 
 		BSpline	smootherBSpline;
 		smootherBSpline.initialise({ knotsData, knotsLength, dimension, degree });
@@ -241,7 +241,8 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 		CircuitBuilder::t_circuitVertex	vertex;
 
 		const unsigned int maxIterations = 1000;
-		const float step = 1.0f / maxIterations;
+		const float step = 1.0f / maxIterations; // tiny steps
+		const float minimumDistance = 2.0f;
 
 		for (float coef = 0.0f; coef <= 1.0f; coef += step) // tiny steps
 		{
@@ -255,8 +256,8 @@ void	CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 			if (!smoothedVertices.empty())
 			{
 				const auto& lastVertex = smoothedVertices.back();
-				if (glm::length(vertex.left - lastVertex.left) < 2.0f ||
-					glm::length(vertex.right - lastVertex.right) < 2.0f)
+				if (glm::length(vertex.left - lastVertex.left) < minimumDistance ||
+					glm::length(vertex.right - lastVertex.right) < minimumDistance)
 					continue;
 			}
 

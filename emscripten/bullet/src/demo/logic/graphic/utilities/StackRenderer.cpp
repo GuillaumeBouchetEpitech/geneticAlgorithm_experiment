@@ -13,7 +13,7 @@ StackRenderer::~StackRenderer()
 
 //
 
-void	StackRenderer::push(const t_vertex& vertex)
+void StackRenderer::push(const t_vertex& vertex)
 {
     if (_vertices.size() == _vertices.capacity())
         flush();
@@ -21,8 +21,9 @@ void	StackRenderer::push(const t_vertex& vertex)
     _vertices.push_back(vertex);
 }
 
-void	StackRenderer::pushLine(const glm::vec3& posA, const glm::vec3& posB,
-                                const glm::vec3& color)
+void StackRenderer::pushLine(const glm::vec3& posA,
+                             const glm::vec3& posB,
+                             const glm::vec3& color)
 {
     if (_vertices.size() + 2 >= _vertices.capacity())
         flush();
@@ -31,8 +32,9 @@ void	StackRenderer::pushLine(const glm::vec3& posA, const glm::vec3& posB,
     _vertices.push_back({ posB, color });
 }
 
-void	StackRenderer::pushCross(const glm::vec3& pos, const glm::vec3& color,
-                                 float halfExtent)
+void StackRenderer::pushCross(const glm::vec3& pos,
+                              const glm::vec3& color,
+                              float halfExtent)
 {
     if (halfExtent <= 0)
         return;
@@ -50,14 +52,16 @@ void	StackRenderer::pushCross(const glm::vec3& pos, const glm::vec3& color,
         pushLine(vertices[ii][0], vertices[ii][1], color);
 }
 
-void	StackRenderer::pushLine(const glm::vec2& posA, const glm::vec2& posB,
-                                const glm::vec3& color)
+void StackRenderer::pushLine(const glm::vec2& posA,
+                             const glm::vec2& posB,
+                             const glm::vec3& color)
 {
     StackRenderer::pushLine({ posA.x, posA.y, 0 }, { posB.x, posB.y, 0 }, color);
 }
 
-void	StackRenderer::pushRectangle(const glm::vec2& pos, const glm::vec2& size,
-                                     const glm::vec3& color)
+void StackRenderer::pushRectangle(const glm::vec2& pos,
+                                  const glm::vec2& size,
+                                  const glm::vec3& color)
 {
     const glm::vec2 farPos = pos + size;
 
@@ -67,7 +71,7 @@ void	StackRenderer::pushRectangle(const glm::vec2& pos, const glm::vec2& size,
     StackRenderer::pushLine({pos.x, farPos.y}, pos, color);
 }
 
-void	StackRenderer::flush()
+void StackRenderer::flush()
 {
     auto& geometry = Data::get()->graphic.geometries.stackRenderer.lines;
 

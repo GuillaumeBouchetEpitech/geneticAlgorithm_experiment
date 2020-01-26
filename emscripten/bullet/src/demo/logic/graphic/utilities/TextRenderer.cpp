@@ -122,7 +122,8 @@ void    TextRenderer::initialise()
 
 //
 
-void	TextRenderer::push(const glm::vec2& position, const std::string& message,
+void	TextRenderer::push(const glm::vec2& position,
+                           const std::string& message,
                            float scale /*= 1.0f*/)
 {
     const auto&	hudText = Data::get()->graphic.hudText;

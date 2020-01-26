@@ -21,18 +21,18 @@ void	Data::initialiseShaders()
 			graphic.shaders.stackRenderer = new Shader(def);
 		}
 
-		{ // create the instanced shader
+		// { // create the instanced shader
 
-			Shader::t_def	def;
-			def.filenames.vertex = "assets/shaders/instanced.glsl.vert.c";
-			def.filenames.fragment = "assets/shaders/instanced.glsl.frag.c";
-			// def.attributes = { "a_position", "a_transform" };
-			// def.uniforms = { "u_composedMatrix", "u_color" };
-			def.attributes = { "a_position", "a_transform", "a_color" };
-			def.uniforms = { "u_composedMatrix" };
+		// 	Shader::t_def	def;
+		// 	def.filenames.vertex = "assets/shaders/instanced.glsl.vert.c";
+		// 	def.filenames.fragment = "assets/shaders/instanced.glsl.frag.c";
+		// 	// def.attributes = { "a_position", "a_transform" };
+		// 	// def.uniforms = { "u_composedMatrix", "u_color" };
+		// 	def.attributes = { "a_position", "a_transform", "a_color" };
+		// 	def.uniforms = { "u_composedMatrix" };
 
-			graphic.shaders.instanced = new Shader(def);
-		}
+		// 	graphic.shaders.instanced = new Shader(def);
+		// }
 
 		{ // create the wireframes shader
 
@@ -73,7 +73,8 @@ void	Data::initialiseShaders()
 			graphic.shaders.hudText = new Shader(def);
 		}
 
-		{
+		{ // particles
+
 			Shader::t_def	def;
 			def.filenames.vertex = "assets/shaders/particles.glsl.vert.c";
 			def.filenames.fragment = "assets/shaders/particles.glsl.frag.c";
@@ -86,11 +87,12 @@ void	Data::initialiseShaders()
 			graphic.shaders.particles = new Shader(def);
 		}
 
-		{
+		{ // model (chassis + wheels)
+
 			Shader::t_def	def;
 			def.filenames.vertex = "assets/shaders/model.glsl.vert.c";
 			def.filenames.fragment = "assets/shaders/model.glsl.frag.c";
-			def.attributes = { "a_position", "a_color", "a_transform" };
+			def.attributes = { "a_position", "a_color", "a_offsetTransform", "a_offsetColor" };
 			def.uniforms = { "u_composedMatrix" };
 
 			graphic.shaders.model = new Shader(def);

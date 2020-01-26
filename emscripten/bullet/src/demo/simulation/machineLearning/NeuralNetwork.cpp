@@ -38,9 +38,9 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
 	_layerHidden.resize(_topology.getHiddens().size());
 	for (unsigned int ii = 0; ii < _layerHidden.size(); ++ii)
 	{
-		t_layer&	newLayer = _layerHidden[ii];
+		t_layer& newLayer = _layerHidden[ii];
 
-		unsigned int	currentLayerSize = _topology.getHiddens()[ii];
+		unsigned int currentLayerSize = _topology.getHiddens()[ii];
 
 		newLayer.resize(currentLayerSize);
 		for (t_neuron& newNeuron : newLayer)

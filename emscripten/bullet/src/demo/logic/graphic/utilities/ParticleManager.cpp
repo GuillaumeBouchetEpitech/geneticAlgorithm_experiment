@@ -50,7 +50,7 @@ void ParticleManager::update(float delta)
         particle.position += particle.linearVelocity * delta;
 
         // apply fake gravity
-        particle.linearVelocity.z -= 10.0f * delta;
+        particle.linearVelocity.z -= 20.0f * delta;
 
         // update color
         const float alpha = particle.life / particle.maxLife;
@@ -89,6 +89,7 @@ void ParticleManager::emitParticles(const glm::vec3& position)
             t_RNG::getRangedValue(-maxVelocity, maxVelocity),
             t_RNG::getRangedValue(-maxVelocity, maxVelocity),
         };
+        velocity = glm::normalize(velocity) * maxVelocity * 2.0f;
 
         glm::vec3 color = {
             t_RNG::getRangedValue(0.5f, 1.0f),
@@ -98,7 +99,7 @@ void ParticleManager::emitParticles(const glm::vec3& position)
 
         float scale = t_RNG::getRangedValue(1.0f, 1.5f);
 
-        float life = t_RNG::getRangedValue(1.5f, 2.0f);
+        float life = t_RNG::getRangedValue(0.5f, 1.0f);
 
         _particles.push_back({ position, velocity, color, scale, life });
     }
@@ -116,4 +117,3 @@ ParticleManager::t_particle::t_particle(const glm::vec3& position,
     , life(life)
     , maxLife(life)
 {}
- 

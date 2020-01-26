@@ -20,52 +20,51 @@
 namespace /*anonymous*/
 {
 
-	void writeTime(std::stringstream& sstr, unsigned int time, bool isMillisecond)
+void writeTime(std::stringstream& sstr, unsigned int time, bool isMS)
+{
+	if (isMS)
 	{
-		if (isMillisecond)
+		if (time < 1000)
 		{
-			if (time < 1000)
-			{
-				sstr
-					<< std::setw(5)
-					<< std::fixed << std::setprecision(1)
-					<< time << "ms";
-			}
-			else
-			{
-				sstr
-					<< std::setw(5)
-					<< std::fixed << std::setprecision(1)
-					<< (float(time) / 1000) << "s ";
-			}
+			sstr
+				<< std::setw(5)
+				<< std::fixed << std::setprecision(1)
+				<< time << "ms";
 		}
 		else
 		{
-			if (time < 1000)
-			{
-				sstr
-					<< std::setw(5)
-					<< time << "us";
-			}
-			else if (time < 1000000)
-			{
-				sstr
-					<< std::setw(5)
-					<< std::fixed << std::setprecision(1)
-					<< (float(time) / 1000) << "ms";
-			}
-			else
-			{
-				sstr
-					<< std::setw(5)
-					<< std::fixed << std::setprecision(1)
-					<< (float(time) / 1000000) << "s";
-			}
+			sstr
+				<< std::setw(5)
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000) << "s ";
 		}
 	}
+	else
+	{
+		if (time < 1000)
+		{
+			sstr
+				<< std::setw(5)
+				<< time << "us";
+		}
+		else if (time < 1000000)
+		{
+			sstr
+				<< std::setw(5)
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000) << "ms";
+		}
+		else
+		{
+			sstr
+				<< std::setw(5)
+				<< std::fixed << std::setprecision(1)
+				<< (float(time) / 1000000) << "s";
+		}
+	}
+}
 
-} // namespace /*anonymous*/
-
+}
 
 void	Scene::renderSimple()
 {
@@ -94,9 +93,7 @@ void	Scene::renderAll()
 
 	{ // scene
 
-		const auto& logic = Data::get()->logic;
-
-		if (!logic.isAccelerated)
+		if (!Data::get()->logic.isAccelerated)
 			Scene::renderLeadingCarSensors();
 
 		Scene::renderParticles();
@@ -142,18 +139,18 @@ void	Scene::updateMatrices()
 
 		matrices.scene = matrices.projection * matrices.modelView;
 
-		camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
+		// camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
 	}
 
 	{ // hud
 
 		const auto& vSize = camera.viewportSize;
-		const glm::mat4	projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
+		glm::mat4	projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
-		const glm::vec3	eye = { 0.0f, 0.0f, 0.5f };
-		const glm::vec3	center = { 0.0f, 0.0f, 0.0f };
-		const glm::vec3	upAxis = { 0.0f, 1.0f, 0.0f };
-		const glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
+		glm::vec3	eye = { 0.0f, 0.0f, 0.5f };
+		glm::vec3	center = { 0.0f, 0.0f, 0.0f };
+		glm::vec3	upAxis = { 0.0f, 1.0f, 0.0f };
+		glm::mat4	viewMatrix = glm::lookAt(eye, center, upAxis);
 
 		matrices.hud = projection * viewMatrix;
 	}
@@ -222,19 +219,6 @@ void	Scene::renderLeadingCarSensors()
 	stackRenderer.pushCross(groundSensor.far, whiteColor, 1.0f);
 
 	stackRenderer.flush();
-
-	{ // render trail live
-
-		// // leaderCar.index
-		// auto& currentTrail = logic.carsTrails.allTrailsData[leaderCar.index].trail;
-
-		// int startIndex = std::max(int(1), int(currentTrail.size()) - 100);
-		// for (unsigned int ii = startIndex; ii < currentTrail.size(); ++ii)
-		// {
-		// 	stackRenderer.pushLine(currentTrail[ii - 1], currentTrail[ii], whiteColor);
-		// }
-
-	} // render trail live
 }
 
 void	Scene::renderParticles()
@@ -598,52 +582,28 @@ void	Scene::renderHUD()
 				sstr << "> ";
 				writeTime(sstr, coreState.delta, true);
 
-				// // sstr << std::setw(3) << coreState.delta << "ms";
-				// if (coreState.delta < 1000)
-				// {
-				// 	sstr << coreState.delta << "ms";
-				// }
-				// else
-				// {
-				// 	sstr
-				// 		<< std::fixed << std::setprecision(1)
-				// 		<< (float(coreState.delta) / 1000) << "s ";
-				// }
 #else
+
 				sstr << "THREAD_" << (ii + 1) << std::endl;
 
 				sstr << "> ";
 				writeTime(sstr, coreState.delta, false);
 
-				// if (coreState.delta < 1000)
-				// {
-				// 	sstr
-				// 		<< coreState.delta << "us";
-				// }
-				// else if (coreState.delta < 1000000)
-				// {
-				// 	sstr
-				// 		<< std::fixed << std::setprecision(1)
-				// 		<< (float(coreState.delta) / 1000) << "ms";
-				// }
-				// else
-				// {
-				// 	sstr
-				// 		<< std::fixed << std::setprecision(1)
-				// 		<< (float(coreState.delta) / 1000000) << "s";
-				// }
 #endif
 
 				sstr
 					<< std::endl
 					<< "> " << std::setw(2) << coreState.genomesAlive
 					<< " car(s)" << std::endl
+					<< std::endl
+					<< std::endl
+					<< std::endl
 					<< std::endl;
 			}
 
 			std::string str = sstr.str();
 
-			textRenderer.push({ 8, 8 + 15 * 16 }, str, 1.0f);
+			textRenderer.push({ 8, 8 + 23 * 16 }, str, 1.0f);
 		}
 
 		if (logic.isPaused)
@@ -652,10 +612,11 @@ void	Scene::renderHUD()
 		textRenderer.render();
 	}
 
-	/**
-	{
-		auto&		stackRenderer = graphic.stackRenderer;
-		const auto&	shader = *graphic.shaders.stackRenderer;
+	/**/
+	{ // graphics
+
+		auto& stackRenderer = graphic.stackRenderer;
+		const auto& shader = *graphic.shaders.stackRenderer;
 
 		shader.bind();
 
@@ -667,26 +628,28 @@ void	Scene::renderHUD()
 		const glm::vec3	redColor(0.75f, 0.0f, 0.0f);
 		const glm::vec3	greenColor(0.0f, 0.75f, 0.0f);
 
-		glm::vec2	borderPos(20, 410);
-		glm::vec2	borderSize(150, 75);
+		const glm::vec2 borderPos(8, 18 * 16 + 7);
+		const glm::vec2 borderSize(150, 48);
+		const float     borderStep = 4 * 16.0f;
 
 		const auto& cores = data.logic.cores;
+
+		unsigned int commonMaxDelta = 0;
+		for (auto& stateHistory : cores.statesHistory)
+			for (auto& history : stateHistory)
+				commonMaxDelta = std::max(commonMaxDelta, history.delta);
 
 		for (unsigned core = 0; core < cores.statesHistory.size(); ++core)
 		{
 			const auto& stateHistory = cores.statesHistory[core];
 
-			unsigned int maxDelta = 0;
-			for (unsigned int ii = 0; ii < stateHistory.size(); ++ii)
-				maxDelta = std::max(maxDelta, stateHistory[ii].delta);
-
 			//
 			//
 
-			const glm::vec2	currPos = {
+			const glm::vec2	currPos(
 				borderPos.x,
-				borderPos.y - core * (borderSize.y + 52)
-			};
+				borderPos.y - core * (borderSize.y + borderStep)
+			);
 
 			stackRenderer.pushRectangle(currPos, borderSize, whiteColor);
 
@@ -705,34 +668,79 @@ void	Scene::renderHUD()
 
 				//
 
-				float prevRatio = float(prevState.delta) / maxDelta;
-				float currRatio = float(currState.delta) / maxDelta;
+				float prevRatio = float(prevState.delta) / commonMaxDelta;
+				float currRatio = float(currState.delta) / commonMaxDelta;
 
-				// maxDelta
-				glm::vec2	prevCoord(ii * widthStep, borderSize.y * prevRatio);
-				glm::vec2	currCoord((ii + 1) * widthStep, borderSize.y * currRatio);
-				glm::vec3	color = glm::mix(greenColor, redColor, currRatio);
+				glm::vec2 prevCoord(ii * widthStep, borderSize.y * prevRatio);
+				glm::vec2 currCoord((ii + 1) * widthStep, borderSize.y * currRatio);
+				// glm::vec3 color = glm::mix(greenColor, redColor, currRatio);
+				glm::vec3 color = whiteColor;
 
 				stackRenderer.pushLine(currPos + prevCoord, currPos + currCoord, color);
 			}
 		}
 
-        // unsigned int maxGenomesAlive = cores.genomesPerCore;
+		stackRenderer.flush();
+	}
+	//*/
 
-		// for (unsigned int ii = 0; ii < cores.maxStateHistory; ++ii)
-		// {
-		// 	unsigned int index = (ii + cores.currHistoryIndex) % cores.maxStateHistory;
+	/**/
+	{
+		auto&		stackRenderer = graphic.stackRenderer;
+		const auto&	shader = *graphic.shaders.stackRenderer;
 
-		// 	const auto& stateHistory = cores.statesHistory[index];
+		shader.bind();
 
-		// 	stateHistory;
+		const auto&	hudMatrix = graphic.camera.matrices.hud;
+		GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+		glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
-		// }
+		const glm::vec3	whiteColor(1.0f, 1.0f, 1.0f);
+		const glm::vec3	redColor(0.75f, 0.0f, 0.0f);
+		const glm::vec3	greenColor(0.0f, 0.75f, 0.0f);
 
-		// const unsigned int	maxStateHistory = 60;
-		// unsigned int		currHistoryIndex = 0;
-		// t_statesData		statesData;
-		// t_statesHistory		statesHistory;
+		const glm::vec2 borderPos(10, 400);
+		const glm::vec2 borderSize(150, 75);
+
+		stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
+		//
+		// show progresses here
+		{
+			const auto& fitnessStats = logic.fitnessStats;
+			const auto& allStats = fitnessStats.allStats;
+
+			if (allStats.size() >= 2)
+			{
+				float maxFitness = 0.0f;
+				for (float stat : allStats)
+					maxFitness = std::max(maxFitness, stat);
+
+				float stepWidth = borderSize.x / (allStats.size() - 1);
+
+				for (unsigned int ii = 1; ii < allStats.size(); ++ii)
+				{
+					const float prevData = allStats[ii - 1];
+					const float currData = allStats[ii];
+
+					glm::vec2 prevPos = {
+						stepWidth * (ii - 1),
+						(prevData / maxFitness) * borderSize.y,
+					};
+					glm::vec2 currPos = {
+						stepWidth * ii,
+						(currData / maxFitness) * borderSize.y,
+					};
+
+					stackRenderer.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
+					// stackRenderer.pushLine(borderPos, borderPos + borderSize, redColor);
+				}
+			}
+
+			// stackRenderer.pushLine(borderPos, borderPos + borderSize, redColor);
+		}
+		// show progresses here
+		//
 
 		stackRenderer.flush();
 	}

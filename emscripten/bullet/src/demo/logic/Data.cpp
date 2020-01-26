@@ -26,7 +26,7 @@ Data::~Data()
 {
 	delete logic.simulation;
 	delete graphic.shaders.stackRenderer;
-	delete graphic.shaders.instanced;
+	// delete graphic.shaders.instanced;
 	delete graphic.shaders.wireframes;
 	delete graphic.shaders.animatedCircuit;
 	delete graphic.shaders.hudText;

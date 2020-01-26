@@ -139,6 +139,8 @@ void	SDLWindowWrapper::step(void* pData)
 {
     SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
+    // self->process();
+
     const unsigned int currentTime = SDL_GetTicks(); // in millisecond
     const unsigned int deltaTime = currentTime - self->_startTime;
 
@@ -157,7 +159,8 @@ void	SDLWindowWrapper::run()
 
 #if defined __EMSCRIPTEN__
 
-    emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 0, true);
+    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 0, true);
+    emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 60, true);
 
     // unreacahble <= `emscripten_set_main_loop_arg` does that
 

@@ -6,7 +6,7 @@
 #include <vector>
 #include <array>
 
-#define D_PARTICLE_TRAIL_SIZE 3
+#define D_PARTICLE_TRAIL_SIZE 6
 
 class ParticleManager
 {

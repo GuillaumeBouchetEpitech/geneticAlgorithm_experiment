@@ -122,27 +122,27 @@ function onGlobalPageLoad() {
         // for (let ii = 0; ii < webGLExtensions.length; ++ii)
         //     logger.error(`[JS] ${ii}: "${webGLExtensions[ii]}"`);
 
-        const mandatoryWebGLExtensions = [
-            "instanced_arrays",
-            "vertex_array_object"
-        ];
+        // <= NOTE: incomplete names, require indexOf()
+        const mandatoryWebGLExtensions = [ "instanced_arrays", "vertex_array_object" ];
 
         mandatoryWebGLExtensions.forEach((extensionName) => {
 
             let found = false;
-            for (let jj = 0; jj < webGLExtensions.length; ++jj)
-                if (webGLExtensions[jj].indexOf(extensionName)) {
+            for (const webGLExtension of webGLExtensions) {
+
+                if (webGLExtension.indexOf(extensionName)) {
                     found = true;
                     break;
                 }
+            }
 
             if (!found)
                 throw new Error(`missing WebGL extension: ${extensionName}`);
 
             logger.log(`[JS] WebGL extension "${extensionName}" => supported`);
         });
-
-    } catch (err) {
+    }
+    catch (err) {
 
         logger.error(`[JS] dependencies check failed: message="${err.message}"`);
 
@@ -157,14 +157,32 @@ function onGlobalPageLoad() {
 
     const supportMultithreading = (window.SharedArrayBuffer !== undefined);
 
-    if (supportMultithreading) {
+    //
+    //
+    // extract the "genomesPerCore" value from the url
 
+    function extractVarsFromUrl() {
+        const varsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
+        const vars = {};
+        window.location.href.replace(varsRegexp, function (m, key, value) {
+            vars[key] = value;
+        });
+        return vars;
+    }
+
+    const vars = extractVarsFromUrl();
+    window.genomesPerCore = vars.genomesPerCore || 30;
+
+    // extract the "genomesPerCore" value from the url
+    //
+    //
+
+    if (supportMultithreading) {
         logger.log("[JS] multithreading => supported");
 
         scriptFolder += "/pthread";
-
-    } else {
-
+    }
+    else {
         logger.log("[JS] multithreading => unsupported");
         logger.log("[JS]                => fallback to webworker version");
 
@@ -240,4 +258,10 @@ function loadScript(src) {
         scriptElement.onerror = reject;
         document.head.appendChild(scriptElement);
     });
+}
+
+window.reloadWithDifferentCarAmount = function(totalCars) {
+
+    // simple reload
+    window.location.href = window.location.pathname + `?genomesPerCore=${totalCars}`;
 }
