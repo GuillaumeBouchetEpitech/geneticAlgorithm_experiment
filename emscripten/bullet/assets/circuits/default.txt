@@ -16,6 +16,39 @@ KNOTS_DUAL  90   0  0      90   0  0
 
 
 
+# test
+
+# KNOTS_COLOR 0.75 0.25 0.25
+
+# # KNOTS_DUAL  30   0  0      30   0  0
+# # KNOTS_DUAL  30   0  0      30   0  5
+
+# KNOTS_DUAL  90   0  0    90   0 0
+
+
+# KNOTS_DUAL 10 0 0     10 3 10
+
+# KNOTS_DUAL   50  50 5    60  60 5
+# KNOTS_DUAL  -50  50 5   -60  60 5
+
+# KNOTS_DUAL  -50 -50 5   -60 -60 5
+# KNOTS_DUAL   50 -50 5    60 -60 5
+
+# KNOTS_DUAL   50  50 5    60  60 5
+# KNOTS_DUAL  -50  50 5   -60  60 5
+
+# KNOTS_DUAL  -50 -50 5   -60 -60 5
+# KNOTS_DUAL   50 -50 5    60 -60 5
+
+# KNOTS_DUAL  90   0  0    90   0 0
+
+# KNOTS_DUAL 10 3 10     10 0 0
+
+# /test
+
+
+
+
 # death tube
 
 # KNOTS_DUAL  40   0   0      40   0   0
@@ -129,6 +162,9 @@ KNOTS_DUAL 30 0 0     30 0 0
 KNOTS_COLOR 0.25 0.25 0.75
 KNOTS_DUAL 30 0 0     30 0 0
 KNOTS_DUAL 30 0 0     30 0 0
+
+# final jump pad
+KNOTS_DUAL 40 0 40     40 0 40
 
 # # vertical corner
 

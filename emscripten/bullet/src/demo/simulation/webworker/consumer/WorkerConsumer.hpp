@@ -4,7 +4,7 @@
 #include "demo/defines.hpp"
 
 #if not defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "demo/logic/physic/PhysicWorld.hpp"
@@ -26,37 +26,37 @@
 class WorkerConsumer
 {
 private:
-    unsigned int		_genomesPerCore = 0;
+    unsigned int        _genomesPerCore = 0;
 
-	PhysicWorld		_physicWorld;
-	std::vector<Car>	_cars;
+    PhysicWorld     _physicWorld;
+    std::vector<Car>    _cars;
 
-	NeuralNetworkTopology		_neuralNetworkTopology;
-	std::vector<NeuralNetwork>	_neuralNetworks;
+    NeuralNetworkTopology       _neuralNetworkTopology;
+    std::vector<NeuralNetwork>  _neuralNetworks;
 
     CircuitBuilder::t_startTransform    _startTransform;
 
-	// std::vector<std::pair<glm::vec3, glm::vec3>>	m_contacts;
+    // std::vector<std::pair<glm::vec3, glm::vec3>> m_contacts;
 
-	MessageBuffer	_message;
-
-public:
-	WorkerConsumer();
-
-private:
-	void	generateCircuit();
-	void	generateCars();
-	void	generateNeuralNetworks();
+    MessageBuffer   _message;
 
 public:
-	void	processMessage(const char* dataPointer, int dataSize);
+    WorkerConsumer();
 
 private:
-	void	send();
+    void    generateCircuit();
+    void    generateCars();
+    void    generateNeuralNetworks();
+
+public:
+    void    processMessage(const char* dataPointer, int dataSize);
 
 private:
-	void	initialiseSimulation(MessageView& message);
-	void	resetSimulation(MessageView& message);
-	void	processSimulation();
+    void    send();
+
+private:
+    void    initialiseSimulation(MessageView& message);
+    void    resetSimulation(MessageView& message);
+    void    processSimulation();
 
 };

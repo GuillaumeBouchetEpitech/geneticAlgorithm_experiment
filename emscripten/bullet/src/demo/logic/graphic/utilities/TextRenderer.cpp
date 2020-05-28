@@ -6,9 +6,9 @@
 
 #include "demo/utilities/ErrorHandler.hpp"
 
-void    TextRenderer::initialise()
+void TextRenderer::initialise()
 {
-    const auto&	hudText = Data::get()->graphic.hudText;
+    const auto& hudText = Data::get()->graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
     const glm::vec2 texCoord = letterSize / hudText.textureSize;
 
@@ -122,11 +122,11 @@ void    TextRenderer::initialise()
 
 //
 
-void	TextRenderer::push(const glm::vec2& position,
+void    TextRenderer::push(const glm::vec2& position,
                            const std::string& message,
                            float scale /*= 1.0f*/)
 {
-    const auto&	hudText = Data::get()->graphic.hudText;
+    const auto&    hudText = Data::get()->graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
 
     glm::vec2 currPos = position;
@@ -154,12 +154,12 @@ void	TextRenderer::push(const glm::vec2& position,
     }
 }
 
-void	TextRenderer::clear()
+void    TextRenderer::clear()
 {
     _lettersOffset.clear();
 }
 
-void	TextRenderer::render()
+void    TextRenderer::render()
 {
     if (_lettersOffset.empty())
         return;

@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if not defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "WorkerProducer.hpp"
@@ -42,18 +42,18 @@ WorkerProducer::WorkerProducer(const t_def& def)
     }
 }
 
-void	WorkerProducer::onMessageCallback(char* dataPointer, int dataSize, void* arg)
+void    WorkerProducer::onMessageCallback(char* dataPointer, int dataSize, void* arg)
 {
-    WorkerProducer*	workerProducer = static_cast<WorkerProducer*>(arg);
+    WorkerProducer* workerProducer = static_cast<WorkerProducer*>(arg);
 
     workerProducer->processMessage(dataPointer, dataSize);
 }
 
-void	WorkerProducer::processMessage(const char* pData, int dataLength)
+void    WorkerProducer::processMessage(const char* pData, int dataLength)
 {
     _flags[e_Status::eProcessing] = false;
 
-    MessageView	message(pData, dataLength);
+    MessageView message(pData, dataLength);
 
     char messageType = 0;
     message >> messageType;
@@ -90,19 +90,19 @@ void	WorkerProducer::processMessage(const char* pData, int dataLength)
                 auto& gSensor = car.groundSensor;
                 message >> gSensor.near >> gSensor.far >> gSensor.value;
 
-                auto&	output = car.neuralNetworkOutput;
+                auto&   output = car.neuralNetworkOutput;
                 message >> output.steer >> output.speed;
             }
 
             {
-                // unsigned int	contactNumber = 0;
+                // unsigned int contactNumber = 0;
                 // message >> contactNumber;
 
-                // glm::vec3	position, normal;
+                // glm::vec3    position, normal;
                 // for (unsigned int ii = 0; ii < contactNumber; ++ii)
                 // {
-                // 	message >> position >> normal;
-                // 	_contacts.push_back({ position, normal });
+                //  message >> position >> normal;
+                //  _contacts.push_back({ position, normal });
                 // }
             }
 
@@ -117,24 +117,24 @@ void	WorkerProducer::processMessage(const char* pData, int dataLength)
     }
 }
 
-void	WorkerProducer::send()
+void    WorkerProducer::send()
 {
     _flags[e_Status::eProcessing] = true;
 
-    char*			dataPointer = const_cast<char*>(_message.getData());
-    unsigned int	dataSize = _message.getSize();
+    char*           dataPointer = const_cast<char*>(_message.getData());
+    unsigned int    dataSize = _message.getSize();
 
-    em_worker_callback_func		callback = WorkerProducer::onMessageCallback;
+    em_worker_callback_func     callback = WorkerProducer::onMessageCallback;
 
     emscripten_call_worker(_workerHandle, D_WORKER_MAIN, dataPointer, dataSize, callback, (void*)this);
 }
 
-void	WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
+void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
 {
     _message.clear();
     _message << char(messages::client::eResetAndProcessSimulation);
 
-    std::vector<float>	weights;
+    std::vector<float>  weights;
 
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
     {
@@ -146,7 +146,7 @@ void	WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetwor
     send();
 }
 
-void	WorkerProducer::processSimulation()
+void    WorkerProducer::processSimulation()
 {
     _message.clear();
     _message << char(messages::client::eProcessSimulation);
@@ -154,22 +154,22 @@ void	WorkerProducer::processSimulation()
     send();
 }
 
-bool	WorkerProducer::isLoaded() const
+bool    WorkerProducer::isLoaded() const
 {
     return _flags[e_Status::eWebWorkerLoaded];
 }
 
-bool	WorkerProducer::isProcessing() const
+bool    WorkerProducer::isProcessing() const
 {
     return _flags[e_Status::eProcessing];
 }
 
-bool	WorkerProducer::isUpdated() const
+bool    WorkerProducer::isUpdated() const
 {
     return _flags[e_Status::eUpdated];
 }
 
-const t_carsData&	WorkerProducer::getCarsData() const
+const t_carsData&   WorkerProducer::getCarsData() const
 {
     return _carsData;
 }
@@ -179,13 +179,13 @@ const AbstactSimulation::t_coreState&   WorkerProducer::getCoreState() const
     return _coreState;
 }
 
-// const WorkerProducer::t_contacts&	WorkerProducer::getContactsData() const
+// const WorkerProducer::t_contacts&    WorkerProducer::getContactsData() const
 // {
-// 	return _contacts;
+//  return _contacts;
 // }
 
-// void	WorkerProducer::clearContactsData()
+// void WorkerProducer::clearContactsData()
 // {
-// 	_contacts.clear();
+//  _contacts.clear();
 // }
 

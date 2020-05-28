@@ -9,23 +9,23 @@
 class Texture
 {
 private:
-	GLuint		_textureId = 0;
-	glm::ivec2	_size = { 0, 0 };
+    GLuint      _textureId = 0;
+    glm::ivec2  _size = { 0, 0 };
 
 public:
-	Texture() = default;
-	~Texture();
-	
-public:
-	bool	load(const std::string& filename, bool pixelated = false, bool repeat = false);
+    Texture() = default;
+    ~Texture();
 
 public:
-	const glm::ivec2&	getSize() const;
+    bool load(const std::string& filename, bool pixelated = false, bool repeat = false);
 
 public:
-	void	bind() const;
+    const glm::ivec2& getSize() const;
 
 public:
-	static void	unbind();
+    void bind() const;
+
+public:
+    static void unbind();
 
 };

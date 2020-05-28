@@ -11,56 +11,56 @@
 
 #include "thirdparty/GLMath.hpp"
 
-void	State_Paused::enter()
+void State_Paused::enter()
 {
-	// D_MYLOG("step");
+    // D_MYLOG("step");
 
-	Data::get()->logic.isPaused = true;
+    Data::get()->logic.isPaused = true;
 }
 
-void	State_Paused::leave()
+void State_Paused::leave()
 {
-	// D_MYLOG("step");
+    // D_MYLOG("step");
 
-	Data::get()->logic.isPaused = false;
+    Data::get()->logic.isPaused = false;
 }
 
 //
 
-void	State_Paused::handleEvent(const SDL_Event& event)
+void State_Paused::handleEvent(const SDL_Event& event)
 {
-	switch (event.type)
-	{
-		case SDL_MOUSEBUTTONDOWN:
-		case SDL_MOUSEBUTTONUP:
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
-		{
-			StateManager::get()->changeState(StateManager::States::eRunning);
-			break;
-		}
-	}
+    switch (event.type)
+    {
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+        {
+            StateManager::get()->changeState(StateManager::States::eRunning);
+            break;
+        }
+    }
 }
 
-void	State_Paused::update(int delta)
+void State_Paused::update(int delta)
 {
-	static_cast<void>(delta); // <= unused
+    static_cast<void>(delta); // <= unused
 }
 
 
-void	State_Paused::render(const SDL_Window& window)
+void State_Paused::render(const SDL_Window& window)
 {
-	static_cast<void>(window); // <= unused
+    static_cast<void>(window); // <= unused
 
-	Scene::renderAll();
+    Scene::renderAll();
 }
 
-void	State_Paused::resize(int width, int height)
+void State_Paused::resize(int width, int height)
 {
-	Data::get()->graphic.camera.viewportSize = { width, height };
+    Data::get()->graphic.camera.viewportSize = { width, height };
 }
 
-void	State_Paused::visibility(bool visible)
+void State_Paused::visibility(bool visible)
 {
-	static_cast<void>(visible); // <= unused
+    static_cast<void>(visible); // <= unused
 }

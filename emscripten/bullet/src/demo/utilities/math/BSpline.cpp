@@ -100,10 +100,10 @@ void BSpline::initialise(const BSpline::t_def& def)
     {
         _baseFunc = &basisDeg5;
         _rangeInterval = 3;
-    } 
+    }
 }
 
-float    BSpline::calcAt(float coef, unsigned int dimension)
+float BSpline::calcAt(float coef, unsigned int dimension) const
 {
     if (_baseFunc == nullptr)
         D_THROW(std::invalid_argument, "not initialised");
@@ -118,18 +118,18 @@ float    BSpline::calcAt(float coef, unsigned int dimension)
     unsigned int coefInterval = std::floor(coef);
 
     float result = 0.0f;
-    for (unsigned int jj = coefInterval - _rangeInterval; jj <= coefInterval + _rangeInterval; ++jj)
+    for (unsigned int ii = coefInterval - _rangeInterval; ii <= coefInterval + _rangeInterval; ++ii)
     {
         float value = 0.0f;
 
-        if (jj < margin)
+        if (ii < margin)
             value = _def.knotsData[dimension];
-        else if (jj >= _def.knotsLength / _def.dimension + margin)
+        else if (ii >= _def.knotsLength / _def.dimension + margin)
             value = _def.knotsData[(_def.knotsLength / _def.dimension - 1) * _def.dimension + dimension];
         else
-            value = _def.knotsData[int(jj - margin) * _def.dimension + dimension];
+            value = _def.knotsData[int(ii - margin) * _def.dimension + dimension];
 
-        result += value * _baseFunc(coef - jj);
+        result += value * _baseFunc(coef - ii);
     }
 
     return result;

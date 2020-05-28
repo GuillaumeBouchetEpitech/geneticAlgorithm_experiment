@@ -1,13 +1,27 @@
 
 = emscripten version
 
-
-== Online demo 3D
+== Online live demo 3D
 
 http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html
 
+== Diagrams
 
-== Build emscripten C++ pthread (for Chrome on desktop only)
+link:./diagrams/diagram-activity-details.png
+link:./diagrams/diagram-usecase-relationships.png
+link:./diagrams/diagram-activity-threading.png
+
+== How to Build
+
+=== Build native C++ pthread
+
+  sh sh_install_thirdparties.sh
+  sh sh_build.sh (select "bullet", then platform "native", then mode "release", then rebuild "yes")
+  sh sh_build.sh (select "experiment", then platform "native", then mode "release", then rebuild "yes")
+
+then run `./bin/exec`
+
+=== Build emscripten C++ pthread (for Chrome on desktop only)
 
   sh sh_install_thirdparties.sh
   sh sh_install_tools.sh
@@ -15,9 +29,9 @@ http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/
   sh sh_build.sh (select "experiment", then platform "web pthread", then mode "release", then rebuild "yes")
   node dumbFileServer.js
 
-then use firefox/chrome to load `http://127.0.0.1:9000/dist/index.html`
+then use chrome browser on a desktop to load `http://127.0.0.1:9000/dist/index.html`
 
-== Build emscripten C++ webworker (mobile & firefox friendly)
+=== Build emscripten C++ webworker (mobile & firefox friendly)
 
   sh sh_install_thirdparties.sh
   sh sh_install_tools.sh
@@ -25,16 +39,6 @@ then use firefox/chrome to load `http://127.0.0.1:9000/dist/index.html`
   sh sh_build.sh (select "experiment", then platform "web worker", then mode "release", then rebuild "yes")
   node dumbFileServer.js
 
-then use firefox/chrome to load `http://127.0.0.1:9000/dist/index.html`
-
-== Build native C++ pthread
-
-modify Makefile top variable this way 'cpp_mode=yes'
-
-  sh sh_install_thirdparties.sh
-  sh sh_build.sh (select "bullet", then platform "native", then mode "release", then rebuild "yes")
-  sh sh_build.sh (select "experiment", then platform "native", then mode "release", then rebuild "yes")
-
-then run `./bin/exec`
+then use firefox browser to load `http://127.0.0.1:9000/dist/index.html`
 
 == Thanks for watching !

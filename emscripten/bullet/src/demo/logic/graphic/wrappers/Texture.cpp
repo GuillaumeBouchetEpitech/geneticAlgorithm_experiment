@@ -7,16 +7,16 @@
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &_textureId);
+    glDeleteTextures(1, &_textureId);
 }
 
 //
 
-bool	Texture::load(const std::string& filename, bool pixelated /*= false*/, bool repeat /*= false*/)
+bool Texture::load(const std::string& filename, bool pixelated /*= false*/, bool repeat /*= false*/)
 {
     // TODO: make an "image" class?
 
-	SDL_Surface* surface = IMG_Load(filename.c_str());
+    SDL_Surface* surface = IMG_Load(filename.c_str());
     if (!surface)
         D_THROW(std::runtime_error, "fail to load image, filename=\"" << filename << "\"");
 
@@ -45,21 +45,21 @@ bool	Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
     GLint border = 0;
     glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, surface->w, surface->h, border, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-	SDL_FreeSurface(surface);
+    SDL_FreeSurface(surface);
 
     return true;
 }
 
-const glm::ivec2&	Texture::getSize() const
+const glm::ivec2& Texture::getSize() const
 {
     return _size;
 }
 
 //
 
-void	Texture::bind() const
+void Texture::bind() const
 {
     if (_textureId == 0)
         D_THROW(std::runtime_error, "not allocated");
@@ -67,7 +67,7 @@ void	Texture::bind() const
     glBindTexture(GL_TEXTURE_2D, _textureId);
 }
 
-void	Texture::unbind()
+void Texture::unbind()
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }

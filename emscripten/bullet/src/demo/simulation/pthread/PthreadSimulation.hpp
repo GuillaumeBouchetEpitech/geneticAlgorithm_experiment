@@ -22,22 +22,22 @@ class PthreadSimulation
 private:
     unsigned int    _totalCores = 0;
 
-    Producer*	_multithreadProducer;
+    Producer*   _multithreadProducer;
 
-    std::vector<PhysicWorld>	_physicWorlds;
+    std::vector<PhysicWorld>    _physicWorlds;
     std::vector<AbstactSimulation::t_coreState>    _coreStates;
 
     unsigned int    _genomesPerCore = 0;
 
-    std::vector<Car>	_cars;
-    t_carsData			_carsData;
+    std::vector<Car>    _cars;
+    t_carsData          _carsData;
 
     CircuitBuilder::t_startTransform    _startTransform;
 
     bool _isFirstFrame = true;
 
 private:
-    GeneticAlgorithm			_geneticAlgorithm;
+    GeneticAlgorithm    _geneticAlgorithm;
 
     struct t_callbacks
     {
@@ -52,29 +52,29 @@ public:
     virtual ~PthreadSimulation();
 
 public:
-    virtual void    initialise(const t_def& def) override;
+    virtual void initialise(const t_def& def) override;
 
 public:
-    virtual void	update() override;
+    virtual void update() override;
 
 private:
-    void	updateCarResult();
+    void updateCarResult();
 
 public:
-    virtual unsigned int        getTotalCores() const override;
+    virtual unsigned int getTotalCores() const override;
     virtual const AbstactSimulation::t_coreState&  getCoreState(unsigned int index) const override;
-    virtual const t_carData&    getCarResult(unsigned int index) const override;
-    virtual unsigned int        getTotalCars() const override;
+    virtual const t_carData& getCarResult(unsigned int index) const override;
+    virtual unsigned int getTotalCars() const override;
 
 public:
 
-    virtual void	setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
-    virtual void	setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
-    virtual void	setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
+    virtual void setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
+    virtual void setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
+    virtual void setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:
-    virtual const GeneticAlgorithm::t_genomes&	getGenomes() const override;
-    virtual const GeneticAlgorithm::t_genome&	getBestGenome() const override;
-    virtual unsigned int                        getGenerationNumber() const override;
+    virtual const GeneticAlgorithm::t_genomes& getGenomes() const override;
+    virtual const GeneticAlgorithm::t_genome& getBestGenome() const override;
+    virtual unsigned int getGenerationNumber() const override;
 
 };

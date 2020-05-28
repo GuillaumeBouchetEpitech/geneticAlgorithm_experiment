@@ -7,14 +7,14 @@
 
 struct t_animatedVertex
 {
-    glm::vec3	postion;
-    glm::vec3	color;
-    glm::vec3	normal; // <= animation
-    float		limitId; // <= animation
+    glm::vec3 postion;
+    glm::vec3 color;
+    glm::vec3 normal; // <= animation
+    float limitId; // <= animation
 };
-typedef std::vector<t_animatedVertex>	t_animatedVertices;
+typedef std::vector<t_animatedVertex> t_animatedVertices;
 
-void	Data::initialiseCircuit()
+void Data::initialiseCircuit()
 {
     std::vector<glm::vec3>  skeletonVertices;
     t_animatedVertices      groundVertices;
@@ -41,13 +41,13 @@ void	Data::initialiseCircuit()
 
             skeletonVertices.push_back({ vertex.x, vertex.y, vertex.z });
 
-            if (vertex.x < boundaries.min.x)	boundaries.min.x = vertex.x;
-            if (vertex.y < boundaries.min.y)	boundaries.min.y = vertex.y;
-            if (vertex.z < boundaries.min.z)	boundaries.min.z = vertex.z;
+            if (vertex.x < boundaries.min.x) boundaries.min.x = vertex.x;
+            if (vertex.y < boundaries.min.y) boundaries.min.y = vertex.y;
+            if (vertex.z < boundaries.min.z) boundaries.min.z = vertex.z;
 
-            if (vertex.x > boundaries.max.x)	boundaries.max.x = vertex.x;
-            if (vertex.y > boundaries.max.y)	boundaries.max.y = vertex.y;
-            if (vertex.z > boundaries.max.z)	boundaries.max.z = vertex.z;
+            if (vertex.x > boundaries.max.x) boundaries.max.x = vertex.x;
+            if (vertex.y > boundaries.max.y) boundaries.max.y = vertex.y;
+            if (vertex.z > boundaries.max.z) boundaries.max.z = vertex.z;
         }
     };
 
@@ -67,9 +67,9 @@ void	Data::initialiseCircuit()
 
         for (int index : indices)
         {
-            bool	firstLine = (index < 2);
+            bool firstLine = (index < 2);
 
-            const auto&	color = (firstLine ? whiteColor : colors[index]);
+            const auto& color = (firstLine ? whiteColor : colors[index]);
 
             glm::vec3 deformation = {
                 t_RNG::getRangedValue(-maxDeformation, maxDeformation),
@@ -77,7 +77,7 @@ void	Data::initialiseCircuit()
                 t_RNG::getRangedValue(-maxDeformation, maxDeformation)
             };
 
-            glm::vec3	normal = (normals[index] + deformation) * 4.0f;
+            glm::vec3 normal = (normals[index] + deformation) * 4.0f;
 
             groundVertices.push_back({ vertices[index], color, normal, limitValue });
 
@@ -94,22 +94,22 @@ void	Data::initialiseCircuit()
 
         static_cast<void>(colors); // <= unused
 
-        float	limitValue = latestSize / indices.size();
-        float	limitStep = 1.0f / indices.size();
+        float limitValue = latestSize / indices.size();
+        float limitStep = 1.0f / indices.size();
 
         for (int index : indices)
         {
-            bool	firstLine = (index < 2);
+            bool firstLine = (index < 2);
 
-            const auto&	color = (firstLine ? whiteColor : greyColor);
+            const auto& color = (firstLine ? whiteColor : greyColor);
 
-            glm::vec3	deformation = {
+            glm::vec3 deformation = {
                 t_RNG::getRangedValue(-0.2f, 0.2f),
                 t_RNG::getRangedValue(-0.2f, 0.2f),
                 t_RNG::getRangedValue(-0.2f, 0.2f)
             };
 
-            glm::vec3	normal = (normals[index] + deformation) * 4.0f;
+            glm::vec3 normal = (normals[index] + deformation) * 4.0f;
 
             wallsVertices.push_back({ vertices[index], color, normal, limitValue });
 

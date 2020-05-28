@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "TaskSynchroniser.hpp"

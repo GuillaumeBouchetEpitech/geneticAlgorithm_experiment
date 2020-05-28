@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if not defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "WorkerConsumer.hpp"
@@ -13,7 +13,7 @@
 
 namespace /* anonymous */
 {
-	WorkerConsumer*	workerConsumer = nullptr;
+    WorkerConsumer* workerConsumer = nullptr;
 };
 
 extern "C"
@@ -22,12 +22,12 @@ extern "C"
 EMSCRIPTEN_KEEPALIVE
 void onMessage(char* dataPointer, int dataSize, void* arg)
 {
-	static_cast<void>(arg); // <= unused
+    static_cast<void>(arg); // <= unused
 
-	if (!workerConsumer)
-		workerConsumer = new WorkerConsumer();
+    if (!workerConsumer)
+        workerConsumer = new WorkerConsumer();
 
-	workerConsumer->processMessage(dataPointer, dataSize);
+    workerConsumer->processMessage(dataPointer, dataSize);
 }
 
 }

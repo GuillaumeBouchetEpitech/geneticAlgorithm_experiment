@@ -42,7 +42,7 @@ bool sceneToScreen(const glm::vec3& obj,
     screenCoord[1] = (fTempo[5] * 0.5 + 0.5) * viewportSize.y + viewportPos.y;
 
     // This is only correct when glDepthRange(0.0, 1.0)
-    screenCoord[2] = (1.0 + fTempo[6]) * 0.5;	// Between 0 and 1
+    screenCoord[2] = (1.0 + fTempo[6]) * 0.5; // Between 0 and 1
 
     return true;
 }

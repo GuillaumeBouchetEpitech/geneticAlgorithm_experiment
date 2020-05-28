@@ -4,7 +4,7 @@
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
-#	include "State_WebWorkersLoading.hpp"
+#   include "State_WebWorkersLoading.hpp"
 #endif
 
 #include "State_Running.hpp"
@@ -16,50 +16,50 @@
 //
 // singleton
 
-StateManager*	StateManager::_instance = nullptr;
+StateManager* StateManager::_instance = nullptr;
 
 StateManager::StateManager()
 {
-	// allocate states
+    // allocate states
 
 #if defined D_WEB_WEBWORKER_BUILD
-	_states[toUnderlying(States::eWorkersLoading)] = new State_WebWorkersLoading();
+    _states[toUnderlying(States::eWorkersLoading)] = new State_WebWorkersLoading();
 #endif
 
-	_states[toUnderlying(States::eRunning)] = new State_Running();
-	_states[toUnderlying(States::ePaused)] = new State_Paused();
+    _states[toUnderlying(States::eRunning)] = new State_Running();
+    _states[toUnderlying(States::ePaused)] = new State_Paused();
 
 #if defined D_WEB_WEBWORKER_BUILD
-	_currentState = States::eWorkersLoading;
+    _currentState = States::eWorkersLoading;
 #else
-	_currentState = States::eRunning;
+    _currentState = States::eRunning;
 #endif
 }
 
 StateManager::~StateManager()
 {
-	// deallocate states
+    // deallocate states
 
-	for (auto& state : _states)
-		delete state;
+    for (auto& state : _states)
+        delete state;
 }
 
 //
 
-void	StateManager::create()
+void StateManager::create()
 {
-	if (!_instance)
-		_instance = new StateManager();
+    if (!_instance)
+        _instance = new StateManager();
 }
 
-void	StateManager::destroy()
+void StateManager::destroy()
 {
-	delete _instance, _instance = nullptr;
+    delete _instance, _instance = nullptr;
 }
 
-StateManager*	StateManager::get()
+StateManager* StateManager::get()
 {
-	return _instance;
+    return _instance;
 }
 
 // singleton
@@ -68,36 +68,36 @@ StateManager*	StateManager::get()
 
 
 
-void	StateManager::changeState(States nextState)
+void StateManager::changeState(States nextState)
 {
-	_states[toUnderlying(_currentState)]->leave();
+    _states[toUnderlying(_currentState)]->leave();
 
-	_currentState = nextState;
+    _currentState = nextState;
 
-	_states[toUnderlying(_currentState)]->enter();
+    _states[toUnderlying(_currentState)]->enter();
 }
 
-void	StateManager::handleEvent(const SDL_Event& event)
+void StateManager::handleEvent(const SDL_Event& event)
 {
-	_states[toUnderlying(_currentState)]->handleEvent(event);
+    _states[toUnderlying(_currentState)]->handleEvent(event);
 }
 
-void	StateManager::update(int delta)
+void StateManager::update(int delta)
 {
-	_states[toUnderlying(_currentState)]->update(delta);
+    _states[toUnderlying(_currentState)]->update(delta);
 }
 
-void	StateManager::render(const SDL_Window& window)
+void StateManager::render(const SDL_Window& window)
 {
-	_states[toUnderlying(_currentState)]->render(window);
+    _states[toUnderlying(_currentState)]->render(window);
 }
 
-void	StateManager::resize(int width, int height)
+void StateManager::resize(int width, int height)
 {
-	_states[toUnderlying(_currentState)]->resize(width, height);
+    _states[toUnderlying(_currentState)]->resize(width, height);
 }
 
-void	StateManager::visibility(bool visible)
+void StateManager::visibility(bool visible)
 {
-	_states[toUnderlying(_currentState)]->visibility(visible);
+    _states[toUnderlying(_currentState)]->visibility(visible);
 }

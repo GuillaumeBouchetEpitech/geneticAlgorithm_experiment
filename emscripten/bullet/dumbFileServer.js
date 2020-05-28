@@ -1,11 +1,28 @@
 
-const http = require('http');
-const url = require('url');
-const fs = require('fs');
-const path = require('path');
-const port = parseInt(process.argv[2] || 9000);
+const http  = require('http');
+const url   = require('url');
+const fs    = require('fs');
+const path  = require('path');
+const port  = parseInt(process.argv[2] || 9000, 10);
 
-function onFileRequest(req, res) {
+// maps file extention to MIME typere
+const formatsMap = new Map([
+    [ '.ico',   'image/x-icon'          ],
+    [ '.html',  'text/html'             ],
+    [ '.js',    'text/javascript'       ],
+    [ '.json',  'application/json'      ],
+    [ '.css',   'text/css'              ],
+    [ '.png',   'image/png'             ],
+    [ '.jpg',   'image/jpeg'            ],
+    [ '.wav',   'audio/wav'             ],
+    [ '.mp3',   'audio/mpeg'            ],
+    [ '.svg',   'image/svg+xml'         ],
+    [ '.pdf',   'application/pdf'       ],
+    [ '.doc',   'application/msword'    ],
+    [ '.wasm',  'application/wasm'      ],
+]);
+
+const onFileRequest = (req, res) => {
 
     console.log(`${req.method} ${req.url}`);
 
@@ -15,53 +32,27 @@ function onFileRequest(req, res) {
     let pathname = `.${parsedUrl.pathname}`;
     // based on the URL path, extract the file extention. e.g. .js, .doc, ...
     const ext = path.parse(pathname).ext;
-    // maps file extention to MIME typere
-    const map = {
-        '.ico': 'image/x-icon',
-        '.html': 'text/html',
-        '.js': 'text/javascript',
-        '.json': 'application/json',
-        '.css': 'text/css',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.wav': 'audio/wav',
-        '.mp3': 'audio/mpeg',
-        '.svg': 'image/svg+xml',
-        '.pdf': 'application/pdf',
-        '.doc': 'application/msword',
-        '.wasm': 'application/wasm',
-    };
 
-    fs.exists(pathname, function (exist) {
+    if (!fs.existsSync(pathname)) {
+        // if the file is not found, return 404
+        res.statusCode = 404;
+        res.end(`File "${pathname}" not found!`);
+        return;
+    }
 
-        if (!exist) {
-            // if the file is not found, return 404
-            res.statusCode = 404;
-            res.end(`File ${pathname} not found!`);
-            return;
-        }
+    // if is a directory search for index file matching the extention
+    if (fs.statSync(pathname).isDirectory())
+        pathname += '/index' + ext;
 
-        // if is a directory search for index file matching the extention
-        if (fs.statSync(pathname).isDirectory())
-            pathname += '/index' + ext;
+    // read file from file system
+    const data = fs.readFileSync(pathname);
 
-        // read file from file system
-        fs.readFile(pathname, function(err, data) {
-
-            if (err) {
-                res.statusCode = 500;
-                res.end(`Error getting the file: ${err}.`);
-            } else {
-                // if the file is found, set Content-type and send data
-                res.setHeader('Content-type', map[ext] || 'text/plain' );
-                res.end(data);
-            }
-        });
-    });
+    // if the file is found, set Content-type and send data
+    res.setHeader('Content-type', formatsMap.get(ext) || 'text/plain' );
+    res.end(data);
 }
 
-function onListen() {
-
+const onListen = () =>  {
     console.log(`Server listening at http://127.0.0.1:${port}/`);
     console.log(` => http://127.0.0.1:${port}/dist/index.html`);
 }

@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if not defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "WorkerConsumer.hpp"
@@ -23,14 +23,14 @@ WorkerConsumer::WorkerConsumer()
     // m_contacts.reserve(32);
     // _physicWorld.setOnContact([this](const glm::vec3& position, const glm::vec3& normal) {
 
-    // 	m_contacts.push_back(std::make_pair(position, normal));
+    //  m_contacts.push_back(std::make_pair(position, normal));
     // });
 
 }
 
-void	WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
+void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
 {
-    MessageView	message(dataPointer, dataSize);
+    MessageView message(dataPointer, dataSize);
 
     char messageType = 0;
     message >> messageType;
@@ -63,12 +63,12 @@ void	WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void	WorkerConsumer::send()
+void    WorkerConsumer::send()
 {
     emscripten_worker_respond(const_cast<char*>(_message.getData()), _message.getSize());
 }
 
-void	WorkerConsumer::initialiseSimulation(MessageView& message)
+void    WorkerConsumer::initialiseSimulation(MessageView& message)
 {
     std::string circuitFilename;
     message >> circuitFilename;
@@ -77,11 +77,11 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
 
     // extract neural network topology
 
-    bool						isUsingBias = true;
-    unsigned int				layerInput = 0;
-    unsigned int				totalHidden = 0;
-    std::vector<unsigned int> 	layerHidden;
-    unsigned int				layerOutput = 0;
+    bool                        isUsingBias = true;
+    unsigned int                layerInput = 0;
+    unsigned int                totalHidden = 0;
+    std::vector<unsigned int>   layerHidden;
+    unsigned int                layerOutput = 0;
 
     message >> isUsingBias;
 
@@ -151,16 +151,16 @@ void	WorkerConsumer::initialiseSimulation(MessageView& message)
     send();
 }
 
-void	WorkerConsumer::resetSimulation(MessageView& message)
+void    WorkerConsumer::resetSimulation(MessageView& message)
 {
-    const unsigned int	floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
-    const unsigned int	byteWeightsSize = floatWeightsSize * sizeof(float);
+    const unsigned int  floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
+    const unsigned int  byteWeightsSize = floatWeightsSize * sizeof(float);
 
     auto newWeights = std::make_unique<float[]>(floatWeightsSize);
     float* newWeightsRaw = newWeights.get();
 
-    std::vector<float>	weightsBuffer(floatWeightsSize);
-    float*	weightsBufferRaw = weightsBuffer.data();
+    std::vector<float>  weightsBuffer(floatWeightsSize);
+    float*  weightsBufferRaw = weightsBuffer.data();
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
@@ -175,7 +175,7 @@ void	WorkerConsumer::resetSimulation(MessageView& message)
     // m_contacts.clear();
 }
 
-void	WorkerConsumer::processSimulation()
+void    WorkerConsumer::processSimulation()
 {
     // update the simulation
 
@@ -209,7 +209,7 @@ void	WorkerConsumer::processSimulation()
 
     _message << delta << genomesAlive;
 
-    glm::mat4	transform;
+    glm::mat4   transform;
 
     const auto& vehicles = _physicWorld.getVehicles();
 
@@ -240,13 +240,13 @@ void	WorkerConsumer::processSimulation()
         const auto& gSensor = car.getGroundSensor();
         _message << gSensor.near << gSensor.far << gSensor.value;
 
-        const auto&	output = car.getNeuralNetworkOutput();
+        const auto& output = car.getNeuralNetworkOutput();
         _message << output.steer << output.speed;
     }
 
     // _message << m_contacts.size();
     // for (const auto& contact : m_contacts)
-    // 	_message << contact.first << contact.second;
+    //  _message << contact.first << contact.second;
     // m_contacts.clear();
 
     send();

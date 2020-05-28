@@ -1,0 +1,51 @@
+
+@startuml
+
+title diagram-activity-details.txt
+
+partition Initialize {
+
+    :create a random generation
+    (ex: generation of 90 genomes);
+}
+
+repeat
+
+partition Simulate {
+
+    :(re-)set the genomes (vehicles);
+
+    repeat
+
+        :try all the genomes;
+
+    repeat while (simulation\ncomplete?) is (no)
+    ->yes;
+
+    :rate all the genomes;
+}
+
+partition Evolve {
+
+    :<b>Natural Selection
+    ----
+    Select the best genomes;
+
+    :<b>Elitism (just 1 genome)
+    ----
+    keep the best genome;
+
+    :<b>Reproduction and Mutation (80%)
+    ----
+    cross breed best genomes
+    mutate the newly bred genomes;
+
+    :<b>Diversity (~20%)
+    ----
+    fill the "remaining seats"
+    with randome genomes;
+}
+
+repeat while (repeat)
+
+@enduml

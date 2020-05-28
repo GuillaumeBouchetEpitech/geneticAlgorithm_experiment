@@ -15,8 +15,8 @@ namespace /*anonymous*/
 
 struct t_modelVertex
 {
-    glm::vec3	position;
-    glm::vec3	color;
+    glm::vec3 position;
+    glm::vec3 color;
 };
 
 void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices);
@@ -192,7 +192,7 @@ void generateSphereVerticesFilled(float radius,
 
 };
 
-void	Data::initialiseGeometries()
+void Data::initialiseGeometries()
 {
     // { // instanced geometries
 
@@ -229,10 +229,10 @@ void	Data::initialiseGeometries()
 
     //     { // wheel geometry (instanced)
 
-    //         const int	wheelQuality = 8;
-    //         const float	wheelRadius = 0.5f;
-    //         const float	wheelWidth = 0.2f;
-    //         const float	wheelHWidth = wheelWidth * 0.5f;
+    //         const int wheelQuality = 8;
+    //         const float wheelRadius = 0.5f;
+    //         const float wheelWidth = 0.2f;
+    //         const float wheelHWidth = wheelWidth * 0.5f;
 
     //         std::vector<glm::vec3> vertices;
     //         vertices.reserve(wheelQuality * 2 + 2);
@@ -383,11 +383,11 @@ void	Data::initialiseGeometries()
 
         struct t_vertex
         {
-            glm::vec2	position;
-            glm::vec2	texCoord;
+            glm::vec2 position;
+            glm::vec2 texCoord;
         };
 
-        const auto&	hudText = graphic.hudText;
+        const auto& hudText = graphic.hudText;
         const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
         const glm::vec2 texCoord = letterSize / hudText.textureSize;
 

@@ -1,9 +1,9 @@
 
 #include "FrustumCulling.hpp"
 
-void    FrustumCulling::normalizePlane(e_FrustumSide side)
+void FrustumCulling::normalizePlane(e_FrustumSide side)
 {
-    float	magnitude = sqrtf(_frustum[side][eA] * _frustum[side][eA] +
+    float    magnitude = sqrtf(_frustum[side][eA] * _frustum[side][eA] +
                               _frustum[side][eB] * _frustum[side][eB] +
                               _frustum[side][eC] * _frustum[side][eC]);
 
@@ -13,14 +13,14 @@ void    FrustumCulling::normalizePlane(e_FrustumSide side)
     _frustum[side][eD] /= magnitude;
 }
 
-void	FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& modl2)
+void FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& modl2)
 {
     float   clip[16];
 
     const float* proj = glm::value_ptr(proj2);
     const float* modl = glm::value_ptr(modl2);
 
-#define	D_SET_CLIP(X)							\
+#define D_SET_CLIP(X) \
     clip[X * 4 + 0] = modl[X * 4]*proj[ 0] + modl[X * 4 + 1]*proj[ 4] + modl[X * 4 + 2]*proj[ 8] + modl[X * 4 + 3]*proj[12]; \
     clip[X * 4 + 1] = modl[X * 4]*proj[ 1] + modl[X * 4 + 1]*proj[ 5] + modl[X * 4 + 2]*proj[ 9] + modl[X * 4 + 3]*proj[13]; \
     clip[X * 4 + 2] = modl[X * 4]*proj[ 2] + modl[X * 4 + 1]*proj[ 6] + modl[X * 4 + 2]*proj[10] + modl[X * 4 + 3]*proj[14]; \
@@ -31,7 +31,7 @@ void	FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& m
     D_SET_CLIP(2);
     D_SET_CLIP(3);
 
-#undef	D_SET_CLIP
+#undef D_SET_CLIP
 
     // clip[ 0] = modl[ 0] * proj[ 0] + modl[ 1] * proj[ 4] + modl[ 2] * proj[ 8] + modl[ 3] * proj[12];
     // clip[ 1] = modl[ 0] * proj[ 1] + modl[ 1] * proj[ 5] + modl[ 2] * proj[ 9] + modl[ 3] * proj[13];
@@ -95,7 +95,7 @@ void	FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& m
 
 }
 
-bool	FrustumCulling::pointInFrustum(const glm::vec3& v) const
+bool FrustumCulling::pointInFrustum(const glm::vec3& v) const
 {
     for (int ii = 0; ii < 6; ++ii)
         if ( _frustum[ii][eA] * v.x +
@@ -107,7 +107,7 @@ bool	FrustumCulling::pointInFrustum(const glm::vec3& v) const
     return true;
 }
 
-bool	FrustumCulling::sphereInFrustum(const glm::vec3& v, float radius) const
+bool FrustumCulling::sphereInFrustum(const glm::vec3& v, float radius) const
 {
     for (int ii = 0; ii < 6; ++ii)
         if ( _frustum[ii][eA] * v.x +
@@ -119,9 +119,9 @@ bool	FrustumCulling::sphereInFrustum(const glm::vec3& v, float radius) const
     return true;
 }
 
-bool	FrustumCulling::cubeInFrustum(const glm::vec3& v, const glm::vec3& s2) const
+bool FrustumCulling::cubeInFrustum(const glm::vec3& v, const glm::vec3& s2) const
 {
-    glm::vec3	s = s2 * 0.5f;
+    glm::vec3    s = s2 * 0.5f;
 
     for (int ii = 0; ii < 6; ++ii)
     {

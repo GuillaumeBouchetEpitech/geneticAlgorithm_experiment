@@ -10,7 +10,7 @@ PthreadSimulation::~PthreadSimulation()
 {
 }
 
-void	PthreadSimulation::initialise(const t_def& def)
+void PthreadSimulation::initialise(const t_def& def)
 {
     if (def.genomesPerCore == 0)
         D_THROW(std::invalid_argument,
@@ -72,7 +72,7 @@ void	PthreadSimulation::initialise(const t_def& def)
                 def.onNewWallPatch(vertices, colors, normals, indices);
         };
 
-        CircuitBuilder	circuitBuilder;
+        CircuitBuilder  circuitBuilder;
         circuitBuilder.load(def.filename);
         circuitBuilder.generateSkeleton(def.onSkeletonPatch);
         circuitBuilder.generate(onNewPhysicGroundPatch, onNewPhysicWallPatch);
@@ -94,7 +94,7 @@ void	PthreadSimulation::initialise(const t_def& def)
     _carsData.resize(totalGenomes);
 }
 
-void	PthreadSimulation::update()
+void PthreadSimulation::update()
 {
     const unsigned int carPerThread = _genomesPerCore;
 
@@ -193,7 +193,7 @@ void	PthreadSimulation::update()
     _isFirstFrame = true;
 }
 
-void	PthreadSimulation::updateCarResult()
+void PthreadSimulation::updateCarResult()
 {
     for (unsigned int ii = 0; ii < _cars.size(); ++ii)
     {
@@ -230,58 +230,58 @@ void	PthreadSimulation::updateCarResult()
         carData.groundSensor.far = gSensor.far;
         carData.groundSensor.value = gSensor.value;
 
-        const auto&	output = car.getNeuralNetworkOutput();
+        const auto& output = car.getNeuralNetworkOutput();
         carData.neuralNetworkOutput.speed = output.speed;
         carData.neuralNetworkOutput.steer = output.steer;
     }
 }
 
-unsigned int    PthreadSimulation::getTotalCores() const
+unsigned int PthreadSimulation::getTotalCores() const
 {
     return _totalCores;
 }
 
-const AbstactSimulation::t_coreState&   PthreadSimulation::getCoreState(unsigned int index) const
+const AbstactSimulation::t_coreState& PthreadSimulation::getCoreState(unsigned int index) const
 {
     return _coreStates.at(index);
 }
 
-const t_carData&    PthreadSimulation::getCarResult(unsigned int index) const
+const t_carData& PthreadSimulation::getCarResult(unsigned int index) const
 {
     return _carsData.at(index);
 }
 
-unsigned int    PthreadSimulation::getTotalCars() const
+unsigned int PthreadSimulation::getTotalCars() const
 {
     return _carsData.size();
 }
 
-void    PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callback callback)
+void PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callback callback)
 {
     _callbacks.onResetAndProcess = callback;
 }
 
-void    PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
+void PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
 {
     _callbacks.onProcessStep = callback;
 }
 
-void    PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)
+void PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)
 {
     _callbacks.onGenerationEnd = callback;
 }
 
-const GeneticAlgorithm::t_genomes&  PthreadSimulation::getGenomes() const
+const GeneticAlgorithm::t_genomes& PthreadSimulation::getGenomes() const
 {
     return _geneticAlgorithm.getGenomes();
 }
 
-const GeneticAlgorithm::t_genome&   PthreadSimulation::getBestGenome() const
+const GeneticAlgorithm::t_genome& PthreadSimulation::getBestGenome() const
 {
     return _geneticAlgorithm.getBestGenome();
 }
 
-unsigned int    PthreadSimulation::getGenerationNumber() const
+unsigned int PthreadSimulation::getGenerationNumber() const
 {
-	return _geneticAlgorithm.getGenerationNumber();
+    return _geneticAlgorithm.getGenerationNumber();
 }

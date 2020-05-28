@@ -110,7 +110,6 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/utilities/*.cpp \
 						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
 						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/message/*.cpp \
 						$(DIR_SRC)/demo/utilities/string/*.cpp \
 						$(DIR_SRC)/demo/utilities/threading/*.cpp \
 						$(DIR_SRC)/demo/logic/*.cpp \
@@ -133,7 +132,6 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/utilities/*.cpp \
 						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
 						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/message/*.cpp \
 						$(DIR_SRC)/demo/utilities/string/*.cpp \
 						$(DIR_SRC)/demo/utilities/threading/*.cpp \
 						$(DIR_SRC)/demo/logic/*.cpp \
@@ -309,8 +307,7 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	### the "SharedArrayBuffer" feature is disabled everywhere for secutiry reasons (since Jan 2018)
 	### this feature is required for the browser emulation of the C++ multithreading to work
 	COMMON_FLAGS+=	-s USE_PTHREADS=1 \
-					-s PTHREAD_POOL_SIZE=4 \
-					-s PTHREAD_HINT_NUM_CORES=4
+					-s PTHREAD_POOL_SIZE=4
 
 	CXXFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
 							-std=c++17 \
@@ -348,13 +345,20 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	# # disable the internal emscripten version (is this still useful?)
 	# LDFLAGS_WEB_PTHREAD+=	-s USE_BULLET=0
 
+
+
+	LDFLAGS_WEB_PTHREAD+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
+
+
+
+
 	# now using wasm as faster than asm.js
 	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1 -s BINARYEN_TRAP_MODE="clamp"
 	LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1
 	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1
 
-	# Link Time Optimisation (LTO)
-	LDFLAGS_WEB_PTHREAD+=	--llvm-lto 1
+	# # Link Time Optimisation (LTO)
+	# LDFLAGS_WEB_PTHREAD+=	--llvm-lto 1
 
 	# # final file size optimisation
 	# LDFLAGS_WEB_PTHREAD+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
@@ -399,11 +403,17 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	# COMMON_LDFLAGS+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
 	# 					-s ELIMINATE_DUPLICATE_FUNCTIONS=1
 
-	# Link Time Optimisation (LTO)
-	COMMON_LDFLAGS+=	--llvm-lto 1
+	# # Link Time Optimisation (LTO)
+	# COMMON_LDFLAGS+=	--llvm-lto 1
 
 	# # disable the internal emscripten version (is this still useful?)
 	# COMMON_LDFLAGS+=	-s USE_BULLET=0
+
+
+
+	COMMON_LDFLAGS+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
+
+
 
 	# now using wasm as faster than asm.js
 	COMMON_LDFLAGS+=	-s WASM=1

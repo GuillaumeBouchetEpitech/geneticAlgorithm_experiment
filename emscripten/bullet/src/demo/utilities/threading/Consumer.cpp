@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "Consumer.hpp"
@@ -12,9 +12,9 @@
 #include <chrono>
 
 Consumer::Consumer(Producer& producer)
-	: _producer(producer)
+    : _producer(producer)
 {
-    _thread = std::thread(&Consumer::run, this);
+    _thread = std::thread(&Consumer::threadedMethod, this);
 
     while (!_running)
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -22,7 +22,7 @@ Consumer::Consumer(Producer& producer)
 
 Consumer::~Consumer()
 {
-	quit();
+    quit();
 }
 
 //
@@ -52,7 +52,7 @@ void Consumer::quit()
 //
 //
 
-void	Consumer::run()
+void Consumer::threadedMethod()
 {
     _running = true;
 

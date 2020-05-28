@@ -2,7 +2,7 @@
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
-#	error "exclude this file to build natively or with multi thread support"
+#   error "exclude this file to build natively or with multi thread support"
 #endif
 
 #include "Producer.hpp"
@@ -12,11 +12,13 @@
 
 Producer::Producer()
 {
-    // todo : move constructor?
-    for (int ii = 0; ii < 3; ++ii)
+    const int totalConsumers = 3;
+
+    _consumers.reserve(totalConsumers);
+    for (int ii = 0; ii < totalConsumers; ++ii)
         _consumers.push_back(new Consumer(*this));
 
-    _thread = std::thread(&Producer::run, this);
+    _thread = std::thread(&Producer::threadedMethod, this);
 
     while (!_running)
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -56,7 +58,7 @@ void Producer::update()
             current = &_completedTasks.front();
         }
 
-        // must not be locked as it might push a task
+        // must not be locked as it might push another task
         if (current->_oncomplete)
             current->_oncomplete();
 
@@ -73,7 +75,7 @@ void Producer::quit()
     if (!_running)
         return;
 
-    // clear the planned task(s) and wake up the thread
+    // clear the planned task(s) and wake up the running thread
     {
         auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
         _plannedTasks.clear();
@@ -89,22 +91,21 @@ void Producer::quit()
             consumer->quit();
         delete consumer;
     }
+    _consumers.clear();
 }
 
 void Producer::waitUntilAllCompleted()
 {
-    // _waitAllTask.waitUntilNotified();
-
     auto lock = _waitAllTask.makeScopedLock();
 
     while (!_plannedTasks.empty() || !_runningTasks.empty())
-        _waitAllTask.waitUntilNotified(lock, 0.1f);
+        _waitAllTask.waitUntilNotified(lock);
 }
 
 //
 //
 
-void    Producer::notifyWorkDone(Consumer* consumer)
+void Producer::notifyWorkDone(Consumer* consumer)
 {
     auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
@@ -125,7 +126,7 @@ void    Producer::notifyWorkDone(Consumer* consumer)
         _waitAllTask.notify();
 }
 
-void    Producer::run()
+void Producer::threadedMethod()
 {
     _running = true;
     auto lock = _waitOneTask.makeScopedLock();

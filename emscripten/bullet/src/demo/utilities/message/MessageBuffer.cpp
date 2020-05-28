@@ -18,7 +18,7 @@ MessageBuffer::MessageBuffer()
     _dataContainer.reserve(512);
 }
 
-MessageBuffer&    MessageBuffer::append(const void* dataPointer, unsigned int dataSize)
+MessageBuffer& MessageBuffer::append(const void* dataPointer, unsigned int dataSize)
 {
     if (dataPointer && dataSize > 0)
     {
@@ -41,59 +41,59 @@ MessageBuffer&    MessageBuffer::append(const void* dataPointer, unsigned int da
     return *this;
 }
 
-void    MessageBuffer::clear()
+void MessageBuffer::clear()
 {
     MessageView::clear();
     _dataContainer.clear(); // <= clear the used size but keep it's (cached) capacity
 }
 
-MessageBuffer&  MessageBuffer::operator <<(bool data)
+MessageBuffer& MessageBuffer::operator <<(bool data)
 {
     *this << char(data); // <= write like a char
     return *this;
 }
 
-MessageBuffer&  MessageBuffer::operator <<(char data)
+MessageBuffer& MessageBuffer::operator <<(char data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(unsigned char data)
+MessageBuffer& MessageBuffer::operator <<(unsigned char data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(short data)
+MessageBuffer& MessageBuffer::operator <<(short data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(unsigned short data)
+MessageBuffer& MessageBuffer::operator <<(unsigned short data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(int data)
+MessageBuffer& MessageBuffer::operator <<(int data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(unsigned int data)
+MessageBuffer& MessageBuffer::operator <<(unsigned int data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(float data)
+MessageBuffer& MessageBuffer::operator <<(float data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&  MessageBuffer::operator <<(double data)
+MessageBuffer& MessageBuffer::operator <<(double data)
 {
     return append(&data, sizeof(data));
 }
 
-MessageBuffer&	MessageBuffer::operator <<(const std::string& data)
+MessageBuffer& MessageBuffer::operator <<(const std::string& data)
 {
     if (data.empty())
         D_THROW(std::runtime_error, "can't append an empty string");
@@ -107,12 +107,12 @@ MessageBuffer&	MessageBuffer::operator <<(const std::string& data)
     return *this;
 }
 
-MessageBuffer&	MessageBuffer::operator <<(const glm::vec3& data)
+MessageBuffer& MessageBuffer::operator <<(const glm::vec3& data)
 {
-	return append(&data.x, sizeof(glm::vec3));
+    return append(&data.x, sizeof(glm::vec3));
 }
 
-MessageBuffer&	MessageBuffer::operator <<(const glm::mat4& data)
+MessageBuffer& MessageBuffer::operator <<(const glm::mat4& data)
 {
-	return append(glm::value_ptr(data), sizeof(glm::mat4));
+    return append(glm::value_ptr(data), sizeof(glm::mat4));
 }

@@ -13,9 +13,9 @@ struct TextRenderer
 public:
     struct t_offset
     {
-        glm::vec2	position;
-        glm::vec2	texCoord;
-        float	    scale;
+        glm::vec2    position;
+        glm::vec2    texCoord;
+        float        scale;
     };
     typedef std::vector<t_offset> t_lettersOffset;
 
@@ -30,11 +30,11 @@ public:
     void    initialise();
 
 public:
-    void	push(const glm::vec2& position,
+    void    push(const glm::vec2& position,
                  const std::string& message,
                  float scale = 1.0f);
 
-    void	clear();
+    void    clear();
 
-    void	render();
+    void    render();
 };

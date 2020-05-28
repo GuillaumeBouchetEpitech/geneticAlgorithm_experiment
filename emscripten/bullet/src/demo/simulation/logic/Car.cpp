@@ -11,12 +11,12 @@ namespace /*anonymous*/
 {
     float   k_steeringMaxValue = M_PI / 8.0f;
     float   k_speedMaxValue = 10.0f;
-    int     k_healthMaxValue = 250;
+    int     k_healthMaxValue = 100;
 
-    const float	k_eyeMaxRange = 50.0f;
-    const float	k_eyeHeight = 1.0f;
-    const float	k_eyeElevation = 6.0f;
-    const float	k_eyeWidthStep = float(M_PI) / 8.0f;
+    const float k_eyeMaxRange = 50.0f;
+    const float k_eyeHeight = 1.0f;
+    const float k_eyeElevation = 6.0f;
+    const float k_eyeWidthStep = float(M_PI) / 8.0f;
 
     const std::array<float, 3> k_eyeElevations = {
         -k_eyeElevation,
@@ -32,6 +32,9 @@ namespace /*anonymous*/
         +k_eyeWidthStep * 2.0f
     };
 
+    const float k_groundMaxRange = 10.0f; // <= ground sensor
+    const float k_groundHeight = 1.0f;
+
 };
 
 Car::Car(PhysicWorld& physicWorld,
@@ -46,7 +49,7 @@ Car::Car(PhysicWorld& physicWorld,
     reset(position, quaternion);
 }
 
-void	Car::update(const NeuralNetwork& neuralNetwork)
+void Car::update(const NeuralNetwork& neuralNetwork)
 {
     if (!_isAlive)
         return;
@@ -62,7 +65,7 @@ void	Car::update(const NeuralNetwork& neuralNetwork)
         return;
     }
 
-    std::vector<float>	input;
+    std::vector<float> input;
     input.reserve(_eyeSensors.size());
     for (const auto& eyeSensor : _eyeSensors)
     {
@@ -90,7 +93,7 @@ void	Car::update(const NeuralNetwork& neuralNetwork)
     ++_totalUpdateNumber;
 }
 
-void	Car::updateSensors()
+void Car::updateSensors()
 {
     glm::mat4 transform;
     _vehicle->getOpenGLMatrix(transform);
@@ -120,16 +123,13 @@ void	Car::updateSensors()
 
     { // ground sensor
 
-        const float	groundMaxRange = 10.0f; // <= ground sensor
-        const float	groundHeight = 1.0f;
-
-        _groundSensor.near = transform * glm::vec4(0, 0, groundHeight, 1);
-        _groundSensor.far = transform * glm::vec4(0, 0, groundHeight - groundMaxRange, 1);
+        _groundSensor.near = transform * glm::vec4(0, 0, k_groundHeight, 1);
+        _groundSensor.far = transform * glm::vec4(0, 0, k_groundHeight - k_groundMaxRange, 1);
     }
 }
 
 
-void	Car::collideEyeSensors()
+void Car::collideEyeSensors()
 {
     for (auto& sensor : _eyeSensors)
     {
@@ -151,12 +151,12 @@ void	Car::collideEyeSensors()
     }
 }
 
-void	Car::collideGroundSensor()
+void Car::collideGroundSensor()
 {
     // raycast the ground to get the checkpoints validation
 
     // ground sensor collide only ground
-    PhysicWorld::t_raycastParams	params(_groundSensor.near, _groundSensor.far);
+    PhysicWorld::t_raycastParams params(_groundSensor.near, _groundSensor.far);
     params.collisionGroup = D_GROUP_SENSOR;
     params.collisionMask = D_GROUP_GROUND;
 
@@ -165,7 +165,7 @@ void	Car::collideGroundSensor()
     if (hasHitGround)
     {
         _groundSensor.far = params.result.impactPoint;
-        int	hasHitGroundIndex = params.result.impactIndex;
+        int hasHitGroundIndex = params.result.impactIndex;
 
         // is this the next "ground geometry" index?
         if (_groundIndex + 1 == hasHitGroundIndex)
@@ -191,7 +191,7 @@ void	Car::collideGroundSensor()
     _health -= hasHitGround ? 1 : 2;
 }
 
-void	Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
+void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
 {
     _isAlive = true;
     _fitness = 0;
@@ -212,42 +212,42 @@ void	Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
     _physicWorld.addVehicle(_vehicle); // ensure vehicle presence
 }
 
-const Car::t_sensors&	Car::getEyeSensors() const
+const Car::t_sensors& Car::getEyeSensors() const
 {
     return _eyeSensors;
 }
 
-const Car::t_sensor&	Car::getGroundSensor() const
+const Car::t_sensor& Car::getGroundSensor() const
 {
     return _groundSensor;
 }
 
-float	Car::getFitness() const
+float Car::getFitness() const
 {
     return _fitness;
 }
 
-bool	Car::isAlive() const
+bool Car::isAlive() const
 {
     return _isAlive;
 }
 
-int		Car::getGroundIndex() const
+int  Car::getGroundIndex() const
 {
     return _groundIndex;
 }
 
-const Car::t_neuralNetworkOutput&	Car::getNeuralNetworkOutput() const
+const Car::t_neuralNetworkOutput& Car::getNeuralNetworkOutput() const
 {
     return _output;
 }
 
-const PhysicVehicle&	Car::getVehicle() const
+const PhysicVehicle& Car::getVehicle() const
 {
     return *_vehicle;
 }
 
-float	Car::getLife() const
+float Car::getLife() const
 {
     return float(_health) / k_healthMaxValue;
 }

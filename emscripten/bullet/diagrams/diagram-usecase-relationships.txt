@@ -1,0 +1,82 @@
+
+@startuml
+
+
+title diagram-usecase-relationships.txt
+
+
+actor User
+
+
+usecase SIMULATION as "Simulation
+====
+Update the simuation (update the cars)
+--
+provide the current status of the
+simulation for rendering"
+
+
+
+usecase GENETIC_ALGORITHM as "Genetic algorithm
+====
+Manage the neural networks and genomes
+--
+Retrieve and cross breed the best genomes
+--
+Hanlde the generations"
+
+
+
+usecase NEURAL_NETWORK as "Neural Network
+====
+Is a black box: input -> output
+--
+the connection weights
+can be get/set"
+
+
+
+usecase GENOME as "Genome
+====
+Store a copy of the weights
+of the Neural Network
+--
+Store the score (fitness)
+of the car"
+
+
+
+usecase CAR as "Car
+====
+Rely on 15 physical
+raycast to "see" the circuit
+--
+Can move forward/backward
+Can steer left/right
+--
+Collect checkpoints
+as reward"
+
+
+
+usecase CIRCUIT as "Circuit
+====
+Build the circuit ground and
+walls by interpolating knots
+from a loaded text file"
+
+
+User --> SIMULATION
+SIMULATION -[#red]right-> GENETIC_ALGORITHM : manage
+SIMULATION -[#red]-> CAR : manage
+SIMULATION -[#red]-> CIRCUIT : manage
+GENETIC_ALGORITHM -[#red]down-> NEURAL_NETWORK : manage
+GENETIC_ALGORITHM -[#red]down-> GENOME : manage
+GENOME -[#blue]left-> NEURAL_NETWORK : use
+GENOME -[#blue]-> CAR : use
+CAR -[#blue]-> NEURAL_NETWORK : use
+CAR -[#blue]-> CIRCUIT : use
+
+
+
+@enduml

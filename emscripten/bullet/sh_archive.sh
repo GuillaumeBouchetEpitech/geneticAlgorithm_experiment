@@ -15,6 +15,3 @@ rsync -r \
     --exclude "bin" \
     --exclude "archive" \
     ./archive/
-
-zip
-

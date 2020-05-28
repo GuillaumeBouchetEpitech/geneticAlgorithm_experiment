@@ -27,10 +27,10 @@ public:
         eMat4f
     };
 
-	struct t_def
-	{
-		struct t_vbo
-		{
+    struct t_def
+    {
+        struct t_vbo
+        {
             struct t_attr
             {
 
@@ -56,12 +56,12 @@ public:
 
 private:
     t_def               _def;
-	VertexArrayObject	_vao;
-	VertexBufferObject	_vbo;
+    VertexArrayObject    _vao;
+    VertexBufferObject    _vbo;
     GLint               _primitiveType = GL_LINES;
-	unsigned int		_primitiveStart = 0;
-	unsigned int		_primitiveCount = 0;
-	unsigned int		_instanceCount = 0;
+    unsigned int        _primitiveStart = 0;
+    unsigned int        _primitiveCount = 0;
+    unsigned int        _instanceCount = 0;
     bool                _isInstanced = false;
 
 public:

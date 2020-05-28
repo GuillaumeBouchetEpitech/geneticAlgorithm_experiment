@@ -29,9 +29,9 @@ void ParticleManager::update(float delta)
 
     struct t_attributes
     {
-        glm::vec3	position;
+        glm::vec3   position;
         float       scale;
-        glm::vec4	color;
+        glm::vec4   color;
     };
 
     std::vector<t_attributes> particlesInstances;
@@ -85,11 +85,11 @@ void ParticleManager::emitParticles(const glm::vec3& position)
     for (int ii = 0; ii < totalParticles; ++ii)
     {
         glm::vec3 velocity = {
-            t_RNG::getRangedValue(-maxVelocity, maxVelocity),
-            t_RNG::getRangedValue(-maxVelocity, maxVelocity),
-            t_RNG::getRangedValue(-maxVelocity, maxVelocity),
+            t_RNG::getRangedValue(-1.0f, 1.0f),
+            t_RNG::getRangedValue(-1.0f, 1.0f),
+            t_RNG::getRangedValue(-1.0f, 1.0f),
         };
-        velocity = glm::normalize(velocity) * maxVelocity * 2.0f;
+        velocity = glm::normalize(velocity) * maxVelocity;
 
         glm::vec3 color = {
             t_RNG::getRangedValue(0.5f, 1.0f),
@@ -97,9 +97,9 @@ void ParticleManager::emitParticles(const glm::vec3& position)
             t_RNG::getRangedValue(0.5f, 1.0f),
         };
 
-        float scale = t_RNG::getRangedValue(1.0f, 1.5f);
+        float scale = t_RNG::getRangedValue(0.5f, 1.5f);
 
-        float life = t_RNG::getRangedValue(0.5f, 1.0f);
+        float life = t_RNG::getRangedValue(0.5f, 1.5f);
 
         _particles.push_back({ position, velocity, color, scale, life });
     }

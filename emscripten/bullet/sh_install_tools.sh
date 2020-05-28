@@ -2,7 +2,8 @@
 #
 ##
 
-SDK_VERSION=sdk-1.39.4
+SDK_VERSION=sdk-1.39.14
+# SDK_VERSION=sdk-1.39.4
 # SDK_VERSION=sdk-1.39.3
 # SDK_VERSION=sdk-1.39.2
 

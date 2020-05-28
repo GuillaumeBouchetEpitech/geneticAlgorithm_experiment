@@ -48,7 +48,7 @@ void VertexArrayObject::unbind()
     glBindVertexArray(0);
 }
 
-bool	VertexArrayObject::isAllocated() const
+bool VertexArrayObject::isAllocated() const
 {
     return !_vaoIds.empty();
 }

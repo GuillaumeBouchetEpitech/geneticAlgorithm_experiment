@@ -10,10 +10,10 @@
 class TraceLogger
 {
 public:
-	static std::string	getTime();
+    static std::string getTime();
 
 public:
-	static void	log(const std::string& msg);
+    static void log(const std::string& msg);
 };
 
 // this will reduce the "__FILE__" macro to it's filename -> friendlier to read
@@ -22,47 +22,47 @@ public:
 // this is just to make the "D_MYLOG" macro source code easier to read
 #define D_MYLOG_STACK D_MYLOG_FILENAME << "|" << __func__ << "|" << __LINE__
 
-#define D_MYLOG_PREFIX	"MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
+#define D_MYLOG_PREFIX "MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
 #define D_MYLOG_MAKE_STRING(resultString, streamMsg) \
 { \
-	std::stringstream sstr; \
-	sstr << streamMsg; \
-	resultString = sstr.str(); \
+    std::stringstream sstr; \
+    sstr << streamMsg; \
+    resultString = sstr.str(); \
 }
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
 #define D_MYLOG_MAKE_PREFIXED_STRING(resultString, streamMsg) \
 { \
-	std::stringstream sstr; \
-	sstr << D_MYLOG_PREFIX << streamMsg; \
-	resultString = sstr.str(); \
+    std::stringstream sstr; \
+    sstr << D_MYLOG_PREFIX << streamMsg; \
+    resultString = sstr.str(); \
 }
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
 #define D_MYLOG_MAKE_LOG(stringMsg) \
 { \
-	TraceLogger::log(stringMsg); \
+    TraceLogger::log(stringMsg); \
 }
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
-#define D_MYLOG(streamMsg)	\
+#define D_MYLOG(streamMsg) \
 { \
-	std::string	log; \
-	D_MYLOG_MAKE_PREFIXED_STRING(log, streamMsg) \
-	D_MYLOG_MAKE_LOG(log) \
+    std::string log; \
+    D_MYLOG_MAKE_PREFIXED_STRING(log, streamMsg) \
+    D_MYLOG_MAKE_LOG(log) \
 }
 
 #if 0
 
-#define D_MYLOG(streamMsg) 	D_MYLOG_MAKE_LOG(D_MYLOG_MAKE_STRING(streamMsg))
+#define D_MYLOG(streamMsg)  D_MYLOG_MAKE_LOG(D_MYLOG_MAKE_STRING(streamMsg))
 
 #define D_MYLOG(msg) \
 { \
-	std::stringstream sstr; \
-	sstr << "MYLOG [" << TraceLogger::getTime() << "] " << D_MYLOG_STACK << " -> " << msg; \
-	TraceLogger::log(sstr.str()); \
+    std::stringstream sstr; \
+    sstr << "MYLOG [" << TraceLogger::getTime() << "] " << D_MYLOG_STACK << " -> " << msg; \
+    TraceLogger::log(sstr.str()); \
 }
 
 #endif
