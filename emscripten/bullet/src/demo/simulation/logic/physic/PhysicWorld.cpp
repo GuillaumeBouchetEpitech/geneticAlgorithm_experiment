@@ -207,7 +207,7 @@ void PhysicWorld::destroyVehicle(PhysicVehicle* vehicle)
 
     removeVehicle(vehicle);
 
-    _bullet.broadphase->getOverlappingPairCache()->cleanProxyFromPairs(vehicle->_bullet.carChassis->getBroadphaseHandle(), _bullet.dispatcher);
+    // _bullet.broadphase->getOverlappingPairCache()->cleanProxyFromPairs(vehicle->_bullet.carChassis->getBroadphaseHandle(), _bullet.dispatcher);
 
     _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
     _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);

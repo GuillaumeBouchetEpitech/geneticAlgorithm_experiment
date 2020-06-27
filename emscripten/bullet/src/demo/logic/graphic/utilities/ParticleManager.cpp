@@ -31,7 +31,7 @@ void ParticleManager::update(float delta)
     {
         glm::vec3   position;
         float       scale;
-        glm::vec4   color;
+        glm::vec3   color;
     };
 
     std::vector<t_attributes> particlesInstances;
@@ -52,14 +52,13 @@ void ParticleManager::update(float delta)
         // apply fake gravity
         particle.linearVelocity.z -= 20.0f * delta;
 
-        // update color
-        const float alpha = particle.life / particle.maxLife;
-        glm::vec4 particleColor = glm::vec4(particle.color, alpha);
+        // update scale
+        float localScale = particle.life / particle.maxLife * particle.scale;
 
         // push as instance
         for (unsigned int ii = 0; ii < particle.trail.size(); ++ii)
-            particlesInstances.push_back({ particle.trail[ii], particle.scale, particleColor });
-        particlesInstances.push_back({ particle.position, particle.scale, particleColor });
+            particlesInstances.push_back({ particle.trail[ii], localScale, particle.color });
+        particlesInstances.push_back({ particle.position, localScale, particle.color });
     }
 
     auto& firework = Data::get()->graphic.geometries.particles.firework;
@@ -116,4 +115,7 @@ ParticleManager::t_particle::t_particle(const glm::vec3& position,
     , color(color)
     , life(life)
     , maxLife(life)
-{}
+{
+    for (auto& trailPos : trail)
+        trailPos = position;
+}

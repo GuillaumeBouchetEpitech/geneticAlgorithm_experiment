@@ -106,10 +106,11 @@ void WebWorkersSimulation::update()
 
     for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
     {
-        float fitness = getCarResult(ii).fitness;
+        const auto& carData = getCarResult(ii);
 
-        // reward a fast car once reached the end of the circuit?
-        _geneticAlgorithm.rateGenome(ii, fitness);
+        float extraFitness = float(carData.totalUpdates) / 1000;
+
+        _geneticAlgorithm.rateGenome(ii, carData.fitness + extraFitness);
     }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();

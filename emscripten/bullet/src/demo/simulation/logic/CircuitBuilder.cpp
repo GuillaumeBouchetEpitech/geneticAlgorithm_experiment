@@ -6,6 +6,7 @@
 #include "demo/utilities/TraceLogger.hpp"
 #include "demo/utilities/math/BSpline.hpp"
 #include "demo/utilities/string/trim.hpp"
+#include "demo/utilities/types.hpp"
 
 #include <stdexcept> // <= std::invalid_argument / runtime_error
 #include <algorithm>
@@ -33,6 +34,8 @@ void CircuitBuilder::load(const std::string& filename)
     // parse file and extract skeleton
 
     t_knots rawKnots;
+
+    float currentMinDistance = 2.0f;
     glm::vec3 currentColor = { 0.0f, 0.0f, 0.0f };
 
     std::string textLine;
@@ -99,6 +102,21 @@ void CircuitBuilder::load(const std::string& filename)
 
             currentColor = color;
         }
+        else if (type == "KNOTS_MINIMUM_DSTANCE")
+        {
+            float minimumDistance;
+
+            if (!(isstr >> minimumDistance))
+                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
+
+            if (glm::isnan(minimumDistance))
+                D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
+
+            if (glm::isinf(minimumDistance))
+                D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
+
+            currentMinDistance = minimumDistance;
+        }
         else if (type == "KNOTS_DUAL")
         {
             glm::vec3 left;
@@ -116,7 +134,7 @@ void CircuitBuilder::load(const std::string& filename)
                     D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
             }
 
-            rawKnots.push_back({ left, right, currentColor });
+            rawKnots.push_back({ left, right, currentMinDistance, currentColor });
         }
         else
         {
@@ -214,7 +232,7 @@ void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
 }
 
 void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
-                                 t_callbackNormals onNewWallPatch)
+                              t_callbackNormals onNewWallPatch)
 {
     if (_knots.empty())
         D_THROW(std::runtime_error, "not initialised");
@@ -230,34 +248,57 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     smoothedVertices.reserve(512); // <= ease the reallocation
 
     {
-        const unsigned int  dimension = 9; // <= 3 * vec3 = 9 (float)
-        const unsigned int  degree = 3;
-        const float*        knotsData = &_knots.front().left.x; // <= float*
-        const std::size_t   knotsLength = _knots.size() * dimension; // <= float*
+        enum class e_SplineType: int
+        {
+            eLeftX = 0,
+            eLeftY,
+            eLeftZ,
+            eRightX,
+            eRightY,
+            eRightZ,
+            eMinDistance,
+            eColorR,
+            eColorG,
+            eColorB,
 
-        BSpline smootherBSpline;
-        smootherBSpline.initialise({ knotsData, knotsLength, dimension, degree });
+            eCount,
+        };
+
+        // 3 * vec3 = 9 (float)
+        const unsigned int  dimension = toUnderlying(e_SplineType::eCount);
+
+        const unsigned int  degree = 3;
+        const float*        knotsData = &_knots.front().left.x;
+        const std::size_t   knotsLength = _knots.size() * dimension;
+
+        BSpline smoother;
+        smoother.initialise({ knotsData, knotsLength, dimension, degree });
 
         CircuitBuilder::t_circuitVertex vertex;
 
         const unsigned int maxIterations = 1000;
         const float step = 1.0f / maxIterations; // tiny steps
-        const float minimumDistance = 2.0f;
+        // const float minimumDistance = 2.0f;
 
-        for (float coef = 0.0f; coef <= 1.0f; coef += step) // tiny steps
+        for (float coef = 0.0f; coef <= 1.0f; coef += step)
         {
-            vertex.left.x = smootherBSpline.calcAt(coef, 0); // left x
-            vertex.left.y = smootherBSpline.calcAt(coef, 1); // left y
-            vertex.left.z = smootherBSpline.calcAt(coef, 2); // left z
-            vertex.right.x = smootherBSpline.calcAt(coef, 3); // right x
-            vertex.right.y = smootherBSpline.calcAt(coef, 4); // right y
-            vertex.right.z = smootherBSpline.calcAt(coef, 5); // right z
+            vertex.left.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftX));
+            vertex.left.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftY));
+            vertex.left.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftZ));
+            vertex.right.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightX));
+            vertex.right.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightY));
+            vertex.right.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightZ));
+
+            float minDistance = smoother.calcAt(coef, toUnderlying(e_SplineType::eMinDistance));
 
             if (!smoothedVertices.empty())
             {
+                // both left and right vertices must be far enough to be included
                 const auto& lastVertex = smoothedVertices.back();
-                if (glm::length(vertex.left - lastVertex.left) < minimumDistance ||
-                    glm::length(vertex.right - lastVertex.right) < minimumDistance)
+                // if (glm::length(vertex.left - lastVertex.left) < minimumDistance ||
+                //     glm::length(vertex.right - lastVertex.right) < minimumDistance)
+                if (glm::length(vertex.left - lastVertex.left) < minDistance ||
+                    glm::length(vertex.right - lastVertex.right) < minDistance)
                     continue;
             }
 
@@ -266,9 +307,9 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
                 glm::length(vertex.right) < 0.001f)
                 continue; // TODO: fix it
 
-            vertex.color.x = smootherBSpline.calcAt(coef, 6); // r
-            vertex.color.y = smootherBSpline.calcAt(coef, 7); // g
-            vertex.color.z = smootherBSpline.calcAt(coef, 8); // b
+            vertex.color.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorR));
+            vertex.color.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorG));
+            vertex.color.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorB));
 
             smoothedVertices.push_back(vertex);
         }

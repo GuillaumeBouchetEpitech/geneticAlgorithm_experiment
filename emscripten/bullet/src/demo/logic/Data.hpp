@@ -7,12 +7,14 @@
 #include "graphic/utilities/StackRenderer.hpp"
 #include "graphic/utilities/TextRenderer.hpp"
 #include "graphic/utilities/ParticleManager.hpp"
-#include "graphic/utilities/FrustumCulling.hpp"
+// #include "graphic/utilities/FrustumCulling.hpp"
 
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
+
+#include "demo/states/StateManager.hpp"
 
 #include <string>
 #include <list>
@@ -79,7 +81,6 @@ public:
         struct t_shaders
         {
             Shader* stackRenderer = nullptr;
-            // Shader* instanced = nullptr;
             Shader* wireframes = nullptr;
             Shader* animatedCircuit = nullptr;
             Shader* hudText = nullptr;
@@ -96,13 +97,6 @@ public:
 
         struct t_geometries
         {
-            // struct t_instanced
-            // {
-            //     Geometry chassis;
-            //     Geometry wheels;
-            // }
-            // instanced;
-
             struct t_particles
             {
                 Geometry firework;
@@ -112,6 +106,7 @@ public:
             struct t_stackRenderer
             {
                 Geometry lines;
+                Geometry triangles;
             }
             stackRenderer;
 
@@ -163,6 +158,13 @@ public:
 
     struct t_logic
     {
+        struct t_state
+        {
+            StateManager::States previousState;
+            int countdown = 0;
+        }
+        state;
+
         struct t_metrics
         {
             unsigned int updateTime = 0;

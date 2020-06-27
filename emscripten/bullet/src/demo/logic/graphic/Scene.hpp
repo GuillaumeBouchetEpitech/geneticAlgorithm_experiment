@@ -15,9 +15,7 @@ private:
     static void renderLeadingCarSensors();
     static void renderParticles();
     static void renderCars();
-    static void renderCircuitSkeleton();
-    static void renderBestCarsTrails();
-    static void renderWireframesGeometries(bool circuit = true, bool trails = true);
+    static void renderWireframesGeometries(bool trails = true);
     static void renderAnimatedCircuit();
     static void renderHUD();
 

@@ -1,7 +1,7 @@
 
 build_platform=native_pthread
-# build_platform=web_wasm_webworker
 # build_platform=web_wasm_pthread
+# build_platform=web_wasm_webworker
 
 build_mode=release
 # build_mode=debug
@@ -102,7 +102,6 @@ OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
 
 ifeq ($(build_platform),native_pthread)
 
-# common src
 SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/*.cpp \
 						$(DIR_SRC)/demo/*.cpp \
@@ -116,15 +115,14 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-						$(DIR_SRC)/demo/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
+						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
 else ifeq ($(build_platform),web_wasm_pthread)
 
-# common src
 SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/*.cpp \
 						$(DIR_SRC)/demo/*.cpp \
@@ -138,10 +136,10 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-						$(DIR_SRC)/demo/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
+						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
 else ifeq ($(build_platform),web_wasm_webworker)
@@ -153,7 +151,6 @@ SRC_WEB_MAIN=	$(wildcard \
 						$(DIR_SRC)/demo/utilities/*.cpp \
 						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
 						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/message/*.cpp \
 						$(DIR_SRC)/demo/utilities/string/*.cpp \
 						$(DIR_SRC)/demo/logic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
@@ -163,6 +160,7 @@ SRC_WEB_MAIN=	$(wildcard \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
 						$(DIR_SRC)/demo/simulation/webworker/*.cpp \
+						$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
 						$(DIR_SRC)/demo/simulation/webworker/producer/*.cpp)
 
 SRC_WEB_WORKER=	$(wildcard \
@@ -170,9 +168,10 @@ SRC_WEB_WORKER=	$(wildcard \
 						$(DIR_SRC)/demo/utilities/math/*.cpp \
 						$(DIR_SRC)/demo/utilities/message/*.cpp \
 						$(DIR_SRC)/demo/utilities/string/*.cpp \
-						$(DIR_SRC)/demo/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
+						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
+						$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
 						$(DIR_SRC)/demo/simulation/webworker/consumer/*.cpp)
 
 endif
@@ -244,10 +243,12 @@ OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, \
 
 ifeq ($(build_mode),release)
 
+	# optimisation flag
 	BUILD_FLAG=		-O3
 
 else
 
+	# debug flag
 	BUILD_FLAG=		-g3
 
 endif
@@ -286,22 +287,11 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	CXX=em++
 	AR=emar
 
-	# COMMON_FLAGS=	$(BUILD_FLAG) \
-	# 				-s USE_SDL=2 \
-	# 				-s USE_SDL_IMAGE=2 \
-	# 				-s SDL2_IMAGE_FORMATS='["png"]' \
-	# 				-s FULL_ES3=1 \
-	# 				-s USE_WEBGL2=1 \
-	# 				-s GL_PREINITIALIZED_CONTEXT=1
-
 	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
 					-s USE_SDL_IMAGE=2 \
 					-s SDL2_IMAGE_FORMATS='["png"]' \
 					-s GL_PREINITIALIZED_CONTEXT=1
-
-	# COMMON_FLAGS+=	-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
-	# 				-s "EXPORTED_FUNCTIONS=['_create_demo','_update_demo']"
 
 	### those flags are left unused on purpose
 	### the "SharedArrayBuffer" feature is disabled everywhere for secutiry reasons (since Jan 2018)
@@ -329,40 +319,19 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	LDFLAGS_WEB_PTHREAD+=	-s TOTAL_MEMORY=128Mb
 
 	# assets loading
-	# => This cannot be used with pthread
+	# => This cannot be used with pthread (TypeError: Browser.BlobBuilder is not a constructor)
 	# LDFLAGS_WEB_PTHREAD+=	--use-preload-plugins --preload-file ./assets/
-	# => This works
+	# => This works but make the index.js heavier
 	LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
 
 	# hacky hack to make the multithreading works with wasm
 	LDFLAGS_WEB_PTHREAD+=	-Wl,--shared-memory,--no-check-features
 
-	# => embed the "index/worker.mem" in the "index/worker.mem"
-	# COMMON_LDFLAGS+=	-s SINGLE_FILE=1
-
-
-
-	# # disable the internal emscripten version (is this still useful?)
-	# LDFLAGS_WEB_PTHREAD+=	-s USE_BULLET=0
-
-
-
 	LDFLAGS_WEB_PTHREAD+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
-
-
-
 
 	# now using wasm as faster than asm.js
 	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1 -s BINARYEN_TRAP_MODE="clamp"
 	LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1
-	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1
-
-	# # Link Time Optimisation (LTO)
-	# LDFLAGS_WEB_PTHREAD+=	--llvm-lto 1
-
-	# # final file size optimisation
-	# LDFLAGS_WEB_PTHREAD+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
-	# 						-s ELIMINATE_DUPLICATE_FUNCTIONS=1
 
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
@@ -391,29 +360,9 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=64Mb
 
 	# assets loading
-	# => This cannot be used with pthread
 	COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
-	# => This works
-	# COMMON_LDFLAGS+=	--embed-file ./assets/
-
-	# => embed the "index/worker.mem" in the "index/worker.mem"
-	# COMMON_LDFLAGS+=	-s SINGLE_FILE=1
-
-	# # final file size optimisation
-	# COMMON_LDFLAGS+=	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
-	# 					-s ELIMINATE_DUPLICATE_FUNCTIONS=1
-
-	# # Link Time Optimisation (LTO)
-	# COMMON_LDFLAGS+=	--llvm-lto 1
-
-	# # disable the internal emscripten version (is this still useful?)
-	# COMMON_LDFLAGS+=	-s USE_BULLET=0
-
-
 
 	COMMON_LDFLAGS+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
-
-
 
 	# now using wasm as faster than asm.js
 	COMMON_LDFLAGS+=	-s WASM=1
@@ -427,20 +376,10 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
-	# FLAGS_WEB_MAIN=		-s USE_SDL=2 \
-	# 					-s USE_SDL_IMAGE=2 \
-	# 					-s SDL2_IMAGE_FORMATS='["png"]' \
-	# 					-s FULL_ES3=1 \
-	# 					-s USE_WEBGL2=1 \
-	# 					-s GL_PREINITIALIZED_CONTEXT=1
-
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1
-
-	# FLAGS_WEB_MAIN+=	-s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap']" \
-	# 					-s "EXPORTED_FUNCTIONS=['_create_demo','_update_demo']"
 
 	FLAGS_WEB_WORKER=	-s BUILD_AS_WORKER=1 \
 						\

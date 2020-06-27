@@ -34,6 +34,7 @@ private:
     {
         glm::vec3 left;
         glm::vec3 right;
+        float minDistance;
         glm::vec3 color;
     };
     typedef std::vector<t_knot> t_knots;

@@ -19,6 +19,8 @@ void Data::initialiseSimulation()
 
     logic.simulation->setOnGenerationResetCallback([this]() {
 
+        StateManager::get()->changeState(StateManager::States::eStartGeneration);
+
         auto& carsTrails = logic.carsTrails;
         const auto& simulation = *logic.simulation;
         const auto& genomes = simulation.getGenomes();
@@ -121,35 +123,27 @@ void Data::initialiseSimulation()
             auto& fitnessStats = logic.fitnessStats;
             auto& allStats = fitnessStats.allStats;
 
-            // if (allStats.size() > 2)
-            // {
-                /**
-                 * => if last stat was smartest
-                 * ===> erase first and push_back new one
-                 * => else
-                 * ===> erase pop_back and push_back new one
-                 */
+            /**
+             * => if last stat was smartest
+             * ===> erase first and push_back new one
+             * => else
+             * ===> erase pop_back and push_back new one
+             */
 
-                const float prevLastOne = allStats[allStats.size() - 2];
-                const float currLastOne = allStats[allStats.size() - 1];
+            const float prevLastOne = allStats[allStats.size() - 2];
+            const float currLastOne = allStats[allStats.size() - 1];
 
-                if (currLastOne > prevLastOne) // last one is smarter
-                {
-                    if (allStats.size() == fitnessStats.maxStats)
-                        allStats.erase(allStats.begin() + 0); // erase fisrt
-                }
-                else // last one is not smarter
-                {
-                    allStats.pop_back(); // erase last
-                }
+            if (currLastOne > prevLastOne) // last one is smarter
+            {
+                if (allStats.size() == fitnessStats.maxStats)
+                    allStats.erase(allStats.begin() + 0); // erase fisrt
+            }
+            else // last one is not smarter
+            {
+                allStats.pop_back(); // erase last
+            }
 
-                allStats.push_back(bestGenome.fitness);
-            // }
-            // else if (allStats.size() < fitnessStats.maxStats)
-            // {
-            //     allStats.push_back(bestGenome.fitness);
-            // }
-
+            allStats.push_back(bestGenome.fitness);
         }
 
         if (!isSmarter)

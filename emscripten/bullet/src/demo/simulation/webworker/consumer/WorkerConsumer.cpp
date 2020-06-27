@@ -7,8 +7,6 @@
 
 #include "WorkerConsumer.hpp"
 
-#include "demo/logic/physic/PhysicVehicle.hpp"
-
 #include "demo/utilities/ErrorHandler.hpp"
 // #include "demo/utilities/TraceLogger.hpp"
 
@@ -71,31 +69,29 @@ void    WorkerConsumer::send()
 void    WorkerConsumer::initialiseSimulation(MessageView& message)
 {
     std::string circuitFilename;
-    message >> circuitFilename;
-
-    message >> _genomesPerCore;
-
-    // extract neural network topology
-
     bool                        isUsingBias = true;
     unsigned int                layerInput = 0;
     unsigned int                totalHidden = 0;
     std::vector<unsigned int>   layerHidden;
     unsigned int                layerOutput = 0;
 
-    message >> isUsingBias;
-
-    message >> layerInput;
-
-    message >> totalHidden;
-    for (unsigned int ii = 0; ii < totalHidden; ++ii)
     {
-        unsigned int layerValue = 0;
-        message >> layerValue;
+        message >> circuitFilename;
+        message >> _genomesPerCore;
 
-        layerHidden.push_back(layerValue);
+        // extract neural network topology
+        message >> isUsingBias;
+        message >> layerInput;
+        message >> totalHidden;
+        for (unsigned int ii = 0; ii < totalHidden; ++ii)
+        {
+            unsigned int layerValue = 0;
+            message >> layerValue;
+
+            layerHidden.push_back(layerValue);
+        }
+        message >> layerOutput;
     }
-    message >> layerOutput;
 
     {
         int physicIndex = 0;
@@ -211,27 +207,28 @@ void    WorkerConsumer::processSimulation()
 
     glm::mat4   transform;
 
-    const auto& vehicles = _physicWorld.getVehicles();
-
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
         const auto& car = _cars[ii];
 
         _message
-            << car.isAlive() << car.getLife()
-            << car.getFitness() << car.getGroundIndex();
+            << car.isAlive()
+            << car.getLife()
+            << car.getFitness()
+            << car.getTotalUpdates()
+            << car.getGroundIndex();
 
         if (!car.isAlive())
             continue;
 
-        auto* vehicle = vehicles[ii];
+        const auto& vehicle = car.getVehicle();
 
         // record the transformation matrix of the car
-        _message << vehicle->getOpenGLMatrix(transform);
+        _message << vehicle.getOpenGLMatrix(transform);
 
         // record the transformation matrix of the wheels
         for (int jj = 0; jj < 4; ++jj)
-            _message << vehicle->getWheelOpenGLMatrix(jj, transform);
+            _message << vehicle.getWheelOpenGLMatrix(jj, transform);
 
         const auto& eyeSensors = car.getEyeSensors();
         for (const auto& sensor : eyeSensors)

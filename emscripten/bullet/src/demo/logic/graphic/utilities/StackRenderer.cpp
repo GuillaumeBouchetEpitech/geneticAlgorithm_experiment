@@ -5,7 +5,8 @@
 
 StackRenderer::StackRenderer()
 {
-    _vertices.reserve(256);
+    _lineVertices.reserve(128 * 2);
+    _triangleVertices.reserve(128 * 3);
 }
 
 StackRenderer::~StackRenderer()
@@ -13,23 +14,23 @@ StackRenderer::~StackRenderer()
 
 //
 
-void StackRenderer::push(const t_vertex& vertex)
-{
-    if (_vertices.size() == _vertices.capacity())
-        flush();
+// void StackRenderer::push(const t_vertex& vertex)
+// {
+//     if (_lineVertices.size() == _lineVertices.capacity())
+//         flush();
 
-    _vertices.push_back(vertex);
-}
+//     _lineVertices.push_back(vertex);
+// }
 
 void StackRenderer::pushLine(const glm::vec3& posA,
                              const glm::vec3& posB,
                              const glm::vec3& color)
 {
-    if (_vertices.size() + 2 >= _vertices.capacity())
+    if (_lineVertices.size() + 2 >= _lineVertices.capacity())
         flush();
 
-    _vertices.push_back({ posA, color });
-    _vertices.push_back({ posB, color });
+    _lineVertices.push_back({ posA, color });
+    _lineVertices.push_back({ posB, color });
 }
 
 void StackRenderer::pushCross(const glm::vec3& pos,
@@ -52,6 +53,18 @@ void StackRenderer::pushCross(const glm::vec3& pos,
         pushLine(vertices[ii][0], vertices[ii][1], color);
 }
 
+void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB,
+                                 const glm::vec3& posC, const glm::vec3& color)
+{
+    if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
+        flush();
+
+    _triangleVertices.push_back({ posA, color });
+    _triangleVertices.push_back({ posB, color });
+    _triangleVertices.push_back({ posC, color });
+}
+
+
 void StackRenderer::pushLine(const glm::vec2& posA,
                              const glm::vec2& posB,
                              const glm::vec3& color)
@@ -73,12 +86,30 @@ void StackRenderer::pushRectangle(const glm::vec2& pos,
 
 void StackRenderer::flush()
 {
+    flushLines();
+    flushTriangles();
+}
+
+void StackRenderer::flushLines()
+{
     auto& geometry = Data::get()->graphic.geometries.stackRenderer.lines;
 
-    geometry.updateBuffer(0, _vertices, true);
-    geometry.setPrimitiveCount(_vertices.size());
+    geometry.updateBuffer(0, _lineVertices, true);
+    geometry.setPrimitiveCount(_lineVertices.size());
 
     geometry.render();
 
-    _vertices.clear();
+    _lineVertices.clear();
+}
+
+void StackRenderer::flushTriangles()
+{
+    auto& geometry = Data::get()->graphic.geometries.stackRenderer.triangles;
+
+    geometry.updateBuffer(0, _triangleVertices, true);
+    geometry.setPrimitiveCount(_triangleVertices.size());
+
+    geometry.render();
+
+    _triangleVertices.clear();
 }

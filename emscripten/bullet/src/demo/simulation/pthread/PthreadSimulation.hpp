@@ -9,8 +9,7 @@
 
 #include "demo/simulation/logic/Car.hpp"
 #include "demo/simulation/logic/CircuitBuilder.hpp"
-
-#include "demo/logic/physic/PhysicWorld.hpp"
+#include "demo/simulation/logic/physic/PhysicWorld.hpp"
 
 #include <list>
 #include <vector>

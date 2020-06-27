@@ -1,6 +1,8 @@
 
 #include "Scene.hpp"
 
+#include "demo/states/StateManager.hpp"
+
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/wrappers/Shader.hpp"
 
@@ -20,48 +22,19 @@
 namespace /*anonymous*/
 {
 
-void writeTime(std::stringstream& sstr, unsigned int time, bool isMS)
+std::string writeTime(unsigned int time)
 {
-    if (isMS)
-    {
-        if (time < 1000)
-        {
-            sstr
-                << std::setw(5)
-                << std::fixed << std::setprecision(1)
-                << time << "ms";
-        }
-        else
-        {
-            sstr
-                << std::setw(5)
-                << std::fixed << std::setprecision(1)
-                << (float(time) / 1000) << "s ";
-        }
-    }
+    std::stringstream sstr;
+    sstr << std::setw(5) << std::fixed << std::setprecision(1);
+
+    if (time < 1000)
+        sstr << time << "us";
+    else if (time < 1000000)
+        sstr << (float(time) / 1000) << "ms";
     else
-    {
-        if (time < 1000)
-        {
-            sstr
-                << std::setw(5)
-                << time << "us";
-        }
-        else if (time < 1000000)
-        {
-            sstr
-                << std::setw(5)
-                << std::fixed << std::setprecision(1)
-                << (float(time) / 1000) << "ms";
-        }
-        else
-        {
-            sstr
-                << std::setw(5)
-                << std::fixed << std::setprecision(1)
-                << (float(time) / 1000000) << "s";
-        }
-    }
+        sstr << (float(time) / 1000000) << "s";
+
+    return sstr.str();
 }
 
 }
@@ -74,7 +47,7 @@ void Scene::renderSimple()
 
     { // scene
 
-        Scene::renderCircuitSkeleton();
+        Scene::renderWireframesGeometries(false); // circuit only
     }
 
     { // HUD
@@ -92,6 +65,73 @@ void Scene::renderAll()
     Scene::clear();
 
     { // scene
+
+        { // checkerboard floor
+
+            // auto& data = *Data::get();
+            // auto& logic = data.logic;
+            // auto& graphic = data.graphic;
+            // // auto& stackRenderer = graphic.stackRenderer;
+            // const auto& shader = *graphic.shaders.stackRenderer;
+
+            // shader.bind();
+
+            // const auto& sceneMatrix = graphic.camera.matrices.scene;
+            // GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+            // glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+
+            // glm::vec3 minVal = logic.circuitAnimation.boundaries.min;
+            // glm::vec3 maxVal = logic.circuitAnimation.boundaries.max;
+
+            // minVal += glm::vec3(-50, -50, 0); // add extra
+            // maxVal += glm::vec3(+50, +50, 0); // add extra
+
+            // const glm::vec3 color = { 0.25f, 0.25f, 0.25f };
+            // const glm::vec3 vertices[4] = {
+            //     // { +50.0f, +50.0f, 0.0f },
+            //     // { -50.0f, +50.0f, 0.0f },
+            //     // { +50.0f, -50.0f, 0.0f },
+            //     // { -50.0f, -50.0f, 0.0f },
+            //     { maxVal.x, maxVal.y, -0.1f },
+            //     { minVal.x, maxVal.y, -0.1f },
+            //     { maxVal.x, minVal.y, -0.1f },
+            //     { minVal.x, minVal.y, -0.1f },
+            // };
+
+            // stackRenderer.pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], color);
+            // stackRenderer.pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], color);
+
+            // glEnable(GL_CULL_FACE);
+
+            // const glm::vec3 colorA = { 0.25f, 0.25f, 0.25f };
+            // const glm::vec3 colorB = { 0.00f, 0.00f, 0.00f };
+
+            // std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
+
+            // bool isColorA = true;
+
+            // for (float yy = minVal.y; yy < maxVal.y; yy += 20.0f)
+            // for (float xx = minVal.x; xx < maxVal.x; xx += 20.0f)
+            // {
+            //     const glm::vec3 vertices[4] = {
+            //         { xx + 10.0f, yy + 10.0f, -0.1f },
+            //         { xx - 10.0f, yy + 10.0f, -0.1f },
+            //         { xx + 10.0f, yy - 10.0f, -0.1f },
+            //         { xx - 10.0f, yy - 10.0f, -0.1f },
+            //     };
+
+            //     stackRenderer.pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], isColorA ? colorA : colorB);
+            //     stackRenderer.pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], isColorA ? colorA : colorB);
+
+            //     isColorA = !isColorA;
+            // }
+
+            // stackRenderer.flushTriangles();
+
+            // glDisable(GL_CULL_FACE);
+
+        } // checkerboard floor
+
 
         if (!Data::get()->logic.isAccelerated)
             Scene::renderLeadingCarSensors();
@@ -123,8 +163,8 @@ void Scene::updateMatrices()
         const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
 
         matrices.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
-        glm::mat4    viewMatrix = glm::mat4(1.0f); // <= identity matrix
-        glm::mat4    modelMatrix = glm::mat4(1.0f); // <= identity matrix
+        glm::mat4 viewMatrix = glm::mat4(1.0f); // <= identity matrix
+        glm::mat4 modelMatrix = glm::mat4(1.0f); // <= identity matrix
 
         // clamp vertical rotation [0..PI]
         camera.rotations.y = std::max(0.0f, std::min(3.14f, camera.rotations.y));
@@ -145,12 +185,12 @@ void Scene::updateMatrices()
     { // hud
 
         const auto& vSize = camera.viewportSize;
-        glm::mat4    projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
+        glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
-        glm::vec3    eye = { 0.0f, 0.0f, 0.5f };
-        glm::vec3    center = { 0.0f, 0.0f, 0.0f };
-        glm::vec3    upAxis = { 0.0f, 1.0f, 0.0f };
-        glm::mat4    viewMatrix = glm::lookAt(eye, center, upAxis);
+        glm::vec3 eye = { 0.0f, 0.0f, 0.5f };
+        glm::vec3 center = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
+        glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
 
         matrices.hud = projection * viewMatrix;
     }
@@ -168,13 +208,13 @@ void Scene::clear()
 
 void Scene::renderLeadingCarSensors()
 {
-    auto&        data = *Data::get();
-    const auto&    logic = data.logic;
-    const auto&    leaderCar = logic.leaderCar;
-    const auto&    simulation = *logic.simulation;
-    auto&        graphic = data.graphic;
-    auto&        stackRenderer = graphic.stackRenderer;
-    const auto&    shader = *graphic.shaders.stackRenderer;
+    auto&       data = *Data::get();
+    const auto& logic = data.logic;
+    const auto& leaderCar = logic.leaderCar;
+    const auto& simulation = *logic.simulation;
+    auto&       graphic = data.graphic;
+    auto&       stackRenderer = graphic.stackRenderer;
+    const auto& shader = *graphic.shaders.stackRenderer;
 
     // valid leading car?
     if (leaderCar.index < 0)
@@ -188,15 +228,15 @@ void Scene::renderLeadingCarSensors()
 
     shader.bind();
 
-    const auto&    sceneMatrix = graphic.camera.matrices.scene;
+    const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-    const glm::vec3    greenColor(0.0f, 1.0f, 0.0f);
-    const glm::vec3    yellowColor(1.0f, 1.0f, 0.0f);
-    const glm::vec3    orangeColor(1.0f, 0.5f, 0.0f);
-    const glm::vec3    redColor(1.0f, 0.0f, 0.0f);
-    const glm::vec3    whiteColor(1.0f, 1.0f, 1.0f);
+    const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
+    const glm::vec3 yellowColor(1.0f, 1.0f, 0.0f);
+    const glm::vec3 orangeColor(1.0f, 0.5f, 0.0f);
+    const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
+    const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
     // eye sensors
     for (const auto& sensor : carData.eyeSensors)
@@ -225,12 +265,12 @@ void Scene::renderParticles()
 {
     // instanced geometrie(s)
 
-    const auto&    graphic = Data::get()->graphic;
-    const auto&    sceneMatrix = graphic.camera.matrices.scene;
+    const auto& graphic = Data::get()->graphic;
+    const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
-        const auto&    shader = *graphic.shaders.particles;
-        const auto&    geometry = graphic.geometries.particles.firework;
+        const auto& shader = *graphic.shaders.particles;
+        const auto& geometry = graphic.geometries.particles.firework;
 
         shader.bind();
 
@@ -245,12 +285,13 @@ void Scene::renderCars()
 {
     // instanced geometrie(s)
 
-    const auto&    graphic = Data::get()->graphic;
-    const auto&    sceneMatrix = graphic.camera.matrices.scene;
+    // const auto& graphic = Data::get()->graphic;
+    auto& graphic = Data::get()->graphic;
+    const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
-        // const auto&    shader = *graphic.shaders.instanced;
-        // const auto&    instanced = graphic.geometries.instanced;
+        // const auto& shader = *graphic.shaders.instanced;
+        // const auto& instanced = graphic.geometries.instanced;
 
         // shader.bind();
 
@@ -268,47 +309,87 @@ void Scene::renderCars()
         GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
+        {
+            const auto& logic = Data::get()->logic;
+            const auto& simulation = *logic.simulation;
+
+            unsigned int totalCars = simulation.getTotalCars();
+
+            struct t_attributes
+            {
+                glm::mat4   tranform;
+                glm::vec3   color;
+            };
+
+            std::vector<t_attributes> modelsChassisMatrices;
+            std::vector<t_attributes> modelWheelsMatrices;
+
+            modelsChassisMatrices.reserve(totalCars); // pre-allocate
+            modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
+
+            glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
+
+            const glm::vec3 leaderColor = {1, 1, 1};
+            const glm::vec3 lifeColor = {0, 1, 0};
+            const glm::vec3 deathColor(1.0f, 0.0f, 0.0f);
+
+            for (unsigned int ii = 0; ii < totalCars; ++ii)
+            {
+                const auto& carData = simulation.getCarResult(ii);
+
+                if (!carData.isAlive)
+                    continue;
+
+                //
+                // color
+
+                const bool isLeader = (logic.leaderCar.index == int(ii));
+                glm::vec3 targetColor = isLeader ? leaderColor : lifeColor;
+                glm::vec3 color = glm::mix(deathColor, targetColor, carData.life);
+
+                //
+                // transforms
+
+                glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
+                modelsChassisMatrices.push_back({ chassisTransform, color });
+
+                for (const auto& wheelTransform : carData.wheelsTransform)
+                    modelWheelsMatrices.push_back({ wheelTransform, color });
+            }
+
+            graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);
+            graphic.geometries.model.car.setInstancedCount(modelsChassisMatrices.size());
+
+            graphic.geometries.model.wheel.updateBuffer(1, modelWheelsMatrices);
+            graphic.geometries.model.wheel.setInstancedCount(modelWheelsMatrices.size());
+
+        }
+
         graphic.geometries.model.car.render();
         graphic.geometries.model.wheel.render();
     }
 
 }
 
-void Scene::renderCircuitSkeleton()
-{
-    Scene::renderWireframesGeometries(true, false);
-}
-
-void Scene::renderBestCarsTrails()
-{
-    Scene::renderWireframesGeometries(false, true);
-}
-
-void Scene::renderWireframesGeometries(bool circuit /*= true*/, bool trails /*= true*/)
+void Scene::renderWireframesGeometries(bool trails /*= true*/)
 {
     // static geometrie(s) (mono color)
 
-    if (!circuit && !trails)
-        return;
-
-    const auto&    graphic = Data::get()->graphic;
-    const auto&    shader = *graphic.shaders.wireframes;
-    const auto&    wireframes = graphic.geometries.wireframes;
+    const auto& graphic = Data::get()->graphic;
+    const auto& shader = *graphic.shaders.wireframes;
+    const auto& wireframes = graphic.geometries.wireframes;
 
     shader.bind();
 
-    const auto&    sceneMatrix = graphic.camera.matrices.scene;
+    const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
     GLint colorLoc = shader.getUniform("u_color");
 
-    if (circuit)
-    {
-        glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
+    glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
 
-        wireframes.circuitSkelton.render();
-    }
+    wireframes.circuitSkelton.render();
 
     if (trails)
     {
@@ -323,15 +404,15 @@ void Scene::renderAnimatedCircuit()
 {
     // static geometrie(s) (animated)
 
-    const auto&    data = *Data::get();
-    const auto&    graphic = data.graphic;
-    const auto&    shader = *graphic.shaders.animatedCircuit;
-    const auto&    animatedCircuit = graphic.geometries.animatedCircuit;
-    const auto&    circuitAnimation = data.logic.circuitAnimation;
+    const auto& data = *Data::get();
+    const auto& graphic = data.graphic;
+    const auto& shader = *graphic.shaders.animatedCircuit;
+    const auto& animatedCircuit = graphic.geometries.animatedCircuit;
+    const auto& circuitAnimation = data.logic.circuitAnimation;
 
     shader.bind();
 
-    const auto&    sceneMatrix = graphic.camera.matrices.scene;
+    const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -356,21 +437,32 @@ void Scene::renderAnimatedCircuit()
 
 void Scene::renderHUD()
 {
-    auto&        data = *Data::get();
-    auto&        graphic = data.graphic;
-    auto&        logic = data.logic;
+    auto& data = *Data::get();
+    auto& graphic = data.graphic;
+    auto& logic = data.logic;
 
     glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
 
+    // {
+    //     // auto& stackRenderer = graphic.stackRenderer;
+    //     const auto& shader = *graphic.shaders.stackRenderer;
+
+    //     shader.bind();
+
+    //     const auto& hudMatrix = graphic.camera.matrices.hud;
+    //     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+    //     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+    // }
+
     {
-        const auto&    shader = *graphic.shaders.hudText;
-        auto&        textRenderer = graphic.hudText.renderer;
-        const auto&    simulation = *logic.simulation;
-        const auto&    hudText = logic.hudText;
+        const auto& shader = *graphic.shaders.hudText;
+        auto&       textRenderer = graphic.hudText.renderer;
+        const auto& simulation = *logic.simulation;
+        const auto& hudText = logic.hudText;
 
         shader.bind();
 
-        const auto&    hudMatrix = graphic.camera.matrices.hud;
+        const auto& hudMatrix = graphic.camera.matrices.hud;
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
@@ -385,18 +477,9 @@ void Scene::renderHUD()
         {
             std::stringstream sstr;
 
-#if defined D_WEB_WEBWORKER_BUILD
-            // bool isMillisecond = true;
-            bool isMillisecond = false;
-#else
-            bool isMillisecond = false;
-#endif
-
-            sstr << "update: ";
-            writeTime(sstr, logic.metrics.updateTime, isMillisecond);
-            sstr << std::endl << "render: ";
-            writeTime(sstr, logic.metrics.renderTime, isMillisecond);
-
+            sstr
+                << "update: " << writeTime(logic.metrics.updateTime) << std::endl
+                << "render: " << writeTime(logic.metrics.renderTime);
 
             std::string str = sstr.str();
 
@@ -404,9 +487,10 @@ void Scene::renderHUD()
         }
 
         {
-            const unsigned int    totalCars = logic.cores.totalCars;
+            const unsigned int  totalCars = logic.cores.totalCars;
             unsigned int        carsLeft = 0;
-            float                localBestFitness = 0.0f;
+            float               localBestFitness = 0.0f;
+
             for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
                 const auto& carData = simulation.getCarResult(ii);
@@ -422,6 +506,7 @@ void Scene::renderHUD()
 
             sstr
                 << "Generation: " << simulation.getGenerationNumber() << std::endl
+                << std::fixed << std::setprecision(1)
                 << "Fitness: " << localBestFitness << "/" << simulation.getBestGenome().fitness << std::endl
                 << "Cars: " << carsLeft << "/" << totalCars;
 
@@ -437,12 +522,16 @@ void Scene::renderHUD()
 
                 glm::vec3 screenCoord;
 
-                const unsigned int    totalCars = logic.cores.totalCars;
+                const unsigned int totalCars = logic.cores.totalCars;
                 for (unsigned int ii = 0; ii < totalCars; ++ii)
                 {
                     const auto& carData = simulation.getCarResult(ii);
 
-                    if (!carData.isAlive)
+                    if (!carData.isAlive || carData.fitness < 5.0f)
+                        continue;
+
+                    const bool isLeader = (logic.leaderCar.index == int(ii));
+                    if (!isLeader)
                         continue;
 
                     const glm::vec3 pos = carData.transform * glm::vec4(0,0,0,1);
@@ -457,19 +546,26 @@ void Scene::renderHUD()
                     if (screenCoord.z > 1.0f)
                         continue;
 
-                    std::stringstream sstr;
+                    // std::stringstream sstr;
 
-                    sstr
-                        << "id" << ii << std::endl
-                        << carData.life << std::endl
-                        << carData.fitness;
+                    // sstr
+                    //     << "id" << ii << std::endl
+                    //     << carData.life << std::endl
+                    //     << carData.fitness;
 
-                    std::string str = sstr.str();
+                    // std::string str = sstr.str();
 
-                    textRenderer.push({ screenCoord.x, screenCoord.y }, str, 0.75f);
+                    // textRenderer.push({ screenCoord.x, screenCoord.y }, str, 0.75f);
 
-                    // if (localBestFitness < carData.fitness)
-                    //     localBestFitness = carData.fitness;
+                    textRenderer.push({ screenCoord.x + 50, screenCoord.y + 50 }, "Leader", 1.0f);
+
+                    {
+                        auto& stackRenderer = graphic.stackRenderer;
+                        const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+
+                        stackRenderer.pushLine(screenCoord, { screenCoord.x + 50, screenCoord.y + 50 }, whiteColor);
+                    }
+
                 }
             }
 
@@ -577,17 +673,15 @@ void Scene::renderHUD()
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-                sstr << "WORKER_" << (ii + 1) << std::endl;
-
-                sstr << "> ";
-                writeTime(sstr, coreState.delta, true);
+                sstr
+                    << "WORKER_" << (ii + 1) << std::endl
+                    << "> " << writeTime(coreState.delta * 1000);
 
 #else
 
-                sstr << "THREAD_" << (ii + 1) << std::endl;
-
-                sstr << "> ";
-                writeTime(sstr, coreState.delta, false);
+                sstr
+                    << "THREAD_" << (ii + 1) << std::endl
+                    << "> " << writeTime(coreState.delta);
 
 #endif
 
@@ -606,8 +700,43 @@ void Scene::renderHUD()
             textRenderer.push({ 8, 8 + 23 * 16 }, str, 1.0f);
         }
 
-        if (logic.isPaused)
-            textRenderer.push({ 400 - 3 * 16 * 5, 300 - 8 * 5 }, "PAUSED", 5.0f);
+        //
+        // big titles
+
+#if defined D_WEB_WEBWORKER_BUILD
+        if (StateManager::get()->getState() == StateManager::States::eWorkersLoading)
+        {
+            float scale = 2.0f;
+
+            std::stringstream sstr;
+            sstr
+                << "WEB WORKER" << std::endl
+                << " LOADING  " << std::endl;
+            std::string message = sstr.str();
+
+            textRenderer.push({ 400 - 5 * 16 * scale, 300 - 8 * scale }, message, scale);
+        }
+#endif
+
+        if (StateManager::get()->getState() == StateManager::States::ePaused)
+        {
+            float scale = 5.0f;
+            textRenderer.push({ 400 - 3 * 16 * scale, 300 - 8 * scale }, "PAUSED", scale);
+        }
+
+        if (StateManager::get()->getState() == StateManager::States::eStartGeneration)
+        {
+            float scale = 2.0f;
+
+            std::stringstream sstr;
+            sstr << "Generation: " << simulation.getGenerationNumber();
+            std::string message = sstr.str();
+
+            textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
+        }
+
+        // big titles
+        //
 
         textRenderer.render();
     }
@@ -620,7 +749,7 @@ void Scene::renderHUD()
 
         shader.bind();
 
-        const auto&    hudMatrix = graphic.camera.matrices.hud;
+        const auto& hudMatrix = graphic.camera.matrices.hud;
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
@@ -646,7 +775,7 @@ void Scene::renderHUD()
             //
             //
 
-            const glm::vec2    currPos(
+            const glm::vec2 currPos(
                 borderPos.x,
                 borderPos.y - core * (borderSize.y + borderStep)
             );
@@ -686,18 +815,18 @@ void Scene::renderHUD()
 
     /**/
     {
-        auto&        stackRenderer = graphic.stackRenderer;
-        const auto&    shader = *graphic.shaders.stackRenderer;
+        auto&       stackRenderer = graphic.stackRenderer;
+        const auto& shader = *graphic.shaders.stackRenderer;
 
         shader.bind();
 
-        const auto&    hudMatrix = graphic.camera.matrices.hud;
+        const auto& hudMatrix = graphic.camera.matrices.hud;
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
-        const glm::vec3    whiteColor(1.0f, 1.0f, 1.0f);
-        // const glm::vec3    redColor(0.75f, 0.0f, 0.0f);
-        // const glm::vec3    greenColor(0.0f, 0.75f, 0.0f);
+        const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+        // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
+        // const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
 
         const glm::vec2 borderPos(10, 400);
         const glm::vec2 borderSize(150, 75);
@@ -707,8 +836,7 @@ void Scene::renderHUD()
         //
         // show progresses here
         {
-            const auto& fitnessStats = logic.fitnessStats;
-            const auto& allStats = fitnessStats.allStats;
+            const auto& allStats = logic.fitnessStats.allStats;
 
             if (allStats.size() >= 2)
             {

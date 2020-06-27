@@ -194,118 +194,6 @@ void generateSphereVerticesFilled(float radius,
 
 void Data::initialiseGeometries()
 {
-    // { // instanced geometries
-
-    //     auto& shader = *graphic.shaders.instanced;
-
-    //     Geometry::t_def::t_vbo vboGeometry;
-    //     vboGeometry.attrs = {
-    //         { "a_position", Geometry::e_attrType::eVec3f }
-    //     };
-
-    //     Geometry::t_def::t_vbo vboInstance;
-    //     vboInstance.attrs = {
-    //         { "a_transform", Geometry::e_attrType::eMat4f, 0 },
-    //         { "a_color", Geometry::e_attrType::eVec4f, 16 }
-    //     };
-    //     vboInstance.instanced = true;
-
-    //     Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_LINES };
-    //     // Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
-
-    //     auto& instanced = graphic.geometries.instanced;
-
-    //     { // chassis geometry (instanced)
-
-    //         std::vector<glm::vec3> chassisVertices;
-
-    //         glm::vec3 chassisSize = { 2.0f, 4.0f, 1.0f };
-    //         generateCubeVerticesWireframe(chassisSize, chassisVertices);
-
-    //         instanced.chassis.initialise(shader, geomDef);
-    //         instanced.chassis.updateBuffer(0, chassisVertices);
-    //         instanced.chassis.setPrimitiveCount(chassisVertices.size());
-    //     }
-
-    //     { // wheel geometry (instanced)
-
-    //         const int wheelQuality = 8;
-    //         const float wheelRadius = 0.5f;
-    //         const float wheelWidth = 0.2f;
-    //         const float wheelHWidth = wheelWidth * 0.5f;
-
-    //         std::vector<glm::vec3> vertices;
-    //         vertices.reserve(wheelQuality * 2 + 2);
-
-    //         for (int ii = 0; ii < wheelQuality; ++ii)
-    //         {
-    //             float coef = float(ii) / wheelQuality;
-    //             vertices.push_back({
-    //                 -wheelHWidth,
-    //                 wheelRadius * cosf(M_PI * 2.0f * coef),
-    //                 wheelRadius * sinf(M_PI * 2.0f * coef)
-    //             });
-    //         }
-
-    //         for (int ii = 0; ii < wheelQuality; ++ii)
-    //         {
-    //             float coef = float(ii) / wheelQuality;
-    //             vertices.push_back({
-    //                 +wheelHWidth,
-    //                 wheelRadius * cosf(M_PI * 2.0f * coef),
-    //                 wheelRadius * sinf(M_PI * 2.0f * coef)
-    //             });
-    //         }
-
-    //         vertices.push_back(vertices[0]);
-    //         vertices.push_back(vertices[wheelQuality]);
-
-    //         vertices.push_back({ -wheelHWidth, 0, 0 });
-    //         vertices.push_back({ +wheelHWidth, 0, 0 });
-
-    //         //
-
-    //         std::vector<int> indices;
-    //         indices.reserve(wheelQuality * 2 + 2);
-
-    //         // wheel side 1
-    //         for (int ii = 0; ii < wheelQuality; ++ii)
-    //         {
-    //             indices.push_back(ii);
-    //             indices.push_back((ii + 1) % wheelQuality);
-    //         }
-
-    //         // wheel side 2
-    //         for (int ii = 0; ii < wheelQuality; ++ii)
-    //         {
-    //             indices.push_back(wheelQuality + ii);
-    //             indices.push_back(wheelQuality + (ii + 1) % wheelQuality);
-    //         }
-
-    //         // wheel bridge
-    //         indices.push_back(0);
-    //         indices.push_back(wheelQuality);
-
-    //         indices.push_back(0);
-    //         indices.push_back(vertices.size() - 2);
-    //         indices.push_back(wheelQuality);
-    //         indices.push_back(vertices.size() - 1);
-
-    //         //
-
-    //         std::vector<glm::vec3> wheelVertices;
-    //         wheelVertices.reserve(indices.size());
-
-    //         for (int index : indices)
-    //             wheelVertices.push_back(vertices[index]);
-
-    //         instanced.wheels.initialise(shader, geomDef);
-    //         instanced.wheels.updateBuffer(0, wheelVertices);
-    //         instanced.wheels.setPrimitiveCount(wheelVertices.size());
-    //     }
-
-    // } // instanced geometries
-
     { // particles geometries
 
         auto& shader = *graphic.shaders.particles;
@@ -319,7 +207,7 @@ void Data::initialiseGeometries()
         vboInstance.attrs = {
             { "a_offsetPosition", Geometry::e_attrType::eVec3f, 0 },
             { "a_offsetScale", Geometry::e_attrType::eFloat, 3 },
-            { "a_offsetColor", Geometry::e_attrType::eVec4f, 4 }
+            { "a_offsetColor", Geometry::e_attrType::eVec3f, 4 }
         };
         vboInstance.instanced = true;
 
@@ -327,36 +215,53 @@ void Data::initialiseGeometries()
 
         auto& firework = graphic.geometries.particles.firework;
 
-        { // chassis geometry (instanced)
+        std::vector<glm::vec3> particlesVertices;
 
-            std::vector<glm::vec3> particlesVertices;
+        generateSphereVerticesFilled(0.5f, particlesVertices);
 
-            // glm::vec3 particleSize = { 1.0f, 1.0f, 1.0f };
-            // generateCubeVerticesFilled(particleSize, particlesVertices);
-            generateSphereVerticesFilled(0.5f, particlesVertices);
-
-            firework.initialise(shader, geomDef);
-            firework.updateBuffer(0, particlesVertices);
-            firework.setPrimitiveCount(particlesVertices.size());
-        }
+        firework.initialise(shader, geomDef);
+        firework.updateBuffer(0, particlesVertices);
+        firework.setPrimitiveCount(particlesVertices.size());
 
     } // particles geometries
 
     { // stack renderer geometry
 
-        auto& shader = *graphic.shaders.stackRenderer;
-        auto& geometry = graphic.geometries.stackRenderer.lines;
+        { // lines
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f, 0 },
-            { "a_color", Geometry::e_attrType::eVec3f, 3 },
-        };
+            auto& shader = *graphic.shaders.stackRenderer;
+            auto& geometry = graphic.geometries.stackRenderer.lines;
 
-        Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
+            Geometry::t_def::t_vbo vboGeometry;
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f, 0 },
+                { "a_color", Geometry::e_attrType::eVec3f, 3 },
+            };
 
-        geometry.initialise(shader, geomDef);
-        geometry.setPrimitiveCount(0);
+            Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
+
+            geometry.initialise(shader, geomDef);
+            geometry.setPrimitiveCount(0);
+
+        } // lines
+
+        { // triangles
+
+            auto& shader = *graphic.shaders.stackRenderer;
+            auto& geometry = graphic.geometries.stackRenderer.triangles;
+
+            Geometry::t_def::t_vbo vboGeometry;
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f, 0 },
+                { "a_color", Geometry::e_attrType::eVec3f, 3 },
+            };
+
+            Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
+
+            geometry.initialise(shader, geomDef);
+            geometry.setPrimitiveCount(0);
+
+        } // triangles
 
     } // stack renderer geometry
 

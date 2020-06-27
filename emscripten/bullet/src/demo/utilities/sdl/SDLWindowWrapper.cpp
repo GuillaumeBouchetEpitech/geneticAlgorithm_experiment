@@ -9,58 +9,10 @@
 
 #if defined __EMSCRIPTEN__
 #   include <emscripten.h>
-// #   if defined __EMSCRIPTEN_PTHREADS__
-// #       include <emscripten/html5.h>
-// #   endif
 #endif
 
 SDLWindowWrapper::SDLWindowWrapper(int width, int height)
 {
-
-// #if defined __EMSCRIPTEN__ && defined __EMSCRIPTEN_PTHREADS__
-
-//     {
-//         // fix an error when build for the web using pthread
-//         // => link: https://github.com/emscripten-core/emscripten/issues/7684
-
-//         EMSCRIPTEN_WEBGL_CONTEXT_HANDLE prevCtx = emscripten_webgl_get_current_context();
-//         if (prevCtx == 0)
-//         {
-//             D_MYLOG("WebGLContext (pthread): context not set");
-//             D_MYLOG("WebGLContext (pthread) => attempting a workaround");
-
-//             EmscriptenWebGLContextAttributes attr;
-//             emscripten_webgl_init_context_attributes(&attr);
-//             attr.majorVersion = 1;
-//             attr.minorVersion = 0;
-
-//             // NOTE: it returns the WebGLContext if any provided
-//             EMSCRIPTEN_WEBGL_CONTEXT_HANDLE newCtx = emscripten_webgl_create_context(0, &attr);
-
-//             if (newCtx != 0)
-//             {
-//                 emscripten_webgl_make_context_current(newCtx);
-
-//                 EMSCRIPTEN_WEBGL_CONTEXT_HANDLE newCtx = emscripten_webgl_get_current_context();
-//                 if (newCtx != 0)
-//                 {
-//                     D_MYLOG("WebGLContext (pthread) => workaround succeeded");
-//                 }
-//                 else
-//                 {
-//                     D_MYLOG("WebGLContext (pthread) => workaround failed");
-//                 }
-//             }
-//             else
-//             {
-//                 D_MYLOG("WebGLContext (pthread) => workaround failed");
-//             }
-
-//         }
-//     }
-
-// #endif
-
      if (SDL_Init(SDL_INIT_VIDEO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
@@ -135,7 +87,7 @@ SDLWindowWrapper::~SDLWindowWrapper()
 
 #if defined __EMSCRIPTEN__
 
-void SDLWindowWrapper::step(void* pData)
+void SDLWindowWrapper::webStep(void* pData)
 {
     SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
@@ -159,8 +111,7 @@ void SDLWindowWrapper::run()
 
 #if defined __EMSCRIPTEN__
 
-    emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 0, true);
-    // emscripten_set_main_loop_arg(SDLWindowWrapper::step, (void*)this, 60, true);
+    emscripten_set_main_loop_arg(SDLWindowWrapper::webStep, (void*)this, 0, true);
 
     // unreachable <= "emscripten_set_main_loop_arg" does that
 

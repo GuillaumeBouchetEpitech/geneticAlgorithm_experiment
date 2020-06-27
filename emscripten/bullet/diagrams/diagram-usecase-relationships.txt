@@ -8,7 +8,7 @@ title diagram-usecase-relationships.txt
 actor User
 
 
-usecase SIMULATION as "Simulation
+usecase SIMULATION as "<b>Simulation
 ====
 Update the simuation (update the cars)
 --
@@ -17,17 +17,17 @@ simulation for rendering"
 
 
 
-usecase GENETIC_ALGORITHM as "Genetic algorithm
+usecase GENETIC_ALGORITHM as "<b>Genetic algorithm
 ====
 Manage the neural networks and genomes
 --
 Retrieve and cross breed the best genomes
 --
-Hanlde the generations"
+Handle the generations"
 
 
 
-usecase NEURAL_NETWORK as "Neural Network
+usecase NEURAL_NETWORK as "<b>Neural Network
 ====
 Is a black box: input -> output
 --
@@ -36,7 +36,7 @@ can be get/set"
 
 
 
-usecase GENOME as "Genome
+usecase GENOME as "<b>Genome
 ====
 Store a copy of the weights
 of the Neural Network
@@ -46,10 +46,10 @@ of the car"
 
 
 
-usecase CAR as "Car
+usecase CAR as "<b>Car
 ====
 Rely on 15 physical
-raycast to "see" the circuit
+raycasts to "see" the circuit
 --
 Can move forward/backward
 Can steer left/right
@@ -59,7 +59,7 @@ as reward"
 
 
 
-usecase CIRCUIT as "Circuit
+usecase CIRCUIT as "<b>Circuit
 ====
 Build the circuit ground and
 walls by interpolating knots

@@ -35,7 +35,7 @@ private:
     std::list<t_task> _completedTasks;
 
 public:
-    Producer();
+    Producer(unsigned int totalCores);
     ~Producer();
 
 public:

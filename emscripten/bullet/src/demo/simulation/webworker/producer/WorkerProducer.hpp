@@ -11,8 +11,8 @@
 
 #include "demo/simulation/webworker/common.hpp"
 
-#include "demo/utilities/message/MessageBuffer.hpp"
-#include "demo/utilities/message/MessageView.hpp"
+#include "../message/MessageBuffer.hpp"
+#include "../message/MessageView.hpp"
 
 #include "demo/simulation/logic/t_carData.hpp"
 

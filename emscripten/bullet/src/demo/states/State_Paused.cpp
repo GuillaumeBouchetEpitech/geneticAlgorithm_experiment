@@ -36,7 +36,7 @@ void State_Paused::handleEvent(const SDL_Event& event)
         case SDL_KEYDOWN:
         case SDL_KEYUP:
         {
-            StateManager::get()->changeState(StateManager::States::eRunning);
+            StateManager::get()->changeState(Data::get()->logic.state.previousState);
             break;
         }
     }

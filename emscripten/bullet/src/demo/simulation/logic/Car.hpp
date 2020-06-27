@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "demo/logic/physic/PhysicWorld.hpp"
-#include "demo/logic/physic/PhysicVehicle.hpp"
+#include "./physic/PhysicWorld.hpp"
+#include "./physic/PhysicVehicle.hpp"
 
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 
@@ -70,4 +70,5 @@ public: // setter/getter
     const t_neuralNetworkOutput&    getNeuralNetworkOutput() const;
     const PhysicVehicle&            getVehicle() const;
     float                           getLife() const;
+    unsigned int                    getTotalUpdates() const;
 };

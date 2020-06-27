@@ -31,9 +31,6 @@ public:
     //
 
 public:
-    // an enum class would be nice
-    // but the last enum is used to set the size of a std::array
-    // which doesn't seems to work with enum class
     enum class States: int
     {
 #if defined D_WEB_WEBWORKER_BUILD
@@ -43,6 +40,8 @@ public:
         eRunning = 0,
 #endif
         ePaused,
+        eStartGeneration,
+
         eTotal
     };
 
@@ -53,8 +52,8 @@ private:
     States _currentState;
 
 public:
-    // change state
     void changeState(States nextState);
+    States getState() const;
 
 public:
     void handleEvent(const SDL_Event&);

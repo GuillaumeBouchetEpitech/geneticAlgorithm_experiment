@@ -14,7 +14,7 @@ void Data::initialiseStates()
 
     logic.simulation->setOnWorkersReadyCallback([]() {
 
-        StateManager::get()->changeState(StateManager::States::eRunning);
+        Data::get()->logic.state.countdown = 1000;
     });
 
 #endif

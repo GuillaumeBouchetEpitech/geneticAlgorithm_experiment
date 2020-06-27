@@ -21,27 +21,9 @@ varying vec3 v_color;
 
 void main(void)
 {
-	gl_Position = u_composedMatrix * a_offsetTransform * vec4(a_position, 1.0);
-
 	v_color = a_color * a_offsetColor;
+	gl_Position = u_composedMatrix * a_offsetTransform * vec4(a_position, 1.0);
 }
-
-// precision mediump float;
-
-// uniform mat4 u_composedMatrix;
-
-// attribute vec3 a_position;
-// attribute mat4 a_transform;
-// attribute vec4 a_color;
-
-// varying vec4 v_color;
-
-// void main(void)
-// {
-// 	gl_Position = u_composedMatrix * a_transform * vec4(a_position, 1.0);
-
-// 	v_color = a_color;
-// }
 
 precision mediump float;
 
@@ -88,7 +70,7 @@ uniform mat4 u_composedMatrix;
 attribute vec3  a_position;
 attribute vec3  a_offsetPosition;
 attribute float a_offsetScale;
-attribute vec4  a_offsetColor;
+attribute vec3  a_offsetColor;
 
 varying vec4 v_color;
 
@@ -98,7 +80,7 @@ void main(void)
 
 	gl_Position = u_composedMatrix * vec4(position, 1.0);
 
-	v_color = a_offsetColor;
+	v_color = vec4(a_offsetColor, 1.0);
 }
 
 precision mediump float;
@@ -146,15 +128,6 @@ void main(void)
 	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
 	v_color = a_color;
 }
-
-// precision mediump float;
-
-// varying vec4 v_color;
-
-// void main(void)
-// {
-// 	gl_FragColor = v_color;
-// }
 
 precision mediump float;
 
@@ -557,9 +530,9 @@ illum 3
 
 newmtl None
 Ns 500
-Ka 0.8 0.8 0.8
-Kd 0.8 0.8 0.8
-Ks 0.8 0.8 0.8
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
 d 1
 illum 2
 # Blender v2.80 (sub 75) OBJ File: ''
@@ -25649,7 +25622,7 @@ illum 3
 newmtl Mat.020
 Ns 99.999988
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.448000 0.448000
+Kd 1.0 1.0 1.0
 Ks 1.000000 1.000000 1.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
@@ -25659,7 +25632,7 @@ illum 3
 newmtl Mat.021
 Ns 99.999988
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.646400 0.288000
+Kd 1.0 1.0 1.0
 Ks 1.000000 1.000000 1.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
@@ -25669,7 +25642,7 @@ illum 3
 newmtl Mat.022
 Ns 99.999988
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.492000 0.184000
+Kd 1.0 1.0 1.0
 Ks 1.000000 1.000000 1.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
@@ -25759,7 +25732,7 @@ illum 3
 newmtl Mat.031
 Ns 0.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.774400 0.288000
+Kd 1.0 1.0 1.0
 Ks 0.000000 0.000000 0.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
@@ -25788,9 +25761,12 @@ START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
 
 KNOTS_COLOR 0.25 0.25 0.75
 
+# starting rewards
+KNOTS_MINIMUM_DSTANCE   2
+# starting rewards
+
 KNOTS_DUAL   5  15  5       5   5  5
 KNOTS_DUAL  90   0  0      90   0  0
-
 
 
 # test
@@ -25851,6 +25827,10 @@ KNOTS_DUAL  90   0  0      90   0  0
 # /zig-zag
 
 
+# decrease rewards
+KNOTS_MINIMUM_DSTANCE   3
+# decrease rewards
+
 # infinity loop
 
     KNOTS_COLOR 0.15 0.15 0.15
@@ -25880,6 +25860,10 @@ KNOTS_DUAL  90   0  0      90   0  0
     KNOTS_DUAL 80 0 0     80 0 0
     KNOTS_DUAL 40 0 7     40 0 0
 
+# increase rewards
+KNOTS_MINIMUM_DSTANCE   1.5
+# increase rewards
+
         KNOTS_COLOR 0.75 0.25 0.75
 
         KNOTS_DUAL  60 -60 6    50 -50 6
@@ -25899,6 +25883,10 @@ KNOTS_DUAL  90   0  0      90   0  0
     KNOTS_DUAL  30 0 -7     30 0 0
 
 # /infinity loop
+
+# decrease rewards
+KNOTS_MINIMUM_DSTANCE   3
+# decrease rewards
 
 KNOTS_COLOR 0.25 0.25 0.75
 
@@ -25941,7 +25929,7 @@ KNOTS_DUAL 30 0 0     30 0 0
 KNOTS_DUAL 30 0 0     30 0 0
 
 # final jump pad
-KNOTS_DUAL 40 0 40     40 0 40
+KNOTS_DUAL 60 0 60     60 0 60
 
 # # vertical corner
 

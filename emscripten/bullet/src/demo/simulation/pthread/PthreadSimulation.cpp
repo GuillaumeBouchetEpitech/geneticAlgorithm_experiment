@@ -32,7 +32,7 @@ void PthreadSimulation::initialise(const t_def& def)
 
     _geneticAlgorithm.initialise(genAlgoDef);
 
-    _multithreadProducer = new Producer();
+    _multithreadProducer = new Producer(_totalCores);
 
     _physicWorlds.resize(_totalCores);
     _coreStates.resize(_totalCores);
@@ -165,7 +165,11 @@ void PthreadSimulation::update()
 
     // rate genomes
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
-        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness);
+    {
+        float extraFitness = float(_carsData[ii].totalUpdates) / 1000;
+
+        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness + extraFitness);
+    }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();
 
@@ -203,6 +207,7 @@ void PthreadSimulation::updateCarResult()
         carData.isAlive = car.isAlive();
         carData.life = car.getLife();
         carData.fitness = car.getFitness();
+        carData.totalUpdates= car.getTotalUpdates();
         carData.groundIndex = car.getGroundIndex();
 
         if (!carData.isAlive)

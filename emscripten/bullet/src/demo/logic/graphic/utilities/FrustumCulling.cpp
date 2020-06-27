@@ -3,9 +3,9 @@
 
 void FrustumCulling::normalizePlane(e_FrustumSide side)
 {
-    float    magnitude = sqrtf(_frustum[side][eA] * _frustum[side][eA] +
-                              _frustum[side][eB] * _frustum[side][eB] +
-                              _frustum[side][eC] * _frustum[side][eC]);
+    float magnitude = sqrtf(_frustum[side][eA] * _frustum[side][eA] +
+                            _frustum[side][eB] * _frustum[side][eB] +
+                            _frustum[side][eC] * _frustum[side][eC]);
 
     _frustum[side][eA] /= magnitude;
     _frustum[side][eB] /= magnitude;
@@ -15,7 +15,7 @@ void FrustumCulling::normalizePlane(e_FrustumSide side)
 
 void FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& modl2)
 {
-    float   clip[16];
+    float clip[16];
 
     const float* proj = glm::value_ptr(proj2);
     const float* modl = glm::value_ptr(modl2);
@@ -121,7 +121,7 @@ bool FrustumCulling::sphereInFrustum(const glm::vec3& v, float radius) const
 
 bool FrustumCulling::cubeInFrustum(const glm::vec3& v, const glm::vec3& s2) const
 {
-    glm::vec3    s = s2 * 0.5f;
+    glm::vec3 s = s2 * 0.5f;
 
     for (int ii = 0; ii < 6; ++ii)
     {

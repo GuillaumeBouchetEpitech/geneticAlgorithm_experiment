@@ -16,8 +16,21 @@ public:
     bool cubeInFrustum(const glm::vec3& v, const glm::vec3& s) const;
 
 private:
-    enum e_FrustumSide { eRight, eLeft, eBottom, eTop, eBack, eFront };
-    enum e_PlaneData { eA, eB, eC, eD };
+    enum e_FrustumSide {
+        eRight = 0,
+        eLeft,
+        eBottom,
+        eTop,
+        eBack,
+        eFront
+    };
+
+    enum e_PlaneData {
+        eA = 0,
+        eB,
+        eC,
+        eD
+    };
 
 private:
     float _frustum[6][4];

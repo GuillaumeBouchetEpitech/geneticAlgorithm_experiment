@@ -1,17 +1,16 @@
 
 #include "Car.hpp"
 
-#include "demo/logic/physic/PhysicTrimesh.hpp"
-#include "demo/logic/physic/PhysicVehicle.hpp"
+#include "./physic/PhysicTrimesh.hpp"
 
 #include <cmath> // <= M_PI
 #include <iostream>
 
 namespace /*anonymous*/
 {
-    float   k_steeringMaxValue = M_PI / 8.0f;
-    float   k_speedMaxValue = 10.0f;
-    int     k_healthMaxValue = 100;
+    const float k_steeringMaxValue = M_PI / 8.0f;
+    const float k_speedMaxValue = 10.0f;
+    const int   k_healthMaxValue = 100;
 
     const float k_eyeMaxRange = 50.0f;
     const float k_eyeHeight = 1.0f;
@@ -43,8 +42,6 @@ Car::Car(PhysicWorld& physicWorld,
     : _physicWorld(physicWorld)
 {
     _vehicle = _physicWorld.createVehicle();
-
-    // _physicWorld.addVehicle(*_vehicle);
 
     reset(position, quaternion);
 }
@@ -110,8 +107,8 @@ void Car::updateSensors()
                 auto& eyeSensor = _eyeSensors[sensorIndex++];
 
                 glm::vec4 newFarValue = {
-                    k_eyeMaxRange * sinf(eyeAngle),
-                    k_eyeMaxRange * cosf(eyeAngle),
+                    k_eyeMaxRange * std::sin(eyeAngle),
+                    k_eyeMaxRange * std::cos(eyeAngle),
                     k_eyeHeight + k_eyeElevation,
                     1.0f
                 };
@@ -250,4 +247,9 @@ const PhysicVehicle& Car::getVehicle() const
 float Car::getLife() const
 {
     return float(_health) / k_healthMaxValue;
+}
+
+unsigned int Car::getTotalUpdates() const
+{
+    return _totalUpdateNumber;
 }

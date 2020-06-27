@@ -49,6 +49,7 @@ const onFileRequest = (req, res) => {
 
     // if the file is found, set Content-type and send data
     res.setHeader('Content-type', formatsMap.get(ext) || 'text/plain' );
+    res.setHeader('Last-Modified', (new Date()).toString());
     res.end(data);
 }
 

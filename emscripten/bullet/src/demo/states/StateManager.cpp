@@ -9,6 +9,7 @@
 
 #include "State_Running.hpp"
 #include "State_Paused.hpp"
+#include "State_StartGeneration.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
 
@@ -28,11 +29,12 @@ StateManager::StateManager()
 
     _states[toUnderlying(States::eRunning)] = new State_Running();
     _states[toUnderlying(States::ePaused)] = new State_Paused();
+    _states[toUnderlying(States::eStartGeneration)] = new State_StartGeneration();
 
 #if defined D_WEB_WEBWORKER_BUILD
     _currentState = States::eWorkersLoading;
 #else
-    _currentState = States::eRunning;
+    _currentState = States::eStartGeneration;
 #endif
 }
 
@@ -76,6 +78,12 @@ void StateManager::changeState(States nextState)
 
     _states[toUnderlying(_currentState)]->enter();
 }
+
+StateManager::States StateManager::getState() const
+{
+    return _currentState;
+}
+
 
 void StateManager::handleEvent(const SDL_Event& event)
 {

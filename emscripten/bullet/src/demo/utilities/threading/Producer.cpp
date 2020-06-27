@@ -10,9 +10,10 @@
 #include <algorithm>
 #include <chrono>
 
-Producer::Producer()
+Producer::Producer(unsigned int totalCores)
 {
-    const int totalConsumers = 3;
+    // const int totalConsumers = 3;
+    const int totalConsumers = std::min(std::max(int(totalCores), 1), 8);
 
     _consumers.reserve(totalConsumers);
     for (int ii = 0; ii < totalConsumers; ++ii)

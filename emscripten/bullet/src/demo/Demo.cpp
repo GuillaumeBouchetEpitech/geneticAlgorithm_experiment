@@ -24,11 +24,15 @@ Demo::Demo(int width, int height)
     // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     glDisable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     Data::create();
     Data::get()->graphic.camera.viewportSize = {width, height};
 
     StateManager::create();
+
+    // hacky?
+    Data::get()->logic.state.previousState = StateManager::get()->getState();
 }
 
 Demo::~Demo()
@@ -48,15 +52,7 @@ void Demo::onUpdate(long int deltaTime)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-// #ifdef __EMSCRIPTEN__
-    // EM_ASM(myFpsmeterUpdate.tickStart(););
-// #endif
-
     StateManager::get()->update(deltaTime);
-
-// #ifdef __EMSCRIPTEN__
-    // EM_ASM(myFpsmeterUpdate.tick(););
-// #endif
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
@@ -67,15 +63,7 @@ void Demo::onRender(const SDL_Window& screen)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
-// #ifdef __EMSCRIPTEN__
-    // EM_ASM(myFpsmeterRender.tickStart(););
-// #endif
-
     StateManager::get()->render(screen);
-
-// #ifdef __EMSCRIPTEN__
-    // EM_ASM(myFpsmeterRender.tick(););
-// #endif
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
@@ -84,11 +72,6 @@ void Demo::onRender(const SDL_Window& screen)
 
 void Demo::onResize(int width, int height)
 {
-    // D_MYLOG("resize=" << width << "/" << height);
-    // if (width < 800)
-    //     width = 800;
-    // if (height < 600)
-    //     height = 600;
     StateManager::get()->resize(width, height);
 }
 

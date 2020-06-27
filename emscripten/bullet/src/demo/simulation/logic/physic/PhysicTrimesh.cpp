@@ -27,7 +27,7 @@ PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
     _bullet.shape = new btBvhTriangleMeshShape(_bullet.indexVertexArrays, useQuantizedAabbCompression);
 
     // _bullet.motionState = new btDefaultMotionState(btTransform(btQuaternion(0.0, 0.0, 0.0, 1.0), btVector3(0, 0, 0)));
-    _bullet.motionState = nullptr;
+    // _bullet.motionState = nullptr;
 
     btScalar mass = 0;
     btVector3 localInertia(0,0,0);

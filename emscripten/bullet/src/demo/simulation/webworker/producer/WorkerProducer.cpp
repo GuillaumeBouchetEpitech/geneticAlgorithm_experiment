@@ -49,11 +49,11 @@ void    WorkerProducer::onMessageCallback(char* dataPointer, int dataSize, void*
     workerProducer->processMessage(dataPointer, dataSize);
 }
 
-void    WorkerProducer::processMessage(const char* pData, int dataLength)
+void    WorkerProducer::processMessage(const char* dataPointer, int dataSize)
 {
     _flags[e_Status::eProcessing] = false;
 
-    MessageView message(pData, dataLength);
+    MessageView message(dataPointer, dataSize);
 
     char messageType = 0;
     message >> messageType;
@@ -74,8 +74,11 @@ void    WorkerProducer::processMessage(const char* pData, int dataLength)
             for (auto& car : _carsData)
             {
                 message
-                    >> car.isAlive >> car.life
-                    >> car.fitness >> car.groundIndex;
+                    >> car.isAlive
+                    >> car.life
+                    >> car.fitness
+                    >> car.totalUpdates
+                    >> car.groundIndex;
 
                 if (!car.isAlive)
                     continue;
@@ -90,7 +93,7 @@ void    WorkerProducer::processMessage(const char* pData, int dataLength)
                 auto& gSensor = car.groundSensor;
                 message >> gSensor.near >> gSensor.far >> gSensor.value;
 
-                auto&   output = car.neuralNetworkOutput;
+                auto& output = car.neuralNetworkOutput;
                 message >> output.steer >> output.speed;
             }
 

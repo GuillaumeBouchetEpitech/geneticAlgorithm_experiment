@@ -1,7 +1,5 @@
 
-#include "demo/defines.hpp"
-
-#include "State_Running.hpp"
+#include "State_StartGeneration.hpp"
 
 #include "StateManager.hpp"
 
@@ -13,22 +11,25 @@
 
 #include "thirdparty/GLMath.hpp"
 
-#include <limits> // std::numeric_limits<T>::max();
-#include <cmath> // std::ceil
-
-void State_Running::enter()
+void State_StartGeneration::enter()
 {
     // D_MYLOG("step");
+
+    // Data::get()->logic.isPaused = true;
+
+    Data::get()->logic.state.countdown = 750;
 }
 
-void State_Running::leave()
+void State_StartGeneration::leave()
 {
     // D_MYLOG("step");
+
+    // Data::get()->logic.isPaused = false;
 }
 
 //
 
-void State_Running::handleEvent(const SDL_Event& event)
+void State_StartGeneration::handleEvent(const SDL_Event& event)
 {
     auto&   data = *Data::get();
     auto&   keys = data.inputs.keys;
@@ -83,8 +84,12 @@ void State_Running::handleEvent(const SDL_Event& event)
     }
 }
 
-void State_Running::update(int deltaTime)
+
+void State_StartGeneration::update(int deltaTime)
 {
+    // static_cast<void>(delta); // <= unused
+
+
     float elapsedTime = float(deltaTime) / 1000.0f;
 
     auto&   data = *Data::get();
@@ -145,26 +150,12 @@ void State_Running::update(int deltaTime)
 
 #if not defined D_WEB_WEBWORKER_BUILD
 
-            // only pthread builds support this
             logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
 #endif
         }
 
     } // events
-
-#if not defined D_WEB_WEBWORKER_BUILD
-    {
-        int simualtionStep = (logic.isAccelerated ? 50 : 1);
-
-        for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
-            logic.cores.statesData[ii].delta = 0;
-
-        for (int ii = 0; ii < simualtionStep; ++ii)
-            simulation.update();
-
-    }
-#endif
 
     {
         graphic.particleManager.update(elapsedTime);
@@ -175,135 +166,16 @@ void State_Running::update(int deltaTime)
         glm::vec3   cameraNextCenter = logic.circuitAnimation.boundaries.center;
         float       cameraNextDistance = 200.0f;
 
-        //
-        //
-
-        auto&   leaderCar = logic.leaderCar;
-
-        if (logic.isAccelerated)
-        {
-            leaderCar.timeout = 0.0f;
-            leaderCar.index = -1;
-        }
-        else
+        if (!logic.isAccelerated)
         {
             cameraNextDistance = 40.0f;
 
-            if (leaderCar.timeout > 0)
-                leaderCar.timeout -= elapsedTime;
-
-            if (// no leader yet
-                leaderCar.index == -1 ||
-                // the current leader is dead
-                simulation.getCarResult(leaderCar.index).isAlive == false ||
-                // time to check for a potentially better leader
-                leaderCar.timeout <= 0.0f)
-            {
-                // reset the timeout
-                leaderCar.timeout = 1.0f; // <= one second
-
-                // refresh the currently best car
-
-                unsigned int totalCars = simulation.getTotalCars();
-
-                float bestFitness = 0.0f;
-                leaderCar.index = -1;
-                for (unsigned int ii = 0; ii < totalCars; ++ii)
-                {
-                    const auto& carData = simulation.getCarResult(ii);
-
-                    if (!carData.isAlive)
-                        continue;
-
-                    if (leaderCar.index != -1 &&
-                        !(carData.fitness > bestFitness + 2.0f))
-                        continue;
-
-                    bestFitness = carData.groundIndex;
-                    leaderCar.index = ii;
-                }
-            }
-
-            {
-                // cameraNextDistance = 50.0f;
-
-                // glm::vec3        carsSummedPosition;
-                // unsigned int carsAlive = 0;
-
-                // const unsigned int totalCars = simulation.getTotalCars();
-                // for (unsigned int ii = 0; ii < totalCars; ++ii)
-                // {
-                //  const auto& carData = simulation.getCarResult(ii);
-
-                //  if (!carData.isAlive)
-                //      continue;
-
-                //  //
-
-                //  glm::vec3   sensorsHeight(0.0f, 0.0f, 2.0f);
-                //  glm::mat4   carTransform = glm::translate(carData.transform, sensorsHeight);
-                //  glm::vec4   carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
-
-                //  carsSummedPosition += glm::vec3(carOrigin);
-
-                //  ++carsAlive;
-                // }
-
-                // D_MYLOG("carsAlive=" << carsAlive);
-
-                // if (carsAlive > 0)
-                // {
-                //  cameraNextCenter = carsSummedPosition / float(carsAlive);
-
-                //  // graphic.camera.frustumCulling
-
-                //  unsigned int    carsVisible = 0;
-                //  for (unsigned int ii = 0; ii < totalCars; ++ii)
-                //  {
-                //      const auto& carData = simulation.getCarResult(ii);
-
-                //      if (!carData.isAlive)
-                //          continue;
-
-                //      //
-
-                //      glm::vec3   sensorsHeight(0.0f, 0.0f, 2.0f);
-                //      glm::mat4   carTransform = glm::translate(carData.transform, sensorsHeight);
-                //      glm::vec4   carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
-
-                //      if (graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 30.0f))
-                //          ++carsVisible;
-                //  }
-
-                //  if (carsVisible < carsAlive)
-                //  {
-                //      cameraNextDistance = camera.distance - 50.0f;
-                //      if (cameraNextDistance < 30.0f)
-                //          cameraNextDistance = 30.0f;
-                //  }
-                //  else
-                //  {
-                //      cameraNextDistance = camera.distance + 50.0f;
-                //      if (cameraNextDistance > 100.0f)
-                //          cameraNextDistance = 100.0f;
-                //  }
-                // }
-            }
-
-
-        }
-
-        // do we have a car to focus the camera on?
-        if (leaderCar.index >= 0)
-        {
-            const auto& carResult = simulation.getCarResult(leaderCar.index);
+            // const auto& carResult = simulation.getCarResult(leaderCar.index);
+            const auto& carResult = simulation.getCarResult(0);
 
             // this part elevate where the camera look along the up axis of the car
             // => without it the camera look at the ground
             // => mostly useful for a shoulder camera (TODO)
-            // glm::vec3    sensorsHeight(0.0f, 0.0f, 2.0f);
-            // glm::mat4    carTransform = glm::translate(carResult.transform, sensorsHeight);
-            // glm::vec4    carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
             glm::vec4   carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
 
             cameraNextCenter = glm::vec3(carOrigin);
@@ -312,12 +184,10 @@ void State_Running::update(int deltaTime)
         //
         //
 
-        {
-            const float lerpRatio = 0.1f;
+        const float lerpRatio = 0.1f;
 
-            camera.center += (cameraNextCenter - camera.center) * lerpRatio;
-            camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
-        }
+        camera.center += (cameraNextCenter - camera.center) * lerpRatio;
+        camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
 
     } // camera tracking
 
@@ -413,31 +283,31 @@ void State_Running::update(int deltaTime)
 
     } // circuit animation
 
-#if defined D_WEB_WEBWORKER_BUILD
-
-    simulation.update();
-
-#endif
+    Data::get()->logic.state.countdown -= deltaTime;
+    if (Data::get()->logic.state.countdown <= 0)
+        StateManager::get()->changeState(StateManager::States::eRunning);
 }
 
 
-void State_Running::render(const SDL_Window& window)
+void State_StartGeneration::render(const SDL_Window& window)
 {
     static_cast<void>(window); // <= unused
 
     Scene::renderAll();
 }
 
-void State_Running::resize(int width, int height)
+void State_StartGeneration::resize(int width, int height)
 {
     Data::get()->graphic.camera.viewportSize = { width, height };
 }
 
-void State_Running::visibility(bool visible)
+void State_StartGeneration::visibility(bool visible)
 {
+    // static_cast<void>(visible); // <= unused
+
     if (!visible)
     {
-        Data::get()->logic.state.previousState = StateManager::States::eRunning;
+        Data::get()->logic.state.previousState = StateManager::States::eStartGeneration;
         StateManager::get()->changeState(StateManager::States::ePaused);
     }
 }

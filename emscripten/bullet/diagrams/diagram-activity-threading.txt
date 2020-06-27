@@ -11,7 +11,7 @@ title diagram-activity-threading.txt
 
 start
 
-#BBBBBB:update simulation: start|
+#DDDDDD:update simulation: start|
 
 :* push tasks to producer
 * wake up producer thread
@@ -44,11 +44,12 @@ end fork
 
 |PRODUCER-THREAD|
 
-:resume main thread;
+:* confirm all tasks are completed
+* resume main thread;
 
 |MAIN-THREAD|
 
-#BBBBBB:update simulation: stop|
+#DDDDDD:update simulation: stop|
 
 
 @enduml

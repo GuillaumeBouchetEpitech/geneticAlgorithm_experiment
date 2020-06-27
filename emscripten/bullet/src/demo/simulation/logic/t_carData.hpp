@@ -8,10 +8,11 @@
 
 struct t_carData
 {
-    bool    isAlive;
-    float   life;
-    float   fitness;
-    int     groundIndex;
+    bool            isAlive;
+    float           life;
+    float           fitness;
+    unsigned int    totalUpdates;
+    int             groundIndex;
 
     glm::mat4                   transform;
     std::array<glm::mat4, 4>    wheelsTransform;

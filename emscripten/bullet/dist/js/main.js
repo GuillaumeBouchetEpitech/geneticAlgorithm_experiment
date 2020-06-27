@@ -1,14 +1,13 @@
 
 import Logger from "./utilities/Logger.js";
 
-function onGlobalPageLoad() {
+const onGlobalPageLoad = () => {
 
     const logger = new Logger("loggerOutput");
 
     logger.log("[JS] page loaded");
 
-    function onBasicGlobalPageError(event) {
-
+    const onBasicGlobalPageError = (event) => {
         logger.error(`[JS] exception, event=${event}`);
     };
     window.addEventListener("error", onBasicGlobalPageError);
@@ -16,41 +15,41 @@ function onGlobalPageLoad() {
     const errorText = document.getElementById("errorText");
     const canvas = document.getElementById("emscriptenCanvas");
 
-    function showErrorText(htmlText) {
+    const showErrorText = (htmlText) => {
         canvas.style.display = "none"; // hide
         errorText.innerHTML = htmlText;
         errorText.style.display = "block"; // show
-    }
-    function showCanvas() {
+    };
+    const showCanvas = () => {
         errorText.style.display = "none"; // hide
         canvas.style.display = "block"; // show
-    }
+    };
 
     //
     //
     // setup the webgl context
 
-    function onContextCreationError(event) {
+    const onContextCreationError = (event) => {
 
         event.preventDefault();
 
         const statusMessage = event.statusMessage || "Unknown error";
         logger.error(`[JS] could not create a WebGL context, statusMessage=${statusMessage}.`);
-    }
+    };
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
 
-    function onWebGlContextLost(event) {
+    const onWebGlContextLost = (event) => {
 
         event.preventDefault();
 
         logger.error("[JS] WebGL context lost. You will need to reload the page.");
-    }
+    };
     canvas.addEventListener("webglcontextlost", onWebGlContextLost, false);
 
     // this prevent the contextual menu to appear on a right click
-    function onContextMenu(event) {
+    const onContextMenu = (event) => {
         event.preventDefault();
-    }
+    };
     canvas.addEventListener("contextmenu", onContextMenu, false);
 
     let webglCtx;
@@ -127,16 +126,14 @@ function onGlobalPageLoad() {
 
         mandatoryWebGLExtensions.forEach((extensionName) => {
 
-            let found = false;
-            for (const webGLExtension of webGLExtensions) {
-
+            let extensionFound = false;
+            for (const webGLExtension of webGLExtensions)
                 if (webGLExtension.indexOf(extensionName)) {
-                    found = true;
+                    extensionFound = true;
                     break;
                 }
-            }
 
-            if (!found)
+            if (!extensionFound)
                 throw new Error(`missing WebGL extension: ${extensionName}`);
 
             logger.log(`[JS] WebGL extension "${extensionName}" => supported`);
@@ -213,14 +210,14 @@ function onGlobalPageLoad() {
     //
     // attempt to handle potential error(s)
 
-    function onAdvancedGlobalPageError(event) {
+    const onAdvancedGlobalPageError = (event) => {
 
         // we only want this callback to be called once
         window.removeEventListener("error", onAdvancedGlobalPageError);
 
         logger.error(`[JS] exception, event=${event.message}`);
 
-        Module.setStatus = function(text) {
+        Module.setStatus = (text) => {
             if (text)
                 logger.error(`[JS, post-exception] ${text}`);
         };
@@ -237,7 +234,18 @@ function onGlobalPageLoad() {
 
     Module.setStatus("Downloading...");
 
-    loadScript(`./${scriptFolder}/index.js`)
+    const scriptLoadingUtility = (src) => {
+        return new Promise(function(resolve, reject) {
+            const scriptElement = document.createElement("script");
+            scriptElement.src = src;
+            scriptElement.onprogress = (event) => logger.log("event", event);
+            scriptElement.onload = resolve;
+            scriptElement.onerror = reject;
+            document.head.appendChild(scriptElement);
+        });
+    }
+
+    scriptLoadingUtility(`./${scriptFolder}/index.js`)
         .then(() => {
             logger.log("[JS] wasm script: loading successful");
             showCanvas();
@@ -247,21 +255,8 @@ function onGlobalPageLoad() {
 
 window.addEventListener("load", onGlobalPageLoad);
 
-function loadScript(src) {
-    return new Promise(function(resolve, reject) {
-        const scriptElement = document.createElement("script");
-        scriptElement.src = src;
-        scriptElement.onprogress = (event) => {
-            logger.log("event", event);
-        };
-        scriptElement.onload = resolve;
-        scriptElement.onerror = reject;
-        document.head.appendChild(scriptElement);
-    });
-}
-
-window.reloadWithDifferentCarAmount = function(totalCars) {
+window.reloadWithDifferentCarAmount = (totalCars) => {
 
     // simple reload
     window.location.href = window.location.pathname + `?genomesPerCore=${totalCars}`;
-}
+};

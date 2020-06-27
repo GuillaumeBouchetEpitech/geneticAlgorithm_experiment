@@ -21,19 +21,6 @@ void Data::initialiseShaders()
             graphic.shaders.stackRenderer = new Shader(def);
         }
 
-        // { // create the instanced shader
-
-        //     Shader::t_def def;
-        //     def.filenames.vertex = "assets/shaders/instanced.glsl.vert.c";
-        //     def.filenames.fragment = "assets/shaders/instanced.glsl.frag.c";
-        //     // def.attributes = { "a_position", "a_transform" };
-        //     // def.uniforms = { "u_composedMatrix", "u_color" };
-        //     def.attributes = { "a_position", "a_transform", "a_color" };
-        //     def.uniforms = { "u_composedMatrix" };
-
-        //     graphic.shaders.instanced = new Shader(def);
-        // }
-
         { // create the wireframes shader
 
             Shader::t_def def;

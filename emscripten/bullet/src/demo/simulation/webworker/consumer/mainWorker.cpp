@@ -13,7 +13,7 @@
 
 namespace /* anonymous */
 {
-    WorkerConsumer* workerConsumer = nullptr;
+    WorkerConsumer* consumer = nullptr;
 };
 
 extern "C"
@@ -24,10 +24,10 @@ void onMessage(char* dataPointer, int dataSize, void* arg)
 {
     static_cast<void>(arg); // <= unused
 
-    if (!workerConsumer)
-        workerConsumer = new WorkerConsumer();
+    if (!consumer)
+        consumer = new WorkerConsumer();
 
-    workerConsumer->processMessage(dataPointer, dataSize);
+    consumer->processMessage(dataPointer, dataSize);
 }
 
 }

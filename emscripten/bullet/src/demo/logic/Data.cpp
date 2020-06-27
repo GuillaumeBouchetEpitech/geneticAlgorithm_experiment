@@ -26,7 +26,6 @@ Data::~Data()
 {
     delete logic.simulation;
     delete graphic.shaders.stackRenderer;
-    // delete graphic.shaders.instanced;
     delete graphic.shaders.wireframes;
     delete graphic.shaders.animatedCircuit;
     delete graphic.shaders.hudText;
@@ -79,19 +78,19 @@ void Data::initialise()
 #if defined D_WEB_PTHREAD_BUILD
 
         sstr
-            << "Type: C++ (wasm)" << std::endl
+            << "Type: C++ (WebAssembly Build)" << std::endl
             << "Mode: pthread";
 
 #elif defined D_WEB_WEBWORKER_BUILD
 
         sstr
-            << "Type: C++ (wasm)" << std::endl
+            << "Type: C++ (WebAssembly Build)" << std::endl
             << "Mode: webworker (as a fallback)";
 
 #elif defined D_NATIVE_PTHREAD_BUILD
 
         sstr
-            << "Type: C++ (native)" << std::endl
+            << "Type: C++ (Native Build)" << std::endl
             << "Mode: pthread";
 
 #endif

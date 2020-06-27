@@ -7,17 +7,16 @@
 #   error "exclude this file to build natively or with multi thread support"
 #endif
 
-#include "demo/logic/physic/PhysicWorld.hpp"
-
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 
 #include "demo/simulation/logic/Car.hpp"
 #include "demo/simulation/logic/CircuitBuilder.hpp"
+#include "demo/simulation/logic/physic/PhysicWorld.hpp"
 
 #include "demo/simulation/webworker/common.hpp"
 
-#include "demo/utilities/message/MessageBuffer.hpp"
-#include "demo/utilities/message/MessageView.hpp"
+#include "../message/MessageBuffer.hpp"
+#include "../message/MessageView.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -26,9 +25,10 @@
 class WorkerConsumer
 {
 private:
-    unsigned int        _genomesPerCore = 0;
+    unsigned int    _genomesPerCore = 0;
 
     PhysicWorld     _physicWorld;
+
     std::vector<Car>    _cars;
 
     NeuralNetworkTopology       _neuralNetworkTopology;

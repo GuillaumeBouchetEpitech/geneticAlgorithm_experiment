@@ -17,12 +17,10 @@
 
 void State_WebWorkersLoading::enter()
 {
-    D_MYLOG("step");
 }
 
 void State_WebWorkersLoading::leave()
 {
-    D_MYLOG("step");
 }
 
 //
@@ -32,11 +30,22 @@ void State_WebWorkersLoading::handleEvent(const SDL_Event& event)
     static_cast<void>(event); // <= unused
 }
 
-void State_WebWorkersLoading::update(int delta)
+void State_WebWorkersLoading::update(int deltaTime)
 {
-    static_cast<void>(delta); // <= unused
+    auto& logic = Data::get()->logic;
 
-    Data::get()->logic.simulation->update();
+    if (logic.state.countdown == 0)
+    {
+        // only update to load the webworkers
+        logic.simulation->update();
+    }
+    else
+    {
+        // to ensure the message is visible, what the user is wait for
+        logic.state.countdown -= deltaTime;
+        if (logic.state.countdown <= 0)
+            StateManager::get()->changeState(StateManager::States::eStartGeneration);
+    }
 }
 
 
@@ -54,7 +63,10 @@ void State_WebWorkersLoading::resize(int width, int height)
 
 void State_WebWorkersLoading::visibility(bool visible)
 {
-    static_cast<void>(visible); // <= unused
+    if (!visible) {
+        Data::get()->logic.state.previousState = StateManager::States::eWorkersLoading;
+        StateManager::get()->changeState(StateManager::States::ePaused);
+    }
 }
 
 #endif

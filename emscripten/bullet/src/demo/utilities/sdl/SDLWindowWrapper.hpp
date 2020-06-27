@@ -23,7 +23,7 @@ public:
 #ifdef __EMSCRIPTEN__
 
 private:
-    static void step(void* data);
+    static void webStep(void* data);
 
 #endif
 
