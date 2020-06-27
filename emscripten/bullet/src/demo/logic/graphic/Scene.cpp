@@ -443,17 +443,6 @@ void Scene::renderHUD()
 
     glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
 
-    // {
-    //     // auto& stackRenderer = graphic.stackRenderer;
-    //     const auto& shader = *graphic.shaders.stackRenderer;
-
-    //     shader.bind();
-
-    //     const auto& hudMatrix = graphic.camera.matrices.hud;
-    //     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    //     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
-    // }
-
     {
         const auto& shader = *graphic.shaders.hudText;
         auto&       textRenderer = graphic.hudText.renderer;
@@ -710,8 +699,8 @@ void Scene::renderHUD()
 
             std::stringstream sstr;
             sstr
-                << "WEB WORKER" << std::endl
-                << " LOADING  " << std::endl;
+                << "WEB WORKERS" << std::endl
+                << "  LOADING  " << std::endl;
             std::string message = sstr.str();
 
             textRenderer.push({ 400 - 5 * 16 * scale, 300 - 8 * scale }, message, scale);
