@@ -4,6 +4,7 @@
 #include "graphic/wrappers/Shader.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
+#include "demo/utilities/ErrorHandler.hpp"
 
 #include "demo/defines.hpp"
 
@@ -37,6 +38,7 @@ void Data::initialise()
 {
     initialiseShaders();
     initialiseGeometries();
+    initialiseSounds();
 
 #if defined D_WEB_WEBWORKER_BUILD
 
@@ -48,13 +50,12 @@ void Data::initialise()
 
 #endif
 
+    // logic.simulation = new SimulationFacade();
+
     initialiseCircuit();
-    initialiseStates();
     initialiseSimulation();
 
     logic.carsTrails.allTrailsData.resize(logic.simulation->getTotalCars());
-    for (auto& trail : logic.carsTrails.allTrailsData)
-        trail.isAlive = true;
 
     {
         std::stringstream sstr;
@@ -136,9 +137,12 @@ void Data::destroy()
     delete _instance, _instance = nullptr;
 }
 
-Data* Data::get()
+Data& Data::get()
 {
-    return _instance;
+    if (!_instance)
+        D_THROW(std::runtime_error, "Data singleton not initialised");
+
+    return *_instance;
 }
 
 // singleton

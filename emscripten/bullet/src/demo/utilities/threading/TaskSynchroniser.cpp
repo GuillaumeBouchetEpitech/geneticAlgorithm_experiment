@@ -9,17 +9,25 @@
 
 #include <chrono>
 
+//
+//
+// ScopedLockedNotifier
+
 TaskSynchroniser::ScopedLockedNotifier::ScopedLockedNotifier(TaskSynchroniser& data)
     : _data(data)
 {
-    _data._mutex.lock();
+    _data._mutex.lock(); // scoped lock part
 }
 
 TaskSynchroniser::ScopedLockedNotifier::~ScopedLockedNotifier()
 {
-    _data.notify();
-    _data._mutex.unlock();
+    _data.notify(); // added value
+    _data._mutex.unlock(); // scoped lock part
 }
+
+// ScopedLockedNotifier
+//
+//
 
 bool TaskSynchroniser::waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds /*= 0.0f*/)
 {
@@ -38,9 +46,9 @@ bool TaskSynchroniser::waitUntilNotified(std::unique_lock<std::mutex>& lock, flo
 
         while (!_notified) // loop to avoid spurious wakeups
             if (_condVar.wait_until(lock, timeout) == std::cv_status::timeout)
-                return false;
+                return false; // we did time out
     }
-    return true;
+    return true; // we did not time out
 }
 
 bool TaskSynchroniser::waitUntilNotified(float seconds /*= 0.0f*/)

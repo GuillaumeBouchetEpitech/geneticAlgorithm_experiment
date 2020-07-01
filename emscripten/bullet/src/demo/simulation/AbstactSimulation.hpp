@@ -15,6 +15,7 @@ class AbstactSimulation
 {
 public:
     typedef std::function<void()> t_callback;
+    typedef std::function<void(unsigned int)> t_genomeDieCallback;
     typedef std::function<void(bool)> t_generationEndCallback;
 
     struct t_def
@@ -37,7 +38,7 @@ public:
     };
 
 public:
-    virtual ~AbstactSimulation() {};
+    virtual ~AbstactSimulation() = default;
 
 public:
 
@@ -62,6 +63,7 @@ public:
 
     virtual void setOnGenerationResetCallback(t_callback callback) = 0;
     virtual void setOnGenerationStepCallback(t_callback callback) = 0;
+    virtual void setOnGenomeDieCallback(t_genomeDieCallback callback) = 0;
     virtual void setOnGenerationEndCallback(t_generationEndCallback callback) = 0;
 
 public:

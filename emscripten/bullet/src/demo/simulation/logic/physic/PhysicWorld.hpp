@@ -61,18 +61,6 @@ public:
 public:
     void    step();
 
-// public:
-//  void    removeAll();
-//  void    reinsertAll();
-
-// public:
-//  void    reset();
-
-    // inline void  setOnContact(const t_onContact& onContact)
-    // {
-    //  m_onContact = onContact;
-    // }
-
     //
     //
     // trimesh

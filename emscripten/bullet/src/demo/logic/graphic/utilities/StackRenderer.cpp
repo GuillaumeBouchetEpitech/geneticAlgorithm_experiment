@@ -92,7 +92,7 @@ void StackRenderer::flush()
 
 void StackRenderer::flushLines()
 {
-    auto& geometry = Data::get()->graphic.geometries.stackRenderer.lines;
+    auto& geometry = Data::get().graphic.geometries.stackRenderer.lines;
 
     geometry.updateBuffer(0, _lineVertices, true);
     geometry.setPrimitiveCount(_lineVertices.size());
@@ -104,7 +104,7 @@ void StackRenderer::flushLines()
 
 void StackRenderer::flushTriangles()
 {
-    auto& geometry = Data::get()->graphic.geometries.stackRenderer.triangles;
+    auto& geometry = Data::get().graphic.geometries.stackRenderer.triangles;
 
     geometry.updateBuffer(0, _triangleVertices, true);
     geometry.setPrimitiveCount(_triangleVertices.size());

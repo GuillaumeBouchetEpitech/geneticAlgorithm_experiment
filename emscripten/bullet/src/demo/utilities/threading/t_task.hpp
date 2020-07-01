@@ -11,12 +11,16 @@
 
 struct t_task
 {
+    friend class Producer; // <= so the Producer can set _consumer
+
 public:
     typedef std::function<void()> t_work;
 
 public:
     t_work _work = nullptr;
     t_work _oncomplete = nullptr;
+
+private:
     class Consumer* _consumer = nullptr;
 
 public:

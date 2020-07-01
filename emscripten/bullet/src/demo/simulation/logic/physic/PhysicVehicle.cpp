@@ -71,13 +71,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld)
     btVector3 localInertia(0.0f, 0.0f, 0.0f);
     _bullet.compound->calculateLocalInertia(mass, localInertia);
 
-    // btTransform tr;
-    // tr.setIdentity();
-    // tr.setOrigin(btVector3(0.0f, 0.0f, 10.0f));
-
-    // _bullet.motionState = new btDefaultMotionState(tr);
-    // _bullet.motionState = nullptr;
-    btRigidBody::btRigidBodyConstructionInfo cInfo(mass, _bullet.motionState, _bullet.compound, localInertia);
+    btRigidBody::btRigidBodyConstructionInfo cInfo(mass, nullptr, _bullet.compound, localInertia);
     _bullet.carChassis = new btRigidBody(cInfo);
 
 
@@ -160,7 +154,6 @@ PhysicVehicle::~PhysicVehicle()
     delete _bullet.vehicleRayCaster;
 
     delete _bullet.carChassis;
-    delete _bullet.motionState;
 
     delete _bullet.compound;
     delete _bullet.chassisShape;

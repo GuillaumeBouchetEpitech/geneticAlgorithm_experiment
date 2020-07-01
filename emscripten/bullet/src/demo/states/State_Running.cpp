@@ -30,9 +30,9 @@ void State_Running::leave()
 
 void State_Running::handleEvent(const SDL_Event& event)
 {
-    auto&   data = *Data::get();
-    auto&   keys = data.inputs.keys;
-    auto&   mouse = data.inputs.mouse;
+    auto& data = Data::get();
+    auto& keys = data.inputs.keys;
+    auto& mouse = data.inputs.mouse;
 
     switch (event.type)
     {
@@ -87,11 +87,11 @@ void State_Running::update(int deltaTime)
 {
     float elapsedTime = float(deltaTime) / 1000.0f;
 
-    auto&   data = *Data::get();
-    auto&   logic = data.logic;
-    auto&   simulation = *logic.simulation;
-    auto&   graphic = data.graphic;
-    auto&   camera = graphic.camera;
+    auto& data = Data::get();
+    auto& logic = data.logic;
+    auto& simulation = *logic.simulation;
+    auto& graphic = data.graphic;
+    auto& camera = graphic.camera;
 
     { // events
 
@@ -224,71 +224,91 @@ void State_Running::update(int deltaTime)
                 }
             }
 
-            {
-                // cameraNextDistance = 50.0f;
+            { // frustum dybamic camera distance
 
-                // glm::vec3        carsSummedPosition;
                 // unsigned int carsAlive = 0;
 
                 // const unsigned int totalCars = simulation.getTotalCars();
                 // for (unsigned int ii = 0; ii < totalCars; ++ii)
                 // {
-                //  const auto& carData = simulation.getCarResult(ii);
+                //     const auto& carData = simulation.getCarResult(ii);
 
-                //  if (!carData.isAlive)
-                //      continue;
+                //     if (!carData.isAlive)
+                //         continue;
 
-                //  //
+                //     //
 
-                //  glm::vec3   sensorsHeight(0.0f, 0.0f, 2.0f);
-                //  glm::mat4   carTransform = glm::translate(carData.transform, sensorsHeight);
-                //  glm::vec4   carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
-
-                //  carsSummedPosition += glm::vec3(carOrigin);
-
-                //  ++carsAlive;
+                //     ++carsAlive;
                 // }
 
-                // D_MYLOG("carsAlive=" << carsAlive);
+                // // D_MYLOG("carsAlive=" << carsAlive);
 
                 // if (carsAlive > 0)
                 // {
-                //  cameraNextCenter = carsSummedPosition / float(carsAlive);
+                //     const float maxDistance = 50.0f;
+                //     const float minDistance = 30.0f;
 
-                //  // graphic.camera.frustumCulling
+                //     unsigned int bestCarsVisible = 0;
+                //     float bestDistance = minDistance;
 
-                //  unsigned int    carsVisible = 0;
-                //  for (unsigned int ii = 0; ii < totalCars; ++ii)
-                //  {
-                //      const auto& carData = simulation.getCarResult(ii);
+                //     for (float currDistance = minDistance; currDistance < maxDistance; currDistance += 10.0f)
+                //     {
+                //         {
+                //             glm::mat4 projection;
+                //             glm::mat4 modelMatrix;
 
-                //      if (!carData.isAlive)
-                //          continue;
+                //             const float fovy = glm::radians(70.0f);
+                //             const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
 
-                //      //
+                //             projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+                //             glm::mat4 viewMatrix = glm::mat4(1.0f); // <= identity matrix
+                //             modelMatrix = glm::mat4(1.0f); // <= identity matrix
 
-                //      glm::vec3   sensorsHeight(0.0f, 0.0f, 2.0f);
-                //      glm::mat4   carTransform = glm::translate(carData.transform, sensorsHeight);
-                //      glm::vec4   carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+                //             // clamp vertical rotation [0..PI]
+                //             camera.rotations.y = std::max(0.0f, std::min(3.14f, camera.rotations.y));
 
-                //      if (graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 30.0f))
-                //          ++carsVisible;
-                //  }
+                //             viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -currDistance));
+                //             viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(-1.0f, 0.0f, 0.0f));
+                //             viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
 
-                //  if (carsVisible < carsAlive)
-                //  {
-                //      cameraNextDistance = camera.distance - 50.0f;
-                //      if (cameraNextDistance < 30.0f)
-                //          cameraNextDistance = 30.0f;
-                //  }
-                //  else
-                //  {
-                //      cameraNextDistance = camera.distance + 50.0f;
-                //      if (cameraNextDistance > 100.0f)
-                //          cameraNextDistance = 100.0f;
-                //  }
+                //             modelMatrix = glm::translate(modelMatrix, camera.center);
+
+                //             modelMatrix = viewMatrix * modelMatrix;
+
+                //             camera.frustumCulling.calculateFrustum(projection, modelMatrix);
+                //         }
+
+                //         unsigned int carsVisible = 0;
+                //         for (unsigned int ii = 0; ii < totalCars; ++ii)
+                //         {
+                //             const auto& carData = simulation.getCarResult(ii);
+
+                //             if (!carData.isAlive)
+                //                 continue;
+
+                //             //
+
+                //             glm::vec3 sensorsHeight(0.0f, 0.0f, 2.0f);
+                //             glm::mat4 carTransform = glm::translate(carData.transform, sensorsHeight);
+                //             glm::vec4 carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                //             if (graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 1.0f))
+                //                 ++carsVisible;
+                //         }
+
+                //         if (bestCarsVisible < carsVisible)
+                //         {
+                //             bestCarsVisible = carsVisible;
+                //             bestDistance = currDistance;
+
+                //             // D_MYLOG("=> bestCarsVisible=" << bestCarsVisible);
+                //         }
+                //     }
+
+                //     cameraNextDistance = bestDistance;
                 // }
-            }
+
+            } // frustum dybamic camera distance
 
 
         }
@@ -301,10 +321,7 @@ void State_Running::update(int deltaTime)
             // this part elevate where the camera look along the up axis of the car
             // => without it the camera look at the ground
             // => mostly useful for a shoulder camera (TODO)
-            // glm::vec3    sensorsHeight(0.0f, 0.0f, 2.0f);
-            // glm::mat4    carTransform = glm::translate(carResult.transform, sensorsHeight);
-            // glm::vec4    carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
-            glm::vec4   carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
+            glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
 
             cameraNextCenter = glm::vec3(carOrigin);
         }
@@ -430,14 +447,14 @@ void State_Running::render(const SDL_Window& window)
 
 void State_Running::resize(int width, int height)
 {
-    Data::get()->graphic.camera.viewportSize = { width, height };
+    Data::get().graphic.camera.viewportSize = { width, height };
 }
 
 void State_Running::visibility(bool visible)
 {
     if (!visible)
     {
-        Data::get()->logic.state.previousState = StateManager::States::eRunning;
+        Data::get().logic.state.previousState = StateManager::States::eRunning;
         StateManager::get()->changeState(StateManager::States::ePaused);
     }
 }

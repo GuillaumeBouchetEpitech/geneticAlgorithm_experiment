@@ -4,6 +4,7 @@
 #include "../ErrorHandler.hpp"
 
 #include <SDL2/SDL_image.h> // <= IMG_Init
+#include <SDL2/SDL_mixer.h> // <= Mix_OpenAudio
 
 #include <stdexcept>
 
@@ -13,10 +14,16 @@
 
 SDLWindowWrapper::SDLWindowWrapper(int width, int height)
 {
-     if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    //  if (SDL_Init(SDL_INIT_VIDEO) < 0)
+     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
-    IMG_Init(IMG_INIT_PNG);
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
+        D_THROW(std::runtime_error, "Could not initialise SDL image, error: " << IMG_GetError());
+
+    // MIX_DEFAULT_FORMAT == AUDIO_S16SYS
+    if (Mix_OpenAudio(44100, AUDIO_S16SYS, 2, 2048) < 0)
+        D_THROW(std::runtime_error, "Could not initialise SDL mixer, error: " << Mix_GetError());
 
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);

@@ -15,25 +15,25 @@ void State_StartGeneration::enter()
 {
     // D_MYLOG("step");
 
-    // Data::get()->logic.isPaused = true;
+    // Data::get().logic.isPaused = true;
 
-    Data::get()->logic.state.countdown = 750;
+    Data::get().logic.state.countdown = 750;
 }
 
 void State_StartGeneration::leave()
 {
     // D_MYLOG("step");
 
-    // Data::get()->logic.isPaused = false;
+    // Data::get().logic.isPaused = false;
 }
 
 //
 
 void State_StartGeneration::handleEvent(const SDL_Event& event)
 {
-    auto&   data = *Data::get();
-    auto&   keys = data.inputs.keys;
-    auto&   mouse = data.inputs.mouse;
+    auto& data = Data::get();
+    auto& keys = data.inputs.keys;
+    auto& mouse = data.inputs.mouse;
 
     switch (event.type)
     {
@@ -87,16 +87,13 @@ void State_StartGeneration::handleEvent(const SDL_Event& event)
 
 void State_StartGeneration::update(int deltaTime)
 {
-    // static_cast<void>(delta); // <= unused
-
-
     float elapsedTime = float(deltaTime) / 1000.0f;
 
-    auto&   data = *Data::get();
-    auto&   logic = data.logic;
-    auto&   simulation = *logic.simulation;
-    auto&   graphic = data.graphic;
-    auto&   camera = graphic.camera;
+    auto& data = Data::get();
+    auto& logic = data.logic;
+    auto& simulation = *logic.simulation;
+    auto& graphic = data.graphic;
+    auto& camera = graphic.camera;
 
     { // events
 
@@ -283,8 +280,8 @@ void State_StartGeneration::update(int deltaTime)
 
     } // circuit animation
 
-    Data::get()->logic.state.countdown -= deltaTime;
-    if (Data::get()->logic.state.countdown <= 0)
+    Data::get().logic.state.countdown -= deltaTime;
+    if (Data::get().logic.state.countdown <= 0)
         StateManager::get()->changeState(StateManager::States::eRunning);
 }
 
@@ -298,7 +295,7 @@ void State_StartGeneration::render(const SDL_Window& window)
 
 void State_StartGeneration::resize(int width, int height)
 {
-    Data::get()->graphic.camera.viewportSize = { width, height };
+    Data::get().graphic.camera.viewportSize = { width, height };
 }
 
 void State_StartGeneration::visibility(bool visible)
@@ -307,7 +304,7 @@ void State_StartGeneration::visibility(bool visible)
 
     if (!visible)
     {
-        Data::get()->logic.state.previousState = StateManager::States::eStartGeneration;
+        Data::get().logic.state.previousState = StateManager::States::eStartGeneration;
         StateManager::get()->changeState(StateManager::States::ePaused);
     }
 }

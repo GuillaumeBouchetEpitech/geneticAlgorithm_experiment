@@ -8,7 +8,7 @@
 
 void TextRenderer::initialise()
 {
-    const auto& hudText = Data::get()->graphic.hudText;
+    const auto& hudText = Data::get().graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
     const glm::vec2 texCoord = letterSize / hudText.textureSize;
 
@@ -126,7 +126,7 @@ void    TextRenderer::push(const glm::vec2& position,
                            const std::string& message,
                            float scale /*= 1.0f*/)
 {
-    const auto&    hudText = Data::get()->graphic.hudText;
+    const auto&    hudText = Data::get().graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
 
     glm::vec2 currPos = position;
@@ -164,7 +164,7 @@ void    TextRenderer::render()
     if (_lettersOffset.empty())
         return;
 
-    auto& geometry = Data::get()->graphic.geometries.hudText.letters;
+    auto& geometry = Data::get().graphic.geometries.hudText.letters;
 
     geometry.updateBuffer(1, _lettersOffset);
     geometry.setInstancedCount(_lettersOffset.size());

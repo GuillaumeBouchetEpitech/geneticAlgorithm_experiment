@@ -7,14 +7,20 @@
 #include "graphic/utilities/StackRenderer.hpp"
 #include "graphic/utilities/TextRenderer.hpp"
 #include "graphic/utilities/ParticleManager.hpp"
-// #include "graphic/utilities/FrustumCulling.hpp"
+#include "graphic/utilities/FrustumCulling.hpp"
 
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
 
+// #include "sounds/Sound.hpp"
+#include "sounds/SoundManager.hpp"
+
 #include "demo/simulation/AbstactSimulation.hpp"
+// #include "demo/simulation/SimulationFacade.hpp"
 
 #include "demo/states/StateManager.hpp"
+
+#include "demo/utilities/NonCopyable.hpp"
 
 #include <string>
 #include <list>
@@ -23,6 +29,7 @@
 class Shader;
 
 class Data
+    : public NonCopyable
 {
 
     //
@@ -40,7 +47,7 @@ private:
 public:
     static void create();
     static void destroy();
-    static Data* get();
+    static Data& get();
 
     // singleton
     //
@@ -49,8 +56,8 @@ public:
 private:
     void initialiseShaders();
     void initialiseGeometries();
+    void initialiseSounds();
     void initialiseCircuit();
-    void initialiseStates();
     void initialiseSimulation();
 
 public:
@@ -74,7 +81,7 @@ public:
             }
             matrices;
 
-            // FrustumCulling frustumCulling;
+            FrustumCulling frustumCulling;
         }
         camera;
 
@@ -156,6 +163,14 @@ public:
 
     //
 
+    struct t_sound
+    {
+        // SoundManager soundManager;
+    }
+    sounds;
+
+    //
+
     struct t_logic
     {
         struct t_state
@@ -173,6 +188,7 @@ public:
         metrics;
 
         AbstactSimulation* simulation = nullptr;
+        // SimulationFacade* simulation = nullptr;
 
         struct t_cores
         {
@@ -213,7 +229,6 @@ public:
         {
             struct t_carsData
             {
-                bool isAlive;
                 std::vector<glm::vec3> trail;
             };
             std::map<unsigned int, unsigned int> genomeIndexMap;

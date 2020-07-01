@@ -26,12 +26,9 @@ PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
     bool useQuantizedAabbCompression = true;
     _bullet.shape = new btBvhTriangleMeshShape(_bullet.indexVertexArrays, useQuantizedAabbCompression);
 
-    // _bullet.motionState = new btDefaultMotionState(btTransform(btQuaternion(0.0, 0.0, 0.0, 1.0), btVector3(0, 0, 0)));
-    // _bullet.motionState = nullptr;
-
     btScalar mass = 0;
     btVector3 localInertia(0,0,0);
-    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, _bullet.motionState, _bullet.shape, localInertia);
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, nullptr, _bullet.shape, localInertia);
 
     _bullet.body = new btRigidBody(rbInfo);
 
@@ -41,7 +38,6 @@ PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
 PhysicTrimesh::~PhysicTrimesh()
 {
     delete _bullet.body;
-    delete _bullet.motionState;
     delete _bullet.shape;
     delete _bullet.indexVertexArrays;
 

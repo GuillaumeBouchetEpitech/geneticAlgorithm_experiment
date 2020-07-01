@@ -10,6 +10,7 @@
 #include <mutex>
 #include <condition_variable>
 
+// this class handle all locking and conditional variable interactions
 class TaskSynchroniser
 {
 private:
@@ -18,6 +19,7 @@ private:
     bool                    _notified = false;
 
 public:
+    // this class act like a scoped lock but notify before unlocking
     class ScopedLockedNotifier
     {
     private:

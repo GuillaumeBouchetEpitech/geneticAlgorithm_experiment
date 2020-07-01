@@ -39,6 +39,8 @@ private:
     unsigned int _genomesPerCore = 0;
     unsigned int _totalGenomes = 0;
 
+    std::vector<bool> _carLiveStatus;
+
 private:
     NeuralNetworkTopology _neuralNetworkTopology;
     GeneticAlgorithm _geneticAlgorithm;
@@ -48,13 +50,14 @@ private:
         AbstactSimulation::t_callback onWorkersReady;
         AbstactSimulation::t_callback onGenerationReset;
         AbstactSimulation::t_callback onGenerationStep;
+        AbstactSimulation::t_genomeDieCallback onGenomeDie;
         AbstactSimulation::t_generationEndCallback onGenerationEnd;
     }
     _callbacks;
 
 public:
     WebWorkersSimulation() = default;
-    virtual ~WebWorkersSimulation();
+    virtual ~WebWorkersSimulation() = default;
 
 public:
     virtual void initialise(const t_def& def) override;
@@ -76,6 +79,7 @@ public:
     virtual void setOnWorkersReadyCallback(AbstactSimulation::t_callback callback) override;
     virtual void setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
     virtual void setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
+    virtual void setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback) override;
     virtual void setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:

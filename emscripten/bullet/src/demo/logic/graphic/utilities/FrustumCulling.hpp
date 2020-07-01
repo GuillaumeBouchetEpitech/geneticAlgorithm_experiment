@@ -16,7 +16,7 @@ public:
     bool cubeInFrustum(const glm::vec3& v, const glm::vec3& s) const;
 
 private:
-    enum e_FrustumSide {
+    enum class e_FrustumSide: unsigned int {
         eRight = 0,
         eLeft,
         eBottom,
@@ -25,7 +25,7 @@ private:
         eFront
     };
 
-    enum e_PlaneData {
+    enum class e_PlaneData: unsigned int {
         eA = 0,
         eB,
         eC,

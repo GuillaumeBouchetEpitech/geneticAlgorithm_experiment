@@ -62,7 +62,8 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
     }
 }
 
-void NeuralNetwork::process(const std::vector<float>& input, std::vector<float>& output) const
+void NeuralNetwork::process(const std::vector<float>& input,
+                            std::vector<float>& output) const
 {
     unsigned int requiredInputs = _topology.getInput();
 
@@ -77,7 +78,7 @@ void NeuralNetwork::process(const std::vector<float>& input, std::vector<float>&
 
     // process hidden layer
 
-    std::vector<float>  hiddenInput = input;
+    std::vector<float>  hiddenInput = input; // raw copy
     std::vector<float>  hiddenOutput;
 
     // Cycle over all the neurons and sum their weights against the inputs.
@@ -87,7 +88,7 @@ void NeuralNetwork::process(const std::vector<float>& input, std::vector<float>&
 
         processLayer(currentLayer, hiddenInput, hiddenOutput);
 
-        hiddenInput = std::move(hiddenOutput);
+        hiddenInput = std::move(hiddenOutput); // move
     }
 
     // process output layer

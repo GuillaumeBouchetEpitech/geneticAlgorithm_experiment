@@ -34,7 +34,6 @@ private:
     {
         btCollisionShape*       chassisShape = nullptr;
         btCompoundShape*        compound = nullptr;
-        btDefaultMotionState*   motionState = nullptr;
         btRigidBody*            carChassis = nullptr;
 
         btDefaultVehicleRaycaster*  vehicleRayCaster = nullptr;

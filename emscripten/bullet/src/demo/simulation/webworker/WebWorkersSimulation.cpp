@@ -9,10 +9,6 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
-WebWorkersSimulation::~WebWorkersSimulation()
-{
-}
-
 void WebWorkersSimulation::initialise(const t_def& def)
 {
     {
@@ -28,6 +24,8 @@ void WebWorkersSimulation::initialise(const t_def& def)
     _totalCores = def.totalCores;
     _genomesPerCore = def.genomesPerCore;
     _totalGenomes = _genomesPerCore * _totalCores;
+
+    _carLiveStatus.resize(_totalGenomes, true);
 
     GeneticAlgorithm::t_def genAlgoDef;
     genAlgoDef.topology = def.neuralNetworkTopology;
@@ -91,7 +89,20 @@ void WebWorkersSimulation::update()
     }
     else if (_currentRequest == WorkerRequest::eProcess)
     {
-        // auto& coreState = _coreStates[threadIndex];
+        for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
+        {
+            const auto& carResult = getCarResult(ii);
+
+            _carLiveStatus.resize(_totalGenomes, true);
+
+            if (!carResult.isAlive && _carLiveStatus[ii])
+            {
+                _carLiveStatus[ii] = false;
+
+                if (_callbacks.onGenomeDie)
+                    _callbacks.onGenomeDie(ii);
+            }
+        }
 
         if (_callbacks.onGenerationStep)
             _callbacks.onGenerationStep();
@@ -110,13 +121,16 @@ void WebWorkersSimulation::update()
 
         float extraFitness = float(carData.totalUpdates) / 1000;
 
-        _geneticAlgorithm.rateGenome(ii, carData.fitness + extraFitness);
+        _geneticAlgorithm.rateGenome(ii, carData.fitness - extraFitness);
     }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();
 
     if (_callbacks.onGenerationEnd)
         _callbacks.onGenerationEnd(isSmarter);
+
+    // reset cars status
+    _carLiveStatus.assign(_totalGenomes, true);
 
     // ask the worker(s) to reset the (physic) simulation
     _resetAndProcessSimulation();
@@ -182,6 +196,11 @@ void WebWorkersSimulation::setOnGenerationResetCallback(AbstactSimulation::t_cal
 void WebWorkersSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
 {
     _callbacks.onGenerationStep = callback;
+}
+
+void WebWorkersSimulation::setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback)
+{
+    _callbacks.onGenomeDie = callback;
 }
 
 void WebWorkersSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)

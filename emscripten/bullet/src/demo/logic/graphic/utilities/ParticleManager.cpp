@@ -61,7 +61,7 @@ void ParticleManager::update(float delta)
         particlesInstances.push_back({ particle.position, localScale, particle.color });
     }
 
-    auto& firework = Data::get()->graphic.geometries.particles.firework;
+    auto& firework = Data::get().graphic.geometries.particles.firework;
 
     firework.updateBuffer(1, particlesInstances);
     firework.setInstancedCount(particlesInstances.size());

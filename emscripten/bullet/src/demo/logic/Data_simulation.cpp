@@ -13,9 +13,15 @@ void Data::initialiseSimulation()
     logic.fitnessStats.allStats.reserve(logic.fitnessStats.maxStats);
     for (unsigned int ii = 0; ii < logic.fitnessStats.maxStats; ++ii)
         logic.fitnessStats.allStats.push_back(0.0f);
-    // logic.fitnessStats.allStats.push_back(10.0f);
-    // logic.fitnessStats.allStats.push_back(5.0f);
-    // logic.fitnessStats.allStats.push_back(15.0f);
+
+#if defined D_WEB_WEBWORKER_BUILD
+
+    logic.simulation->setOnWorkersReadyCallback([this]() {
+
+        logic.state.countdown = 1000;
+    });
+
+#endif
 
     logic.simulation->setOnGenerationResetCallback([this]() {
 
@@ -40,8 +46,6 @@ void Data::initialiseSimulation()
 
             // record the trail index with it's genome id in the lookup map
             carsTrails.genomeIndexMap[genome.id] = ii;
-
-            currentTrail.isAlive = true;
 
             // reset the old data
             currentTrail.trail.clear();
@@ -70,29 +74,16 @@ void Data::initialiseSimulation()
         {
             const auto& carData = simulation.getCarResult(ii);
 
+            // this part elevate the origin of the car along it's up axis
+            // => without it the origin is on the ground
+            glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
+
             auto& currentTrail = carsTrails.allTrailsData[ii];
 
             if (carData.isAlive == false)
-            {
-                if (currentTrail.isAlive == true)
-                {
-                    currentTrail.isAlive = false;
-
-                    glm::mat4 transform = glm::translate(carData.transform, extraHeight);
-                    glm::vec4 pos = transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
-
-                    graphic.particleManager.emitParticles({ pos.x, pos.y, pos.z});
-                }
-
                 continue;
-            }
 
-            // this part elevate the origin of the car along it's up axis
-            // => without it the origin is on the ground
-            glm::mat4 transform = glm::translate(carData.transform, extraHeight);
-            glm::vec4 pos = transform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-            currentTrail.trail.push_back(pos);
+            currentTrail.trail.push_back(carPos);
         }
 
         auto& cores = logic.cores;
@@ -114,6 +105,19 @@ void Data::initialiseSimulation()
 
         // move to next core state history index
         cores.currHistoryIndex = (cores.currHistoryIndex + 1) % cores.maxStateHistory;
+    });
+
+    logic.simulation->setOnGenomeDieCallback([this](unsigned int genomeIndex) {
+
+        const auto& simulation = *logic.simulation;
+
+        const auto& carData = simulation.getCarResult(genomeIndex);
+
+        const glm::vec3 extraHeight(0.0f, 0.0f, 1.0f);
+        glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
+
+        graphic.particleManager.emitParticles(carPos);
+        // sounds.soundManager.playRandom();
     });
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) {

@@ -42,13 +42,14 @@ private:
     {
         AbstactSimulation::t_callback onResetAndProcess;
         AbstactSimulation::t_callback onProcessStep;
+        AbstactSimulation::t_genomeDieCallback onGenomeDie;
         AbstactSimulation::t_generationEndCallback onGenerationEnd;
     }
     _callbacks;
 
 public:
     PthreadSimulation() = default;
-    virtual ~PthreadSimulation();
+    virtual ~PthreadSimulation() = default;
 
 public:
     virtual void initialise(const t_def& def) override;
@@ -66,9 +67,9 @@ public:
     virtual unsigned int getTotalCars() const override;
 
 public:
-
     virtual void setOnGenerationResetCallback(AbstactSimulation::t_callback callback) override;
     virtual void setOnGenerationStepCallback(AbstactSimulation::t_callback callback) override;
+    virtual void setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback) override;
     virtual void setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:

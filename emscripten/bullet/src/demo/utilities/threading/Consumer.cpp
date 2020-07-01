@@ -16,6 +16,7 @@ Consumer::Consumer(Producer& producer)
 {
     _thread = std::thread(&Consumer::threadedMethod, this);
 
+    // here we wait for the thread to be running
     while (!_running)
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
 }
@@ -52,6 +53,19 @@ void Consumer::quit()
 //
 //
 
+bool Consumer::isRunning() const
+{
+    return _running;
+}
+
+bool Consumer::isAvailable() const
+{
+    return !_waitProducer.isNotified();
+}
+
+//
+//
+
 void Consumer::threadedMethod()
 {
     _running = true;
@@ -61,8 +75,10 @@ void Consumer::threadedMethod()
     {
         _waitProducer.waitUntilNotified(lock);
 
+         // this part is locked
+
         if (!_running)
-            break;
+            break; // quit scenario
 
         _work();
 

@@ -26,7 +26,6 @@ private:
     {
         btTriangleIndexVertexArray* indexVertexArrays = nullptr;
         btBvhTriangleMeshShape*     shape = nullptr;
-        btDefaultMotionState*       motionState = nullptr;
         btRigidBody*                body = nullptr;
     }
     _bullet;

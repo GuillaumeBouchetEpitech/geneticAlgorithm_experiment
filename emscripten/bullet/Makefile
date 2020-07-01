@@ -115,6 +115,7 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
@@ -136,6 +137,7 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
@@ -156,6 +158,7 @@ SRC_WEB_MAIN=	$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
@@ -268,6 +271,7 @@ ifeq ($(build_platform),native_pthread)
 						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
 	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
+						-lSDL2_mixer \
 						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
@@ -287,8 +291,10 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	CXX=em++
 	AR=emar
 
+
 	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
+					-s USE_SDL_MIXER=2 \
 					-s USE_SDL_IMAGE=2 \
 					-s SDL2_IMAGE_FORMATS='["png"]' \
 					-s GL_PREINITIALIZED_CONTEXT=1
@@ -360,7 +366,8 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=64Mb
 
 	# assets loading
-	COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
+	# COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
+	COMMON_LDFLAGS+=	--embed-file ./assets/
 
 	COMMON_LDFLAGS+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 
@@ -377,6 +384,7 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-DD_WORKER_MAIN='"onMessage"'
 
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
+						-s USE_SDL_MIXER=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1

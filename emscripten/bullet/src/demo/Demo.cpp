@@ -27,12 +27,12 @@ Demo::Demo(int width, int height)
     // glEnable(GL_CULL_FACE);
 
     Data::create();
-    Data::get()->graphic.camera.viewportSize = {width, height};
+    Data::get().graphic.camera.viewportSize = {width, height};
 
     StateManager::create();
 
     // hacky?
-    Data::get()->logic.state.previousState = StateManager::get()->getState();
+    Data::get().logic.state.previousState = StateManager::get()->getState();
 }
 
 Demo::~Demo()
@@ -56,7 +56,7 @@ void Demo::onUpdate(long int deltaTime)
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    Data::get()->logic.metrics.updateTime = microseconds.count();
+    Data::get().logic.metrics.updateTime = microseconds.count();
 }
 
 void Demo::onRender(const SDL_Window& screen)
@@ -67,7 +67,7 @@ void Demo::onRender(const SDL_Window& screen)
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    Data::get()->logic.metrics.renderTime = microseconds.count();
+    Data::get().logic.metrics.renderTime = microseconds.count();
 }
 
 void Demo::onResize(int width, int height)

@@ -28,7 +28,8 @@ bool Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
     if ((surface->h & (surface->h - 1)) != 0)
         D_THROW(std::runtime_error, "image height not a power of 2, filename=\"" << filename << "\"");
 
-    glGenTextures(1, &_textureId);
+    if (_textureId == 0)
+        glGenTextures(1, &_textureId);
 
     glBindTexture(GL_TEXTURE_2D, _textureId);
 

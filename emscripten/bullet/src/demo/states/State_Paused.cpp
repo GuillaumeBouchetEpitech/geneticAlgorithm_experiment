@@ -15,14 +15,14 @@ void State_Paused::enter()
 {
     // D_MYLOG("step");
 
-    Data::get()->logic.isPaused = true;
+    Data::get().logic.isPaused = true;
 }
 
 void State_Paused::leave()
 {
     // D_MYLOG("step");
 
-    Data::get()->logic.isPaused = false;
+    Data::get().logic.isPaused = false;
 }
 
 //
@@ -36,7 +36,7 @@ void State_Paused::handleEvent(const SDL_Event& event)
         case SDL_KEYDOWN:
         case SDL_KEYUP:
         {
-            StateManager::get()->changeState(Data::get()->logic.state.previousState);
+            StateManager::get()->changeState(Data::get().logic.state.previousState);
             break;
         }
     }
@@ -57,7 +57,7 @@ void State_Paused::render(const SDL_Window& window)
 
 void State_Paused::resize(int width, int height)
 {
-    Data::get()->graphic.camera.viewportSize = { width, height };
+    Data::get().graphic.camera.viewportSize = { width, height };
 }
 
 void State_Paused::visibility(bool visible)

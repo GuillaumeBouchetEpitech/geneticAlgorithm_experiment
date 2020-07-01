@@ -35,8 +35,8 @@ public:
     void quit();
 
 public:
-    inline bool isRunning() const { return _running; }
-    inline bool isAvailable() const { return !_waitProducer.isNotified(); }
+    bool isRunning() const;
+    bool isAvailable() const;
 
 private:
     void threadedMethod();

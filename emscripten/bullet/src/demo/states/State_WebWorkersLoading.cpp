@@ -32,7 +32,7 @@ void State_WebWorkersLoading::handleEvent(const SDL_Event& event)
 
 void State_WebWorkersLoading::update(int deltaTime)
 {
-    auto& logic = Data::get()->logic;
+    auto& logic = Data::get().logic;
 
     if (logic.state.countdown == 0)
     {
@@ -58,13 +58,13 @@ void State_WebWorkersLoading::render(const SDL_Window& window)
 
 void State_WebWorkersLoading::resize(int width, int height)
 {
-    Data::get()->graphic.camera.viewportSize = { width, height };
+    Data::get().graphic.camera.viewportSize = { width, height };
 }
 
 void State_WebWorkersLoading::visibility(bool visible)
 {
     if (!visible) {
-        Data::get()->logic.state.previousState = StateManager::States::eWorkersLoading;
+        Data::get().logic.state.previousState = StateManager::States::eWorkersLoading;
         StateManager::get()->changeState(StateManager::States::ePaused);
     }
 }

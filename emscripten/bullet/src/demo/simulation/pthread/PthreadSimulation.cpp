@@ -6,10 +6,6 @@
 
 #include <chrono>
 
-PthreadSimulation::~PthreadSimulation()
-{
-}
-
 void PthreadSimulation::initialise(const t_def& def)
 {
     if (def.genomesPerCore == 0)
@@ -168,7 +164,7 @@ void PthreadSimulation::update()
     {
         float extraFitness = float(_carsData[ii].totalUpdates) / 1000;
 
-        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness + extraFitness);
+        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - extraFitness);
     }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();
@@ -179,20 +175,8 @@ void PthreadSimulation::update()
     //
     //
 
-    // for (auto& physicWorld : _physicWorlds)
-    //     physicWorld.reset();
-
     for (Car& car : _cars)
         car.reset(_startTransform.position, _startTransform.quaternion);
-
-    // for (auto& physicWorld : _physicWorlds)
-    //     physicWorld.removeAll();
-
-    // for (Car& car : _cars)
-    //     car.reset();
-
-    // for (auto& physicWorld : _physicWorlds)
-    //     physicWorld.reinsertAll();
 
     _isFirstFrame = true;
 }
@@ -204,11 +188,18 @@ void PthreadSimulation::updateCarResult()
         const auto& car = _cars[ii];
         auto& carData = _carsData[ii];
 
+        bool carWasAlive = carData.isAlive;
         carData.isAlive = car.isAlive();
         carData.life = car.getLife();
         carData.fitness = car.getFitness();
-        carData.totalUpdates= car.getTotalUpdates();
+        carData.totalUpdates = car.getTotalUpdates();
         carData.groundIndex = car.getGroundIndex();
+
+        if (carWasAlive && !carData.isAlive)
+        {
+            if (_callbacks.onGenomeDie)
+                _callbacks.onGenomeDie(ii);
+        }
 
         if (!carData.isAlive)
             continue;
@@ -269,6 +260,11 @@ void PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callba
 void PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
 {
     _callbacks.onProcessStep = callback;
+}
+
+void PthreadSimulation::setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback)
+{
+    _callbacks.onGenomeDie = callback;
 }
 
 void PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)

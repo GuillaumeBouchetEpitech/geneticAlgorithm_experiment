@@ -7,9 +7,12 @@
 
 #include "demo/utilities/types.hpp"
 
+#include "demo/utilities/NonCopyable.hpp"
+
 #include <array>
 
 class StateManager
+    : public NonCopyable
 {
     //
     //

@@ -133,7 +133,7 @@ void Scene::renderAll()
         } // checkerboard floor
 
 
-        if (!Data::get()->logic.isAccelerated)
+        if (!Data::get().logic.isAccelerated)
             Scene::renderLeadingCarSensors();
 
         Scene::renderParticles();
@@ -154,7 +154,7 @@ void Scene::renderAll()
 
 void Scene::updateMatrices()
 {
-    auto&    camera = Data::get()->graphic.camera;
+    auto&    camera = Data::get().graphic.camera;
     auto&    matrices = camera.matrices;
 
     { // scene
@@ -179,7 +179,7 @@ void Scene::updateMatrices()
 
         matrices.scene = matrices.projection * matrices.modelView;
 
-        // camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
+        camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
     }
 
     { // hud
@@ -198,7 +198,7 @@ void Scene::updateMatrices()
 
 void Scene::clear()
 {
-    const auto& viewportSize = Data::get()->graphic.camera.viewportSize;
+    const auto& viewportSize = Data::get().graphic.camera.viewportSize;
 
     glViewport(0, 0, viewportSize.x, viewportSize.y);
 
@@ -208,7 +208,7 @@ void Scene::clear()
 
 void Scene::renderLeadingCarSensors()
 {
-    auto&       data = *Data::get();
+    auto&       data = Data::get();
     const auto& logic = data.logic;
     const auto& leaderCar = logic.leaderCar;
     const auto& simulation = *logic.simulation;
@@ -265,7 +265,7 @@ void Scene::renderParticles()
 {
     // instanced geometrie(s)
 
-    const auto& graphic = Data::get()->graphic;
+    const auto& graphic = Data::get().graphic;
     const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
@@ -285,8 +285,8 @@ void Scene::renderCars()
 {
     // instanced geometrie(s)
 
-    // const auto& graphic = Data::get()->graphic;
-    auto& graphic = Data::get()->graphic;
+    // const auto& graphic = Data::get().graphic;
+    auto& graphic = Data::get().graphic;
     const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
@@ -310,7 +310,7 @@ void Scene::renderCars()
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
         {
-            const auto& logic = Data::get()->logic;
+            const auto& logic = Data::get().logic;
             const auto& simulation = *logic.simulation;
 
             unsigned int totalCars = simulation.getTotalCars();
@@ -375,7 +375,7 @@ void Scene::renderWireframesGeometries(bool trails /*= true*/)
 {
     // static geometrie(s) (mono color)
 
-    const auto& graphic = Data::get()->graphic;
+    const auto& graphic = Data::get().graphic;
     const auto& shader = *graphic.shaders.wireframes;
     const auto& wireframes = graphic.geometries.wireframes;
 
@@ -404,7 +404,7 @@ void Scene::renderAnimatedCircuit()
 {
     // static geometrie(s) (animated)
 
-    const auto& data = *Data::get();
+    const auto& data = Data::get();
     const auto& graphic = data.graphic;
     const auto& shader = *graphic.shaders.animatedCircuit;
     const auto& animatedCircuit = graphic.geometries.animatedCircuit;
@@ -437,7 +437,7 @@ void Scene::renderAnimatedCircuit()
 
 void Scene::renderHUD()
 {
-    auto& data = *Data::get();
+    auto& data = Data::get();
     auto& graphic = data.graphic;
     auto& logic = data.logic;
 
