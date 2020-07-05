@@ -72,11 +72,14 @@ public:
             glm::vec3 center = { 0.0f, 0.0f, 0.0f };
             float distance = 0.0f;
 
+            glm::vec3 thirdPersonCenter = { 0.0f, 0.0f, 0.0f };
+
             struct t_matricesData
             {
                 glm::mat4 projection;
                 glm::mat4 modelView;
                 glm::mat4 scene;
+                glm::mat4 thirdPerson;
                 glm::mat4 hud;
             }
             matrices;
@@ -187,6 +190,8 @@ public:
         }
         metrics;
 
+        NeuralNetworkTopology annTopology;
+
         AbstactSimulation* simulation = nullptr;
         // SimulationFacade* simulation = nullptr;
 
@@ -227,12 +232,8 @@ public:
 
         struct t_carsTrails
         {
-            struct t_carsData
-            {
-                std::vector<glm::vec3> trail;
-            };
             std::map<unsigned int, unsigned int> genomeIndexMap;
-            std::vector<t_carsData> allTrailsData;
+            std::vector<std::vector<glm::vec3>> allTrails;
 
             unsigned int currentTrailIndex = 0;
         }

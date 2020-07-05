@@ -23,10 +23,14 @@ private:
 
     Producer*   _multithreadProducer;
 
-    std::vector<PhysicWorld>    _physicWorlds;
-    std::vector<AbstactSimulation::t_coreState>    _coreStates;
+    /**
+     * need multiple physic worlds so that we can divide the
+     * physical raycasting among the different threads
+     */
+    std::vector<PhysicWorld>                    _physicWorlds;
+    std::vector<AbstactSimulation::t_coreState> _coreStates;
 
-    unsigned int    _genomesPerCore = 0;
+    unsigned int _genomesPerCore = 0;
 
     std::vector<Car>    _cars;
     t_carsData          _carsData;

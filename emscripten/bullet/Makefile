@@ -270,8 +270,10 @@ ifeq ($(build_platform),native_pthread)
 						\
 						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
+						# -lopenal \
+						# -lSDL2_mixer \
+
 	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
-						-lSDL2_mixer \
 						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
@@ -294,7 +296,6 @@ else ifeq ($(build_platform),web_wasm_pthread)
 
 	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
-					-s USE_SDL_MIXER=2 \
 					-s USE_SDL_IMAGE=2 \
 					-s SDL2_IMAGE_FORMATS='["png"]' \
 					-s GL_PREINITIALIZED_CONTEXT=1
@@ -313,11 +314,14 @@ else ifeq ($(build_platform),web_wasm_pthread)
 							\
 							-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
+							# -lopenal \
+
 	LDFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
 							\
 							$(NAME_BULLET_DYNAMICS) \
 							$(NAME_BULLET_COLLISION) \
 							$(NAME_BULLET_LINEARMATH)
+
 
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
@@ -383,8 +387,9 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
+						# -lopenal \
+
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
-						-s USE_SDL_MIXER=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1

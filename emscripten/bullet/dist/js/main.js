@@ -168,7 +168,7 @@ const onGlobalPageLoad = () => {
     }
 
     const vars = extractVarsFromUrl();
-    window.genomesPerCore = vars.genomesPerCore || 30;
+    window.genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
 
     // extract the "genomesPerCore" value from the url
     //

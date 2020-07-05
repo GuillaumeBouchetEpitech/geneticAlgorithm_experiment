@@ -117,21 +117,15 @@ void Data::initialiseCircuit()
         }
     };
 
-    unsigned int layerInput = 15;
-    std::vector<unsigned int> layerHidden = { 10, 5 };
-    // std::vector<unsigned int> layerHidden = {};
-    unsigned int layerOutput = 2;
-    bool useBiasNeuron = true;
+    // unsigned int layerInput = 15;
+    // // std::vector<unsigned int> layerHidden = { 10, 5 };
+    // std::vector<unsigned int> layerHidden = { 5 };
+    // // std::vector<unsigned int> layerHidden = {};
+    // unsigned int layerOutput = 2;
+    // bool useBiasNeuron = true;
 
-    NeuralNetworkTopology topology;
-    topology.init(layerInput, layerHidden, layerOutput, useBiasNeuron);
-
-
-// // #ifdef D_NATIVE_PTHREAD_BUILD
-//     logic.cores.genomesPerCore = 90;
-// // #else
-// //     logic.cores.genomesPerCore = 30;
-// // #endif
+    // logic.annTopology.init(layerInput, layerHidden, layerOutput, useBiasNeuron);
+    logic.annTopology.init({15, 5, 2}, /*useBiasNeuron =*/ true);
 
 #if defined D_WEB_BUILD
     logic.cores.genomesPerCore = EM_ASM_INT(return window.genomesPerCore || 30);
@@ -146,7 +140,7 @@ void Data::initialiseCircuit()
     simulationDef.filename = D_CIRCUIT_FILENAME;
     simulationDef.genomesPerCore = logic.cores.genomesPerCore;
     simulationDef.totalCores = logic.cores.totalCores;
-    simulationDef.neuralNetworkTopology = topology;
+    simulationDef.neuralNetworkTopology = logic.annTopology;
     simulationDef.onSkeletonPatch = onSkeletonPatch;
     simulationDef.onNewGroundPatch = onGroundPatch;
     simulationDef.onNewWallPatch = onWallPatch;

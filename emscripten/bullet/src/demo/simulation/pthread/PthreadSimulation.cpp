@@ -68,7 +68,7 @@ void PthreadSimulation::initialise(const t_def& def)
                 def.onNewWallPatch(vertices, colors, normals, indices);
         };
 
-        CircuitBuilder  circuitBuilder;
+        CircuitBuilder circuitBuilder;
         circuitBuilder.load(def.filename);
         circuitBuilder.generateSkeleton(def.onSkeletonPatch);
         circuitBuilder.generate(onNewPhysicGroundPatch, onNewPhysicWallPatch);

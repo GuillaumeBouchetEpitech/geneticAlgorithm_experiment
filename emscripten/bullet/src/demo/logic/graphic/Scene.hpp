@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "thirdparty/GLMath.hpp"
+
 class Scene
 {
 public:
@@ -12,11 +14,11 @@ private:
 
     static void clear();
 
-    static void renderLeadingCarSensors();
-    static void renderParticles();
-    static void renderCars();
-    static void renderWireframesGeometries(bool trails = true);
-    static void renderAnimatedCircuit();
+    static void renderLeadingCarSensors(const glm::mat4& sceneMatrix);
+    static void renderParticles(const glm::mat4& sceneMatrix);
+    static void renderCars(const glm::mat4& sceneMatrix);
+    static void renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails = true);
+    static void renderAnimatedCircuit(const glm::mat4& sceneMatrix);
     static void renderHUD();
 
 };

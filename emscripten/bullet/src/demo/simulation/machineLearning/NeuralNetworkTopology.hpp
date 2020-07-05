@@ -21,6 +21,7 @@ public:
     NeuralNetworkTopology() = default;
 
     void init(unsigned int input, const t_hiddenLayers& hiddens, unsigned int output, bool useBias = true);
+    void init(const std::initializer_list<unsigned int>& list, bool useBias = true);
 
 public:
     bool isValid() const;

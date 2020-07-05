@@ -42,13 +42,13 @@ void Data::initialiseSimulation()
 
             const auto& genome = genomes[ii];
             const auto& carData = simulation.getCarResult(ii);
-            auto& currentTrail = carsTrails.allTrailsData[ii];
+            auto& currentTrail = carsTrails.allTrails[ii];
 
             // record the trail index with it's genome id in the lookup map
             carsTrails.genomeIndexMap[genome.id] = ii;
 
             // reset the old data
-            currentTrail.trail.clear();
+            currentTrail.clear();
 
             // initialise the new data
 
@@ -58,7 +58,7 @@ void Data::initialiseSimulation()
             glm::mat4 carTransform = glm::translate(carData.transform, chassisHeight);
             glm::vec4 carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-            currentTrail.trail.push_back(carOrigin);
+            currentTrail.push_back(carOrigin);
         }
     });
 
@@ -78,12 +78,12 @@ void Data::initialiseSimulation()
             // => without it the origin is on the ground
             glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
 
-            auto& currentTrail = carsTrails.allTrailsData[ii];
+            auto& currentTrail = carsTrails.allTrails[ii];
 
             if (carData.isAlive == false)
                 continue;
 
-            currentTrail.trail.push_back(carPos);
+            currentTrail.push_back(carPos);
         }
 
         auto& cores = logic.cores;
@@ -161,14 +161,14 @@ void Data::initialiseSimulation()
             return;
 
         auto dataIndex = it->second;
-        const auto& bestCarTrailData = carsTrails.allTrailsData[dataIndex];
+        const auto& bestCarTrailData = carsTrails.allTrails[dataIndex];
 
         auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
         auto& currentTrailIndex = carsTrails.currentTrailIndex;
         auto& currentCarTrail = bestCarsTrails[currentTrailIndex];
 
-        currentCarTrail.updateBuffer(0, bestCarTrailData.trail);
-        currentCarTrail.setPrimitiveCount(bestCarTrailData.trail.size());
+        currentCarTrail.updateBuffer(0, bestCarTrailData);
+        currentCarTrail.setPrimitiveCount(bestCarTrailData.size());
 
         currentTrailIndex = (currentTrailIndex + 1) % bestCarsTrails.size();
     });

@@ -11,7 +11,7 @@
 #include "./utilities/sceneToScreen.hpp"
 
 
-#include "thirdparty/GLMath.hpp"
+// #include "thirdparty/GLMath.hpp"
 
 #include <memory> // <= make_unique
 #include <cstring> // <= std::memcpy
@@ -47,7 +47,9 @@ void Scene::renderSimple()
 
     { // scene
 
-        Scene::renderWireframesGeometries(false); // circuit only
+        const auto& sceneMatrix = Data::get().graphic.camera.matrices.scene;
+
+        Scene::renderWireframesGeometries(sceneMatrix, false); // circuit only
     }
 
     { // HUD
@@ -132,16 +134,49 @@ void Scene::renderAll()
 
         } // checkerboard floor
 
+        auto& data = Data::get();
+        auto& logic = data.logic;
+        const auto& leaderCar = logic.leaderCar;
+        const auto& camera = data.graphic.camera;
+        const auto& matrices = camera.matrices;
 
         if (!Data::get().logic.isAccelerated)
-            Scene::renderLeadingCarSensors();
+            Scene::renderLeadingCarSensors(matrices.scene);
 
-        Scene::renderParticles();
-        Scene::renderCars();
+        Scene::renderParticles(matrices.scene);
+        Scene::renderCars(matrices.scene);
         // Scene::renderCircuitSkeleton();
         // Scene::renderBestCarsTrails();
-        Scene::renderWireframesGeometries();
-        Scene::renderAnimatedCircuit();
+        Scene::renderWireframesGeometries(matrices.scene);
+        Scene::renderAnimatedCircuit(matrices.scene);
+
+        // valid leading car?
+        if (!logic.isAccelerated && leaderCar.index >= 0)
+        {
+            const auto& viewportSize = camera.viewportSize;
+
+            const float divider = 5.0f;
+            const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
+            const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.0f), thirdPViewportSize.y * 0.75f };
+
+            glViewport(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+
+            glEnable(GL_SCISSOR_TEST);
+            glScissor(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            Scene::renderLeadingCarSensors(matrices.thirdPerson);
+            Scene::renderParticles(matrices.thirdPerson);
+            Scene::renderCars(matrices.thirdPerson);
+            Scene::renderWireframesGeometries(matrices.thirdPerson);
+            Scene::renderAnimatedCircuit(matrices.thirdPerson);
+
+            glDisable(GL_SCISSOR_TEST);
+            glViewport(0, 0, viewportSize.x, viewportSize.y);
+        }
+
     }
 
     { // HUD
@@ -154,8 +189,12 @@ void Scene::renderAll()
 
 void Scene::updateMatrices()
 {
-    auto&    camera = Data::get().graphic.camera;
-    auto&    matrices = camera.matrices;
+    auto& data = Data::get();
+    const auto& logic = data.logic;
+    const auto& simulation = *logic.simulation;
+    auto& graphic = data.graphic;
+    auto& camera = graphic.camera;
+    auto& matrices = camera.matrices;
 
     { // scene
 
@@ -182,6 +221,40 @@ void Scene::updateMatrices()
         camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
     }
 
+    { // third person
+
+        if (logic.leaderCar.index < 0)
+        {
+            camera.thirdPersonCenter = camera.center;
+
+            matrices.thirdPerson = matrices.scene;
+        }
+        else
+        {
+            const auto& carResult = simulation.getCarResult(logic.leaderCar.index);
+
+            glm::vec3 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+
+            if (// do not update the third person camera if not in a correct state
+                (StateManager::get()->getState() != StateManager::States::eRunning ||
+                 StateManager::get()->getState() != StateManager::States::eStartGeneration) &&
+                // do not update the third person camera if too close from the target
+                glm::distance(carOrigin, camera.thirdPersonCenter) > 0.1f)
+            {
+                // simple lerp to setup the third person camera
+                const float lerpRatio = 0.1f;
+                camera.thirdPersonCenter += (carOrigin - camera.thirdPersonCenter) * lerpRatio;
+            }
+
+            glm::vec3 eye = camera.thirdPersonCenter;
+            glm::vec3 center = carOrigin;
+            glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
+            glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
+
+            matrices.thirdPerson = matrices.projection * viewMatrix;
+        }
+    }
+
     { // hud
 
         const auto& vSize = camera.viewportSize;
@@ -206,7 +279,7 @@ void Scene::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Scene::renderLeadingCarSensors()
+void Scene::renderLeadingCarSensors(const glm::mat4& sceneMatrix)
 {
     auto&       data = Data::get();
     const auto& logic = data.logic;
@@ -228,7 +301,7 @@ void Scene::renderLeadingCarSensors()
 
     shader.bind();
 
-    const auto& sceneMatrix = graphic.camera.matrices.scene;
+    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -261,12 +334,11 @@ void Scene::renderLeadingCarSensors()
     stackRenderer.flush();
 }
 
-void Scene::renderParticles()
+void Scene::renderParticles(const glm::mat4 &sceneMatrix)
 {
     // instanced geometrie(s)
 
     const auto& graphic = Data::get().graphic;
-    const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
         const auto& shader = *graphic.shaders.particles;
@@ -281,13 +353,13 @@ void Scene::renderParticles()
     }
 }
 
-void Scene::renderCars()
+void Scene::renderCars(const glm::mat4& sceneMatrix)
 {
     // instanced geometrie(s)
 
     // const auto& graphic = Data::get().graphic;
     auto& graphic = Data::get().graphic;
-    const auto& sceneMatrix = graphic.camera.matrices.scene;
+    // const auto& sceneMatrix = graphic.camera.matrices.scene;
 
     {
         // const auto& shader = *graphic.shaders.instanced;
@@ -371,7 +443,7 @@ void Scene::renderCars()
 
 }
 
-void Scene::renderWireframesGeometries(bool trails /*= true*/)
+void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails /*= true*/)
 {
     // static geometrie(s) (mono color)
 
@@ -381,7 +453,7 @@ void Scene::renderWireframesGeometries(bool trails /*= true*/)
 
     shader.bind();
 
-    const auto& sceneMatrix = graphic.camera.matrices.scene;
+    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -400,7 +472,7 @@ void Scene::renderWireframesGeometries(bool trails /*= true*/)
     }
 }
 
-void Scene::renderAnimatedCircuit()
+void Scene::renderAnimatedCircuit(const glm::mat4& sceneMatrix)
 {
     // static geometrie(s) (animated)
 
@@ -412,7 +484,7 @@ void Scene::renderAnimatedCircuit()
 
     shader.bind();
 
-    const auto& sceneMatrix = graphic.camera.matrices.scene;
+    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -813,18 +885,18 @@ void Scene::renderHUD()
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
-        const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-        // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
-        // const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
-
-        const glm::vec2 borderPos(10, 400);
-        const glm::vec2 borderSize(150, 75);
-
-        stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
-
         //
         // show progresses here
         {
+            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+            // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
+            // const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
+
+            const glm::vec2 borderPos(10, 400);
+            const glm::vec2 borderSize(150, 75);
+
+            stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
             const auto& allStats = logic.fitnessStats.allStats;
 
             if (allStats.size() >= 2)
@@ -857,6 +929,136 @@ void Scene::renderHUD()
             // stackRenderer.pushLine(borderPos, borderPos + borderSize, redColor);
         }
         // show progresses here
+        //
+
+        //
+        // show topology here
+        {
+            if (logic.leaderCar.index >= 0)
+            {
+
+                // const auto& bestGenome = logic.simulation->getBestGenome();
+
+                // bestGenome.weights;
+
+                const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+                // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
+                const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
+
+                // const glm::vec2 borderPos(690, 350);
+                const glm::vec2 borderPos(690, 215);
+                const glm::vec2 borderSize(100, 100);
+
+                stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
+                std::vector<unsigned int> topologyArray;
+                topologyArray.push_back(logic.annTopology.getInput());
+                for (const auto& hidden : logic.annTopology.getHiddens())
+                    topologyArray.push_back(hidden);
+                topologyArray.push_back(logic.annTopology.getOutput());
+
+
+                std::vector<std::vector<glm::vec2>> allPositions;
+                allPositions.resize(topologyArray.size());
+
+                glm::vec2 neuronSize = {7, 7};
+
+                for (unsigned int ii = 0; ii < topologyArray.size(); ++ii)
+                {
+                    unsigned int actualSize = topologyArray[ii];
+
+                    glm::vec2 currPos = borderPos;
+                    currPos.y += borderSize.y - borderSize.y / topologyArray.size() * (float(ii) + 0.5f);
+
+                    allPositions[ii].reserve(actualSize);
+
+                    for (unsigned int jj = 0; jj < actualSize; ++jj)
+                    {
+                        currPos.x += borderSize.x / (actualSize + 1);
+
+                        allPositions[ii].push_back(currPos);
+                    }
+                }
+
+                // draw neurons
+                for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
+                    for (unsigned int jj = 0; jj < allPositions[ii].size(); ++jj)
+                        stackRenderer.pushRectangle(allPositions[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
+
+                // draw connections
+                for (unsigned int ii = 1; ii < allPositions.size(); ++ii)
+                    for (unsigned int jj = 0; jj < allPositions[ii - 1].size(); ++jj)
+                        for (unsigned int kk = 0; kk < allPositions[ii].size(); ++kk)
+                            stackRenderer.pushLine(allPositions[ii - 1][jj], allPositions[ii][kk], greenColor);
+            }
+        }
+        // show topology here
+        //
+
+        //
+        // show leader car's eye here
+        {
+            if (logic.leaderCar.index >= 0)
+            {
+                const auto& leader = logic.simulation->getCarResult(logic.leaderCar.index);
+
+                const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+                const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
+                const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
+
+                // const glm::vec2 borderPos(640, 360);
+                // const glm::vec2 borderSize(150, 100);
+                // const glm::vec2 borderPos(690, 460);
+                const glm::vec2 borderPos(690, 320);
+                const glm::vec2 borderSize(100, 60);
+
+                stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
+                const unsigned int layerCount = 3; // <= hardcoded :(
+                const unsigned int layerSize = 5; // <= hardcoded :(
+
+                std::vector<glm::vec2> allPositions;
+                allPositions.reserve(layerCount * layerSize);
+                for (unsigned int ii = 0; ii < layerCount; ++ii)
+                    for (unsigned int jj = 0; jj < layerSize; ++jj)
+                    {
+                        glm::vec2 currPos = borderPos;
+
+                        currPos.x += borderSize.x * ((float(jj) + 0.5f) / layerSize);
+                        currPos.y += borderSize.y * ((float(ii) + 0.5f) / layerCount);
+
+                        allPositions.push_back(currPos);
+                    }
+
+                glm::vec2 eyeSize = {19, 19};
+
+                const glm::vec3 vertices[4] = {
+                    { +eyeSize.x * 0.5f, +eyeSize.y * 0.5f, 0.0f },
+                    { -eyeSize.x * 0.5f, +eyeSize.y * 0.5f, 0.0f },
+                    { +eyeSize.x * 0.5f, -eyeSize.y * 0.5f, 0.0f },
+                    { -eyeSize.x * 0.5f, -eyeSize.y * 0.5f, 0.0f },
+                };
+                std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
+
+                for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
+                {
+                    const auto& position = allPositions[ii];
+
+                    stackRenderer.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
+
+                    glm::vec3 color = glm::mix(redColor, greenColor, leader.eyeSensors[ii].value);
+
+                    glm::vec3 tmpPos = glm::vec3(position, 0.0f);
+
+                    stackRenderer.pushTriangle(vertices[indices[0]] + tmpPos, vertices[indices[1]] + tmpPos, vertices[indices[2]] + tmpPos, color);
+                    stackRenderer.pushTriangle(vertices[indices[3]] + tmpPos, vertices[indices[4]] + tmpPos, vertices[indices[5]] + tmpPos, color);
+                }
+
+                // logic.simulation->getBestGenome().id;
+                // stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+            }
+        }
+        // show leader car's eye here
         //
 
         stackRenderer.flush();
