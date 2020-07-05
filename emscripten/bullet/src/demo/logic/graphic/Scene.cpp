@@ -236,8 +236,8 @@ void Scene::updateMatrices()
             glm::vec3 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
 
             if (// do not update the third person camera if not in a correct state
-                (StateManager::get()->getState() != StateManager::States::eRunning ||
-                 StateManager::get()->getState() != StateManager::States::eStartGeneration) &&
+                (StateManager::get()->getState() == StateManager::States::eRunning ||
+                 StateManager::get()->getState() == StateManager::States::eStartGeneration) &&
                 // do not update the third person camera if too close from the target
                 glm::distance(carOrigin, camera.thirdPersonCenter) > 0.1f)
             {
