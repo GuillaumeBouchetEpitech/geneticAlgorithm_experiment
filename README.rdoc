@@ -4,7 +4,7 @@
 A simple introduction to how genetic algorithm works.
 
 
-== Online demo 3D (new and fast, C++/WebAssembly with webworkers)
+== Online demo 3D (new and fast, C++/WebAssembly with pthread/webworkers)
 
 http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html
 
