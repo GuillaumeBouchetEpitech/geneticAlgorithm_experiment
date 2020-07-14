@@ -116,6 +116,7 @@ SRC_NATIVE=			$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
 						$(DIR_SRC)/demo/logic/sounds/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
@@ -138,6 +139,7 @@ SRC_WEB_PTHREAD=	$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
 						$(DIR_SRC)/demo/logic/sounds/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
@@ -159,6 +161,7 @@ SRC_WEB_MAIN=	$(wildcard \
 						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
 						$(DIR_SRC)/demo/logic/sounds/*.cpp \
+						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 						$(DIR_SRC)/demo/simulation/*.cpp \
 						$(DIR_SRC)/demo/simulation/logic/*.cpp \
 						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
@@ -270,15 +273,13 @@ ifeq ($(build_platform),native_pthread)
 						\
 						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
-						# -lopenal \
-						# -lSDL2_mixer \
-
 	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
 						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
 						-lEGL \
 						-pthread \
+						-lopenal \
 						\
 						$(NAME_BULLET_DYNAMICS) \
 						$(NAME_BULLET_COLLISION) \
@@ -293,12 +294,12 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	CXX=em++
 	AR=emar
 
-
 	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
 					-s USE_SDL_IMAGE=2 \
 					-s SDL2_IMAGE_FORMATS='["png"]' \
-					-s GL_PREINITIALIZED_CONTEXT=1
+					-s GL_PREINITIALIZED_CONTEXT=1 \
+					-s ASYNCIFY
 
 	### those flags are left unused on purpose
 	### the "SharedArrayBuffer" feature is disabled everywhere for secutiry reasons (since Jan 2018)
@@ -314,13 +315,13 @@ else ifeq ($(build_platform),web_wasm_pthread)
 							\
 							-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
 
-							# -lopenal \
-
 	LDFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
 							\
 							$(NAME_BULLET_DYNAMICS) \
 							$(NAME_BULLET_COLLISION) \
-							$(NAME_BULLET_LINEARMATH)
+							$(NAME_BULLET_LINEARMATH) \
+							\
+							-lopenal
 
 
 	# value must be a power of 2 (16, 32, 64, etc.).
@@ -367,7 +368,7 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	# value must be a power of 2 (16, 32, 64, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
-	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=64Mb
+	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=128Mb
 
 	# assets loading
 	# COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
@@ -387,12 +388,11 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
-						# -lopenal \
-
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1
+
 
 	FLAGS_WEB_WORKER=	-s BUILD_AS_WORKER=1 \
 						\
@@ -410,7 +410,9 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-I$(DIR_BULLET)
 
 	LDFLAGS_WEB_MAIN=	$(COMMON_LDFLAGS) \
-						$(FLAGS_WEB_MAIN)
+						$(FLAGS_WEB_MAIN) \
+						\
+						-lopenal
 
 	LDFLAGS_WEB_WORKER=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_WORKER)

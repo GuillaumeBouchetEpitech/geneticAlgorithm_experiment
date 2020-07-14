@@ -42,29 +42,49 @@ void Data::initialiseSimulation()
 
             const auto& genome = genomes[ii];
             const auto& carData = simulation.getCarResult(ii);
-            auto& currentTrail = carsTrails.allTrails[ii];
 
             // record the trail index with it's genome id in the lookup map
             carsTrails.genomeIndexMap[genome.id] = ii;
 
-            // reset the old data
-            currentTrail.clear();
+            {
+                // auto& currentTrail = carsTrails.allTrails[ii];
 
-            // initialise the new data
+                // // reset the old data
+                // currentTrail.clear();
 
-            // this part elevate the origin of the car along it's up axis
-            // => without it the origin is on the ground
-            const glm::vec3 chassisHeight(0.0f, 0.0f, 1.0f);
-            glm::mat4 carTransform = glm::translate(carData.transform, chassisHeight);
-            glm::vec4 carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                // // initialise the new data
 
-            currentTrail.push_back(carOrigin);
+                // // this part elevate the origin of the car along it's up axis
+                // // => without it the origin is on the ground
+                // const glm::vec3 chassisHeight(0.0f, 0.0f, 1.0f);
+                // glm::mat4 carTransform = glm::translate(carData.transform, chassisHeight);
+                // glm::vec4 carOrigin = carTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                // currentTrail.push_back(carOrigin);
+            }
+
+            {
+                auto& currentTrail = logic.carsTrails.allWheelsTrails[ii];
+
+                // reset the old data
+
+                for (unsigned int ii = 0; ii < currentTrail.wheels.size(); ++ii)
+                    currentTrail.wheels[ii].clear();
+
+                // initialise the new data
+
+                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                {
+                    glm::vec4 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                    currentTrail.wheels[ii].push_back(wheelOrigin);
+                }
+            }
         }
     });
 
     logic.simulation->setOnGenerationStepCallback([this]() {
 
-        auto& carsTrails = logic.carsTrails;
         const auto& simulation = *logic.simulation;
         unsigned int totalCars = simulation.getTotalCars();
 
@@ -74,16 +94,29 @@ void Data::initialiseSimulation()
         {
             const auto& carData = simulation.getCarResult(ii);
 
-            // this part elevate the origin of the car along it's up axis
-            // => without it the origin is on the ground
-            glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
-
-            auto& currentTrail = carsTrails.allTrails[ii];
-
             if (carData.isAlive == false)
                 continue;
 
-            currentTrail.push_back(carPos);
+            {
+                // // this part elevate the origin of the car along it's up axis
+                // // => without it the origin is on the ground
+                // glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
+
+                // auto& currentTrail = logic.carsTrails.allTrails[ii];
+
+                // currentTrail.push_back(carPos);
+            }
+
+            {
+                auto& currentWheelsTrail = logic.carsTrails.allWheelsTrails[ii];
+
+                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                {
+                    glm::vec3 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                    currentWheelsTrail.wheels[ii].push_back(wheelOrigin);
+                }
+            }
         }
 
         auto& cores = logic.cores;
@@ -117,7 +150,7 @@ void Data::initialiseSimulation()
         glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
 
         graphic.particleManager.emitParticles(carPos);
-        // sounds.soundManager.playRandom();
+        sounds.soundManager.playRandom(carPos);
     });
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) {
@@ -153,24 +186,38 @@ void Data::initialiseSimulation()
         if (!isSmarter)
             return;
 
-        auto& carsTrails = logic.carsTrails;
         const auto& bestGenome = logic.simulation->getBestGenome();
+        auto& carsTrails = logic.carsTrails;
+        auto& currentTrailIndex = carsTrails.currentTrailIndex;
 
         auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
         if (it == carsTrails.genomeIndexMap.end())
             return;
 
         auto dataIndex = it->second;
-        const auto& bestCarTrailData = carsTrails.allTrails[dataIndex];
 
-        auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
-        auto& currentTrailIndex = carsTrails.currentTrailIndex;
-        auto& currentCarTrail = bestCarsTrails[currentTrailIndex];
+        {
+            // const auto& bestCarTrailData = carsTrails.allTrails[dataIndex];
+            // auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
+            // auto& currentCarTrail = bestCarsTrails[currentTrailIndex];
 
-        currentCarTrail.updateBuffer(0, bestCarTrailData);
-        currentCarTrail.setPrimitiveCount(bestCarTrailData.size());
+            // currentCarTrail.updateBuffer(0, bestCarTrailData);
+            // currentCarTrail.setPrimitiveCount(bestCarTrailData.size());
+        }
 
-        currentTrailIndex = (currentTrailIndex + 1) % bestCarsTrails.size();
+        {
+            const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
+            auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
+            auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
+
+            for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+            {
+                currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
+                currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
+            }
+        }
+
+        currentTrailIndex = (currentTrailIndex + 1) % 5; // <= hardcoded
     });
 }
 

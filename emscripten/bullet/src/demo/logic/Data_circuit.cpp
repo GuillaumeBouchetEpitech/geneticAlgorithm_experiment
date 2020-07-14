@@ -117,14 +117,6 @@ void Data::initialiseCircuit()
         }
     };
 
-    // unsigned int layerInput = 15;
-    // // std::vector<unsigned int> layerHidden = { 10, 5 };
-    // std::vector<unsigned int> layerHidden = { 5 };
-    // // std::vector<unsigned int> layerHidden = {};
-    // unsigned int layerOutput = 2;
-    // bool useBiasNeuron = true;
-
-    // logic.annTopology.init(layerInput, layerHidden, layerOutput, useBiasNeuron);
     logic.annTopology.init({15, 5, 2}, /*useBiasNeuron =*/ true);
 
 #if defined D_WEB_BUILD
@@ -156,7 +148,7 @@ void Data::initialiseCircuit()
 
 
 
-    boundaries.center = (boundaries.min - boundaries.max) * 0.5f;
+    boundaries.center = boundaries.min + (boundaries.max - boundaries.min) * 0.5f;
 
     graphic.camera.center = boundaries.center;
     graphic.camera.distance = 200.0f;
@@ -166,65 +158,19 @@ void Data::initialiseCircuit()
 
     {
         auto& wireframes = graphic.geometries.wireframes;
-        auto& shader = *graphic.shaders.wireframes;
 
-        {
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f }
-            };
-
-            Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
-
-            //
-
-            wireframes.circuitSkelton.initialise(shader, geomDef);
-            wireframes.circuitSkelton.updateBuffer(0, skeletonVertices);
-            wireframes.circuitSkelton.setPrimitiveCount(skeletonVertices.size());
-        }
-
-        //
-
-        {
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f }
-            };
-
-            Geometry::t_def geomDef = { { vboGeometry }, GL_LINE_STRIP };
-
-            auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
-
-            bestCarsTrails.resize(5);
-            for (auto& geometry : bestCarsTrails)
-                geometry.initialise(shader, geomDef);
-        }
-
+        wireframes.circuitSkelton.updateBuffer(0, skeletonVertices);
+        wireframes.circuitSkelton.setPrimitiveCount(skeletonVertices.size());
     }
 
     //
 
     {
         auto& animatedCircuit = graphic.geometries.animatedCircuit;
-        auto& shader = *graphic.shaders.animatedCircuit;
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f, 0 },
-            { "a_color",    Geometry::e_attrType::eVec3f, 3 },
-            { "a_normal",   Geometry::e_attrType::eVec3f, 6 },
-            { "a_index",    Geometry::e_attrType::eFloat, 9 },
-        };
-
-        Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
-
-        //
-
-        animatedCircuit.ground.initialise(shader, geomDef);
         animatedCircuit.ground.updateBuffer(0, groundVertices);
         animatedCircuit.ground.setPrimitiveCount(groundVertices.size());
 
-        animatedCircuit.walls.initialise(shader, geomDef);
         animatedCircuit.walls.updateBuffer(0, wallsVertices);
         animatedCircuit.walls.setPrimitiveCount(wallsVertices.size());
 

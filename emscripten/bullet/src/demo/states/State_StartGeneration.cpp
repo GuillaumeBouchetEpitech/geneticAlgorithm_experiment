@@ -53,11 +53,13 @@ void State_StartGeneration::handleEvent(const SDL_Event& event)
             mouse.position = { event.motion.x, event.motion.y };
             mouse.delta = { 0, 0 };
             mouse.tracking = true;
+            mouse.wasTracking = false;
             break;
         }
         case SDL_MOUSEBUTTONUP:
         {
             mouse.tracking = false;
+            mouse.wasTracking = true;
             break;
         }
         case SDL_MOUSEMOTION:
@@ -103,10 +105,38 @@ void State_StartGeneration::update(int deltaTime)
 
             if (mouse.tracking)
             {
-                camera.rotations.x += float(mouse.delta.x) * 0.5f * elapsedTime;
-                camera.rotations.y -= float(mouse.delta.y) * 0.5f * elapsedTime;
+                // camera.rotations.x -= float(mouse.delta.x) * 0.5f * elapsedTime;
+                // camera.rotations.y += float(mouse.delta.y) * 0.5f * elapsedTime;
+                camera.rotations.theta -= float(mouse.delta.x) * 0.5f * elapsedTime;
+                camera.rotations.phi += float(mouse.delta.y) * 0.5f * elapsedTime;
                 mouse.delta = { 0, 0 };
             }
+
+            { // button sound on/off (hacky: to refactor)
+
+                if (!mouse.tracking && mouse.wasTracking)
+                {
+                    mouse.wasTracking = false;
+
+                    const auto& hudText = graphic.hudText;
+                    const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
+
+                    const glm::vec2 center(720, 125);
+                    const glm::vec2 size(10.0f * letterSize.x, 4.0f * letterSize.y);
+                    const glm::vec2 hsize = size * 0.5f;
+
+                    if (mouse.position.x > center.x - hsize.x &&
+                        mouse.position.x < center.x + hsize.x &&
+                        mouse.position.y > center.y - hsize.y &&
+                        mouse.position.y < center.y + hsize.y)
+                    {
+                        bool isEnabled = data.sounds.soundManager.isEnabled();
+                        data.sounds.soundManager.setEnabled(!isEnabled);
+                    }
+                }
+
+            } // button sound on/off (hacky: to refactor)
+
         }
 
         { // keyboard event(s)
@@ -135,15 +165,25 @@ void State_StartGeneration::update(int deltaTime)
                 keys[SDLK_s]
             );
 
+            // if (rotateLeft)
+            //     camera.rotations.x -= 2.0f * elapsedTime;
+            // else if (rotateRight)
+            //     camera.rotations.x += 2.0f * elapsedTime;
+
+            // if (rotateUp)
+            //     camera.rotations.y += 1.0f * elapsedTime;
+            // else if (rotateDown)
+            //     camera.rotations.y -= 1.0f * elapsedTime;
+
             if (rotateLeft)
-                camera.rotations.x -= 2.0f * elapsedTime;
+                camera.rotations.theta -= 2.0f * elapsedTime;
             else if (rotateRight)
-                camera.rotations.x += 2.0f * elapsedTime;
+                camera.rotations.theta += 2.0f * elapsedTime;
 
             if (rotateUp)
-                camera.rotations.y += 1.0f * elapsedTime;
+                camera.rotations.phi += 1.0f * elapsedTime;
             else if (rotateDown)
-                camera.rotations.y -= 1.0f * elapsedTime;
+                camera.rotations.phi -= 1.0f * elapsedTime;
 
 #if not defined D_WEB_WEBWORKER_BUILD
 
@@ -156,6 +196,10 @@ void State_StartGeneration::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
+    }
+
+    {
+        data.sounds.soundManager.setListener(camera.eye, camera.front, {0, 0, 1});
     }
 
     { // camera tracking
@@ -173,7 +217,7 @@ void State_StartGeneration::update(int deltaTime)
             // this part elevate where the camera look along the up axis of the car
             // => without it the camera look at the ground
             // => mostly useful for a shoulder camera (TODO)
-            glm::vec4   carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
+            glm::vec4   carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
             cameraNextCenter = glm::vec3(carOrigin);
         }

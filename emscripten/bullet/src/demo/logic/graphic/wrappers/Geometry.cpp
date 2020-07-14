@@ -162,5 +162,8 @@ void Geometry::setPrimitiveCount(unsigned int count)
 
 void Geometry::setInstancedCount(unsigned int count)
 {
+    if (!_isInstanced)
+        D_THROW(std::runtime_error, "geometry not instanced");
+
     _instanceCount = count;
 }

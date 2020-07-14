@@ -13,7 +13,8 @@
 #include "graphic/wrappers/Texture.hpp"
 
 // #include "sounds/Sound.hpp"
-#include "sounds/SoundManager.hpp"
+// #include "sounds/SoundManager.hpp"
+#include "sounds/OpenALSoundManager.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
 // #include "demo/simulation/SimulationFacade.hpp"
@@ -25,6 +26,7 @@
 #include <string>
 #include <list>
 #include <map>
+#include <array>
 
 class Shader;
 
@@ -68,18 +70,40 @@ public:
         {
             glm::vec2 viewportSize = { 800.0f, 600.0f };
 
-            glm::vec2 rotations = { 0.75f, 1.15f };
+            // glm::vec2 rotations = { -2.5f, 0.5f };
+            struct t_rotations
+            {
+                float theta = -2.5f;
+                float phi = 0.5f;
+            }
+            rotations;
+
             glm::vec3 center = { 0.0f, 0.0f, 0.0f };
             float distance = 0.0f;
+
+            glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
+            glm::vec3 front = { 1.0f, 0.0f, 0.0f };
 
             glm::vec3 thirdPersonCenter = { 0.0f, 0.0f, 0.0f };
 
             struct t_matricesData
             {
-                glm::mat4 projection;
-                glm::mat4 modelView;
-                glm::mat4 scene;
-                glm::mat4 thirdPerson;
+                struct t_scene
+                {
+                    glm::mat4 projection;
+                    glm::mat4 modelView;
+                    glm::mat4 composed;
+                }
+                scene;
+
+                struct t_thirdPerson
+                {
+                    glm::mat4 projection;
+                    glm::mat4 modelView;
+                    glm::mat4 composed;
+                }
+                thirdPerson;
+
                 glm::mat4 hud;
             }
             matrices;
@@ -123,7 +147,13 @@ public:
             struct t_wireframes
             {
                 Geometry circuitSkelton;
-                std::vector<Geometry> bestCarsTrails;
+                // std::vector<Geometry> bestCarsTrails;
+
+                struct t_wheelsTrail
+                {
+                    std::array<Geometry, 4> wheels;
+                };
+                std::vector<t_wheelsTrail> bestNewCarsTrails;
             }
             wireframes;
 
@@ -169,6 +199,7 @@ public:
     struct t_sound
     {
         // SoundManager soundManager;
+        OpenALSoundManager soundManager;
     }
     sounds;
 
@@ -233,7 +264,13 @@ public:
         struct t_carsTrails
         {
             std::map<unsigned int, unsigned int> genomeIndexMap;
-            std::vector<std::vector<glm::vec3>> allTrails;
+            // std::vector<std::vector<glm::vec3>> allTrails;
+
+            struct t_wheelsTrail
+            {
+                std::array<std::vector<glm::vec3>, 4> wheels;
+            };
+            std::vector<t_wheelsTrail> allWheelsTrails;
 
             unsigned int currentTrailIndex = 0;
         }
@@ -282,6 +319,7 @@ public:
             glm::ivec2 position = {0, 0};
             glm::ivec2 delta = {0, 0};
             bool tracking = false;
+            bool wasTracking = false;
         }
         mouse;
     }

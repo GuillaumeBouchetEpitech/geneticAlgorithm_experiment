@@ -55,7 +55,8 @@ void Data::initialise()
     initialiseCircuit();
     initialiseSimulation();
 
-    logic.carsTrails.allTrails.resize(logic.simulation->getTotalCars());
+    // logic.carsTrails.allTrails.resize(logic.simulation->getTotalCars());
+    logic.carsTrails.allWheelsTrails.resize(logic.simulation->getTotalCars());
 
     {
         std::stringstream sstr;

@@ -24,9 +24,9 @@ class WebWorkersSimulation
     : public AbstactSimulation
 {
 private:
-    enum class WorkerRequest
+    enum class WorkerRequest : unsigned int
     {
-        eNone,
+        eNone = 0,
         eWorkersLoading,
         eResetAndProcess,
         eProcess,

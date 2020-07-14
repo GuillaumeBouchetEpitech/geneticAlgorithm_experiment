@@ -21,7 +21,7 @@ private:
     friend PhysicWorld;
 
 private:
-    enum e_Wheels
+    enum class e_Wheels: unsigned int
     {
         eFrontLeft = 0,
         eFrontRight,

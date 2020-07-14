@@ -10,6 +10,10 @@
 #include <algorithm>
 #include <chrono>
 
+#if defined __EMSCRIPTEN__
+#   include <emscripten.h>
+#endif
+
 Producer::Producer(unsigned int totalCores)
 {
     // clamp [1..8]
@@ -95,11 +99,27 @@ void Producer::quit()
 
 void Producer::waitUntilAllCompleted()
 {
+#if defined __EMSCRIPTEN__
+
+    /**
+     * Sad hack to make the pthread simulation works without warnings :(.
+     *
+     * Done because of this:
+     * => https://emscripten.org/docs/porting/pthreads.html#blocking-on-the-main-browser-thread
+     */
+
+    while (!_plannedTasks.empty() || !_runningTasks.empty())
+        emscripten_sleep(1); // this will yield
+
+#else
+
     auto lock = _waitAllTask.makeScopedLock();
 
     // make the (main) thread wait for all tasks to be completed
     while (!_plannedTasks.empty() || !_runningTasks.empty())
         _waitAllTask.waitUntilNotified(lock);
+
+#endif
 }
 
 //

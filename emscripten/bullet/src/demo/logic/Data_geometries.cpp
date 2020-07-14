@@ -364,4 +364,68 @@ void Data::initialiseGeometries()
 
     } // model geometry
 
+    { // wireframe
+
+        auto& wireframes = graphic.geometries.wireframes;
+        auto& shader = *graphic.shaders.wireframes;
+
+        {
+            Geometry::t_def::t_vbo vboGeometry;
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f }
+            };
+
+            Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
+
+            wireframes.circuitSkelton.initialise(shader, geomDef);
+        }
+
+        //
+
+        {
+            Geometry::t_def::t_vbo vboGeometry;
+            vboGeometry.attrs = {
+                { "a_position", Geometry::e_attrType::eVec3f }
+            };
+
+            Geometry::t_def geomDef = { { vboGeometry }, GL_LINE_STRIP };
+
+            {
+                // auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
+
+                // bestCarsTrails.resize(5);
+                // for (auto& geometry : bestCarsTrails)
+                //     geometry.initialise(shader, geomDef);
+            }
+
+            {
+                auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
+
+                bestNewCarsTrails.resize(5);
+                for (auto& wheelsTrail : bestNewCarsTrails)
+                    for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
+                        wheelsTrail.wheels[ii].initialise(shader, geomDef);
+            }
+        }
+
+    } // wireframe
+
+    { // animatedCircuit geometry
+
+        auto& animatedCircuit = graphic.geometries.animatedCircuit;
+        auto& shader = *graphic.shaders.animatedCircuit;
+
+        Geometry::t_def::t_vbo vboGeometry;
+        vboGeometry.attrs = {
+            { "a_position", Geometry::e_attrType::eVec3f, 0 },
+            { "a_color",    Geometry::e_attrType::eVec3f, 3 },
+            { "a_normal",   Geometry::e_attrType::eVec3f, 6 },
+            { "a_index",    Geometry::e_attrType::eFloat, 9 },
+        };
+
+        Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
+        animatedCircuit.ground.initialise(shader, geomDef);
+        animatedCircuit.walls.initialise(shader, geomDef);
+
+    } // animatedCircuit geometry
 }

@@ -3,7 +3,36 @@ const http  = require('http');
 const url   = require('url');
 const fs    = require('fs');
 const path  = require('path');
+const os    = require('os');
 const port  = parseInt(process.argv[2] || 9000, 10);
+
+const listIpAddress = () => {
+
+    const ifaces = os.networkInterfaces();
+
+    Object.keys(ifaces).forEach((ifname) => {
+
+        let alias = 0;
+
+        ifaces[ifname].forEach((iface) => {
+
+            // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+            if ('IPv4' !== iface.family || iface.internal !== false)
+                return;
+
+            if (alias >= 1) {
+                // this single interface has multiple ipv4 addresses
+                console.log(ifname + ':' + alias, iface.address);
+            }
+            else {
+                // this interface has only one ipv4 adress
+                console.log(ifname, iface.address);
+            }
+
+            ++alias;
+        });
+    });
+}
 
 // maps file extention to MIME typere
 const formatsMap = new Map([
@@ -56,6 +85,8 @@ const onFileRequest = (req, res) => {
 const onListen = () =>  {
     console.log(`Server listening at http://127.0.0.1:${port}/`);
     console.log(` => http://127.0.0.1:${port}/dist/index.html`);
+
+    listIpAddress();
 }
 
 http.createServer(onFileRequest).listen(port, onListen);

@@ -10,9 +10,6 @@
 
 #include "./utilities/sceneToScreen.hpp"
 
-
-// #include "thirdparty/GLMath.hpp"
-
 #include <memory> // <= make_unique
 #include <cstring> // <= std::memcpy
 
@@ -47,9 +44,9 @@ void Scene::renderSimple()
 
     { // scene
 
-        const auto& sceneMatrix = Data::get().graphic.camera.matrices.scene;
+        const auto& scene = Data::get().graphic.camera.matrices.scene;
 
-        Scene::renderWireframesGeometries(sceneMatrix, false); // circuit only
+        Scene::renderWireframesGeometries(scene.composed, false); // circuit only
     }
 
     { // HUD
@@ -137,18 +134,18 @@ void Scene::renderAll()
         auto& data = Data::get();
         auto& logic = data.logic;
         const auto& leaderCar = logic.leaderCar;
-        const auto& camera = data.graphic.camera;
+        auto& camera = data.graphic.camera;
         const auto& matrices = camera.matrices;
 
-        if (!Data::get().logic.isAccelerated)
-            Scene::renderLeadingCarSensors(matrices.scene);
+        camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
 
-        Scene::renderParticles(matrices.scene);
-        Scene::renderCars(matrices.scene);
-        // Scene::renderCircuitSkeleton();
-        // Scene::renderBestCarsTrails();
-        Scene::renderWireframesGeometries(matrices.scene);
-        Scene::renderAnimatedCircuit(matrices.scene);
+        if (!Data::get().logic.isAccelerated)
+            Scene::renderLeadingCarSensors(matrices.scene.composed);
+
+        Scene::renderParticles(matrices.scene.composed);
+        Scene::renderCars(matrices.scene.composed);
+        Scene::renderWireframesGeometries(matrices.scene.composed);
+        Scene::renderAnimatedCircuit(matrices.scene.composed);
 
         // valid leading car?
         if (!logic.isAccelerated && leaderCar.index >= 0)
@@ -167,11 +164,13 @@ void Scene::renderAll()
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            Scene::renderLeadingCarSensors(matrices.thirdPerson);
-            Scene::renderParticles(matrices.thirdPerson);
-            Scene::renderCars(matrices.thirdPerson);
-            Scene::renderWireframesGeometries(matrices.thirdPerson);
-            Scene::renderAnimatedCircuit(matrices.thirdPerson);
+            camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
+
+            Scene::renderLeadingCarSensors(matrices.thirdPerson.composed);
+            Scene::renderParticles(matrices.thirdPerson.composed);
+            Scene::renderCars(matrices.thirdPerson.composed);
+            Scene::renderWireframesGeometries(matrices.thirdPerson.composed);
+            Scene::renderAnimatedCircuit(matrices.thirdPerson.composed);
 
             glDisable(GL_SCISSOR_TEST);
             glViewport(0, 0, viewportSize.x, viewportSize.y);
@@ -201,33 +200,55 @@ void Scene::updateMatrices()
         const float fovy = glm::radians(70.0f);
         const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
 
-        matrices.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
-        glm::mat4 viewMatrix = glm::mat4(1.0f); // <= identity matrix
+        matrices.scene.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+
+        // clamp vertical rotation [-PI..0]
+        // camera.rotations.y = std::max(-3.14f, std::min(0.0f, camera.rotations.y));
+
+        // glm::mat4 viewMatrix = glm::mat4(1.0f); // <= identity matrix
+        // viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
+        // viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(1.0f, 0.0f, 0.0f));
+        // viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // clamp vertical rotation [-pi/2..+pi/2]
+        const float verticalLimit = 3.14f * 0.5f;
+        // camera.rotations.y = std::max(-verticalLimit, std::min(verticalLimit, camera.rotations.y));
+        camera.rotations.phi = std::max(-verticalLimit, std::min(verticalLimit, camera.rotations.phi));
+
+        camera.eye = {
+            // camera.distance * std::cos(camera.rotations.y) * std::cos(camera.rotations.x),
+            // camera.distance * std::cos(camera.rotations.y) * std::sin(camera.rotations.x),
+            // camera.distance * std::sin(camera.rotations.y),
+            camera.distance * std::cos(camera.rotations.phi) * std::cos(camera.rotations.theta),
+            camera.distance * std::cos(camera.rotations.phi) * std::sin(camera.rotations.theta),
+            camera.distance * std::sin(camera.rotations.phi),
+        };
+        glm::vec3 center = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
+        glm::mat4 viewMatrix = glm::lookAt(camera.eye, center, upAxis);
+
+        camera.front = glm::normalize(center - camera.eye);
+
         glm::mat4 modelMatrix = glm::mat4(1.0f); // <= identity matrix
+        modelMatrix = glm::translate(modelMatrix, -camera.center);
 
-        // clamp vertical rotation [0..PI]
-        camera.rotations.y = std::max(0.0f, std::min(3.14f, camera.rotations.y));
+        matrices.scene.modelView = viewMatrix * modelMatrix;
 
-        viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
-        viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(-1.0f, 0.0f, 0.0f));
-        viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
+        matrices.scene.composed = matrices.scene.projection * matrices.scene.modelView;
 
-        modelMatrix = glm::translate(modelMatrix, camera.center);
-
-        matrices.modelView = viewMatrix * modelMatrix;
-
-        matrices.scene = matrices.projection * matrices.modelView;
-
-        camera.frustumCulling.calculateFrustum(matrices.projection, matrices.modelView);
+        // camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
     }
 
     { // third person
+
+        matrices.thirdPerson.projection = matrices.scene.projection;
 
         if (logic.leaderCar.index < 0)
         {
             camera.thirdPersonCenter = camera.center;
 
-            matrices.thirdPerson = matrices.scene;
+            matrices.thirdPerson.modelView = matrices.scene.modelView;
+            matrices.thirdPerson.composed = matrices.scene.composed;
         }
         else
         {
@@ -249,9 +270,9 @@ void Scene::updateMatrices()
             glm::vec3 eye = camera.thirdPersonCenter;
             glm::vec3 center = carOrigin;
             glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
-            glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
+            matrices.thirdPerson.modelView = glm::lookAt(eye, center, upAxis);
 
-            matrices.thirdPerson = matrices.projection * viewMatrix;
+            matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.modelView;
         }
     }
 
@@ -301,7 +322,6 @@ void Scene::renderLeadingCarSensors(const glm::mat4& sceneMatrix)
 
     shader.bind();
 
-    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -357,23 +377,7 @@ void Scene::renderCars(const glm::mat4& sceneMatrix)
 {
     // instanced geometrie(s)
 
-    // const auto& graphic = Data::get().graphic;
     auto& graphic = Data::get().graphic;
-    // const auto& sceneMatrix = graphic.camera.matrices.scene;
-
-    {
-        // const auto& shader = *graphic.shaders.instanced;
-        // const auto& instanced = graphic.geometries.instanced;
-
-        // shader.bind();
-
-        // GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        // glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
-
-        // instanced.chassis.render();
-
-        // instanced.wheels.render();
-    }
 
     {
         graphic.shaders.model->bind();
@@ -401,8 +405,8 @@ void Scene::renderCars(const glm::mat4& sceneMatrix)
 
             glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
 
-            const glm::vec3 leaderColor = {1, 1, 1};
-            const glm::vec3 lifeColor = {0, 1, 0};
+            const glm::vec3 leaderColor(1, 1, 1);
+            const glm::vec3 lifeColor(0, 1, 0);
             const glm::vec3 deathColor(1.0f, 0.0f, 0.0f);
 
             for (unsigned int ii = 0; ii < totalCars; ++ii)
@@ -410,6 +414,15 @@ void Scene::renderCars(const glm::mat4& sceneMatrix)
                 const auto& carData = simulation.getCarResult(ii);
 
                 if (!carData.isAlive)
+                    continue;
+
+                //
+                // 3d clipping
+
+                glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
+                glm::vec4 carOrigin = chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                if (!graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 5.0f))
                     continue;
 
                 //
@@ -422,9 +435,7 @@ void Scene::renderCars(const glm::mat4& sceneMatrix)
                 //
                 // transforms
 
-                glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
                 modelsChassisMatrices.push_back({ chassisTransform, color });
-
                 for (const auto& wheelTransform : carData.wheelsTransform)
                     modelWheelsMatrices.push_back({ wheelTransform, color });
             }
@@ -453,7 +464,6 @@ void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails
 
     shader.bind();
 
-    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -467,8 +477,12 @@ void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails
     {
         glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        for (const auto& geometry : wireframes.bestCarsTrails)
-            geometry.render();
+        // for (const auto& geometry : wireframes.bestCarsTrails)
+        //     geometry.render();
+
+        for (const auto& currentCarTrail : wireframes.bestNewCarsTrails)
+            for (const auto& wheelTrail : currentCarTrail.wheels)
+                wheelTrail.render();
     }
 }
 
@@ -484,7 +498,6 @@ void Scene::renderAnimatedCircuit(const glm::mat4& sceneMatrix)
 
     shader.bind();
 
-    // const auto& sceneMatrix = graphic.camera.matrices.scene;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
@@ -515,7 +528,8 @@ void Scene::renderHUD()
 
     glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
 
-    {
+    { // texts
+
         const auto& shader = *graphic.shaders.hudText;
         auto&       textRenderer = graphic.hudText.renderer;
         const auto& simulation = *logic.simulation;
@@ -799,8 +813,53 @@ void Scene::renderHUD()
         // big titles
         //
 
+        { // volume
+
+            const auto& hudText = graphic.hudText;
+            const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
+
+            const float scale = 1.0f;
+            // const float messageHeight = 4.0f * 16.0f * scale;
+            const float messageHeight = 4.0f * letterSize.y * scale;
+            const float messageHalfHeight = messageHeight * 0.25f;
+            float messageSize = 0.0f;
+            std::stringstream sstr;
+
+            if (data.sounds.soundManager.isEnabled())
+            {
+                sstr
+                    << "*-------*" << std::endl
+                    << "| SOUND |" << std::endl
+                    << "|ENABLED|" << std::endl
+                    << "*-------*";
+
+                messageSize = 9.0f;
+            }
+            else
+            {
+                sstr
+                    << "*--------*" << std::endl
+                    << "| SOUND  |" << std::endl
+                    << "|DISABLED|" << std::endl
+                    << "*--------*";
+
+                messageSize = 10.0f;
+            }
+
+            const float messageHalfSize = messageSize * 0.5f * scale;
+
+            const glm::vec2 center(720, 125);
+
+            std::string message = sstr.str();
+            // textRenderer.push({ 770 - float(message.size()) / 2 * 16 * scale, 500 - 8 * scale }, message, scale);
+            // textRenderer.push({ 720 - messageSize * 0.5f * 16 * scale, 600 - 125 + messageHalfHeight }, message, scale);
+            textRenderer.push({ center.x - messageHalfSize * letterSize.x, 600 - center.y + messageHalfHeight }, message, scale);
+
+        } // volume
+
         textRenderer.render();
-    }
+
+    } // texts
 
     /**/
     { // graphics
@@ -889,8 +948,6 @@ void Scene::renderHUD()
         // show progresses here
         {
             const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-            // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
-            // const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
 
             const glm::vec2 borderPos(10, 400);
             const glm::vec2 borderSize(150, 75);
@@ -922,11 +979,8 @@ void Scene::renderHUD()
                     };
 
                     stackRenderer.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
-                    // stackRenderer.pushLine(borderPos, borderPos + borderSize, redColor);
                 }
             }
-
-            // stackRenderer.pushLine(borderPos, borderPos + borderSize, redColor);
         }
         // show progresses here
         //
@@ -942,10 +996,8 @@ void Scene::renderHUD()
                 // bestGenome.weights;
 
                 const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-                // const glm::vec3 redColor(0.75f, 0.0f, 0.0f);
                 const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
 
-                // const glm::vec2 borderPos(690, 350);
                 const glm::vec2 borderPos(690, 215);
                 const glm::vec2 borderSize(100, 100);
 
@@ -1006,9 +1058,6 @@ void Scene::renderHUD()
                 const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
                 const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-                // const glm::vec2 borderPos(640, 360);
-                // const glm::vec2 borderSize(150, 100);
-                // const glm::vec2 borderPos(690, 460);
                 const glm::vec2 borderPos(690, 320);
                 const glm::vec2 borderSize(100, 60);
 

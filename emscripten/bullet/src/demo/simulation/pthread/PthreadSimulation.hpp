@@ -27,7 +27,8 @@ private:
      * need multiple physic worlds so that we can divide the
      * physical raycasting among the different threads
      */
-    std::vector<PhysicWorld>                    _physicWorlds;
+    std::vector<PhysicWorld> _physicWorlds;
+
     std::vector<AbstactSimulation::t_coreState> _coreStates;
 
     unsigned int _genomesPerCore = 0;
