@@ -25,7 +25,17 @@ WorkerProducer::WorkerProducer(const t_def& def)
     {
         _message.clear();
         _message << char(messages::client::eLoadWorker);
-        _message << def.filename;
+
+        // _message << def.filename;
+
+        _message << def.startTransform.position;
+        _message << def.startTransform.quaternion;
+
+        _message << int(def.knots.size());
+
+        for (const auto& knot : def.knots)
+            _message << knot.left << knot.right << knot.minDistance << knot.color;
+
         _message << def.genomesPerCore;
 
         const auto& topology = def.neuralNetworkTopology;

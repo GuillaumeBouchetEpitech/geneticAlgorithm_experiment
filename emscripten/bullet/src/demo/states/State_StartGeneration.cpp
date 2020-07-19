@@ -15,16 +15,12 @@ void State_StartGeneration::enter()
 {
     // D_MYLOG("step");
 
-    // Data::get().logic.isPaused = true;
-
-    Data::get().logic.state.countdown = 750;
+    Data::get().logic.state.countdown = 750; // wait 0.75 seconds
 }
 
 void State_StartGeneration::leave()
 {
     // D_MYLOG("step");
-
-    // Data::get().logic.isPaused = false;
 }
 
 //
@@ -105,8 +101,6 @@ void State_StartGeneration::update(int deltaTime)
 
             if (mouse.tracking)
             {
-                // camera.rotations.x -= float(mouse.delta.x) * 0.5f * elapsedTime;
-                // camera.rotations.y += float(mouse.delta.y) * 0.5f * elapsedTime;
                 camera.rotations.theta -= float(mouse.delta.x) * 0.5f * elapsedTime;
                 camera.rotations.phi += float(mouse.delta.y) * 0.5f * elapsedTime;
                 mouse.delta = { 0, 0 };
@@ -137,7 +131,7 @@ void State_StartGeneration::update(int deltaTime)
 
             } // button sound on/off (hacky: to refactor)
 
-        }
+        } // mouse/touch event(s)
 
         { // keyboard event(s)
 
@@ -165,16 +159,6 @@ void State_StartGeneration::update(int deltaTime)
                 keys[SDLK_s]
             );
 
-            // if (rotateLeft)
-            //     camera.rotations.x -= 2.0f * elapsedTime;
-            // else if (rotateRight)
-            //     camera.rotations.x += 2.0f * elapsedTime;
-
-            // if (rotateUp)
-            //     camera.rotations.y += 1.0f * elapsedTime;
-            // else if (rotateDown)
-            //     camera.rotations.y -= 1.0f * elapsedTime;
-
             if (rotateLeft)
                 camera.rotations.theta -= 2.0f * elapsedTime;
             else if (rotateRight)
@@ -190,7 +174,7 @@ void State_StartGeneration::update(int deltaTime)
             logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
 #endif
-        }
+        } // keyboard event(s)
 
     } // events
 

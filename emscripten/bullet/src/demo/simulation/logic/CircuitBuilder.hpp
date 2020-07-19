@@ -19,17 +19,6 @@ public:
         glm::vec4 quaternion;
     };
 
-public:
-    typedef std::function<void(const t_vec3Array& vertices,
-                               const t_indices& indices)> t_callbackNoNormals;
-
-    typedef std::function<void(const t_vec3Array& vertices,
-                               const t_vec3Array& colors,
-                               const t_vec3Array& normals,
-                               const t_indices& indices)> t_callbackNormals;
-
-private:
-
     struct t_knot
     {
         glm::vec3 left;
@@ -40,12 +29,22 @@ private:
     typedef std::vector<t_knot> t_knots;
     typedef t_knot t_circuitVertex;
 
+public:
+    typedef std::function<void(const t_vec3Array& vertices,
+                               const t_indices& indices)> t_callbackNoNormals;
+
+    typedef std::function<void(const t_vec3Array& vertices,
+                               const t_vec3Array& colors,
+                               const t_vec3Array& normals,
+                               const t_indices& indices)> t_callbackNormals;
+
 private:
     t_startTransform _startTransform;
     t_knots _knots;
 
 public:
     void load(const std::string& filename);
+    void load(const t_startTransform& startTransform, const t_knots& knots);
 
 public:
     void generateSkeleton(t_callbackNoNormals onSkeletonPatch);
@@ -53,5 +52,6 @@ public:
 
 public:
     const t_startTransform& getStartTransform() const;
+    const t_knots& getKnots() const;
 
 };

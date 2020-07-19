@@ -103,8 +103,6 @@ void State_Running::update(int deltaTime)
 
             if (mouse.tracking)
             {
-                // camera.rotations.x -= float(mouse.delta.x) * 0.5f * elapsedTime;
-                // camera.rotations.y += float(mouse.delta.y) * 0.5f * elapsedTime;
                 camera.rotations.theta -= float(mouse.delta.x) * 0.5f * elapsedTime;
                 camera.rotations.phi += float(mouse.delta.y) * 0.5f * elapsedTime;
                 mouse.delta = { 0, 0 };
@@ -135,7 +133,7 @@ void State_Running::update(int deltaTime)
 
             } // button sound on/off (hacky: to refactor)
 
-        }
+        } // mouse/touch event(s)
 
         { // keyboard event(s)
 
@@ -163,16 +161,6 @@ void State_Running::update(int deltaTime)
                 keys[SDLK_s]
             );
 
-            // if (rotateLeft)
-            //     camera.rotations.x -= 2.0f * elapsedTime;
-            // else if (rotateRight)
-            //     camera.rotations.x += 2.0f * elapsedTime;
-
-            // if (rotateUp)
-            //     camera.rotations.y += 1.0f * elapsedTime;
-            // else if (rotateDown)
-            //     camera.rotations.y -= 1.0f * elapsedTime;
-
             if (rotateLeft)
                 camera.rotations.theta -= 2.0f * elapsedTime;
             else if (rotateRight)
@@ -189,7 +177,7 @@ void State_Running::update(int deltaTime)
             logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
 #endif
-        }
+        } // keyboard event(s)
 
     } // events
 
@@ -226,31 +214,35 @@ void State_Running::update(int deltaTime)
 
         if (logic.isAccelerated)
         {
-            leaderCar.timeout = 0.0f;
+            leaderCar.timeoutUntilNewLeader = 0.0f;
             leaderCar.index = -1;
+            leaderCar.totalTimeAsLeader = 0.0f;
         }
         else
         {
             cameraNextDistance = 40.0f;
 
-            if (leaderCar.timeout > 0)
-                leaderCar.timeout -= elapsedTime;
+            if (leaderCar.timeoutUntilNewLeader > 0)
+                leaderCar.timeoutUntilNewLeader -= elapsedTime;
+
+            leaderCar.totalTimeAsLeader += elapsedTime;
 
             if (// no leader yet
                 leaderCar.index == -1 ||
                 // the current leader is dead
                 simulation.getCarResult(leaderCar.index).isAlive == false ||
                 // time to check for a potentially better leader
-                leaderCar.timeout <= 0.0f)
+                leaderCar.timeoutUntilNewLeader <= 0.0f)
             {
                 // reset the timeout
-                leaderCar.timeout = 1.0f; // <= one second
+                leaderCar.timeoutUntilNewLeader = 1.0f; // <= one second
 
                 // refresh the currently best car
 
                 unsigned int totalCars = simulation.getTotalCars();
 
                 float bestFitness = 0.0f;
+                int oldLeaderCarIndex = leaderCar.index;
                 leaderCar.index = -1;
                 for (unsigned int ii = 0; ii < totalCars; ++ii)
                 {
@@ -266,9 +258,12 @@ void State_Running::update(int deltaTime)
                     bestFitness = carData.groundIndex;
                     leaderCar.index = ii;
                 }
+
+                if (leaderCar.index >= 0 && leaderCar.index != oldLeaderCarIndex)
+                    leaderCar.totalTimeAsLeader = 0.0f; // new leader
             }
 
-            { // frustum dybamic camera distance
+            { // frustum dynamic camera distance
 
                 // unsigned int carsAlive = 0;
 
@@ -352,7 +347,7 @@ void State_Running::update(int deltaTime)
                 //     cameraNextDistance = bestDistance;
                 // }
 
-            } // frustum dybamic camera distance
+            } // frustum dynamic camera distance
 
 
         }
@@ -365,12 +360,9 @@ void State_Running::update(int deltaTime)
             // this part elevate where the camera look along the up axis of the car
             // => without it the camera look at the ground
             // => mostly useful for a shoulder camera (TODO)
-            // glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, -1.0f);
             glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
             cameraNextCenter = glm::vec3(carOrigin);
-
-            // D_MYLOG("pos: " << cameraNextCenter.x << "/" << cameraNextCenter.y << "/" << cameraNextCenter.z);
         }
 
         //

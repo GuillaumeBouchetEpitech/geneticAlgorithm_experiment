@@ -162,6 +162,9 @@ void Car::collideGroundSensor()
     if (hasHitGround)
     {
         _groundSensor.far = params.result.impactPoint;
+
+        _groundSensor.value = glm::length(_groundSensor.far - _groundSensor.near) / k_groundMaxRange;
+
         int hasHitGroundIndex = params.result.impactIndex;
 
         // is this the next "ground geometry" index?

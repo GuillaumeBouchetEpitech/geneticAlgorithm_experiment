@@ -163,6 +163,13 @@ void CircuitBuilder::load(const std::string& filename)
     }
 }
 
+void CircuitBuilder::load(const CircuitBuilder::t_startTransform& startTransform,
+                          const CircuitBuilder::t_knots& knots)
+{
+    _startTransform = startTransform;
+    _knots = knots;
+}
+
 //
 //
 
@@ -449,4 +456,9 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 const CircuitBuilder::t_startTransform& CircuitBuilder::getStartTransform() const
 {
     return _startTransform;
+}
+
+const CircuitBuilder::t_knots& CircuitBuilder::getKnots() const
+{
+    return _knots;
 }

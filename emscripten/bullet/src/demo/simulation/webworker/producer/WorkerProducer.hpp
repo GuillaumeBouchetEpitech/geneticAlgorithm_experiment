@@ -8,8 +8,8 @@
 #endif
 
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
-
 #include "demo/simulation/webworker/common.hpp"
+#include "demo/simulation/logic/CircuitBuilder.hpp"
 
 #include "../message/MessageBuffer.hpp"
 #include "../message/MessageView.hpp"
@@ -29,7 +29,9 @@ class WorkerProducer
 public:
     struct t_def
     {
-        std::string filename;
+        // std::string filename;
+        CircuitBuilder::t_startTransform startTransform;
+        CircuitBuilder::t_knots knots;
         unsigned int genomesPerCore = 0;
         NeuralNetworkTopology neuralNetworkTopology;
 
@@ -47,17 +49,17 @@ private:
         eCount
     };
 
-    std::bitset<e_Status::eCount>   _flags;
+    std::bitset<e_Status::eCount> _flags;
 
-    AbstactSimulation::t_coreState  _coreState;
+    AbstactSimulation::t_coreState _coreState;
 
-    t_carsData  _carsData;
+    t_carsData _carsData;
 
     // typedef std::pair<glm::vec3, glm::vec3>  t_contact;
     // typedef std::vector<t_contact>           t_contacts;
     // t_contacts                               _contacts;
 
-    MessageBuffer   _message;
+    MessageBuffer _message;
 
 public:
     WorkerProducer(const t_def& def);

@@ -92,6 +92,16 @@ MessageView& MessageView::operator >>(unsigned int& data)
     return read(&data, sizeof(data));
 }
 
+MessageView& MessageView::operator >>(long& data)
+{
+    return read(&data, sizeof(data));
+}
+
+MessageView& MessageView::operator >>(unsigned long& data)
+{
+    return read(&data, sizeof(data));
+}
+
 MessageView& MessageView::operator >>(float& data)
 {
     return read(&data, sizeof(data));
@@ -120,6 +130,11 @@ MessageView& MessageView::operator >>(std::string& data)
 MessageView& MessageView::operator >>(glm::vec3& data)
 {
     return read(&data.x, sizeof(glm::vec3));
+}
+
+MessageView& MessageView::operator >>(glm::vec4& data)
+{
+    return read(&data.x, sizeof(glm::vec4));
 }
 
 MessageView& MessageView::operator >>(glm::mat4& data)

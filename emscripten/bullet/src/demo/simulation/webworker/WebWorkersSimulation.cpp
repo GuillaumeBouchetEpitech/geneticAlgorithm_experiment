@@ -11,13 +11,11 @@
 
 void WebWorkersSimulation::initialise(const t_def& def)
 {
-    {
-        CircuitBuilder  circuit;
-        circuit.load(def.filename);
+    CircuitBuilder circuit;
+    circuit.load(def.filename);
 
-        circuit.generateSkeleton(def.onSkeletonPatch);
-        circuit.generate(def.onNewGroundPatch, def.onNewWallPatch);
-    }
+    circuit.generateSkeleton(def.onSkeletonPatch);
+    circuit.generate(def.onNewGroundPatch, def.onNewWallPatch);
 
     //
 
@@ -36,7 +34,9 @@ void WebWorkersSimulation::initialise(const t_def& def)
     //
 
     WorkerProducer::t_def workerDef;
-    workerDef.filename = def.filename;
+    // workerDef.filename = def.filename;
+    workerDef.startTransform = circuit.getStartTransform();
+    workerDef.knots = circuit.getKnots();
     workerDef.genomesPerCore = _genomesPerCore;
     workerDef.neuralNetworkTopology = def.neuralNetworkTopology;
 

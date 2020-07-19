@@ -36,10 +36,13 @@ public:
     MessageView& operator >>(unsigned short& data);
     MessageView& operator >>(int& data);
     MessageView& operator >>(unsigned int& data);
+    MessageView& operator >>(long& data);
+    MessageView& operator >>(unsigned long& data);
     MessageView& operator >>(float& data);
     MessageView& operator >>(double& data);
     MessageView& operator >>(std::string& data);
     MessageView& operator >>(glm::vec3& data);
+    MessageView& operator >>(glm::vec4& data);
     MessageView& operator >>(glm::mat4& data);
 
 };

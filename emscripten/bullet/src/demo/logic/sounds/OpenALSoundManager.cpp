@@ -137,7 +137,9 @@ void OpenALSoundManager::load(const std::string& filename)
     else if (channels == 2 && bitsPerSample == 16)
         format = AL_FORMAT_STEREO16;
     else
-        D_THROW(std::runtime_error, "ERROR: unrecognised wave format: " << channels << " channels, " << bitsPerSample << " bps");
+        D_THROW(std::runtime_error, "ERROR: unrecognised wave format"
+                << ", channels=" << channels
+                << ", bitsPerSample=" << bitsPerSample);
 
     alBufferData(newBuffer, format, soundData, size, sampleRate);
     D_CHECK_AL_ERRORS();

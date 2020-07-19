@@ -332,8 +332,10 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	# assets loading
 	# => This cannot be used with pthread (TypeError: Browser.BlobBuilder is not a constructor)
 	# LDFLAGS_WEB_PTHREAD+=	--use-preload-plugins --preload-file ./assets/
+	# => This works
+	LDFLAGS_WEB_PTHREAD+=	--preload-file ./assets/
 	# => This works but make the index.js heavier
-	LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
+	# LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
 
 	# hacky hack to make the multithreading works with wasm
 	LDFLAGS_WEB_PTHREAD+=	-Wl,--shared-memory,--no-check-features
@@ -370,9 +372,9 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
 	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=128Mb
 
-	# assets loading
+	# # assets loading
 	# COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
-	COMMON_LDFLAGS+=	--embed-file ./assets/
+	# # COMMON_LDFLAGS+=	--embed-file ./assets/
 
 	COMMON_LDFLAGS+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 
@@ -382,17 +384,16 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	CXXFLAGS_COMMON=	$(BUILD_FLAG) \
 						-std=c++17 \
 						-Wall -W -Wextra -Wunused \
-						-I$(DIR_SRC) \
-						\
-						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"' \
-						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
-						-DD_WORKER_MAIN='"onMessage"'
+						-I$(DIR_SRC)
 
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
 						-s USE_SDL_IMAGE=2 \
 						-s SDL2_IMAGE_FORMATS='["png"]' \
-						-s GL_PREINITIALIZED_CONTEXT=1
-
+						-s GL_PREINITIALIZED_CONTEXT=1 \
+						\
+						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"' \
+						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
+						-DD_WORKER_MAIN='"onMessage"'
 
 	FLAGS_WEB_WORKER=	-s BUILD_AS_WORKER=1 \
 						\
@@ -412,7 +413,9 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	LDFLAGS_WEB_MAIN=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_MAIN) \
 						\
-						-lopenal
+						-lopenal \
+						\
+						--use-preload-plugins --preload-file ./assets/
 
 	LDFLAGS_WEB_WORKER=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_WORKER)

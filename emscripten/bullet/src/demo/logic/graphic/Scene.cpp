@@ -202,23 +202,11 @@ void Scene::updateMatrices()
 
         matrices.scene.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
 
-        // clamp vertical rotation [-PI..0]
-        // camera.rotations.y = std::max(-3.14f, std::min(0.0f, camera.rotations.y));
-
-        // glm::mat4 viewMatrix = glm::mat4(1.0f); // <= identity matrix
-        // viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -camera.distance));
-        // viewMatrix = glm::rotate(viewMatrix, camera.rotations.y, glm::vec3(1.0f, 0.0f, 0.0f));
-        // viewMatrix = glm::rotate(viewMatrix, camera.rotations.x, glm::vec3(0.0f, 0.0f, 1.0f));
-
         // clamp vertical rotation [-pi/2..+pi/2]
         const float verticalLimit = 3.14f * 0.5f;
-        // camera.rotations.y = std::max(-verticalLimit, std::min(verticalLimit, camera.rotations.y));
         camera.rotations.phi = std::max(-verticalLimit, std::min(verticalLimit, camera.rotations.phi));
 
         camera.eye = {
-            // camera.distance * std::cos(camera.rotations.y) * std::cos(camera.rotations.x),
-            // camera.distance * std::cos(camera.rotations.y) * std::sin(camera.rotations.x),
-            // camera.distance * std::sin(camera.rotations.y),
             camera.distance * std::cos(camera.rotations.phi) * std::cos(camera.rotations.theta),
             camera.distance * std::cos(camera.rotations.phi) * std::sin(camera.rotations.theta),
             camera.distance * std::sin(camera.rotations.phi),
@@ -227,7 +215,8 @@ void Scene::updateMatrices()
         glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
         glm::mat4 viewMatrix = glm::lookAt(camera.eye, center, upAxis);
 
-        camera.front = glm::normalize(center - camera.eye);
+        // camera.front = glm::normalize(center - camera.eye);
+        camera.front = glm::normalize(camera.eye - center);
 
         glm::mat4 modelMatrix = glm::mat4(1.0f); // <= identity matrix
         modelMatrix = glm::translate(modelMatrix, -camera.center);
@@ -235,8 +224,6 @@ void Scene::updateMatrices()
         matrices.scene.modelView = viewMatrix * modelMatrix;
 
         matrices.scene.composed = matrices.scene.projection * matrices.scene.modelView;
-
-        // camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
     }
 
     { // third person
@@ -590,156 +577,54 @@ void Scene::renderHUD()
             textRenderer.push({ 8, 8 + 2 * 16 }, str, 1.0f);
         }
 
-        {
-            /**
+        { // advertise  a new leader
+
+            if (logic.leaderCar.index >= 0 &&
+                logic.leaderCar.totalTimeAsLeader < 1.0f)
             {
-                const auto& camera = graphic.camera;
+                const auto& scene = graphic.camera.matrices.scene;
 
-                glm::vec3 screenCoord;
+                const auto& carData = simulation.getCarResult(logic.leaderCar.index);
 
-                const unsigned int totalCars = logic.cores.totalCars;
-                for (unsigned int ii = 0; ii < totalCars; ++ii)
+                if (// we don't advertise a dead leader
+                    carData.isAlive &&
+                    // we don't advertise an early leader
+                    carData.fitness > 5.0f &&
+                    // we don't advertise a dying leader
+                    carData.groundSensor.value < 0.5f)
                 {
-                    const auto& carData = simulation.getCarResult(ii);
+                    const glm::vec3 carPos = carData.transform * glm::vec4(0, 0, 0, 1);
 
-                    if (!carData.isAlive || carData.fitness < 5.0f)
-                        continue;
+                    glm::vec3 screenCoord;
 
-                    const bool isLeader = (logic.leaderCar.index == int(ii));
-                    if (!isLeader)
-                        continue;
-
-                    const glm::vec3 pos = carData.transform * glm::vec4(0,0,0,1);
+                    const glm::vec2 viewportPos(0, 0); // hardcoded :(
+                    const glm::vec2 viewportSize(800, 600); // hardcoded :(
 
                     sceneToScreen(
-                        pos,
-                        camera.matrices.modelView, camera.matrices.projection,
-                        glm::vec2(0,0), glm::vec2(800, 600),
+                        carPos,
+                        scene.modelView,
+                        scene.projection,
+                        viewportPos,
+                        viewportSize,
                         screenCoord
                     );
 
-                    if (screenCoord.z > 1.0f)
-                        continue;
-
-                    // std::stringstream sstr;
-
-                    // sstr
-                    //     << "id" << ii << std::endl
-                    //     << carData.life << std::endl
-                    //     << carData.fitness;
-
-                    // std::string str = sstr.str();
-
-                    // textRenderer.push({ screenCoord.x, screenCoord.y }, str, 0.75f);
-
-                    textRenderer.push({ screenCoord.x + 50, screenCoord.y + 50 }, "Leader", 1.0f);
-
+                    if (screenCoord.z < 1.0f) // <= is false when out of range
                     {
+                        glm::vec2 textPos = { screenCoord.x + 50, screenCoord.y + 50 };
+
+                        textRenderer.push(textPos, "NEW LEADER", 1.1f);
+
                         auto& stackRenderer = graphic.stackRenderer;
-                        const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-
-                        stackRenderer.pushLine(screenCoord, { screenCoord.x + 50, screenCoord.y + 50 }, whiteColor);
+                        stackRenderer.pushLine(screenCoord, textPos, {1, 1, 1});
                     }
-
                 }
             }
 
-            // const auto& camera = graphic.camera;
+        } // advertise  a new leader
 
-            // glm::vec3 screenCoord;
+        { // show cores status
 
-            // bool result = sceneToScreen(
-            //     glm::vec3(0, 0, 0),
-            //     camera.modelViewMatrix, camera.matrices.projection,
-            //     glm::vec2(0,0), glm::vec2(800, 600),
-            //     screenCoord
-            // );
-
-            // if (screenCoord.z < 1.0f)
-            // {
-            //     std::stringstream sstr;
-
-            //     sstr
-            //         << "result: " << result << std::endl
-            //         << "coord:" << std::endl
-            //         << screenCoord.x << std::endl
-            //         << screenCoord.y << std::endl
-            //         << screenCoord.z;
-
-            //     std::string str = sstr.str();
-
-            //     textRenderer.push({ screenCoord.x, screenCoord.y }, str, 1.0f);
-            // }
-            //*/
-        }
-
-        /**
-        {
-            std::stringstream sstr;
-
-            for (unsigned int ii = 0; ii < logic.cores.statesData.size(); ++ii)
-            {
-                const auto& coreState = logic.cores.statesData[ii];
-
-                sstr << "worker: " << ii;
-
-                for (int jj = 0; jj < 6; ++jj)
-                    sstr << std::endl;
-
-#if defined D_WEB_WEBWORKER_BUILD
-                // sstr << std::setw(3) << coreState.delta << "ms";
-                if (coreState.delta < 1000)
-                {
-                    sstr
-                        << std::setw(4)
-                        << coreState.delta << "ms";
-                }
-                else
-                {
-                    sstr
-                        << std::fixed << std::setprecision(1)
-                        << std::setw(4)
-                        << (float(coreState.delta) / 1000) << "s ";
-                }
-#else
-                if (coreState.delta < 1000)
-                {
-                    sstr
-                        << std::setw(4)
-                        << coreState.delta << "us";
-                }
-                else if (coreState.delta < 1000000)
-                {
-                    sstr
-                        << std::fixed << std::setprecision(1)
-                        << std::setw(4)
-                        << (float(coreState.delta) / 1000) << "ms";
-                }
-                else
-                {
-                    sstr
-                        << std::fixed << std::setprecision(1)
-                        << std::setw(4)
-                        << (float(coreState.delta) / 1000000) << "s";
-                }
-#endif
-
-                sstr
-                    << " "
-                    << std::setw(2)
-                    << coreState.genomesAlive << "car(s)"
-                    << std::endl
-                    << std::endl;
-            }
-
-            std::string str = sstr.str();
-
-            // textRenderer.push({ 8, 8 + 15 * 16 }, str, 1.0f);
-            textRenderer.push({ 16, 8 + 30 * 16 }, str, 1.0f);
-        }
-        //*/
-
-        {
             std::stringstream sstr;
 
             for (unsigned int ii = 0; ii < logic.cores.statesData.size(); ++ii)
@@ -773,45 +658,44 @@ void Scene::renderHUD()
             std::string str = sstr.str();
 
             textRenderer.push({ 8, 8 + 23 * 16 }, str, 1.0f);
-        }
 
-        //
-        // big titles
+        } // show cores status
+
+        { // big titles
 
 #if defined D_WEB_WEBWORKER_BUILD
-        if (StateManager::get()->getState() == StateManager::States::eWorkersLoading)
-        {
-            float scale = 2.0f;
+            if (StateManager::get()->getState() == StateManager::States::eWorkersLoading)
+            {
+                float scale = 2.0f;
 
-            std::stringstream sstr;
-            sstr
-                << "WEB WORKERS" << std::endl
-                << "  LOADING  " << std::endl;
-            std::string message = sstr.str();
+                std::stringstream sstr;
+                sstr
+                    << "WEB WORKERS" << std::endl
+                    << "  LOADING  " << std::endl;
+                std::string message = sstr.str();
 
-            textRenderer.push({ 400 - 5 * 16 * scale, 300 - 8 * scale }, message, scale);
-        }
+                textRenderer.push({ 400 - 5 * 16 * scale, 300 - 8 * scale }, message, scale);
+            }
 #endif
 
-        if (StateManager::get()->getState() == StateManager::States::ePaused)
-        {
-            float scale = 5.0f;
-            textRenderer.push({ 400 - 3 * 16 * scale, 300 - 8 * scale }, "PAUSED", scale);
-        }
+            if (StateManager::get()->getState() == StateManager::States::ePaused)
+            {
+                float scale = 5.0f;
+                textRenderer.push({ 400 - 3 * 16 * scale, 300 - 8 * scale }, "PAUSED", scale);
+            }
 
-        if (StateManager::get()->getState() == StateManager::States::eStartGeneration)
-        {
-            float scale = 2.0f;
+            if (StateManager::get()->getState() == StateManager::States::eStartGeneration)
+            {
+                float scale = 2.0f;
 
-            std::stringstream sstr;
-            sstr << "Generation: " << simulation.getGenerationNumber();
-            std::string message = sstr.str();
+                std::stringstream sstr;
+                sstr << "Generation: " << simulation.getGenerationNumber();
+                std::string message = sstr.str();
 
-            textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
-        }
+                textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
+            }
 
-        // big titles
-        //
+        } // big titles
 
         { // volume
 
@@ -819,7 +703,6 @@ void Scene::renderHUD()
             const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
 
             const float scale = 1.0f;
-            // const float messageHeight = 4.0f * 16.0f * scale;
             const float messageHeight = 4.0f * letterSize.y * scale;
             const float messageHalfHeight = messageHeight * 0.25f;
             float messageSize = 0.0f;
@@ -851,8 +734,6 @@ void Scene::renderHUD()
             const glm::vec2 center(720, 125);
 
             std::string message = sstr.str();
-            // textRenderer.push({ 770 - float(message.size()) / 2 * 16 * scale, 500 - 8 * scale }, message, scale);
-            // textRenderer.push({ 720 - messageSize * 0.5f * 16 * scale, 600 - 125 + messageHalfHeight }, message, scale);
             textRenderer.push({ center.x - messageHalfSize * letterSize.x, 600 - center.y + messageHalfHeight }, message, scale);
 
         } // volume
@@ -861,7 +742,6 @@ void Scene::renderHUD()
 
     } // texts
 
-    /**/
     { // graphics
 
         auto& stackRenderer = graphic.stackRenderer;
@@ -874,8 +754,6 @@ void Scene::renderHUD()
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
         const glm::vec3    whiteColor(1.0f, 1.0f, 1.0f);
-        // const glm::vec3    redColor(0.75f, 0.0f, 0.0f);
-        // const glm::vec3    greenColor(0.0f, 0.75f, 0.0f);
 
         const glm::vec2 borderPos(8, 18 * 16 + 7);
         const glm::vec2 borderSize(150, 48);
@@ -930,8 +808,8 @@ void Scene::renderHUD()
         }
 
         stackRenderer.flush();
-    }
-    //*/
+
+    } // graphics
 
     /**/
     {
@@ -1009,11 +887,10 @@ void Scene::renderHUD()
                     topologyArray.push_back(hidden);
                 topologyArray.push_back(logic.annTopology.getOutput());
 
+                std::vector<std::vector<glm::vec2>> allNeuronPos;
+                allNeuronPos.resize(topologyArray.size());
 
-                std::vector<std::vector<glm::vec2>> allPositions;
-                allPositions.resize(topologyArray.size());
-
-                glm::vec2 neuronSize = {7, 7};
+                glm::vec2 neuronSize(7, 7);
 
                 for (unsigned int ii = 0; ii < topologyArray.size(); ++ii)
                 {
@@ -1022,26 +899,26 @@ void Scene::renderHUD()
                     glm::vec2 currPos = borderPos;
                     currPos.y += borderSize.y - borderSize.y / topologyArray.size() * (float(ii) + 0.5f);
 
-                    allPositions[ii].reserve(actualSize);
+                    allNeuronPos[ii].reserve(actualSize);
 
                     for (unsigned int jj = 0; jj < actualSize; ++jj)
                     {
                         currPos.x += borderSize.x / (actualSize + 1);
 
-                        allPositions[ii].push_back(currPos);
+                        allNeuronPos[ii].push_back(currPos);
                     }
                 }
 
                 // draw neurons
-                for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
-                    for (unsigned int jj = 0; jj < allPositions[ii].size(); ++jj)
-                        stackRenderer.pushRectangle(allPositions[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
+                for (unsigned int ii = 0; ii < allNeuronPos.size(); ++ii)
+                    for (unsigned int jj = 0; jj < allNeuronPos[ii].size(); ++jj)
+                        stackRenderer.pushRectangle(allNeuronPos[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
 
                 // draw connections
-                for (unsigned int ii = 1; ii < allPositions.size(); ++ii)
-                    for (unsigned int jj = 0; jj < allPositions[ii - 1].size(); ++jj)
-                        for (unsigned int kk = 0; kk < allPositions[ii].size(); ++kk)
-                            stackRenderer.pushLine(allPositions[ii - 1][jj], allPositions[ii][kk], greenColor);
+                for (unsigned int ii = 1; ii < allNeuronPos.size(); ++ii)
+                    for (unsigned int jj = 0; jj < allNeuronPos[ii - 1].size(); ++jj)
+                        for (unsigned int kk = 0; kk < allNeuronPos[ii].size(); ++kk)
+                            stackRenderer.pushLine(allNeuronPos[ii - 1][jj], allNeuronPos[ii][kk], greenColor);
             }
         }
         // show topology here
@@ -1063,8 +940,14 @@ void Scene::renderHUD()
 
                 stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
-                const unsigned int layerCount = 3; // <= hardcoded :(
+                //
+                //
+
                 const unsigned int layerSize = 5; // <= hardcoded :(
+                const unsigned int layerCount = data.logic.annTopology.getInput() / layerSize;
+
+                //
+                //
 
                 std::vector<glm::vec2> allPositions;
                 allPositions.reserve(layerCount * layerSize);

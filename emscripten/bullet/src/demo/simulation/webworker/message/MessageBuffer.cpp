@@ -83,6 +83,16 @@ MessageBuffer& MessageBuffer::operator <<(unsigned int data)
     return append(&data, sizeof(data));
 }
 
+MessageBuffer& MessageBuffer::operator <<(long data)
+{
+    return append(&data, sizeof(data));
+}
+
+MessageBuffer& MessageBuffer::operator <<(unsigned long data)
+{
+    return append(&data, sizeof(data));
+}
+
 MessageBuffer& MessageBuffer::operator <<(float data)
 {
     return append(&data, sizeof(data));
@@ -110,6 +120,11 @@ MessageBuffer& MessageBuffer::operator <<(const std::string& data)
 MessageBuffer& MessageBuffer::operator <<(const glm::vec3& data)
 {
     return append(&data.x, sizeof(glm::vec3));
+}
+
+MessageBuffer& MessageBuffer::operator <<(const glm::vec4& data)
+{
+    return append(&data.x, sizeof(glm::vec4));
 }
 
 MessageBuffer& MessageBuffer::operator <<(const glm::mat4& data)

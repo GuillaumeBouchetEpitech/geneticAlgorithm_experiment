@@ -256,8 +256,9 @@ public:
 
         struct t_leaderCarData
         {
-            float timeout = 0;
+            float timeoutUntilNewLeader = 0;
             int index = -1;
+            float totalTimeAsLeader = 0;
         }
         leaderCar;
 

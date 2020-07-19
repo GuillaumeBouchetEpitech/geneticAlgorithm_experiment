@@ -28,10 +28,13 @@ public:
     MessageBuffer& operator <<(unsigned short data);
     MessageBuffer& operator <<(int data);
     MessageBuffer& operator <<(unsigned int data);
+    MessageBuffer& operator <<(long data);
+    MessageBuffer& operator <<(unsigned long data);
     MessageBuffer& operator <<(float data);
     MessageBuffer& operator <<(double data);
     MessageBuffer& operator <<(const std::string& data);
     MessageBuffer& operator <<(const glm::vec3& data);
+    MessageBuffer& operator <<(const glm::vec4& data);
     MessageBuffer& operator <<(const glm::mat4& data);
 
 };

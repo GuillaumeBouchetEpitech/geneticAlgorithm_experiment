@@ -4,7 +4,7 @@
 #include "../ErrorHandler.hpp"
 
 #include <SDL2/SDL_image.h> // <= IMG_Init
-#include <SDL2/SDL_mixer.h> // <= Mix_OpenAudio
+// #include <SDL2/SDL_mixer.h> // <= Mix_OpenAudio
 
 #include <stdexcept>
 

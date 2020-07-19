@@ -126,7 +126,7 @@ void    TextRenderer::push(const glm::vec2& position,
                            const std::string& message,
                            float scale /*= 1.0f*/)
 {
-    const auto&    hudText = Data::get().graphic.hudText;
+    const auto& hudText = Data::get().graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
 
     glm::vec2 currPos = position;

@@ -68,7 +68,10 @@ void    WorkerConsumer::send()
 
 void    WorkerConsumer::initialiseSimulation(MessageView& message)
 {
-    std::string circuitFilename;
+    // std::string circuitFilename;
+    CircuitBuilder::t_startTransform startTransform;
+    CircuitBuilder::t_knots knots;
+
     bool                        isUsingBias = true;
     unsigned int                layerInput = 0;
     unsigned int                totalHidden = 0;
@@ -76,7 +79,28 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
     unsigned int                layerOutput = 0;
 
     {
-        message >> circuitFilename;
+        // message >> circuitFilename;
+
+        message >> startTransform.position;
+        message >> startTransform.quaternion;
+
+        int knotsLength = 0;
+        message >> knotsLength;
+
+        knots.reserve(knotsLength); // <= pre-allocate
+
+        for (int ii = 0; ii < knotsLength; ++ii)
+        {
+            CircuitBuilder::t_knot knot;
+
+            message >> knot.left >> knot.right >> knot.minDistance >> knot.color;
+
+            knots.push_back(knot);
+        }
+
+        //
+        //
+
         message >> _genomesPerCore;
 
         // extract neural network topology
@@ -119,7 +143,8 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
         };
 
         CircuitBuilder circuitBuilder;
-        circuitBuilder.load(circuitFilename);
+        // circuitBuilder.load(circuitFilename);
+        circuitBuilder.load(startTransform, knots);
         circuitBuilder.generate(onNewGroundPatch, onNewWallPatch);
 
         _startTransform = circuitBuilder.getStartTransform();
