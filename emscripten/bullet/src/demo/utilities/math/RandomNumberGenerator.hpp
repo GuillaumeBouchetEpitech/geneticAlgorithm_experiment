@@ -9,6 +9,7 @@ private:
 
 public:
     static void setSeed(int seed);
+    static void ensureRandomSeed();
 
 public:
     static int getValue();

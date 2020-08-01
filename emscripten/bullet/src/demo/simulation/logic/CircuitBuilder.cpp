@@ -255,7 +255,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     smoothedVertices.reserve(512); // <= ease the reallocation
 
     {
-        enum class e_SplineType: int
+        enum class e_SplineType: unsigned int
         {
             eLeftX = 0,
             eLeftY,
@@ -271,7 +271,6 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
             eCount,
         };
 
-        // 3 * vec3 = 9 (float)
         const unsigned int  dimension = toUnderlying(e_SplineType::eCount);
 
         const unsigned int  degree = 3;
@@ -328,7 +327,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
     const int patchesPerKnot = 6;
 
-    glm::vec3 prevNormal;
+    glm::vec3 prevNormal(0, 0, 0);
 
     for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerKnot)
     {
@@ -338,10 +337,11 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
         {
             t_vec3Array vertices;
             t_vec3Array normals;
-        }
-        ground,
-        leftWall,
-        rightWall;
+        };
+
+        t_circuitPatchData ground;
+        t_circuitPatchData leftWall;
+        t_circuitPatchData rightWall;
 
         t_vec3Array circuitPatchColors;
 
@@ -357,12 +357,12 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
              ++stepIndex)
         {
             const int currIndex = indicexIndex++ * 4;
-            indices.push_back(0 + currIndex);
-            indices.push_back(1 + currIndex);
-            indices.push_back(2 + currIndex);
-            indices.push_back(0 + currIndex);
-            indices.push_back(3 + currIndex);
-            indices.push_back(2 + currIndex);
+            indices.push_back(currIndex + 0);
+            indices.push_back(currIndex + 1);
+            indices.push_back(currIndex + 2);
+            indices.push_back(currIndex + 0);
+            indices.push_back(currIndex + 3);
+            indices.push_back(currIndex + 2);
 
             const auto& prevKnot = smoothedVertices[stepIndex - 1];
             const auto& currKnot = smoothedVertices[stepIndex];
@@ -377,7 +377,8 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
             glm::vec3 currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
 
-            if (stepIndex == 1) // <= for the first time
+            // for the first time
+            if (stepIndex == 1)
                 prevNormal = currNormal;
 
             glm::vec3 prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);

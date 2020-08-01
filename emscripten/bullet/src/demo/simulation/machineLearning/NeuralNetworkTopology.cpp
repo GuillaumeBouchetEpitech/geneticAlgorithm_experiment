@@ -31,13 +31,7 @@ void NeuralNetworkTopology::init(unsigned int input,
 
     //
 
-    unsigned int prev_layer_num_neuron = _input;
-    for (unsigned int num_neuron : _hiddens)
-    {
-        _totalWeights += prev_layer_num_neuron * num_neuron;
-        prev_layer_num_neuron = num_neuron;
-    }
-    _totalWeights += prev_layer_num_neuron * _output;
+    _computeTotalWeights();
 }
 
 void NeuralNetworkTopology::init(const std::initializer_list<unsigned int>& list,
@@ -67,6 +61,11 @@ void NeuralNetworkTopology::init(const std::initializer_list<unsigned int>& list
 
     //
 
+    _computeTotalWeights();
+}
+
+void NeuralNetworkTopology::_computeTotalWeights()
+{
     unsigned int prev_layer_num_neuron = _input;
     for (unsigned int num_neuron : _hiddens)
     {

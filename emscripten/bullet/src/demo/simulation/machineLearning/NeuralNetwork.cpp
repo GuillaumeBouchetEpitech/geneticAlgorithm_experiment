@@ -11,18 +11,35 @@
 
 #include <cmath>
 
-namespace /*anonymous*/
+namespace activations
 {
+
+// /**
+//  * it's a steeper sigmoid
+//  * => input:  [-x..x]
+//  * => output: [0..1]
+//  *
+//  * Notes:
+//  * => use "desmos.com" to visualise the curve
+//  * => link: https://www.desmos.com/calculator
+//  */
+// float steeperSigmoid(float x)
+// {
+//     return 1.0f / ( 1.0f + expf( -4.9f * x ) );
+// }
 
 /**
- * it's a steeper sigmoid
- * => input:  [-1, 1]
- * => output: [0, 1]
+ * it's a simple RELU function
+ * => input:  [-x, x]
+ * => output: [0, x]
+ *
+ * Notes:
+ * => faster learning curve than the sigmoid
+ * => link: https://stats.stackexchange.com/questions/126238/what-are-the-advantages-of-relu-over-sigmoid-function-in-deep-neural-networks
  */
-
-float customSigmoid(float x)
+float rectifiedLinearUnit(float x)
 {
-    return 1.0f / ( 1.0f + expf( -4.9f * x ) );
+    return std::max(0.0f, x);
 }
 
 };
@@ -73,9 +90,6 @@ void NeuralNetwork::process(const std::vector<float>& input,
                 << ", input=" << input.size()
                 << ", weights=" << requiredInputs);
 
-    output.clear();
-    output.reserve(_layerOutput.size());
-
     // process hidden layer
 
     std::vector<float>  hiddenInput = input; // raw copy
@@ -84,22 +98,21 @@ void NeuralNetwork::process(const std::vector<float>& input,
     // Cycle over all the neurons and sum their weights against the inputs.
     for (const t_layer& currentLayer : _layerHidden)
     {
-        hiddenOutput.clear();
-
-        processLayer(currentLayer, hiddenInput, hiddenOutput);
+        _processLayer(currentLayer, hiddenInput, hiddenOutput);
 
         hiddenInput = std::move(hiddenOutput); // move
     }
 
     // process output layer
 
-    processLayer(_layerOutput, hiddenInput, output);
+    _processLayer(_layerOutput, hiddenInput, output);
 }
 
-void NeuralNetwork::processLayer(const t_layer& layer,
-                                 const std::vector<float>& input,
-                                 std::vector<float>& output) const
+void NeuralNetwork::_processLayer(const t_layer& layer,
+                                  const std::vector<float>& input,
+                                  std::vector<float>& output) const
 {
+    output.clear();
     output.reserve(layer.size());
 
     // Cycle over all the neurons and sum their weights against the inputs.
@@ -109,16 +122,17 @@ void NeuralNetwork::processLayer(const t_layer& layer,
 
         // Sum the weights to the activation value.
 
-        float activation = 0.0f;
+        float sumValues = 0.0f;
         for (unsigned int jj = 0; jj < input.size(); ++jj)
-            activation += input[jj] * neuron.weights[jj];
+            sumValues += input[jj] * neuron.weights[jj];
 
         // Add the bias, it will act as a threshold value
 
         if (_topology.isUsingBias())
-            activation += 1.0f;
+            sumValues += 1.0f;
 
-        output.push_back(customSigmoid(activation));
+        // output.push_back(activations::steeperSigmoid(sumValues)); // slower
+        output.push_back(activations::rectifiedLinearUnit(sumValues)); // fast
     }
 
 }

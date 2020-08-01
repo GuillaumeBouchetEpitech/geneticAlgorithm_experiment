@@ -1,6 +1,9 @@
 
 #pragma once
 
+
+#include "./demo/utilities/types.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
@@ -14,16 +17,22 @@ class btSequentialImpulseConstraintSolver;
 class btDiscreteDynamicsWorld;
 class btIDebugDraw;
 
-#define D_GROUP_ALL     (-1)
-#define D_GROUP_SENSOR  (1 << 0)
-#define D_GROUP_GROUND  (1 << 1)
-#define D_GROUP_WALL    (1 << 2)
-#define D_GROUP_VEHICLE (1 << 3)
+enum class Groups : short
+{
+    all         = -1,
+    sensor      = (1 << 0),
+    ground      = (1 << 1),
+    wall        = (1 << 2),
+    vehicle     = (1 << 3),
+};
 
-#define D_MASK_SENSOR   (D_GROUP_GROUND | D_GROUP_WALL)
-#define D_MASK_GROUND   (D_GROUP_ALL)
-#define D_MASK_WALL     (D_GROUP_ALL)
-#define D_MASK_VEHICLE  (D_GROUP_GROUND)
+enum class Masks : short
+{
+    sensor      = toUnderlying(Groups::ground) | toUnderlying(Groups::wall),
+    ground      = toUnderlying(Groups::all),
+    wall        = toUnderlying(Groups::all),
+    vehicle     = toUnderlying(Groups::ground),
+};
 
 class PhysicTrimesh;
 class PhysicVehicle;
@@ -110,8 +119,8 @@ public:
 
         t_raycastParams(const glm::vec3& rayFrom,
                         const glm::vec3& rayTo,
-                        short group = D_GROUP_ALL,
-                        short mask = D_GROUP_ALL)
+                        short group = toUnderlying(Groups::all),
+                        short mask = toUnderlying(Groups::all))
             : from(rayFrom)
             , to(rayTo)
             , collisionGroup(group)

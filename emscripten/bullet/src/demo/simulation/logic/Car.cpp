@@ -1,6 +1,8 @@
 
 #include "Car.hpp"
 
+#include "./demo/utilities/types.hpp"
+
 #include "./physic/PhysicTrimesh.hpp"
 
 #include <cmath> // <= M_PI
@@ -51,9 +53,9 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     if (!_isAlive)
         return;
 
-    this->updateSensors();
-    this->collideEyeSensors();
-    this->collideGroundSensor();
+    _updateSensors();
+    _collideEyeSensors();
+    _collideGroundSensor();
 
     if (_health <= 0)
     {
@@ -66,23 +68,24 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     input.reserve(_eyeSensors.size());
     for (const auto& eyeSensor : _eyeSensors)
     {
-        // input range is [0, 1]
-        input.push_back(eyeSensor.value);
+        // ensure input range is [0..1]
+        input.push_back(glm::clamp(eyeSensor.value, 0.0f, 1.0f));
     }
 
     std::vector<float> output;
 
     neuralNetwork.process(input, output);
 
-    // output range is [0, 1]
-    _output.steer = output[0];
-    _output.speed = output[1];
+    // ensure output range is [0..1]
+    output[0] = glm::clamp(output[0], 0.0f, 1.0f);
+    output[1] = glm::clamp(output[1], 0.0f, 1.0f);
 
-    _output.steer = std::min(1.0f, std::max(0.0f, _output.steer));
-    _output.speed = std::min(1.0f, std::max(0.0f, _output.speed));
+    // switch output range to [-1..1]
+    output[0] = output[0] * 2.0f - 1.0f;
+    output[1] = output[1] * 2.0f - 1.0f;
 
-    _output.steer = _output.steer * 2.0f - 1.0f;
-    _output.speed = _output.speed * 2.0f - 1.0f;
+    _output.steer = output[0]; // steering angle: left/right
+    _output.speed = output[1]; // speed coef: forward/backward
 
     _vehicle->setSteeringValue(_output.steer * k_steeringMaxValue);
     _vehicle->applyEngineForce(_output.speed * k_speedMaxValue);
@@ -90,7 +93,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     ++_totalUpdateNumber;
 }
 
-void Car::updateSensors()
+void Car::_updateSensors()
 {
     glm::mat4 transform;
     _vehicle->getOpenGLMatrix(transform);
@@ -126,7 +129,7 @@ void Car::updateSensors()
 }
 
 
-void Car::collideEyeSensors()
+void Car::_collideEyeSensors()
 {
     for (auto& sensor : _eyeSensors)
     {
@@ -134,8 +137,10 @@ void Car::collideEyeSensors()
 
         // eye sensors collide ground + walls
         PhysicWorld::t_raycastParams params(sensor.near, sensor.far);
-        params.collisionGroup = D_GROUP_SENSOR;
-        params.collisionMask = D_GROUP_GROUND | D_GROUP_WALL;
+        params.collisionGroup = toUnderlying(Groups::sensor);
+        params.collisionMask = toUnderlying(Groups::ground) | toUnderlying(Groups::wall);
+
+        // D_MYLOG(params.collisionMask);
 
         bool hasHit = _physicWorld.raycast(params);
 
@@ -148,14 +153,14 @@ void Car::collideEyeSensors()
     }
 }
 
-void Car::collideGroundSensor()
+void Car::_collideGroundSensor()
 {
     // raycast the ground to get the checkpoints validation
 
     // ground sensor collide only ground
     PhysicWorld::t_raycastParams params(_groundSensor.near, _groundSensor.far);
-    params.collisionGroup = D_GROUP_SENSOR;
-    params.collisionMask = D_GROUP_GROUND;
+    params.collisionGroup = toUnderlying(Groups::sensor);
+    params.collisionMask = toUnderlying(Groups::ground);
 
     bool hasHitGround = _physicWorld.raycast(params);
 
@@ -206,7 +211,7 @@ void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
     _vehicle->setPosition({ position.x, position.y, position.z });
     _vehicle->setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
 
-    updateSensors();
+    _updateSensors();
 
     // _physicWorld.removeVehicle(*_vehicle);
     _physicWorld.addVehicle(_vehicle); // ensure vehicle presence

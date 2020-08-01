@@ -126,8 +126,8 @@ void State_Running::update(int deltaTime)
                         mouse.position.y > center.y - hsize.y &&
                         mouse.position.y < center.y + hsize.y)
                     {
-                        bool isEnabled = data.sounds.soundManager.isEnabled();
-                        data.sounds.soundManager.setEnabled(!isEnabled);
+                        bool isEnabled = data.sounds.manager.isEnabled();
+                        data.sounds.manager.setEnabled(!isEnabled);
                     }
                 }
 
@@ -199,7 +199,7 @@ void State_Running::update(int deltaTime)
     }
 
     {
-        data.sounds.soundManager.setListener(camera.eye, camera.front, {0, 0, 1});
+        data.sounds.manager.setListener(camera.eye, camera.front, {0, 0, 1});
     }
 
     { // camera tracking

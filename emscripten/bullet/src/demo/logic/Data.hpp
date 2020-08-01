@@ -12,8 +12,6 @@
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
 
-// #include "sounds/Sound.hpp"
-// #include "sounds/SoundManager.hpp"
 #include "sounds/OpenALSoundManager.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
@@ -88,21 +86,15 @@ public:
 
             struct t_matricesData
             {
-                struct t_scene
+                struct t_matrices
                 {
                     glm::mat4 projection;
                     glm::mat4 modelView;
                     glm::mat4 composed;
-                }
-                scene;
+                };
 
-                struct t_thirdPerson
-                {
-                    glm::mat4 projection;
-                    glm::mat4 modelView;
-                    glm::mat4 composed;
-                }
-                thirdPerson;
+                t_matrices scene;
+                t_matrices thirdPerson;
 
                 glm::mat4 hud;
             }
@@ -147,7 +139,6 @@ public:
             struct t_wireframes
             {
                 Geometry circuitSkelton;
-                // std::vector<Geometry> bestCarsTrails;
 
                 struct t_wheelsTrail
                 {
@@ -198,8 +189,7 @@ public:
 
     struct t_sound
     {
-        // SoundManager soundManager;
-        OpenALSoundManager soundManager;
+        OpenALSoundManager manager;
     }
     sounds;
 

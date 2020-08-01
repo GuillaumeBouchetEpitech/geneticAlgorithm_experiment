@@ -39,6 +39,6 @@ public:
     bool isAvailable() const;
 
 private:
-    void threadedMethod();
+    void _threadedMethod();
 };
 

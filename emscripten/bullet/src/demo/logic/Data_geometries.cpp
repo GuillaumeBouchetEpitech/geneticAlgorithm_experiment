@@ -2,6 +2,7 @@
 #include "Data.hpp"
 
 #include "graphic/wrappers/Shader.hpp"
+#include "graphic/wrappers/GeometryBuilder.hpp"
 
 #include "demo/defines.hpp"
 
@@ -194,24 +195,23 @@ void generateSphereVerticesFilled(float radius,
 
 void Data::initialiseGeometries()
 {
+    GeometryBuilder geometryBuilder;
+
     { // particles geometries
 
-        auto& shader = *graphic.shaders.particles;
+        geometryBuilder
+            .reset()
+            .setShader(graphic.shaders.particles)
+            .setPrimitiveType(GL_TRIANGLES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+            .addVbo()
+            .setVboAsInstanced()
+            .addVboAttribute("a_offsetPosition", Geometry::e_attrType::eVec3f, 0)
+            .addVboAttribute("a_offsetScale", Geometry::e_attrType::eFloat, 3)
+            .addVboAttribute("a_offsetColor", Geometry::e_attrType::eVec3f, 4);
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f }
-        };
-
-        Geometry::t_def::t_vbo vboInstance;
-        vboInstance.attrs = {
-            { "a_offsetPosition", Geometry::e_attrType::eVec3f, 0 },
-            { "a_offsetScale", Geometry::e_attrType::eFloat, 3 },
-            { "a_offsetColor", Geometry::e_attrType::eVec3f, 4 }
-        };
-        vboInstance.instanced = true;
-
-        Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
+        geometryBuilder.build(graphic.geometries.particles.firework);
 
         auto& firework = graphic.geometries.particles.firework;
 
@@ -219,7 +219,6 @@ void Data::initialiseGeometries()
 
         generateSphereVerticesFilled(0.5f, particlesVertices);
 
-        firework.initialise(shader, geomDef);
         firework.updateBuffer(0, particlesVertices);
         firework.setPrimitiveCount(particlesVertices.size());
 
@@ -229,37 +228,33 @@ void Data::initialiseGeometries()
 
         { // lines
 
-            auto& shader = *graphic.shaders.stackRenderer;
-            auto& geometry = graphic.geometries.stackRenderer.lines;
+            geometryBuilder
+                .reset()
+                .setShader(graphic.shaders.stackRenderer)
+                .setPrimitiveType(GL_LINES)
+                .addVbo()
+                .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+                .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3);
 
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f, 0 },
-                { "a_color", Geometry::e_attrType::eVec3f, 3 },
-            };
+            geometryBuilder.build(graphic.geometries.stackRenderer.lines);
 
-            Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
-
-            geometry.initialise(shader, geomDef);
-            geometry.setPrimitiveCount(0);
+            graphic.geometries.stackRenderer.lines.setPrimitiveCount(0);
 
         } // lines
 
         { // triangles
 
-            auto& shader = *graphic.shaders.stackRenderer;
-            auto& geometry = graphic.geometries.stackRenderer.triangles;
+            geometryBuilder
+                .reset()
+                .setShader(graphic.shaders.stackRenderer)
+                .setPrimitiveType(GL_TRIANGLES)
+                .addVbo()
+                .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+                .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3);
 
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f, 0 },
-                { "a_color", Geometry::e_attrType::eVec3f, 3 },
-            };
+            geometryBuilder.build(graphic.geometries.stackRenderer.triangles);
 
-            Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
-
-            geometry.initialise(shader, geomDef);
-            geometry.setPrimitiveCount(0);
+            graphic.geometries.stackRenderer.triangles.setPrimitiveCount(0);
 
         } // triangles
 
@@ -267,24 +262,20 @@ void Data::initialiseGeometries()
 
     { // hud geometry
 
-        auto& shader = *graphic.shaders.hudText;
-        auto& geometry = graphic.geometries.hudText.letters;
+        geometryBuilder
+            .reset()
+            .setShader(graphic.shaders.hudText)
+            .setPrimitiveType(GL_TRIANGLES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::e_attrType::eVec2f, 0)
+            .addVboAttribute("a_texCoord", Geometry::e_attrType::eVec2f, 2)
+            .addVbo()
+            .setVboAsInstanced()
+            .addVboAttribute("a_offsetPosition", Geometry::e_attrType::eVec2f, 0)
+            .addVboAttribute("a_offsetTexCoord", Geometry::e_attrType::eVec2f, 2)
+            .addVboAttribute("a_offsetScale", Geometry::e_attrType::eFloat, 4);
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec2f, 0 },
-            { "a_texCoord", Geometry::e_attrType::eVec2f, 2 }
-        };
-
-        Geometry::t_def::t_vbo vboInstance;
-        vboInstance.attrs = {
-            { "a_offsetPosition", Geometry::e_attrType::eVec2f, 0 },
-            { "a_offsetTexCoord", Geometry::e_attrType::eVec2f, 2 },
-            { "a_offsetScale", Geometry::e_attrType::eFloat, 4 }
-        };
-        vboInstance.instanced = true;
-
-        Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
+        geometryBuilder.build(graphic.geometries.hudText.letters);
 
         struct t_vertex
         {
@@ -311,30 +302,27 @@ void Data::initialiseGeometries()
         for (int index : indices)
             letterVertices.push_back(vertices[index]);
 
-        geometry.initialise(shader, geomDef);
-        geometry.updateBuffer(0, letterVertices);
-        geometry.setPrimitiveCount(letterVertices.size());
+        graphic.geometries.hudText.letters.updateBuffer(0, letterVertices);
+        graphic.geometries.hudText.letters.setPrimitiveCount(letterVertices.size());
 
     } // hud geometry
 
     { // model geometry
 
-        auto& shader = *graphic.shaders.model;
+        geometryBuilder
+            .reset()
+            .setShader(graphic.shaders.model)
+            .setPrimitiveType(GL_TRIANGLES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+            .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3)
+            .addVbo()
+            .setVboAsInstanced()
+            .addVboAttribute("a_offsetTransform", Geometry::e_attrType::eMat4f, 0)
+            .addVboAttribute("a_offsetColor", Geometry::e_attrType::eVec3f, 16);
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f, 0 },
-            { "a_color", Geometry::e_attrType::eVec3f, 3 },
-        };
-
-        Geometry::t_def::t_vbo vboInstance;
-        vboInstance.attrs = {
-            { "a_offsetTransform", Geometry::e_attrType::eMat4f, 0 },
-            { "a_offsetColor", Geometry::e_attrType::eVec3f, 16 },
-        };
-        vboInstance.instanced = true;
-
-        Geometry::t_def geomDef = { { vboGeometry, vboInstance }, GL_TRIANGLES };
+        geometryBuilder.build(graphic.geometries.model.car);
+        geometryBuilder.build(graphic.geometries.model.wheel);
 
         { // chassis geometry (instanced)
 
@@ -344,7 +332,6 @@ void Data::initialiseGeometries()
 
             loadCarModel(modelVertices);
 
-            geometry.initialise(shader, geomDef);
             geometry.updateBuffer(0, modelVertices);
             geometry.setPrimitiveCount(modelVertices.size());
         }
@@ -357,7 +344,6 @@ void Data::initialiseGeometries()
 
             loadWheelModel(modelVertices);
 
-            geometry.initialise(shader, geomDef);
             geometry.updateBuffer(0, modelVertices);
             geometry.setPrimitiveCount(modelVertices.size());
         }
@@ -366,66 +352,43 @@ void Data::initialiseGeometries()
 
     { // wireframe
 
-        auto& wireframes = graphic.geometries.wireframes;
-        auto& shader = *graphic.shaders.wireframes;
+        geometryBuilder
+            .reset()
+            .setShader(graphic.shaders.wireframes)
+            .setPrimitiveType(GL_LINES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0);
 
-        {
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f }
-            };
-
-            Geometry::t_def geomDef = { { vboGeometry }, GL_LINES };
-
-            wireframes.circuitSkelton.initialise(shader, geomDef);
-        }
+        geometryBuilder.build(graphic.geometries.wireframes.circuitSkelton);
 
         //
 
-        {
-            Geometry::t_def::t_vbo vboGeometry;
-            vboGeometry.attrs = {
-                { "a_position", Geometry::e_attrType::eVec3f }
-            };
+        geometryBuilder
+            .setPrimitiveType(GL_LINE_STRIP); // <= reused instead of reseted
 
-            Geometry::t_def geomDef = { { vboGeometry }, GL_LINE_STRIP };
+        auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
 
-            {
-                // auto& bestCarsTrails = graphic.geometries.wireframes.bestCarsTrails;
-
-                // bestCarsTrails.resize(5);
-                // for (auto& geometry : bestCarsTrails)
-                //     geometry.initialise(shader, geomDef);
-            }
-
-            {
-                auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-
-                bestNewCarsTrails.resize(5);
-                for (auto& wheelsTrail : bestNewCarsTrails)
-                    for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
-                        wheelsTrail.wheels[ii].initialise(shader, geomDef);
-            }
-        }
+        bestNewCarsTrails.resize(5);
+        for (auto& wheelsTrail : bestNewCarsTrails)
+            for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
+                geometryBuilder.build(wheelsTrail.wheels[ii]);
 
     } // wireframe
 
     { // animatedCircuit geometry
 
-        auto& animatedCircuit = graphic.geometries.animatedCircuit;
-        auto& shader = *graphic.shaders.animatedCircuit;
+        geometryBuilder
+            .reset()
+            .setShader(graphic.shaders.animatedCircuit)
+            .setPrimitiveType(GL_TRIANGLES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+            .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3)
+            .addVboAttribute("a_normal", Geometry::e_attrType::eVec3f, 6)
+            .addVboAttribute("a_index", Geometry::e_attrType::eFloat, 9);
 
-        Geometry::t_def::t_vbo vboGeometry;
-        vboGeometry.attrs = {
-            { "a_position", Geometry::e_attrType::eVec3f, 0 },
-            { "a_color",    Geometry::e_attrType::eVec3f, 3 },
-            { "a_normal",   Geometry::e_attrType::eVec3f, 6 },
-            { "a_index",    Geometry::e_attrType::eFloat, 9 },
-        };
-
-        Geometry::t_def geomDef = { { vboGeometry }, GL_TRIANGLES };
-        animatedCircuit.ground.initialise(shader, geomDef);
-        animatedCircuit.walls.initialise(shader, geomDef);
+        geometryBuilder.build(graphic.geometries.animatedCircuit.ground);
+        geometryBuilder.build(graphic.geometries.animatedCircuit.walls);
 
     } // animatedCircuit geometry
 }

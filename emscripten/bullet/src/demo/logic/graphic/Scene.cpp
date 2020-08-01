@@ -65,71 +65,6 @@ void Scene::renderAll()
 
     { // scene
 
-        { // checkerboard floor
-
-            // auto& data = *Data::get();
-            // auto& logic = data.logic;
-            // auto& graphic = data.graphic;
-            // // auto& stackRenderer = graphic.stackRenderer;
-            // const auto& shader = *graphic.shaders.stackRenderer;
-
-            // shader.bind();
-
-            // const auto& sceneMatrix = graphic.camera.matrices.scene;
-            // GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-            // glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
-
-            // glm::vec3 minVal = logic.circuitAnimation.boundaries.min;
-            // glm::vec3 maxVal = logic.circuitAnimation.boundaries.max;
-
-            // minVal += glm::vec3(-50, -50, 0); // add extra
-            // maxVal += glm::vec3(+50, +50, 0); // add extra
-
-            // const glm::vec3 color = { 0.25f, 0.25f, 0.25f };
-            // const glm::vec3 vertices[4] = {
-            //     // { +50.0f, +50.0f, 0.0f },
-            //     // { -50.0f, +50.0f, 0.0f },
-            //     // { +50.0f, -50.0f, 0.0f },
-            //     // { -50.0f, -50.0f, 0.0f },
-            //     { maxVal.x, maxVal.y, -0.1f },
-            //     { minVal.x, maxVal.y, -0.1f },
-            //     { maxVal.x, minVal.y, -0.1f },
-            //     { minVal.x, minVal.y, -0.1f },
-            // };
-
-            // stackRenderer.pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], color);
-            // stackRenderer.pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], color);
-
-            // glEnable(GL_CULL_FACE);
-
-            // const glm::vec3 colorA = { 0.25f, 0.25f, 0.25f };
-            // const glm::vec3 colorB = { 0.00f, 0.00f, 0.00f };
-
-            // std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
-
-            // bool isColorA = true;
-
-            // for (float yy = minVal.y; yy < maxVal.y; yy += 20.0f)
-            // for (float xx = minVal.x; xx < maxVal.x; xx += 20.0f)
-            // {
-            //     const glm::vec3 vertices[4] = {
-            //         { xx + 10.0f, yy + 10.0f, -0.1f },
-            //         { xx - 10.0f, yy + 10.0f, -0.1f },
-            //         { xx + 10.0f, yy - 10.0f, -0.1f },
-            //         { xx - 10.0f, yy - 10.0f, -0.1f },
-            //     };
-
-            //     stackRenderer.pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], isColorA ? colorA : colorB);
-            //     stackRenderer.pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], isColorA ? colorA : colorB);
-
-            //     isColorA = !isColorA;
-            // }
-
-            // stackRenderer.flushTriangles();
-
-            // glDisable(GL_CULL_FACE);
-
-        } // checkerboard floor
 
         auto& data = Data::get();
         auto& logic = data.logic;
@@ -460,17 +395,14 @@ void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails
 
     wireframes.circuitSkelton.render();
 
-    if (trails)
-    {
-        glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    if (!trails)
+        return;
 
-        // for (const auto& geometry : wireframes.bestCarsTrails)
-        //     geometry.render();
+    glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        for (const auto& currentCarTrail : wireframes.bestNewCarsTrails)
-            for (const auto& wheelTrail : currentCarTrail.wheels)
-                wheelTrail.render();
-    }
+    for (const auto& currentCarTrail : wireframes.bestNewCarsTrails)
+        for (const auto& wheelTrail : currentCarTrail.wheels)
+            wheelTrail.render();
 }
 
 void Scene::renderAnimatedCircuit(const glm::mat4& sceneMatrix)
@@ -708,7 +640,7 @@ void Scene::renderHUD()
             float messageSize = 0.0f;
             std::stringstream sstr;
 
-            if (data.sounds.soundManager.isEnabled())
+            if (data.sounds.manager.isEnabled())
             {
                 sstr
                     << "*-------*" << std::endl

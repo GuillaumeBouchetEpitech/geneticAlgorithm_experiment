@@ -277,7 +277,6 @@ ifeq ($(build_platform),native_pthread)
 						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
-						-lEGL \
 						-pthread \
 						-lopenal \
 						\
@@ -287,7 +286,9 @@ ifeq ($(build_platform),native_pthread)
 
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
-						-I$(DIR_BULLET)
+						-I$(DIR_BULLET) \
+						-DBT_NO_PROFILE \
+						-DSIMD_FORCE_INLINE=inline
 
 else ifeq ($(build_platform),web_wasm_pthread)
 
@@ -348,7 +349,8 @@ else ifeq ($(build_platform),web_wasm_pthread)
 
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
-						-I$(DIR_BULLET)
+						-I$(DIR_BULLET) \
+						-DBT_NO_PROFILE
 
 ifeq ($(build_mode),debug)
 
@@ -407,9 +409,6 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	CXXFLAGS_WEB_WORKER=	$(CXXFLAGS_COMMON) \
 							-I$(DIR_BULLET)
 
-	CXXFLAGS_BULLET=	$(CXXFLAGS_COMMON) \
-						-I$(DIR_BULLET)
-
 	LDFLAGS_WEB_MAIN=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_MAIN) \
 						\
@@ -419,6 +418,10 @@ else ifeq ($(build_platform),web_wasm_webworker)
 
 	LDFLAGS_WEB_WORKER=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_WORKER)
+
+	CXXFLAGS_BULLET=	$(CXXFLAGS_COMMON) \
+						-I$(DIR_BULLET) \
+						-DBT_NO_PROFILE
 
 ifeq ($(build_mode),debug)
 

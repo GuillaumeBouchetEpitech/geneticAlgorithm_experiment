@@ -23,7 +23,7 @@ Producer::Producer(unsigned int totalCores)
     for (int ii = 0; ii < totalConsumers; ++ii)
         _consumers.push_back(new Consumer(*this));
 
-    _thread = std::thread(&Producer::threadedMethod, this);
+    _thread = std::thread(&Producer::_threadedMethod, this);
 
     // here we wait for the thread to be running
     while (!_running)
@@ -125,7 +125,7 @@ void Producer::waitUntilAllCompleted()
 //
 //
 
-void Producer::notifyWorkDone(Consumer* consumer)
+void Producer::_notifyWorkDone(Consumer* consumer)
 {
     auto lockNotifier = _waitOneTask.makeScopedLockNotifier(); // we are locking
 
@@ -146,7 +146,7 @@ void Producer::notifyWorkDone(Consumer* consumer)
         _waitAllTask.notify();
 }
 
-void Producer::threadedMethod()
+void Producer::_threadedMethod()
 {
     _running = true;
     auto lock = _waitOneTask.makeScopedLock();

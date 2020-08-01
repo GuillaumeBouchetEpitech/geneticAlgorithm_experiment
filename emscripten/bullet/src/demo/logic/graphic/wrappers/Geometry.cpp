@@ -62,10 +62,8 @@ void    Geometry::initialise(Shader& shader, const t_def& def)
             stride *= sizeof(float);
         }
 
-        for (unsigned int jj = 0; jj < attrs.size(); ++jj)
+        for (const auto& attr : attrs)
         {
-            const auto& attr = attrs[jj];
-
             int rowSize = 1;
             int totalRows = 1;
             switch (attr.type)

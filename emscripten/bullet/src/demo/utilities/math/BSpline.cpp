@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-namespace /*anonymous*/
+namespace BaseFuncs
 {
 
 float basisDeg2(float x)
@@ -83,22 +83,22 @@ void BSpline::initialise(const BSpline::t_def& def)
 
     if (_def.degree <= 2)
     {
-        _baseFunc = &basisDeg2;
+        _baseFunc = &BaseFuncs::basisDeg2;
         _rangeInterval = 2;
     }
     else if (_def.degree == 3)
     {
-        _baseFunc = &basisDeg3;
+        _baseFunc = &BaseFuncs::basisDeg3;
         _rangeInterval = 2;
     }
     else if (_def.degree == 4)
     {
-        _baseFunc = &basisDeg4;
+        _baseFunc = &BaseFuncs::basisDeg4;
         _rangeInterval = 3;
     }
     else if (_def.degree > 4)
     {
-        _baseFunc = &basisDeg5;
+        _baseFunc = &BaseFuncs::basisDeg5;
         _rangeInterval = 3;
     }
 }
@@ -110,7 +110,7 @@ float BSpline::calcAt(float coef, unsigned int dimension) const
     if (dimension >= _def.dimension)
         D_THROW(std::invalid_argument, "dimension out of bound");
     if (coef < 0.0f || coef > 1.0f)
-        D_THROW(std::invalid_argument, "coef must be in [0,1], input=" << coef);
+        D_THROW(std::invalid_argument, "coef must be in [0..1], input=" << coef);
 
     float margin = _def.degree + 1;
 

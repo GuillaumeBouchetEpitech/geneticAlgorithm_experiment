@@ -163,12 +163,12 @@ KNOTS_DUAL 30 0 0     30 0 0
 # classic looping
 
     KNOTS_COLOR 0.75 0.25 0.25
-    KNOTS_DUAL 60 0 0     60 0 0
-    KNOTS_DUAL 60 -20 60     60 -20 60
-    KNOTS_DUAL -60 -20 60     -60 -20 60
+    KNOTS_DUAL  60   0   0      60   0   0
+    KNOTS_DUAL  60 -20  60      60 -20  60
+    KNOTS_DUAL -60 -20  60     -60 -20  60
     KNOTS_DUAL -60 -20 -60     -60 -20 -60
-    KNOTS_DUAL 60 -20 -60     60 -20 -60
-    KNOTS_DUAL 60 0 0     60 0 0
+    KNOTS_DUAL  60 -20 -60      60 -20 -60
+    KNOTS_DUAL  60   0   0      60   0   0
 
     KNOTS_DUAL 20 0 0     20 0 0
 
@@ -178,8 +178,23 @@ KNOTS_COLOR 0.25 0.25 0.75
 KNOTS_DUAL 30 0 0     30 0 0
 KNOTS_DUAL 30 0 0     30 0 0
 
-# final jump pad
-KNOTS_DUAL 60 0 60     60 0 60
+# # final jump pad
+# KNOTS_DUAL 60 0 60     60 0 60
+
+
+# final death looping
+KNOTS_COLOR 0.75 0.25 0.25
+KNOTS_DUAL  75   0   0      75   0   0
+KNOTS_DUAL  75 +10  75      75 +10  75
+KNOTS_DUAL -75 +10  75     -75 +10  75
+KNOTS_DUAL -75 +10 -75     -75 +10 -75
+KNOTS_DUAL   0   0 -75       0   0 -75
+KNOTS_DUAL   0   0 -75       0   0 -75
+KNOTS_DUAL  75 +10 -75      75 +10 -75
+KNOTS_DUAL  75   0   0      75   0   0
+KNOTS_DUAL  75   0   0      75   0   0
+# final death looping
+
 
 # # vertical corner
 

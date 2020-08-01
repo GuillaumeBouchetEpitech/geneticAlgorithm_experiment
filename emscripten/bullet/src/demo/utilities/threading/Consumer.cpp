@@ -14,7 +14,7 @@
 Consumer::Consumer(Producer& producer)
     : _producer(producer)
 {
-    _thread = std::thread(&Consumer::threadedMethod, this);
+    _thread = std::thread(&Consumer::_threadedMethod, this);
 
     // here we wait for the thread to be running
     while (!_running)
@@ -66,7 +66,7 @@ bool Consumer::isAvailable() const
 //
 //
 
-void Consumer::threadedMethod()
+void Consumer::_threadedMethod()
 {
     _running = true;
 
@@ -82,6 +82,6 @@ void Consumer::threadedMethod()
 
         _work();
 
-        _producer.notifyWorkDone(this);
+        _producer._notifyWorkDone(this);
     }
 }

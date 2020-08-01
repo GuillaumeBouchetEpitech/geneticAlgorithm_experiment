@@ -33,7 +33,6 @@ public:
         {
             struct t_attr
             {
-
                 std::string name = "";
                 e_attrType  type = e_attrType::eFloat;
                 std::size_t index = 0;
@@ -51,13 +50,13 @@ public:
 
         std::vector<t_vbo> vbos;
 
-        GLint   primitiveType = GL_LINES;
+        GLint primitiveType = GL_LINES;
     };
 
 private:
     t_def               _def;
-    VertexArrayObject    _vao;
-    VertexBufferObject    _vbo;
+    VertexArrayObject   _vao;
+    VertexBufferObject  _vbo;
     GLint               _primitiveType = GL_LINES;
     unsigned int        _primitiveStart = 0;
     unsigned int        _primitiveCount = 0;

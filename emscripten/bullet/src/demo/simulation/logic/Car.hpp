@@ -57,9 +57,9 @@ public: // methods
     void reset(const glm::vec3& position, const glm::vec4& quaternion);
 
 private: // methods
-    void updateSensors();
-    void collideEyeSensors();
-    void collideGroundSensor();
+    void _updateSensors();
+    void _collideEyeSensors();
+    void _collideGroundSensor();
 
 public: // setter/getter
     const t_sensors&                getEyeSensors() const;

@@ -28,9 +28,9 @@ public: // methods
     void process(const std::vector<float>& input, std::vector<float>& output) const;
 
 private:
-    void processLayer(const t_layer& layer,
-                      const std::vector<float>& input,
-                      std::vector<float>& output) const;
+    void _processLayer(const t_layer& layer,
+                       const std::vector<float>& input,
+                       std::vector<float>& output) const;
 
 public: // setter
     void setWeights(const std::vector<float>& in_weights);

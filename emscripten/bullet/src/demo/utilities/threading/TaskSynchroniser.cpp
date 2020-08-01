@@ -65,7 +65,7 @@ void TaskSynchroniser::notify()
 
 std::unique_lock<std::mutex> TaskSynchroniser::makeScopedLock()
 {
-    return std::unique_lock<std::mutex>(this->_mutex);
+    return std::unique_lock<std::mutex>(_mutex);
 }
 
 TaskSynchroniser::ScopedLockedNotifier TaskSynchroniser::makeScopedLockNotifier()

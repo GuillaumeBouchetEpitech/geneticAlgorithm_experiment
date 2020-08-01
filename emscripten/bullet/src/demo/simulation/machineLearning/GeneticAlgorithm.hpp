@@ -46,10 +46,9 @@ public: // methods
     bool breedPopulation();
 
 private: // methods
-    void generateRandomPopulation();
-    void getBestGenomes(t_genomes& output) const;
-    void reproduce(const t_genome& parentA, const t_genome& parentB, t_genome& offspring) const;
-    void mutate(t_genome& genome) const;
+    void _getBestGenomes(t_genomes& output) const;
+    void _reproduce(const t_genome& parentA, const t_genome& parentB, t_genome& offspring) const;
+    void _mutate(t_genome& genome) const;
 
 public: // getter(s)
     const t_NeuralNetworks& getNeuralNetworks() const;

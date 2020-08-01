@@ -2,6 +2,7 @@
 #include "RandomNumberGenerator.hpp"
 
 #include <limits>
+#include <chrono>
 
 unsigned long RandomNumberGenerator::_seed = 1;
 const int RandomNumberGenerator::_max = std::numeric_limits<int>::max();
@@ -9,6 +10,13 @@ const int RandomNumberGenerator::_max = std::numeric_limits<int>::max();
 void RandomNumberGenerator::setSeed(int seed)
 {
     _seed = seed;
+}
+
+void RandomNumberGenerator::ensureRandomSeed()
+{
+    auto currTime = std::chrono::high_resolution_clock::now();
+    auto seed = currTime.time_since_epoch().count();
+    _seed = static_cast<unsigned int>(seed);
 }
 
 int RandomNumberGenerator::getValue()

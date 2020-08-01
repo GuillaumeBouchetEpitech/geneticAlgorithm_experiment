@@ -19,7 +19,7 @@
 
 class Producer
 {
-    friend class Consumer; // <= so the consumers can call notifyWorkDone()
+    friend class Consumer; // <= so the consumers can call _notifyWorkDone()
 
 private:
     std::thread _thread;
@@ -46,7 +46,7 @@ public:
     void waitUntilAllCompleted();
 
 private:
-    void notifyWorkDone(Consumer* in_consumer);
-    void threadedMethod();
+    void _notifyWorkDone(Consumer* in_consumer);
+    void _threadedMethod();
 };
 

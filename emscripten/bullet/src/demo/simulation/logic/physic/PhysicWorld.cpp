@@ -74,12 +74,10 @@ void PhysicWorld::step()
 
 void PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indices, int id)
 {
-    // PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id, D_GROUP_GROUND, D_MASK_GROUND);
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id);
     btRigidBody* body = trimesh->_bullet.body;
 
-    // _bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
-    _bullet.dynamicsWorld->addRigidBody(body, D_GROUP_GROUND, D_MASK_GROUND);
+    _bullet.dynamicsWorld->addRigidBody(body, toUnderlying(Groups::ground), toUnderlying(Masks::ground));
 
     body->setUserPointer((void*)trimesh);
 
@@ -88,13 +86,10 @@ void PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indi
 
 void PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indices)
 {
-    // PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1, D_GROUP_WALL, D_MASK_WALL);
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1);
     btRigidBody* body = trimesh->_bullet.body;
 
-    // _bullet.dynamicsWorld->addRigidBody(body, trimesh->getGroup(), trimesh->getMask());
-    _bullet.dynamicsWorld->addRigidBody(body, D_GROUP_WALL, D_MASK_WALL);
-
+    _bullet.dynamicsWorld->addRigidBody(body, toUnderlying(Groups::wall), toUnderlying(Masks::wall));
 
     body->setUserPointer((void*)trimesh);
 
@@ -137,7 +132,7 @@ void PhysicWorld::addVehicle(PhysicVehicle* vehicle)
 
     vehicle->reset();
 
-    _bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, D_GROUP_VEHICLE, D_MASK_VEHICLE);
+    _bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, toUnderlying(Groups::vehicle), toUnderlying(Masks::vehicle));
     _bullet.dynamicsWorld->addVehicle(vehicle->_bullet.vehicle);
 
     _liveVehicles.insert(vehicle);
