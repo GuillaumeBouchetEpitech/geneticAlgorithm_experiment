@@ -3,7 +3,7 @@
 
 #include "NeuralNetwork.hpp"
 
-#include <deque>
+#include <array>
 
 class GeneticAlgorithm
 {
@@ -29,7 +29,8 @@ private: // attributs
     unsigned int _currentId = 1; // for the genome id
     unsigned int _currentGeneration = 1; // generation number
 
-    t_genome _bestGenome;
+    std::array<t_genome, 3> _bestGenomes;
+
 
     NeuralNetworkTopology _neuralNetworkTopology;
 

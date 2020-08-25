@@ -20,9 +20,9 @@ void Data::initialiseCircuit()
     t_animatedVertices      groundVertices;
     t_animatedVertices      wallsVertices;
 
-    skeletonVertices.reserve(128);
-    groundVertices.reserve(2048);
-    wallsVertices.reserve(groundVertices.capacity() * 2); // <= 1 ground 2 walls
+    skeletonVertices.reserve(128); // pre-allocate
+    groundVertices.reserve(2048); // pre-allocate
+    wallsVertices.reserve(groundVertices.capacity() * 2); // pre-allocate, <= 1 ground 2 walls
 
      const glm::vec3    greyColor = { 0.6f, 0.6f, 0.6f };
     const glm::vec3     whiteColor = { 1.0f, 1.0f, 1.0f };

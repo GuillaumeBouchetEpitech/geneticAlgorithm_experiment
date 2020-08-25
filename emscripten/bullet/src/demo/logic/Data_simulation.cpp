@@ -10,7 +10,7 @@
 
 void Data::initialiseSimulation()
 {
-    logic.fitnessStats.allStats.reserve(logic.fitnessStats.maxStats);
+    logic.fitnessStats.allStats.reserve(logic.fitnessStats.maxStats); // pre-allocate
     for (unsigned int ii = 0; ii < logic.fitnessStats.maxStats; ++ii)
         logic.fitnessStats.allStats.push_back(0.0f);
 
@@ -68,8 +68,6 @@ void Data::initialiseSimulation()
 
         const auto& simulation = *logic.simulation;
         unsigned int totalCars = simulation.getTotalCars();
-
-        const glm::vec3 extraHeight(0.0f, 0.0f, 1.0f);
 
         for (unsigned int ii = 0; ii < totalCars; ++ii)
         {

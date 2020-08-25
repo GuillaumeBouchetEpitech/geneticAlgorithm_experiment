@@ -3,7 +3,7 @@
 
 #include "demo/simulation/AbstactSimulation.hpp"
 
-#include "demo/utilities/threading/Producer.hpp"
+#include "./threading/Producer.hpp"
 
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 

@@ -12,7 +12,7 @@ void TextRenderer::initialise()
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
     const glm::vec2 texCoord = letterSize / hudText.textureSize;
 
-    _lettersOffset.reserve(256); // <= preallocate
+    _lettersOffset.reserve(256); // <= pre-allocate
 
     _lettersTexCoordMap = {
 

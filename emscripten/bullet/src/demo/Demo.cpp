@@ -7,6 +7,8 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
+#include "demo/logic/graphic/Scene.hpp"
+
 #include <chrono>
 
 #ifdef __EMSCRIPTEN__
@@ -16,16 +18,6 @@
 Demo::Demo(int width, int height)
     : SDLWindowWrapper(width, height)
 {
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-    glDisable(GL_CULL_FACE);
-    // glEnable(GL_CULL_FACE);
-
     Data::create();
     Data::get().graphic.camera.viewportSize = {width, height};
 
@@ -33,6 +25,8 @@ Demo::Demo(int width, int height)
 
     // hacky?
     Data::get().logic.state.previousState = StateManager::get()->getState();
+
+    Scene::initialise();
 }
 
 Demo::~Demo()
@@ -43,12 +37,12 @@ Demo::~Demo()
 
 //
 
-void Demo::onEvent(const SDL_Event& event)
+void Demo::_onEvent(const SDL_Event& event)
 {
     StateManager::get()->handleEvent(event);
 }
 
-void Demo::onUpdate(long int deltaTime)
+void Demo::_onUpdate(long int deltaTime)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -59,7 +53,7 @@ void Demo::onUpdate(long int deltaTime)
     Data::get().logic.metrics.updateTime = microseconds.count();
 }
 
-void Demo::onRender(const SDL_Window& screen)
+void Demo::_onRender(const SDL_Window& screen)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -70,12 +64,12 @@ void Demo::onRender(const SDL_Window& screen)
     Data::get().logic.metrics.renderTime = microseconds.count();
 }
 
-void Demo::onResize(int width, int height)
+void Demo::_onResize(int width, int height)
 {
     StateManager::get()->resize(width, height);
 }
 
-void Demo::onVisibilityChange(bool visible)
+void Demo::_onVisibilityChange(bool visible)
 {
     StateManager::get()->visibility(visible);
 }

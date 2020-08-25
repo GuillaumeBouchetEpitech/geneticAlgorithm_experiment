@@ -12,7 +12,7 @@ Texture::~Texture()
 
 //
 
-bool Texture::load(const std::string& filename, bool pixelated /*= false*/, bool repeat /*= false*/)
+void Texture::load(const std::string& filename, bool pixelated /*= false*/, bool repeat /*= false*/)
 {
     // TODO: make an "image" class?
 
@@ -33,8 +33,8 @@ bool Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
 
     glBindTexture(GL_TEXTURE_2D, _textureId);
 
-    int filterValue = (pixelated ? GL_NEAREST : GL_LINEAR);
-    int wrapValue = (repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+    const int filterValue = (pixelated ? GL_NEAREST : GL_LINEAR);
+    const int wrapValue = (repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterValue);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterValue);
@@ -49,8 +49,6 @@ bool Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
     glBindTexture(GL_TEXTURE_2D, 0);
 
     SDL_FreeSurface(surface);
-
-    return true;
 }
 
 const glm::ivec2& Texture::getSize() const

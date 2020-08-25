@@ -36,22 +36,35 @@ std::string writeTime(unsigned int time)
 
 }
 
+void Scene::initialise()
+{
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    glDisable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
+}
+
 void Scene::renderSimple()
 {
-    Scene::updateMatrices();
+    Scene::_updateMatrices();
 
-    Scene::clear();
+    Scene::_clear();
 
     { // scene
 
         const auto& scene = Data::get().graphic.camera.matrices.scene;
 
-        Scene::renderWireframesGeometries(scene.composed, false); // circuit only
+        Scene::_renderWireframesGeometries(scene.composed, false); // circuit only
     }
 
     { // HUD
 
-        Scene::renderHUD();
+        Scene::_renderHUD();
     }
 
     Shader::unbind();
@@ -59,9 +72,10 @@ void Scene::renderSimple()
 
 void Scene::renderAll()
 {
-    Scene::updateMatrices();
+    Scene::_updateMatrices();
+    Scene::_updateCircuitAnimation();
 
-    Scene::clear();
+    Scene::_clear();
 
     { // scene
 
@@ -75,19 +89,19 @@ void Scene::renderAll()
         camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
 
         if (!Data::get().logic.isAccelerated)
-            Scene::renderLeadingCarSensors(matrices.scene.composed);
+            Scene::_renderLeadingCarSensors(matrices.scene.composed);
 
-        Scene::renderParticles(matrices.scene.composed);
-        Scene::renderCars(matrices.scene.composed);
-        Scene::renderWireframesGeometries(matrices.scene.composed);
-        Scene::renderAnimatedCircuit(matrices.scene.composed);
+        Scene::_renderParticles(matrices.scene.composed);
+        Scene::_renderCars(matrices.scene.composed);
+        Scene::_renderWireframesGeometries(matrices.scene.composed);
+        Scene::_renderAnimatedCircuit(matrices.scene.composed);
 
         // valid leading car?
         if (!logic.isAccelerated && leaderCar.index >= 0)
         {
             const auto& viewportSize = camera.viewportSize;
 
-            const float divider = 5.0f;
+            const float divider = 5.0f; // ratio of the viewport current size
             const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
             const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.0f), thirdPViewportSize.y * 0.75f };
 
@@ -101,11 +115,11 @@ void Scene::renderAll()
 
             camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
 
-            Scene::renderLeadingCarSensors(matrices.thirdPerson.composed);
-            Scene::renderParticles(matrices.thirdPerson.composed);
-            Scene::renderCars(matrices.thirdPerson.composed);
-            Scene::renderWireframesGeometries(matrices.thirdPerson.composed);
-            Scene::renderAnimatedCircuit(matrices.thirdPerson.composed);
+            Scene::_renderLeadingCarSensors(matrices.thirdPerson.composed);
+            Scene::_renderParticles(matrices.thirdPerson.composed);
+            Scene::_renderCars(matrices.thirdPerson.composed);
+            Scene::_renderWireframesGeometries(matrices.thirdPerson.composed);
+            Scene::_renderAnimatedCircuit(matrices.thirdPerson.composed);
 
             glDisable(GL_SCISSOR_TEST);
             glViewport(0, 0, viewportSize.x, viewportSize.y);
@@ -115,13 +129,13 @@ void Scene::renderAll()
 
     { // HUD
 
-        Scene::renderHUD();
+        Scene::_renderHUD();
     }
 
     Shader::unbind();
 }
 
-void Scene::updateMatrices()
+void Scene::_updateMatrices()
 {
     auto& data = Data::get();
     const auto& logic = data.logic;
@@ -137,9 +151,9 @@ void Scene::updateMatrices()
 
         matrices.scene.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
 
-        // clamp vertical rotation [-pi/2..+pi/2]
-        const float verticalLimit = 3.14f * 0.5f;
-        camera.rotations.phi = std::max(-verticalLimit, std::min(verticalLimit, camera.rotations.phi));
+        // clamp vertical rotation [-89..+89]
+        const float verticalLimit = glm::radians(89.0f);
+        camera.rotations.phi = glm::clamp(camera.rotations.phi, -verticalLimit, verticalLimit);
 
         camera.eye = {
             camera.distance * std::cos(camera.rotations.phi) * std::cos(camera.rotations.theta),
@@ -212,7 +226,102 @@ void Scene::updateMatrices()
     }
 }
 
-void Scene::clear()
+void Scene::_updateCircuitAnimation()
+{
+    auto& logic = Data::get().logic;
+    const auto& simulation = *logic.simulation;
+    auto& graphic = Data::get().graphic;
+
+    // auto&    leaderCar = logic.leaderCar;
+    auto&   animation = logic.circuitAnimation;
+
+    if (logic.isAccelerated)
+    {
+        animation.targetValue = animation.maxUpperValue;
+        animation.lowerValue = animation.maxUpperValue;
+        animation.upperValue = animation.maxUpperValue;
+    }
+    else
+    {
+        animation.targetValue = 3.0f; // <= default value
+
+        int bestGroundIndex = -1;
+        for (unsigned int ii = 0; ii < simulation.getTotalCars(); ++ii)
+        {
+            const auto& carData = simulation.getCarResult(ii);
+
+            if (!carData.isAlive || bestGroundIndex > carData.groundIndex)
+                continue;
+
+            bestGroundIndex = carData.groundIndex;
+        }
+
+        // do we have a car to focus the camera on?
+        if (bestGroundIndex >= 0)
+            animation.targetValue += bestGroundIndex;
+
+        // lower value, closest from the cars
+
+        if (animation.lowerValue > animation.targetValue + 10.0f)
+        {
+            // fall really quickly
+            animation.lowerValue -= 1.0f;
+            if (animation.lowerValue < animation.targetValue)
+                animation.lowerValue = animation.targetValue;
+        }
+        else if (animation.lowerValue > animation.targetValue)
+        {
+            // fall quickly
+            animation.lowerValue -= 0.3f;
+            if (animation.lowerValue < animation.targetValue)
+                animation.lowerValue = animation.targetValue;
+        }
+        else
+        {
+            // rise slowly
+            animation.lowerValue += 0.2f;
+            if (animation.lowerValue > animation.targetValue)
+                animation.lowerValue = animation.targetValue;
+        }
+
+        // upper value, farthest from the cars
+
+        if (animation.upperValue > animation.targetValue + 10.0f)
+        {
+            // fall really quickly
+            animation.upperValue -= 0.6f;
+            if (animation.upperValue < animation.targetValue)
+                animation.upperValue = animation.targetValue;
+        }
+        else if (animation.upperValue > animation.targetValue)
+        {
+            // fall slowly
+            animation.upperValue -= 0.1f;
+            if (animation.upperValue < animation.targetValue)
+                animation.upperValue = animation.targetValue;
+        }
+        else
+        {
+            // rise really quickly
+            animation.upperValue += 1.0f;
+            if (animation.upperValue > animation.targetValue)
+                animation.upperValue = animation.targetValue;
+        }
+
+    }
+
+    auto& animatedCircuit = graphic.geometries.animatedCircuit;
+
+    const unsigned int verticesLength = 36; // <= 3 * 12 triangles
+    int indexValue = std::ceil(animation.upperValue) * verticesLength;
+    if (indexValue > animation.maxPrimitiveCount)
+        indexValue = animation.maxPrimitiveCount;
+
+    animatedCircuit.ground.setPrimitiveCount(indexValue);
+    animatedCircuit.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
+}
+
+void Scene::_clear()
 {
     const auto& viewportSize = Data::get().graphic.camera.viewportSize;
 
@@ -222,7 +331,7 @@ void Scene::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Scene::renderLeadingCarSensors(const glm::mat4& sceneMatrix)
+void Scene::_renderLeadingCarSensors(const glm::mat4& sceneMatrix)
 {
     auto&       data = Data::get();
     const auto& logic = data.logic;
@@ -276,7 +385,7 @@ void Scene::renderLeadingCarSensors(const glm::mat4& sceneMatrix)
     stackRenderer.flush();
 }
 
-void Scene::renderParticles(const glm::mat4 &sceneMatrix)
+void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
 {
     // instanced geometrie(s)
 
@@ -295,7 +404,7 @@ void Scene::renderParticles(const glm::mat4 &sceneMatrix)
     }
 }
 
-void Scene::renderCars(const glm::mat4& sceneMatrix)
+void Scene::_renderCars(const glm::mat4& sceneMatrix)
 {
     // instanced geometrie(s)
 
@@ -376,7 +485,7 @@ void Scene::renderCars(const glm::mat4& sceneMatrix)
 
 }
 
-void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails /*= true*/)
+void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails /*= true*/)
 {
     // static geometrie(s) (mono color)
 
@@ -405,7 +514,7 @@ void Scene::renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails
             wheelTrail.render();
 }
 
-void Scene::renderAnimatedCircuit(const glm::mat4& sceneMatrix)
+void Scene::_renderAnimatedCircuit(const glm::mat4& sceneMatrix)
 {
     // static geometrie(s) (animated)
 
@@ -439,7 +548,7 @@ void Scene::renderAnimatedCircuit(const glm::mat4& sceneMatrix)
     glEnable(GL_DEPTH_TEST);
 }
 
-void Scene::renderHUD()
+void Scene::_renderHUD()
 {
     auto& data = Data::get();
     auto& graphic = data.graphic;
@@ -545,7 +654,7 @@ void Scene::renderHUD()
                     {
                         glm::vec2 textPos = { screenCoord.x + 50, screenCoord.y + 50 };
 
-                        textRenderer.push(textPos, "NEW LEADER", 1.1f);
+                        textRenderer.push(textPos, "NEW\nLEADER", 1.1f);
 
                         auto& stackRenderer = graphic.stackRenderer;
                         stackRenderer.pushLine(screenCoord, textPos, {1, 1, 1});
@@ -831,7 +940,7 @@ void Scene::renderHUD()
                     glm::vec2 currPos = borderPos;
                     currPos.y += borderSize.y - borderSize.y / topologyArray.size() * (float(ii) + 0.5f);
 
-                    allNeuronPos[ii].reserve(actualSize);
+                    allNeuronPos[ii].reserve(actualSize); // pre-allocate
 
                     for (unsigned int jj = 0; jj < actualSize; ++jj)
                     {
@@ -882,7 +991,7 @@ void Scene::renderHUD()
                 //
 
                 std::vector<glm::vec2> allPositions;
-                allPositions.reserve(layerCount * layerSize);
+                allPositions.reserve(layerCount * layerSize); // pre-allocate
                 for (unsigned int ii = 0; ii < layerCount; ++ii)
                     for (unsigned int jj = 0; jj < layerSize; ++jj)
                     {

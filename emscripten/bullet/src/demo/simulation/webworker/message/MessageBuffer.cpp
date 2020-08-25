@@ -15,7 +15,7 @@ MessageBuffer::MessageBuffer()
      * => it do so with a power of 2 value (1, 2, 4, 8, 16, etc.)
      * => starting it at a "high" value (512) make that part faster
      */
-    _dataContainer.reserve(512);
+    _dataContainer.reserve(512); // pre-allocate
 }
 
 MessageBuffer& MessageBuffer::append(const void* dataPointer, unsigned int dataSize)

@@ -5,13 +5,11 @@
 
 int main()
 {
-    {
-        int width = 800;
-        int height = 600;
+    int width = 800;
+    int height = 600;
 
-        Demo myDemo(width, height);
-        myDemo.run();
-    }
+    Demo myDemo(width, height);
+    myDemo.run();
 
     return EXIT_SUCCESS;
 }

@@ -1,16 +1,12 @@
 
 #include "demo/defines.hpp"
 
-#if defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "Producer.hpp"
 
 #include <algorithm>
 #include <chrono>
 
-#if defined __EMSCRIPTEN__
+#if defined D_WEB_BUILD
 #   include <emscripten.h>
 #endif
 
@@ -19,7 +15,7 @@ Producer::Producer(unsigned int totalCores)
     // clamp [1..8]
     const int totalConsumers = std::min(std::max(int(totalCores), 1), 8);
 
-    _consumers.reserve(totalConsumers);
+    _consumers.reserve(totalConsumers); // pre-allocate
     for (int ii = 0; ii < totalConsumers; ++ii)
         _consumers.push_back(new Consumer(*this));
 
@@ -99,7 +95,7 @@ void Producer::quit()
 
 void Producer::waitUntilAllCompleted()
 {
-#if defined __EMSCRIPTEN__
+#if defined D_WEB_BUILD
 
     /**
      * Sad hack to make the pthread simulation works without warnings :(.

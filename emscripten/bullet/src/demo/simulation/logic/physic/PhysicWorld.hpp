@@ -17,28 +17,30 @@ class btSequentialImpulseConstraintSolver;
 class btDiscreteDynamicsWorld;
 class btIDebugDraw;
 
-enum class Groups : short
-{
-    all         = -1,
-    sensor      = (1 << 0),
-    ground      = (1 << 1),
-    wall        = (1 << 2),
-    vehicle     = (1 << 3),
-};
-
-enum class Masks : short
-{
-    sensor      = toUnderlying(Groups::ground) | toUnderlying(Groups::wall),
-    ground      = toUnderlying(Groups::all),
-    wall        = toUnderlying(Groups::all),
-    vehicle     = toUnderlying(Groups::ground),
-};
-
 class PhysicTrimesh;
 class PhysicVehicle;
 
 class PhysicWorld
 {
+public:
+    enum class Groups : short
+    {
+        all         = -1,
+        sensor      = (1 << 0),
+        ground      = (1 << 1),
+        wall        = (1 << 2),
+        vehicle     = (1 << 3),
+    };
+
+    enum class Masks : short
+    {
+        ground              = toUnderlying(Groups::all),
+        wall                = toUnderlying(Groups::all),
+        vehicle             = toUnderlying(Groups::ground),
+        eyeSensor           = toUnderlying(Groups::ground) | toUnderlying(Groups::wall),
+        groundSensor        = toUnderlying(Groups::ground),
+    };
+
 public:
     typedef std::function<void(const glm::vec3&, const glm::vec3&)> t_onContact;
 

@@ -94,7 +94,7 @@ SDLWindowWrapper::~SDLWindowWrapper()
 
 #if defined __EMSCRIPTEN__
 
-void SDLWindowWrapper::webStep(void* pData)
+void SDLWindowWrapper::_webStep(void* pData)
 {
     SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
@@ -118,7 +118,7 @@ void SDLWindowWrapper::run()
 
 #if defined __EMSCRIPTEN__
 
-    emscripten_set_main_loop_arg(SDLWindowWrapper::webStep, (void*)this, 0, true);
+    emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 0, true);
 
     // unreachable <= "emscripten_set_main_loop_arg" does that
 
@@ -199,39 +199,34 @@ void SDLWindowWrapper::process(unsigned int deltaTime)
                         if (height <= 0)
                             height = 1;
 
-                        onResize(width, height);
+                        _onResize(width, height);
                         break;
                     }
                     case SDL_WINDOWEVENT_SHOWN:
                     {
-                        onVisibilityChange(_visible = true);
+                        _onVisibilityChange(_visible = true);
                         break;
                     }
                     case SDL_WINDOWEVENT_HIDDEN:
                     {
-                        onVisibilityChange(_visible = false);
+                        _onVisibilityChange(_visible = false);
                         break;
                     }
                 }
             }
         }
 
-        onEvent(event);
+        _onEvent(event);
     }
 
-    // const unsigned int currentTime = SDL_GetTicks();
-    // const unsigned int deltaTime = currentTime - _startTime;
-
-    onUpdate(deltaTime);
-
-    // _startTime = currentTime;
+    _onUpdate(deltaTime);
 
     if (!_visible)
         return;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    onRender(*_window);
+    _onRender(*_window);
 
     SDL_GL_SwapWindow(_window);
 }

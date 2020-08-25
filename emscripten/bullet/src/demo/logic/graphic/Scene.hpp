@@ -6,19 +6,21 @@
 class Scene
 {
 public:
+    static void initialise();
     static void renderSimple();
     static void renderAll();
 
 private:
-    static void updateMatrices();
+    static void _updateMatrices();
+    static void _updateCircuitAnimation();
 
-    static void clear();
+    static void _clear();
 
-    static void renderLeadingCarSensors(const glm::mat4& sceneMatrix);
-    static void renderParticles(const glm::mat4& sceneMatrix);
-    static void renderCars(const glm::mat4& sceneMatrix);
-    static void renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails = true);
-    static void renderAnimatedCircuit(const glm::mat4& sceneMatrix);
-    static void renderHUD();
+    static void _renderLeadingCarSensors(const glm::mat4& sceneMatrix);
+    static void _renderParticles(const glm::mat4& sceneMatrix);
+    static void _renderCars(const glm::mat4& sceneMatrix);
+    static void _renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails = true);
+    static void _renderAnimatedCircuit(const glm::mat4& sceneMatrix);
+    static void _renderHUD();
 
 };

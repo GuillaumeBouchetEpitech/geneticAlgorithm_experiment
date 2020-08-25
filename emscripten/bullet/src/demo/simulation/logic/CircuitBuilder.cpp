@@ -185,8 +185,8 @@ void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
     t_vec3Array colors;
     t_indices indices;
 
-    vertices.reserve(_knots.size() * 4);
-    indices.reserve(_knots.size() * 8 + 8);
+    vertices.reserve(_knots.size() * 4); // pre-allocate
+    indices.reserve(_knots.size() * 8 + 8); // pre-allocate
 
     for (unsigned int ii = 0; ii < _knots.size(); ++ii)
     {
@@ -252,7 +252,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     // smooth the circuit
 
     t_knots smoothedVertices;
-    smoothedVertices.reserve(512); // <= ease the reallocation
+    smoothedVertices.reserve(512); // pre-allocate, ease the reallocation
 
     {
         enum class e_SplineType: unsigned int

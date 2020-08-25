@@ -10,7 +10,7 @@
 #include <stdexcept> // <= std::invalid_argument / runtime_error
 #include <memory> // <= std::unique_ptr / make_unique
 
-namespace /* anonymous */
+namespace utilities
 {
     bool getShaderSource(const std::string& filename, std::string& source)
     {
@@ -53,12 +53,12 @@ namespace /* anonymous */
 
     void printShaderInfo(GLuint shader)
     {
-        printInfo(shader, glGetShaderiv, glGetShaderInfoLog);
+        utilities::printInfo(shader, glGetShaderiv, glGetShaderInfoLog);
     }
 
     void printProgramInfo(GLuint program)
     {
-        printInfo(program, glGetProgramiv, glGetProgramInfoLog);
+        utilities::printInfo(program, glGetProgramiv, glGetProgramInfoLog);
     }
 
     GLuint loadShader(GLenum type, const std::string& source)
@@ -66,12 +66,12 @@ namespace /* anonymous */
         GLuint shaderId = glCreateShader(type);
 
         if (shaderId == 0)
-            D_THROW(std::runtime_error, "fail to create a shade"
+            D_THROW(std::runtime_error, "fail to create a shader"
                     << ", source=" << source);
 
-        const char*    pString = source.c_str();
-        const int    length = source.size();
-        glShaderSource(shaderId, 1, &pString, &length);
+        const char* content = source.c_str();
+        const int   length = source.size();
+        glShaderSource(shaderId, 1, &content, &length);
         glCompileShader(shaderId);
 
         GLint compiled;
@@ -79,7 +79,7 @@ namespace /* anonymous */
 
         if (!compiled)
         {
-            printShaderInfo(shaderId);
+            utilities::printShaderInfo(shaderId);
 
             glDeleteShader(shaderId);
 
@@ -98,18 +98,18 @@ Shader::Shader(const t_def& def)
     std::string    vertexSourceCode;
     std::string    fragmentSourceCode;
 
-    if (!getShaderSource(def.filenames.vertex, vertexSourceCode))
+    if (!utilities::getShaderSource(def.filenames.vertex, vertexSourceCode))
         D_THROW(std::invalid_argument, "fail to read a file"
                 << ", source=" << def.filenames.vertex);
 
-    if (!getShaderSource(def.filenames.fragment, fragmentSourceCode))
+    if (!utilities::getShaderSource(def.filenames.fragment, fragmentSourceCode))
         D_THROW(std::invalid_argument, "fail to read a file"
                 << ", source=" << def.filenames.fragment);
 
     //
 
-    GLuint vertexShader = loadShader(GL_VERTEX_SHADER, vertexSourceCode);
-    GLuint fragmentShader = loadShader(GL_FRAGMENT_SHADER, fragmentSourceCode);
+    GLuint vertexShader = utilities::loadShader(GL_VERTEX_SHADER, vertexSourceCode);
+    GLuint fragmentShader = utilities::loadShader(GL_FRAGMENT_SHADER, fragmentSourceCode);
 
     _programId = glCreateProgram();
 
@@ -121,13 +121,15 @@ Shader::Shader(const t_def& def)
     glAttachShader(_programId, vertexShader);
     glAttachShader(_programId, fragmentShader);
     glLinkProgram(_programId);
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
 
     GLint linkedStatus;
     glGetProgramiv(_programId, GL_LINK_STATUS, &linkedStatus);
 
     if (linkedStatus == GL_FALSE)
     {
-        printProgramInfo(_programId);
+        utilities::printProgramInfo(_programId);
 
         glDeleteProgram(_programId);
 

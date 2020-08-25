@@ -65,7 +65,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     }
 
     std::vector<float> input;
-    input.reserve(_eyeSensors.size());
+    input.reserve(_eyeSensors.size()); // pre-allocate
     for (const auto& eyeSensor : _eyeSensors)
     {
         // ensure input range is [0..1]
@@ -137,10 +137,8 @@ void Car::_collideEyeSensors()
 
         // eye sensors collide ground + walls
         PhysicWorld::t_raycastParams params(sensor.near, sensor.far);
-        params.collisionGroup = toUnderlying(Groups::sensor);
-        params.collisionMask = toUnderlying(Groups::ground) | toUnderlying(Groups::wall);
-
-        // D_MYLOG(params.collisionMask);
+        params.collisionGroup = toUnderlying(PhysicWorld::Groups::sensor);
+        params.collisionMask = toUnderlying(PhysicWorld::Masks::eyeSensor);
 
         bool hasHit = _physicWorld.raycast(params);
 
@@ -159,8 +157,8 @@ void Car::_collideGroundSensor()
 
     // ground sensor collide only ground
     PhysicWorld::t_raycastParams params(_groundSensor.near, _groundSensor.far);
-    params.collisionGroup = toUnderlying(Groups::sensor);
-    params.collisionMask = toUnderlying(Groups::ground);
+    params.collisionGroup = toUnderlying(PhysicWorld::Groups::sensor);
+    params.collisionMask = toUnderlying(PhysicWorld::Masks::groundSensor);
 
     bool hasHitGround = _physicWorld.raycast(params);
 
@@ -213,7 +211,6 @@ void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
 
     _updateSensors();
 
-    // _physicWorld.removeVehicle(*_vehicle);
     _physicWorld.addVehicle(_vehicle); // ensure vehicle presence
 }
 

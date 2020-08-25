@@ -216,98 +216,6 @@ void State_StartGeneration::update(int deltaTime)
 
     } // camera tracking
 
-    { // circuit animation
-
-        // auto&    leaderCar = logic.leaderCar;
-        auto&   animation = logic.circuitAnimation;
-
-        if (logic.isAccelerated)
-        {
-            animation.targetValue = animation.maxUpperValue;
-            animation.lowerValue = animation.maxUpperValue;
-            animation.upperValue = animation.maxUpperValue;
-        }
-        else
-        {
-            animation.targetValue = 3.0f; // <= default value
-
-            int bestGroundIndex = -1;
-            for (unsigned int ii = 0; ii < simulation.getTotalCars(); ++ii)
-            {
-                const auto& carData = simulation.getCarResult(ii);
-
-                if (!carData.isAlive || bestGroundIndex > carData.groundIndex)
-                    continue;
-
-                bestGroundIndex = carData.groundIndex;
-            }
-
-            // do we have a car to focus the camera on?
-            if (bestGroundIndex >= 0)
-                animation.targetValue += bestGroundIndex;
-
-            // lower value, closest from the cars
-
-            if (animation.lowerValue > animation.targetValue + 10.0f)
-            {
-                // fall really quickly
-                animation.lowerValue -= 1.0f;
-                if (animation.lowerValue < animation.targetValue)
-                    animation.lowerValue = animation.targetValue;
-            }
-            else if (animation.lowerValue > animation.targetValue)
-            {
-                // fall quickly
-                animation.lowerValue -= 0.3f;
-                if (animation.lowerValue < animation.targetValue)
-                    animation.lowerValue = animation.targetValue;
-            }
-            else
-            {
-                // rise slowly
-                animation.lowerValue += 0.2f;
-                if (animation.lowerValue > animation.targetValue)
-                    animation.lowerValue = animation.targetValue;
-            }
-
-            // upper value, farthest from the cars
-
-            if (animation.upperValue > animation.targetValue + 10.0f)
-            {
-                // fall really quickly
-                animation.upperValue -= 0.6f;
-                if (animation.upperValue < animation.targetValue)
-                    animation.upperValue = animation.targetValue;
-            }
-            else if (animation.upperValue > animation.targetValue)
-            {
-                // fall slowly
-                animation.upperValue -= 0.1f;
-                if (animation.upperValue < animation.targetValue)
-                    animation.upperValue = animation.targetValue;
-            }
-            else
-            {
-                // rise really quickly
-                animation.upperValue += 1.0f;
-                if (animation.upperValue > animation.targetValue)
-                    animation.upperValue = animation.targetValue;
-            }
-
-        }
-
-        auto& animatedCircuit = graphic.geometries.animatedCircuit;
-
-        const unsigned int verticesLength = 36; // <= 3 * 12 triangles
-        int indexValue = std::ceil(animation.upperValue) * verticesLength;
-        if (indexValue > animation.maxPrimitiveCount)
-            indexValue = animation.maxPrimitiveCount;
-
-        animatedCircuit.ground.setPrimitiveCount(indexValue);
-        animatedCircuit.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
-
-    } // circuit animation
-
     Data::get().logic.state.countdown -= deltaTime;
     if (Data::get().logic.state.countdown <= 0)
         StateManager::get()->changeState(StateManager::States::eRunning);
@@ -328,8 +236,6 @@ void State_StartGeneration::resize(int width, int height)
 
 void State_StartGeneration::visibility(bool visible)
 {
-    // static_cast<void>(visible); // <= unused
-
     if (!visible)
     {
         Data::get().logic.state.previousState = StateManager::States::eStartGeneration;

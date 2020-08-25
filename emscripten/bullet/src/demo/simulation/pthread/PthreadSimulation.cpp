@@ -33,8 +33,7 @@ void PthreadSimulation::initialise(const t_def& def)
     _physicWorlds.resize(_totalCores);
     _coreStates.resize(_totalCores);
 
-    {
-        // generateCircuit()
+    { // generate circuit
 
         int groundIndex = 0;
         auto onNewPhysicGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
@@ -74,18 +73,19 @@ void PthreadSimulation::initialise(const t_def& def)
         circuitBuilder.generate(onNewPhysicGroundPatch, onNewPhysicWallPatch);
 
         _startTransform = circuitBuilder.getStartTransform();
-    }
 
-    {
-        // generateCars()
+    } // generate circuit
 
-        _cars.reserve(totalGenomes);
+    { // generate cars
+
+        _cars.reserve(totalGenomes); // pre-allocate
         for (auto& physicWorld : _physicWorlds)
             for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
                 _cars.push_back(Car(physicWorld,
                                     _startTransform.position,
                                     _startTransform.quaternion));
-    }
+
+    } // generate cars
 
     _carsData.resize(totalGenomes);
 }

@@ -51,7 +51,7 @@ OpenALSoundManager::OpenALSoundManager()
     {
         const unsigned int totalSources = 30;
 
-        _sources.reserve(totalSources);
+        _sources.reserve(totalSources); // pre-allocate
         for (unsigned int ii = 0; ii < totalSources; ++ii)
         {
             ALuint currSource;

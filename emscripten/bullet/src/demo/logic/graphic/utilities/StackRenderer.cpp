@@ -5,8 +5,8 @@
 
 StackRenderer::StackRenderer()
 {
-    _lineVertices.reserve(128 * 2);
-    _triangleVertices.reserve(128 * 3);
+    _lineVertices.reserve(128 * 2); // pre-allocate
+    _triangleVertices.reserve(128 * 3); // pre-allocate
 }
 
 StackRenderer::~StackRenderer()

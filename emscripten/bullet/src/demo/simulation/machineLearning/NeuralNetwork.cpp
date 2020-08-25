@@ -113,7 +113,7 @@ void NeuralNetwork::_processLayer(const t_layer& layer,
                                   std::vector<float>& output) const
 {
     output.clear();
-    output.reserve(layer.size());
+    output.reserve(layer.size()); // pre-allocate
 
     // Cycle over all the neurons and sum their weights against the inputs.
     for (unsigned int ii = 0; ii < layer.size(); ++ii)
@@ -165,7 +165,7 @@ void NeuralNetwork::setWeights(const std::vector<float>& inputWeights)
 void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
 {
     outputWeights.clear();
-    outputWeights.reserve(_topology.getTotalWeights());
+    outputWeights.reserve(_topology.getTotalWeights()); // pre-allocate
 
     for (const t_layer& layer : _layerHidden)
         for (const t_neuron& neuron : layer)

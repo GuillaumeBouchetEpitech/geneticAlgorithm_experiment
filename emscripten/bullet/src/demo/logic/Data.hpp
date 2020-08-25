@@ -255,7 +255,6 @@ public:
         struct t_carsTrails
         {
             std::map<unsigned int, unsigned int> genomeIndexMap;
-            // std::vector<std::vector<glm::vec3>> allTrails;
 
             struct t_wheelsTrail
             {

@@ -41,7 +41,7 @@ void State_WebWorkersLoading::update(int deltaTime)
     }
     else
     {
-        // to ensure the message is visible, what the user is wait for
+        // to ensure the message is visible, what the user is waiting for
         logic.state.countdown -= deltaTime;
         if (logic.state.countdown <= 0)
             StateManager::get()->changeState(StateManager::States::eStartGeneration);
@@ -63,7 +63,8 @@ void State_WebWorkersLoading::resize(int width, int height)
 
 void State_WebWorkersLoading::visibility(bool visible)
 {
-    if (!visible) {
+    if (!visible)
+    {
         Data::get().logic.state.previousState = StateManager::States::eWorkersLoading;
         StateManager::get()->changeState(StateManager::States::ePaused);
     }

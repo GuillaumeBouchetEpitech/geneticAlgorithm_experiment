@@ -25,14 +25,6 @@ public:
 #define D_MYLOG_PREFIX "MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
-#define D_MYLOG_MAKE_STRING(resultString, streamMsg) \
-{ \
-    std::stringstream sstr; \
-    sstr << streamMsg; \
-    resultString = sstr.str(); \
-}
-
-// one line macro allowing flexible logs with the current time and "stacktrace"
 #define D_MYLOG_MAKE_PREFIXED_STRING(resultString, streamMsg) \
 { \
     std::stringstream sstr; \
@@ -53,16 +45,3 @@ public:
     D_MYLOG_MAKE_PREFIXED_STRING(log, streamMsg) \
     D_MYLOG_MAKE_LOG(log) \
 }
-
-#if 0
-
-#define D_MYLOG(streamMsg)  D_MYLOG_MAKE_LOG(D_MYLOG_MAKE_STRING(streamMsg))
-
-#define D_MYLOG(msg) \
-{ \
-    std::stringstream sstr; \
-    sstr << "MYLOG [" << TraceLogger::getTime() << "] " << D_MYLOG_STACK << " -> " << msg; \
-    TraceLogger::log(sstr.str()); \
-}
-
-#endif

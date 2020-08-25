@@ -1,7 +1,7 @@
 
 import Logger from "./utilities/Logger.js";
 
-const onGlobalPageLoad = () => {
+const onGlobalPageLoad = async () => {
 
     const logger = new Logger("loggerOutput");
 
@@ -118,10 +118,8 @@ const onGlobalPageLoad = () => {
         //
 
         const webGLExtensions = webglCtx.getSupportedExtensions();
-        // for (let ii = 0; ii < webGLExtensions.length; ++ii)
-        //     logger.error(`[JS] ${ii}: "${webGLExtensions[ii]}"`);
 
-        // <= NOTE: incomplete names, require indexOf()
+        // NOTE: incomplete names, require indexOf()
         const mandatoryWebGLExtensions = [ "instanced_arrays", "vertex_array_object" ];
 
         mandatoryWebGLExtensions.forEach((extensionName) => {
@@ -234,23 +232,29 @@ const onGlobalPageLoad = () => {
 
     Module.setStatus("Downloading...");
 
-    const scriptLoadingUtility = (src) => {
-        return new Promise(function(resolve, reject) {
-            const scriptElement = document.createElement("script");
-            scriptElement.src = src;
-            scriptElement.onprogress = (event) => logger.log("event", event);
-            scriptElement.onload = resolve;
-            scriptElement.onerror = reject;
-            document.head.appendChild(scriptElement);
-        });
-    }
+    try {
 
-    scriptLoadingUtility(`./${scriptFolder}/index.js`)
-        .then(() => {
-            logger.log("[JS] wasm script: loading successful");
-            showCanvas();
-        })
-        .catch((err) => logger.error(`[JS] wasm script: loading failed, err=${err.message}`));
+        const scriptLoadingUtility = (src) => {
+            return new Promise(function(resolve, reject) {
+                const scriptElement = document.createElement("script");
+                scriptElement.src = src;
+                scriptElement.onprogress = (event) => logger.log("event", event);
+                scriptElement.onload = resolve;
+                scriptElement.onerror = reject;
+                document.head.appendChild(scriptElement);
+            });
+        }
+
+        await scriptLoadingUtility(`./${scriptFolder}/index.js`)
+
+        logger.log("[JS] wasm script: loading successful");
+
+        showCanvas();
+    }
+    catch (err) {
+
+        logger.error(`[JS] wasm script: loading failed, err=${err.message}`);
+    }
 };
 
 window.addEventListener("load", onGlobalPageLoad);

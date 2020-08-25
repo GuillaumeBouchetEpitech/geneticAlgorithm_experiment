@@ -25,7 +25,7 @@ void GeneticAlgorithm::initialise(const t_def& def)
     // set the genomes and their neural network
 
     _genomes.resize(def.totalGenomes);
-    _neuralNetworks.reserve(def.totalGenomes);
+    _neuralNetworks.reserve(def.totalGenomes); // pre-allocate
 
     t_RNG::ensureRandomSeed();
 
@@ -41,7 +41,6 @@ void GeneticAlgorithm::initialise(const t_def& def)
         _neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
         _neuralNetworks.back().setWeights(genome.weights);
     }
-
 }
 
 bool GeneticAlgorithm::breedPopulation()
@@ -54,29 +53,33 @@ bool GeneticAlgorithm::breedPopulation()
 
     const auto& latestBestGenome = bestGenomes.front();
 
-    bool smarterGeneration = (latestBestGenome.fitness > _bestGenome.fitness);
-    bool stallingGeneration = (latestBestGenome.fitness == _bestGenome.fitness);
+    const auto& bestGenome = _bestGenomes[0];
+    bool smarterGeneration = (latestBestGenome.fitness > bestGenome.fitness);
+    bool stallingGeneration = (latestBestGenome.fitness == bestGenome.fitness);
 
     D_MYLOG((smarterGeneration ? "++" : (stallingGeneration ? "==" : "--"))
             << " generation=" << _currentGeneration
             << std::fixed
             << std::setprecision(1)
             << ", fitness:"
-            << " [best=" << _bestGenome.fitness << "]"
+            << " [best=" << bestGenome.fitness << "]"
             << " [latest=" << latestBestGenome.fitness << "]"
             << ", diff=" << (smarterGeneration ? "+" : "")
-            << (latestBestGenome.fitness - _bestGenome.fitness));
+            << (latestBestGenome.fitness - bestGenome.fitness));
 
-    if (smarterGeneration)
-        _bestGenome = latestBestGenome;
+    // refresh the _bestGenomes internal array
+    for (unsigned int ii = 0; ii < _bestGenomes.size(); ++ii)
+        if (_bestGenomes[ii].fitness < bestGenomes[ii].fitness)
+            _bestGenomes[ii] = bestGenomes[ii];
 
     t_genomes offsprings;
-    offsprings.reserve(_genomes.size());
+    offsprings.reserve(_genomes.size()); // pre-allocate
 
     { // elitism: keep the current best
 
-        if (_bestGenome.fitness > 0.0f)
-            offsprings.push_back(_bestGenome);
+        for (unsigned int ii = 0; ii < _bestGenomes.size(); ++ii)
+            if (_bestGenomes[ii].fitness > 0.0f)
+                offsprings.push_back(_bestGenomes[ii]);
 
     } // elitism: keep the current best
 
@@ -163,15 +166,15 @@ void GeneticAlgorithm::_getBestGenomes(t_genomes& output) const
     };
     std::vector<t_sortPair> sortedGenomes;
 
-    sortedGenomes.reserve(_genomes.size());
+    sortedGenomes.reserve(_genomes.size()); // pre-allocate
     for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
         sortedGenomes.push_back({ _genomes[ii].fitness, ii });
 
     // sort by fitness, the higher the better
-    auto cmpFunc = [](t_sortPair a, t_sortPair b) { return a.fitness > b.fitness; };
+    auto cmpFunc = [](const t_sortPair& a, const t_sortPair& b) { return a.fitness > b.fitness; };
     std::sort(sortedGenomes.begin(), sortedGenomes.end(), cmpFunc);
 
-    output.reserve(_genomes.size());
+    output.reserve(_genomes.size()); // pre-allocate
     for (const auto& sortedGenome : sortedGenomes)
         output.push_back(_genomes[sortedGenome.index]);
 }
@@ -224,7 +227,7 @@ const GeneticAlgorithm::t_genomes& GeneticAlgorithm::getGenomes() const
 
 const GeneticAlgorithm::t_genome& GeneticAlgorithm::getBestGenome() const
 {
-    return _bestGenome;
+    return _bestGenomes[0];
 }
 
 unsigned int GeneticAlgorithm::getGenerationNumber() const

@@ -68,9 +68,8 @@ void    WorkerConsumer::send()
 
 void    WorkerConsumer::initialiseSimulation(MessageView& message)
 {
-    // std::string circuitFilename;
     CircuitBuilder::t_startTransform startTransform;
-    CircuitBuilder::t_knots knots;
+    CircuitBuilder::t_knots circuitKnots;
 
     bool                        isUsingBias = true;
     unsigned int                layerInput = 0;
@@ -78,16 +77,14 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
     std::vector<unsigned int>   layerHidden;
     unsigned int                layerOutput = 0;
 
-    {
-        // message >> circuitFilename;
-
+    { // read initialisation packet
         message >> startTransform.position;
         message >> startTransform.quaternion;
 
         int knotsLength = 0;
         message >> knotsLength;
 
-        knots.reserve(knotsLength); // <= pre-allocate
+        circuitKnots.reserve(knotsLength); // <= pre-allocate
 
         for (int ii = 0; ii < knotsLength; ++ii)
         {
@@ -95,7 +92,7 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
 
             message >> knot.left >> knot.right >> knot.minDistance >> knot.color;
 
-            knots.push_back(knot);
+            circuitKnots.push_back(knot);
         }
 
         //
@@ -115,9 +112,11 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
             layerHidden.push_back(layerValue);
         }
         message >> layerOutput;
-    }
 
-    {
+    } // read initialisation packet
+
+    { // generate circuit
+
         int physicIndex = 0;
 
         auto onNewGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
@@ -143,28 +142,32 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
         };
 
         CircuitBuilder circuitBuilder;
-        // circuitBuilder.load(circuitFilename);
-        circuitBuilder.load(startTransform, knots);
+        circuitBuilder.load(startTransform, circuitKnots);
         circuitBuilder.generate(onNewGroundPatch, onNewWallPatch);
 
         _startTransform = circuitBuilder.getStartTransform();
-    }
 
-    {
-        _cars.reserve(_genomesPerCore);
+    } // generate circuit
+
+    { // generate cars
+
+        _cars.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
             _cars.push_back(Car(_physicWorld,
                                 _startTransform.position,
                                 _startTransform.quaternion));
-    }
 
-    {
+    } // generate cars
+
+    { // generate neural networks
+
         _neuralNetworkTopology.init(layerInput, layerHidden, layerOutput, isUsingBias);
 
-        _neuralNetworks.reserve(_genomesPerCore);
+        _neuralNetworks.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
             _neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
-    }
+
+    } // generate neural networks
 
     _message.clear();
     _message << char(messages::server::eWebWorkerLoaded);

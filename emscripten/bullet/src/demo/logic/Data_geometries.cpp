@@ -183,7 +183,7 @@ void generateSphereVerticesFilled(float radius,
         { 6, 1,10}, { 9, 0,11}, { 9,11, 2}, { 9, 2, 5}, { 7, 2,11}
     };
 
-    vertices.reserve(indices.size() * 3);
+    vertices.reserve(indices.size() * 3); // pre-allocate
     for (const glm::ivec3& index : indices) {
         vertices.push_back(positions[index.x]);
         vertices.push_back(positions[index.y]);
@@ -297,7 +297,7 @@ void Data::initialiseGeometries()
         std::array<int, 6> indices{{ 1,0,2,  1,3,2 }};
 
         std::vector<t_vertex> letterVertices;
-        letterVertices.reserve(indices.size());
+        letterVertices.reserve(indices.size()); // pre-allocate
 
         for (int index : indices)
             letterVertices.push_back(vertices[index]);
@@ -364,7 +364,7 @@ void Data::initialiseGeometries()
         //
 
         geometryBuilder
-            .setPrimitiveType(GL_LINE_STRIP); // <= reused instead of reseted
+            .setPrimitiveType(GL_LINE_STRIP); // <= reused instead of reset
 
         auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
 

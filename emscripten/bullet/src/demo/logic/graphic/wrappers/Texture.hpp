@@ -17,7 +17,7 @@ public:
     ~Texture();
 
 public:
-    bool load(const std::string& filename, bool pixelated = false, bool repeat = false);
+    void load(const std::string& filename, bool pixelated = false, bool repeat = false);
 
 public:
     const glm::ivec2& getSize() const;

@@ -132,13 +132,11 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld)
 
     for (auto& wheel : wheels)
     {
-        auto connectionPoint = wheel.connectionPoint;
-
         btWheelInfo& wheelInfo = _bullet.vehicle->addWheel(
-                                            connectionPoint, wheelDirectionCS0,
-                                            wheelAxleCS, suspensionRestLength,
-                                            wheelRadius, tuning,
-                                            wheel.isFrontWheel
+                                            wheel.connectionPoint,
+                                            wheelDirectionCS0, wheelAxleCS,
+                                            suspensionRestLength, wheelRadius,
+                                            tuning, wheel.isFrontWheel
                                         );
 
         wheelInfo.m_suspensionStiffness = suspensionStiffness;

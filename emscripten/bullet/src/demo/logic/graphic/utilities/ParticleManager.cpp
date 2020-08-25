@@ -36,7 +36,7 @@ void ParticleManager::update(float delta)
 
     std::vector<t_attributes> particlesInstances;
 
-    // pre allocate (1 position + 5 trailing positions)
+    // pre-allocate (1 position + 5 trailing positions)
     particlesInstances.reserve(_particles.size() * D_PARTICLE_TRAIL_SIZE);
 
     for (auto& particle : _particles)

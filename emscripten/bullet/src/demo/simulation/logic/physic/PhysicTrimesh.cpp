@@ -27,7 +27,7 @@ PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
     _bullet.shape = new btBvhTriangleMeshShape(_bullet.indexVertexArrays, useQuantizedAabbCompression);
 
     btScalar mass = 0;
-    btVector3 localInertia(0,0,0);
+    btVector3 localInertia(0, 0, 0);
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, nullptr, _bullet.shape, localInertia);
 
     _bullet.body = new btRigidBody(rbInfo);
