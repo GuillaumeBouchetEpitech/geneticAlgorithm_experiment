@@ -1,10 +1,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "WebWorkersSimulation.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
@@ -208,12 +204,12 @@ void WebWorkersSimulation::setOnGenerationEndCallback(AbstactSimulation::t_gener
     _callbacks.onGenerationEnd = callback;
 }
 
-const GeneticAlgorithm::t_genomes& WebWorkersSimulation::getGenomes() const
+const t_genomes& WebWorkersSimulation::getGenomes() const
 {
     return _geneticAlgorithm.getGenomes();
 }
 
-const GeneticAlgorithm::t_genome& WebWorkersSimulation::getBestGenome() const
+const Genome& WebWorkersSimulation::getBestGenome() const
 {
     return _geneticAlgorithm.getBestGenome();
 }

@@ -499,7 +499,6 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
     GLint colorLoc = shader.getUniform("u_color");
-
     glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
 
     wireframes.circuitSkelton.render();
@@ -572,12 +571,22 @@ void Scene::_renderHUD()
         graphic.textures.textFont.bind();
 
         textRenderer.clear();
-        textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
 
-        if (!hudText.pthreadWarning.empty())
-            textRenderer.push({ 800 - 26 * 16 - 8, 3 * 16 - 8 }, hudText.pthreadWarning, 1.0f);
+        { // top-left header text
 
-        {
+            textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
+
+        } // top-left header text
+
+        { // bottom-right pthread warning
+
+            if (!hudText.pthreadWarning.empty())
+                textRenderer.push({ 800 - 26 * 16 - 8, 3 * 16 - 8 }, hudText.pthreadWarning, 1.0f);
+
+        } // bottom-right pthread warning
+
+        { // top-left performance stats
+
             std::stringstream sstr;
 
             sstr
@@ -587,9 +596,11 @@ void Scene::_renderHUD()
             std::string str = sstr.str();
 
             textRenderer.push({ 8, 600 - 5 * 16 - 8 }, str, 1.0f);
-        }
 
-        {
+        } // top-left performance stats
+
+        { // bottom-left text
+
             const unsigned int  totalCars = logic.cores.totalCars;
             unsigned int        carsLeft = 0;
             float               localBestFitness = 0.0f;
@@ -616,9 +627,10 @@ void Scene::_renderHUD()
             std::string str = sstr.str();
 
             textRenderer.push({ 8, 8 + 2 * 16 }, str, 1.0f);
-        }
 
-        { // advertise  a new leader
+        } // bottom-left text
+
+        { // advertise a new leader
 
             if (logic.leaderCar.index >= 0 &&
                 logic.leaderCar.totalTimeAsLeader < 1.0f)
@@ -639,18 +651,17 @@ void Scene::_renderHUD()
                     glm::vec3 screenCoord;
 
                     const glm::vec2 viewportPos(0, 0); // hardcoded :(
-                    const glm::vec2 viewportSize(800, 600); // hardcoded :(
 
-                    sceneToScreen(
+                    bool result = sceneToScreen(
                         carPos,
                         scene.modelView,
                         scene.projection,
                         viewportPos,
-                        viewportSize,
+                        graphic.camera.viewportSize,
                         screenCoord
                     );
 
-                    if (screenCoord.z < 1.0f) // <= is false when out of range
+                    if (result && screenCoord.z < 1.0f) // <= is false when out of range
                     {
                         glm::vec2 textPos = { screenCoord.x + 50, screenCoord.y + 50 };
 
@@ -662,7 +673,7 @@ void Scene::_renderHUD()
                 }
             }
 
-        } // advertise  a new leader
+        } // advertise a new leader
 
         { // show cores status
 
@@ -783,7 +794,7 @@ void Scene::_renderHUD()
 
     } // texts
 
-    { // graphics
+    { // cores history graphics
 
         auto& stackRenderer = graphic.stackRenderer;
         const auto& shader = *graphic.shaders.stackRenderer;
@@ -850,7 +861,7 @@ void Scene::_renderHUD()
 
         stackRenderer.flush();
 
-    } // graphics
+    } // cores history graphics
 
     /**/
     {
@@ -984,14 +995,15 @@ void Scene::_renderHUD()
                 //
                 //
 
+                const unsigned int totalInputs = data.logic.annTopology.getInput();
                 const unsigned int layerSize = 5; // <= hardcoded :(
-                const unsigned int layerCount = data.logic.annTopology.getInput() / layerSize;
+                const unsigned int layerCount = totalInputs / layerSize;
 
                 //
                 //
 
                 std::vector<glm::vec2> allPositions;
-                allPositions.reserve(layerCount * layerSize); // pre-allocate
+                allPositions.reserve(totalInputs); // pre-allocate
                 for (unsigned int ii = 0; ii < layerCount; ++ii)
                     for (unsigned int jj = 0; jj < layerSize; ++jj)
                     {
@@ -1005,14 +1017,6 @@ void Scene::_renderHUD()
 
                 glm::vec2 eyeSize = {19, 19};
 
-                const glm::vec3 vertices[4] = {
-                    { +eyeSize.x * 0.5f, +eyeSize.y * 0.5f, 0.0f },
-                    { -eyeSize.x * 0.5f, +eyeSize.y * 0.5f, 0.0f },
-                    { +eyeSize.x * 0.5f, -eyeSize.y * 0.5f, 0.0f },
-                    { -eyeSize.x * 0.5f, -eyeSize.y * 0.5f, 0.0f },
-                };
-                std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
-
                 for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
                 {
                     const auto& position = allPositions[ii];
@@ -1021,10 +1025,7 @@ void Scene::_renderHUD()
 
                     glm::vec3 color = glm::mix(redColor, greenColor, leader.eyeSensors[ii].value);
 
-                    glm::vec3 tmpPos = glm::vec3(position, 0.0f);
-
-                    stackRenderer.pushTriangle(vertices[indices[0]] + tmpPos, vertices[indices[1]] + tmpPos, vertices[indices[2]] + tmpPos, color);
-                    stackRenderer.pushTriangle(vertices[indices[3]] + tmpPos, vertices[indices[4]] + tmpPos, vertices[indices[5]] + tmpPos, color);
+                    stackRenderer.pushQuad(position, eyeSize, color);
                 }
 
                 // logic.simulation->getBestGenome().id;

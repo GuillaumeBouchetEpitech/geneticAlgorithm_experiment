@@ -21,7 +21,7 @@ class PthreadSimulation
 private:
     unsigned int    _totalCores = 0;
 
-    Producer*   _multithreadProducer;
+    multiThreading::Producer* _multithreadProducer;
 
     /**
      * need multiple physic worlds so that we can divide the
@@ -38,7 +38,7 @@ private:
 
     CircuitBuilder::t_startTransform    _startTransform;
 
-    bool _isFirstFrame = true;
+    bool _isFirstGenerationFrame = true;
 
 private:
     GeneticAlgorithm    _geneticAlgorithm;
@@ -67,7 +67,7 @@ private:
 
 public:
     virtual unsigned int getTotalCores() const override;
-    virtual const AbstactSimulation::t_coreState&  getCoreState(unsigned int index) const override;
+    virtual const AbstactSimulation::t_coreState& getCoreState(unsigned int index) const override;
     virtual const t_carData& getCarResult(unsigned int index) const override;
     virtual unsigned int getTotalCars() const override;
 
@@ -78,8 +78,8 @@ public:
     virtual void setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:
-    virtual const GeneticAlgorithm::t_genomes& getGenomes() const override;
-    virtual const GeneticAlgorithm::t_genome& getBestGenome() const override;
+    virtual const t_genomes& getGenomes() const override;
+    virtual const Genome& getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
 
 };

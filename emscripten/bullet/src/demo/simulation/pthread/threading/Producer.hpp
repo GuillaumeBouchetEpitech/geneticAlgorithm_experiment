@@ -11,36 +11,40 @@
 
 #include <thread>
 
-class Producer
+namespace multiThreading
 {
-    friend class Consumer; // <= so the consumers can call _notifyWorkDone()
 
-private:
-    std::thread _thread;
-    TaskSynchroniser _waitOneTask;
-    TaskSynchroniser _waitAllTask;
+    class Producer
+    {
+        friend class Consumer; // <= so the consumers can call _notifyWorkDone()
 
-    bool _running = true;
+    private:
+        std::thread _thread;
+        TaskSynchroniser _waitOneTask;
+        TaskSynchroniser _waitAllTask;
 
-    std::vector<Consumer*> _consumers;
+        bool _running = true;
 
-    std::list<t_task> _plannedTasks;
-    std::list<t_task> _runningTasks;
-    std::list<t_task> _completedTasks;
+        std::vector<Consumer*> _consumers;
 
-public:
-    Producer(unsigned int totalCores);
-    ~Producer();
+        std::list<t_task> _plannedTasks;
+        std::list<t_task> _runningTasks;
+        std::list<t_task> _completedTasks;
 
-public:
-    void push(const t_task::t_work& work);
-    void push(const t_task::t_work& work, const t_task::t_work& complete);
-    void update();
-    void quit();
-    void waitUntilAllCompleted();
+    public:
+        Producer(unsigned int totalCores);
+        ~Producer();
 
-private:
-    void _notifyWorkDone(Consumer* in_consumer);
-    void _threadedMethod();
+    public:
+        void push(const t_task::t_work& work);
+        void push(const t_task::t_work& work, const t_task::t_work& complete);
+        void update();
+        void quit();
+        void waitUntilAllCompleted();
+
+    private:
+        void _notifyWorkDone(Consumer* in_consumer);
+        void _threadedMethod();
+    };
+
 };
-

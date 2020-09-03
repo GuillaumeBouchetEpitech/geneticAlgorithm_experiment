@@ -1,10 +1,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "WorkerConsumer.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
@@ -28,29 +24,29 @@ WorkerConsumer::WorkerConsumer()
 
 void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
 {
-    MessageView message(dataPointer, dataSize);
+    MessageView receivedMsg(dataPointer, dataSize);
 
     char messageType = 0;
-    message >> messageType;
+    receivedMsg >> messageType;
 
     switch (messages::client(messageType))
     {
         case messages::client::eLoadWorker:
         {
-            initialiseSimulation(message);
+            _initialiseSimulation(receivedMsg);
             break;
         }
 
         case messages::client::eResetAndProcessSimulation:
         {
-            resetSimulation(message);
-            processSimulation();
+            _resetSimulation(receivedMsg);
+            _processSimulation();
             break;
         }
 
         case messages::client::eProcessSimulation:
         {
-            processSimulation();
+            _processSimulation();
             break;
         }
 
@@ -61,12 +57,12 @@ void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void    WorkerConsumer::send()
+void    WorkerConsumer::_send()
 {
     emscripten_worker_respond(const_cast<char*>(_message.getData()), _message.getSize());
 }
 
-void    WorkerConsumer::initialiseSimulation(MessageView& message)
+void    WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 {
     CircuitBuilder::t_startTransform startTransform;
     CircuitBuilder::t_knots circuitKnots;
@@ -78,11 +74,11 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
     unsigned int                layerOutput = 0;
 
     { // read initialisation packet
-        message >> startTransform.position;
-        message >> startTransform.quaternion;
+        receivedMsg >> startTransform.position;
+        receivedMsg >> startTransform.quaternion;
 
         int knotsLength = 0;
-        message >> knotsLength;
+        receivedMsg >> knotsLength;
 
         circuitKnots.reserve(knotsLength); // <= pre-allocate
 
@@ -90,7 +86,7 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
         {
             CircuitBuilder::t_knot knot;
 
-            message >> knot.left >> knot.right >> knot.minDistance >> knot.color;
+            receivedMsg >> knot.left >> knot.right >> knot.minDistance >> knot.color;
 
             circuitKnots.push_back(knot);
         }
@@ -98,20 +94,20 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
         //
         //
 
-        message >> _genomesPerCore;
+        receivedMsg >> _genomesPerCore;
 
         // extract neural network topology
-        message >> isUsingBias;
-        message >> layerInput;
-        message >> totalHidden;
+        receivedMsg >> isUsingBias;
+        receivedMsg >> layerInput;
+        receivedMsg >> totalHidden;
         for (unsigned int ii = 0; ii < totalHidden; ++ii)
         {
             unsigned int layerValue = 0;
-            message >> layerValue;
+            receivedMsg >> layerValue;
 
             layerHidden.push_back(layerValue);
         }
-        message >> layerOutput;
+        receivedMsg >> layerOutput;
 
     } // read initialisation packet
 
@@ -172,23 +168,23 @@ void    WorkerConsumer::initialiseSimulation(MessageView& message)
     _message.clear();
     _message << char(messages::server::eWebWorkerLoaded);
 
-    send();
+    _send();
 }
 
-void    WorkerConsumer::resetSimulation(MessageView& message)
+void    WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
 {
-    const unsigned int  floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
-    const unsigned int  byteWeightsSize = floatWeightsSize * sizeof(float);
+    const unsigned int floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
+    const unsigned int byteWeightsSize = floatWeightsSize * sizeof(float);
 
     auto newWeights = std::make_unique<float[]>(floatWeightsSize);
     float* newWeightsRaw = newWeights.get();
 
     std::vector<float>  weightsBuffer(floatWeightsSize);
-    float*  weightsBufferRaw = weightsBuffer.data();
+    float* weightsBufferRaw = weightsBuffer.data();
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
-        message.read(newWeightsRaw, byteWeightsSize);
+        receivedMsg.read(newWeightsRaw, byteWeightsSize);
 
         memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
         _neuralNetworks[ii].setWeights(weightsBuffer);
@@ -199,14 +195,18 @@ void    WorkerConsumer::resetSimulation(MessageView& message)
     // m_contacts.clear();
 }
 
-void    WorkerConsumer::processSimulation()
+void    WorkerConsumer::_processSimulation()
 {
     // update the simulation
 
     auto start = std::chrono::high_resolution_clock::now();
 
+    //
+    //
+
     _physicWorld.step();
 
+    unsigned int genomesAlive = 0;
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
         auto& car = _cars[ii];
@@ -215,16 +215,17 @@ void    WorkerConsumer::processSimulation()
             continue;
 
         car.update(_neuralNetworks[ii]);
+
+        if (_cars[ii].isAlive())
+            ++genomesAlive;
     }
+
+    //
+    //
 
     auto finish = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
     unsigned int delta = milliseconds.count();
-
-    unsigned int genomesAlive = 0;
-    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-        if (_cars[ii].isAlive())
-            ++genomesAlive;
 
     // send back the result
 
@@ -269,10 +270,5 @@ void    WorkerConsumer::processSimulation()
         _message << output.steer << output.speed;
     }
 
-    // _message << m_contacts.size();
-    // for (const auto& contact : m_contacts)
-    //  _message << contact.first << contact.second;
-    // m_contacts.clear();
-
-    send();
+    _send();
 }

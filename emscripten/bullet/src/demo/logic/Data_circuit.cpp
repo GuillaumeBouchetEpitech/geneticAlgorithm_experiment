@@ -129,7 +129,7 @@ void Data::initialiseCircuit()
     logic.cores.totalCars = logic.cores.totalCores * logic.cores.genomesPerCore;
 
     AbstactSimulation::t_def simulationDef;
-    simulationDef.filename = D_CIRCUIT_FILENAME;
+    simulationDef.filename = "assets/circuits/default.txt";
     simulationDef.genomesPerCore = logic.cores.genomesPerCore;
     simulationDef.totalCores = logic.cores.totalCores;
     simulationDef.neuralNetworkTopology = logic.annTopology;

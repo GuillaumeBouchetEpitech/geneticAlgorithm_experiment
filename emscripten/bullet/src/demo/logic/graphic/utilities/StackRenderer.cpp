@@ -40,17 +40,17 @@ void StackRenderer::pushCross(const glm::vec3& pos,
     if (halfExtent <= 0)
         return;
 
-    glm::vec3 vertices[][2] = {
+    std::array<glm::vec3[2], 3> vertices{{
         { { pos.x - halfExtent, pos.y, pos.z },
           { pos.x + halfExtent, pos.y, pos.z } },
         { { pos.x, pos.y - halfExtent, pos.z },
           { pos.x, pos.y + halfExtent, pos.z } },
         { { pos.x, pos.y, pos.z - halfExtent },
           { pos.x, pos.y, pos.z + halfExtent } }
-    };
+    }};
 
-    for (int ii = 0; ii < 3; ++ii)
-        pushLine(vertices[ii][0], vertices[ii][1], color);
+    for (const auto& elem : vertices)
+        pushLine(elem[0], elem[1], color);
 }
 
 void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB,
@@ -64,6 +64,21 @@ void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB,
     _triangleVertices.push_back({ posC, color });
 }
 
+void StackRenderer::pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec3& color)
+{
+    const glm::vec2 hsize = size * 0.5f;
+
+    const std::array<glm::vec3, 4> vertices = {{
+        { center.x + hsize.x, center.y + hsize.y, 0.0f },
+        { center.x - hsize.x, center.y + hsize.y, 0.0f },
+        { center.x + hsize.x, center.y - hsize.y, 0.0f },
+        { center.x - hsize.x, center.y - hsize.y, 0.0f },
+    }};
+    std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
+
+    pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], color);
+    pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], color);
+}
 
 void StackRenderer::pushLine(const glm::vec2& posA,
                              const glm::vec2& posB,

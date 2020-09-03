@@ -8,6 +8,6 @@
 { \
     std::string log; \
     D_MYLOG_MAKE_PREFIXED_STRING(log, "[EXCEPTION] type: "#exceptionType << ", msg: " << exceptionMsg) \
-    D_MYLOG_MAKE_LOG(log) \
+    TraceLogger::log(log); \
     throw exceptionType(log); \
 }

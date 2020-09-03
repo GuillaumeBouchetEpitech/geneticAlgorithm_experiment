@@ -6,6 +6,8 @@
 
 ParticleManager::ParticleManager()
 {
+    _particles.reserve(2048); // pre-allocate
+    _particlesInstances.reserve(2048); // pre-allocate
 }
 
 void ParticleManager::update(float delta)
@@ -27,17 +29,9 @@ void ParticleManager::update(float delta)
         _particles.pop_back();
     }
 
-    struct t_attributes
-    {
-        glm::vec3   position;
-        float       scale;
-        glm::vec3   color;
-    };
-
-    std::vector<t_attributes> particlesInstances;
-
-    // pre-allocate (1 position + 5 trailing positions)
-    particlesInstances.reserve(_particles.size() * D_PARTICLE_TRAIL_SIZE);
+    // pre-allocate (1 position + N trailing positions)
+    _particlesInstances.reserve(_particles.size() * D_PARTICLE_TRAIL_SIZE);
+    _particlesInstances.clear();
 
     for (auto& particle : _particles)
     {
@@ -56,28 +50,19 @@ void ParticleManager::update(float delta)
         float localScale = particle.life / particle.maxLife * particle.scale;
 
         // push as instance
-        for (unsigned int ii = 0; ii < particle.trail.size(); ++ii)
-            particlesInstances.push_back({ particle.trail[ii], localScale, particle.color });
-        particlesInstances.push_back({ particle.position, localScale, particle.color });
+        for (const auto& trailPos : particle.trail)
+            _particlesInstances.push_back({ trailPos, localScale, particle.color });
+        _particlesInstances.push_back({ particle.position, localScale, particle.color });
     }
 
     auto& firework = Data::get().graphic.geometries.particles.firework;
 
-    firework.updateBuffer(1, particlesInstances);
-    firework.setInstancedCount(particlesInstances.size());
+    firework.updateBuffer(1, _particlesInstances);
+    firework.setInstancedCount(_particlesInstances.size());
 }
 
 void ParticleManager::emitParticles(const glm::vec3& position)
 {
-    // {
-    //     glm::vec3 velocity = { 0.0f, 0.0f, 10.0f };
-    //     glm::vec3 color = { 1.0f, 0.0f, 0.0f };
-    //     float scale = 5.0f;
-    //     float life = 0.5f;
-
-    //     _particles.push_back({ position, velocity, color, scale, life });
-    // }
-
     const int totalParticles = t_RNG::getRangedValue(10, 15);
     const float maxVelocity = 25.0f;
 

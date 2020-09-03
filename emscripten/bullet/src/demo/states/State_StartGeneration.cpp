@@ -160,14 +160,14 @@ void State_StartGeneration::update(int deltaTime)
             );
 
             if (rotateLeft)
-                camera.rotations.theta -= 2.0f * elapsedTime;
-            else if (rotateRight)
                 camera.rotations.theta += 2.0f * elapsedTime;
+            else if (rotateRight)
+                camera.rotations.theta -= 2.0f * elapsedTime;
 
             if (rotateUp)
-                camera.rotations.phi += 1.0f * elapsedTime;
-            else if (rotateDown)
                 camera.rotations.phi -= 1.0f * elapsedTime;
+            else if (rotateDown)
+                camera.rotations.phi += 1.0f * elapsedTime;
 
 #if not defined D_WEB_WEBWORKER_BUILD
 
@@ -195,15 +195,14 @@ void State_StartGeneration::update(int deltaTime)
         {
             cameraNextDistance = 40.0f;
 
-            // const auto& carResult = simulation.getCarResult(leaderCar.index);
             const auto& carResult = simulation.getCarResult(0);
 
             // this part elevate where the camera look along the up axis of the car
             // => without it the camera look at the ground
-            // => mostly useful for a shoulder camera (TODO)
-            glm::vec4   carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
+            // => mostly useful for a shoulder camera
+            glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
-            cameraNextCenter = glm::vec3(carOrigin);
+            cameraNextCenter = carOrigin;
         }
 
         //

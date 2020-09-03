@@ -162,14 +162,14 @@ void State_Running::update(int deltaTime)
             );
 
             if (rotateLeft)
-                camera.rotations.theta -= 2.0f * elapsedTime;
-            else if (rotateRight)
                 camera.rotations.theta += 2.0f * elapsedTime;
+            else if (rotateRight)
+                camera.rotations.theta -= 2.0f * elapsedTime;
 
             if (rotateUp)
-                camera.rotations.phi += 1.0f * elapsedTime;
-            else if (rotateDown)
                 camera.rotations.phi -= 1.0f * elapsedTime;
+            else if (rotateDown)
+                camera.rotations.phi += 1.0f * elapsedTime;
 
 #if not defined D_WEB_WEBWORKER_BUILD
 

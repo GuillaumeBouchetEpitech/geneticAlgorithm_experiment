@@ -36,9 +36,9 @@ const listWiFiIpAddresses = () => {
         });
     });
 
-    const uniqueValues = Array.from(new Set(allInterfaces));
-    for (const value of uniqueValues)
-        console.log(` => ${value}`);
+    const uniqueInterfaces = Array.from(new Set(allInterfaces));
+    for (const interface of uniqueInterfaces)
+        console.log(` => ${interface}`);
 }
 
 // maps file extention to MIME typere
@@ -89,15 +89,20 @@ const onFileRequest = (req, res) => {
 
         const splittedPath = parsedUrl.pathname.split("/").filter(item => item.length > 0);
 
-        // console.log(req.headers.host, req.url)
-
+        // link to parent folder (if any)
         if (splittedPath.length > 0) {
+
+            // array copy
             const copySplittedPath = splittedPath.slice(0);
+
+            // we want the previous folder
             copySplittedPath.pop();
-            const url = `http://${req.headers.host}/${copySplittedPath.join("/")}`
-            allEntries.push(`<a href="${url}">${url}</a>`)
+
+            const url = `http://${req.headers.host}/${copySplittedPath.join("/")}`;
+            allEntries.push(`<a href="${url}">${url}</a>`);
         }
 
+        // links to folder's content
         for (const dirent of content) {
 
             let url;
@@ -106,7 +111,7 @@ const onFileRequest = (req, res) => {
             else
                 url = `http://${req.headers.host}/${dirent.name}`;
 
-            allEntries.push(`<a href="${url}">${url}</a>`)
+            allEntries.push(`<a href="${url}">${url}</a>`);
         }
 
         data = allEntries.join("<br>");

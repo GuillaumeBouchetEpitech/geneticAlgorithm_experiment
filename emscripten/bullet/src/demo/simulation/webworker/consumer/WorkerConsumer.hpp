@@ -3,10 +3,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "demo/simulation/machineLearning/NeuralNetwork.hpp"
 
 #include "demo/simulation/logic/Car.hpp"
@@ -36,27 +32,20 @@ private:
 
     CircuitBuilder::t_startTransform    _startTransform;
 
-    // std::vector<std::pair<glm::vec3, glm::vec3>> m_contacts;
-
     MessageBuffer   _message;
 
 public:
     WorkerConsumer();
 
-private:
-    void    generateCircuit();
-    void    generateCars();
-    void    generateNeuralNetworks();
-
 public:
     void    processMessage(const char* dataPointer, int dataSize);
 
 private:
-    void    send();
+    void    _send();
 
 private:
-    void    initialiseSimulation(MessageView& message);
-    void    resetSimulation(MessageView& message);
-    void    processSimulation();
+    void    _initialiseSimulation(MessageView& receivedMsg);
+    void    _resetSimulation(MessageView& receivedMsg);
+    void    _processSimulation();
 
 };

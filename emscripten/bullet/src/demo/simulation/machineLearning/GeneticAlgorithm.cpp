@@ -6,7 +6,7 @@
 #include "demo/utilities/TraceLogger.hpp"
 
 #include <iomanip> // <= std::fixed / setprecision
-#include <algorithm> // <= std::find_if
+#include <algorithm> // <= std::sort
 
 void GeneticAlgorithm::initialise(const t_def& def)
 {
@@ -31,8 +31,6 @@ void GeneticAlgorithm::initialise(const t_def& def)
 
     for (auto& genome : _genomes)
     {
-        genome.id = _currentId++;
-
         genome.weights.resize(_neuralNetworkTopology.getTotalWeights());
 
         for (float& weight : genome.weights)
@@ -79,7 +77,7 @@ bool GeneticAlgorithm::breedPopulation()
 
         for (unsigned int ii = 0; ii < _bestGenomes.size(); ++ii)
             if (_bestGenomes[ii].fitness > 0.0f)
-                offsprings.push_back(_bestGenomes[ii]);
+                offsprings.push_back(_bestGenomes[ii]); // copy, realloc of the weights
 
     } // elitism: keep the current best
 
@@ -115,13 +113,12 @@ bool GeneticAlgorithm::breedPopulation()
             const auto& parentGenomeA = bestGenomes[parentPair.first];
             const auto& parentGenomeB = bestGenomes[parentPair.second];
 
-            t_genome newOffspring;
+            Genome newOffspring;
 
             _reproduce(parentGenomeA, parentGenomeB, newOffspring);
-
-            newOffspring.id = _currentId++;
             _mutate(newOffspring);
-            offsprings.push_back(newOffspring);
+
+            offsprings.push_back(std::move(newOffspring)); // move, no realloc of the weights
         }
 
     } // crossover: breed best genomes
@@ -133,19 +130,18 @@ bool GeneticAlgorithm::breedPopulation()
 
         for (int ii = 0; ii < remainingOffsprings; ++ii)
         {
-            offsprings.push_back(t_genome());
-            auto& newGenome = offsprings.back();
-
-            newGenome.id = _currentId++;
+            Genome newGenome;
 
             newGenome.weights.resize(_neuralNetworkTopology.getTotalWeights());
             for (float& weight : newGenome.weights)
                 weight = t_RNG::getRangedValue(-1.0f, 1.0f);
+
+            offsprings.push_back(std::move(newGenome)); // move, no realloc of the weights
         }
 
     } // diversity: add random genomes
 
-    _genomes = std::move(offsprings);
+    _genomes = std::move(offsprings); // move, no realloc of the vector content
 
     for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
         _neuralNetworks[ii].setWeights(_genomes[ii].weights);
@@ -179,9 +175,9 @@ void GeneticAlgorithm::_getBestGenomes(t_genomes& output) const
         output.push_back(_genomes[sortedGenome.index]);
 }
 
-void GeneticAlgorithm::_reproduce(const t_genome& parentA,
-                                  const t_genome& parentB,
-                                  t_genome& offspring) const
+void GeneticAlgorithm::_reproduce(const Genome& parentA,
+                                  const Genome& parentB,
+                                  Genome& offspring) const
 {
     offspring.weights.resize(_neuralNetworkTopology.getTotalWeights());
 
@@ -194,6 +190,7 @@ void GeneticAlgorithm::_reproduce(const t_genome& parentA,
     else if (parentA.fitness < parentB.fitness)
         chancesForParentA = 30;
 
+    // crossover
     for (unsigned int ii = 0; ii < offspring.weights.size(); ++ii)
     {
         if (t_RNG::getRangedValue(0, 100) < chancesForParentA)
@@ -203,7 +200,7 @@ void GeneticAlgorithm::_reproduce(const t_genome& parentA,
     }
 }
 
-void GeneticAlgorithm::_mutate(t_genome& genome) const
+void GeneticAlgorithm::_mutate(Genome& genome) const
 {
     const float mutationMaxChance = 0.1f;
     const float mutationMaxEffect = 0.2f;
@@ -220,12 +217,12 @@ const GeneticAlgorithm::t_NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() 
     return _neuralNetworks;
 }
 
-const GeneticAlgorithm::t_genomes& GeneticAlgorithm::getGenomes() const
+const t_genomes& GeneticAlgorithm::getGenomes() const
 {
     return _genomes;
 }
 
-const GeneticAlgorithm::t_genome& GeneticAlgorithm::getBestGenome() const
+const Genome& GeneticAlgorithm::getBestGenome() const
 {
     return _bestGenomes[0];
 }

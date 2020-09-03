@@ -116,50 +116,43 @@ void NeuralNetwork::_processLayer(const t_layer& layer,
     output.reserve(layer.size()); // pre-allocate
 
     // Cycle over all the neurons and sum their weights against the inputs.
-    for (unsigned int ii = 0; ii < layer.size(); ++ii)
+    for (const auto& neuron : layer)
     {
-        const auto& neuron = layer[ii];
-
         // Sum the weights to the activation value.
-
         float sumValues = 0.0f;
-        for (unsigned int jj = 0; jj < input.size(); ++jj)
-            sumValues += input[jj] * neuron.weights[jj];
+        for (unsigned int ii = 0; ii < input.size(); ++ii)
+            sumValues += input[ii] * neuron.weights[ii];
 
         // Add the bias, it will act as a threshold value
-
         if (_topology.isUsingBias())
             sumValues += 1.0f;
 
-        // output.push_back(activations::steeperSigmoid(sumValues)); // slower
+        // output.push_back(activations::steeperSigmoid(sumValues)); // slow
         output.push_back(activations::rectifiedLinearUnit(sumValues)); // fast
     }
 
 }
-
 
 void NeuralNetwork::setWeights(const std::vector<float>& inputWeights)
 {
     const unsigned int totalWeights = _topology.getTotalWeights();
 
     if (inputWeights.size() != totalWeights)
-    {
         D_THROW(std::invalid_argument,
                 "received invalid number of weights"
                 << ", expected=" << totalWeights
                 << ", input=" << inputWeights.size());
-    }
 
-    unsigned int weights_inc = 0;
+    unsigned int weightsIndex = 0;
 
     for (t_layer& layer : _layerHidden)
         for (t_neuron& neuron : layer)
             for (float& weight : neuron.weights)
-                weight = inputWeights[weights_inc++];
+                weight = inputWeights[weightsIndex++];
 
     for (t_neuron& neuron : _layerOutput)
         for (float& weight : neuron.weights)
-            weight = inputWeights[weights_inc++];
+            weight = inputWeights[weightsIndex++];
 }
 
 void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
@@ -177,7 +170,7 @@ void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
             outputWeights.push_back( weight );
 }
 
-const NeuralNetworkTopology&    NeuralNetwork::getTopology() const
+const NeuralNetworkTopology& NeuralNetwork::getTopology() const
 {
     return _topology;
 }

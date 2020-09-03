@@ -8,31 +8,35 @@
 
 #include <thread>
 
-class Consumer
+namespace multiThreading
 {
-private:
-    std::thread _thread;
-    TaskSynchroniser _waitProducer;
 
-    bool _running = false;
+    class Consumer
+    {
+    private:
+        std::thread _thread;
+        TaskSynchroniser _waitProducer;
 
-    t_task::t_work _work;
+        bool _running = false;
 
-    class Producer& _producer;
+        t_task::t_work _work;
 
-public:
-    Consumer(class Producer& producer);
-    ~Consumer();
+        class Producer& _producer;
 
-public:
-    void execute(const t_task::t_work& work);
-    void quit();
+    public:
+        Consumer(class Producer& producer);
+        ~Consumer();
 
-public:
-    bool isRunning() const;
-    bool isAvailable() const;
+    public:
+        void execute(const t_task::t_work& work);
+        void quit();
 
-private:
-    void _threadedMethod();
+    public:
+        bool isRunning() const;
+        bool isAvailable() const;
+
+    private:
+        void _threadedMethod();
+    };
+
 };
-

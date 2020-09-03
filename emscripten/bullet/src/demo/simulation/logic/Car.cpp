@@ -43,7 +43,7 @@ Car::Car(PhysicWorld& physicWorld,
          const glm::vec4& quaternion)
     : _physicWorld(physicWorld)
 {
-    _vehicle = _physicWorld.createVehicle();
+    _physicVehicle = _physicWorld.createVehicle();
 
     reset(position, quaternion);
 }
@@ -60,7 +60,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     if (_health <= 0)
     {
         _isAlive = false;
-        _physicWorld.removeVehicle(_vehicle);
+        _physicWorld.removeVehicle(_physicVehicle);
         return;
     }
 
@@ -87,8 +87,8 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     _output.steer = output[0]; // steering angle: left/right
     _output.speed = output[1]; // speed coef: forward/backward
 
-    _vehicle->setSteeringValue(_output.steer * k_steeringMaxValue);
-    _vehicle->applyEngineForce(_output.speed * k_speedMaxValue);
+    _physicVehicle->setSteeringValue(_output.steer * k_steeringMaxValue);
+    _physicVehicle->applyEngineForce(_output.speed * k_speedMaxValue);
 
     ++_totalUpdateNumber;
 }
@@ -96,7 +96,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
 void Car::_updateSensors()
 {
     glm::mat4 transform;
-    _vehicle->getOpenGLMatrix(transform);
+    _physicVehicle->getOpenGLMatrix(transform);
 
     { // eye sensor
 
@@ -184,7 +184,7 @@ void Car::_collideGroundSensor()
         }
         // else if (_groundIndex + 1 > hasHitGroundIndex)
         // {
-        //     _vehicle->disableContactResponse();
+        //     _physicVehicle->disableContactResponse();
         // }
     }
 
@@ -205,13 +205,13 @@ void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
     _output.steer = 0.0f;
     _output.speed = 0.0f;
 
-    _vehicle->reset();
-    _vehicle->setPosition({ position.x, position.y, position.z });
-    _vehicle->setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
+    _physicVehicle->reset();
+    _physicVehicle->setPosition({ position.x, position.y, position.z });
+    _physicVehicle->setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
 
     _updateSensors();
 
-    _physicWorld.addVehicle(_vehicle); // ensure vehicle presence
+    _physicWorld.addVehicle(_physicVehicle); // ensure vehicle presence
 }
 
 const Car::t_sensors& Car::getEyeSensors() const
@@ -246,7 +246,7 @@ const Car::t_neuralNetworkOutput& Car::getNeuralNetworkOutput() const
 
 const PhysicVehicle& Car::getVehicle() const
 {
-    return *_vehicle;
+    return *_physicVehicle;
 }
 
 float Car::getLife() const

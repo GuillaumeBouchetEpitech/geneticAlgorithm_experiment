@@ -3,6 +3,8 @@
 
 #include "thirdparty/GLMath.hpp"
 
+#include "demo/utilities/types.hpp"
+
 #include <cmath>
 
 class FrustumCulling
@@ -16,26 +18,32 @@ public:
     bool cubeInFrustum(const glm::vec3& v, const glm::vec3& s) const;
 
 private:
-    enum class e_FrustumSide: unsigned int {
+    enum class e_FrustumSide: unsigned int
+    {
         eRight = 0,
         eLeft,
         eBottom,
         eTop,
         eBack,
-        eFront
+        eFront,
+
+        eCount,
     };
 
-    enum class e_PlaneData: unsigned int {
+    enum class e_PlaneData: unsigned int
+    {
         eA = 0,
         eB,
         eC,
-        eD
+        eD,
+
+        eCount,
     };
 
 private:
-    float _frustum[6][4];
+    float _frustum[toUnderlying(e_FrustumSide::eCount)][toUnderlying(e_PlaneData::eCount)];
 
 private:
-    void normalizePlane(e_FrustumSide side);
+    void _normalizePlane(e_FrustumSide side);
 
 };

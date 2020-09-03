@@ -100,85 +100,68 @@ OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
 
 #### SRC
 
-ifeq ($(build_platform),native_pthread)
+ifneq ($(build_platform),web_wasm_webworker)
 
-SRC_NATIVE=			$(wildcard \
-						$(DIR_SRC)/*.cpp \
-						$(DIR_SRC)/demo/*.cpp \
-						$(DIR_SRC)/demo/states/*.cpp \
-						$(DIR_SRC)/demo/utilities/*.cpp \
-						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
-						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/string/*.cpp \
-						$(DIR_SRC)/demo/utilities/threading/*.cpp \
-						$(DIR_SRC)/demo/logic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
-						$(DIR_SRC)/demo/simulation/*.cpp \
-						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
-						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
+# pthread (native + web)
 
-else ifeq ($(build_platform),web_wasm_pthread)
+SRC_NATIVE=		$(wildcard \
+					$(DIR_SRC)/*.cpp \
+					$(DIR_SRC)/demo/*.cpp \
+					$(DIR_SRC)/demo/states/*.cpp \
+					$(DIR_SRC)/demo/utilities/*.cpp \
+					$(DIR_SRC)/demo/utilities/sdl/*.cpp \
+					$(DIR_SRC)/demo/utilities/math/*.cpp \
+					$(DIR_SRC)/demo/utilities/string/*.cpp \
+					$(DIR_SRC)/demo/logic/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+					$(DIR_SRC)/demo/logic/sounds/*.cpp \
+					$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
+					$(DIR_SRC)/demo/simulation/*.cpp \
+					$(DIR_SRC)/demo/simulation/pthread/*.cpp \
+					$(DIR_SRC)/demo/simulation/pthread/threading/*.cpp \
+					$(DIR_SRC)/demo/simulation/logic/*.cpp \
+					$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
+					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-SRC_WEB_PTHREAD=	$(wildcard \
-						$(DIR_SRC)/*.cpp \
-						$(DIR_SRC)/demo/*.cpp \
-						$(DIR_SRC)/demo/states/*.cpp \
-						$(DIR_SRC)/demo/utilities/*.cpp \
-						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
-						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/string/*.cpp \
-						$(DIR_SRC)/demo/utilities/threading/*.cpp \
-						$(DIR_SRC)/demo/logic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
-						$(DIR_SRC)/demo/simulation/*.cpp \
-						$(DIR_SRC)/demo/simulation/pthread/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
-						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
+SRC_WEB_PTHREAD=	$(SRC_NATIVE) # same as native build
 
-else ifeq ($(build_platform),web_wasm_webworker)
+else
+
+# webworker (web only)
 
 SRC_WEB_MAIN=	$(wildcard \
-						$(DIR_SRC)/*.cpp \
-						$(DIR_SRC)/demo/*.cpp \
-						$(DIR_SRC)/demo/states/*.cpp \
-						$(DIR_SRC)/demo/utilities/*.cpp \
-						$(DIR_SRC)/demo/utilities/sdl/*.cpp \
-						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/string/*.cpp \
-						$(DIR_SRC)/demo/logic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
-						$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/*.cpp \
-						$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
-						$(DIR_SRC)/demo/simulation/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/*.cpp \
-						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
-						$(DIR_SRC)/demo/simulation/webworker/*.cpp \
-						$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
-						$(DIR_SRC)/demo/simulation/webworker/producer/*.cpp)
+					$(DIR_SRC)/*.cpp \
+					$(DIR_SRC)/demo/*.cpp \
+					$(DIR_SRC)/demo/states/*.cpp \
+					$(DIR_SRC)/demo/utilities/*.cpp \
+					$(DIR_SRC)/demo/utilities/sdl/*.cpp \
+					$(DIR_SRC)/demo/utilities/math/*.cpp \
+					$(DIR_SRC)/demo/utilities/string/*.cpp \
+					$(DIR_SRC)/demo/logic/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
+					$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
+					$(DIR_SRC)/demo/logic/sounds/*.cpp \
+					$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
+					$(DIR_SRC)/demo/simulation/*.cpp \
+					$(DIR_SRC)/demo/simulation/logic/*.cpp \
+					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
+					$(DIR_SRC)/demo/simulation/webworker/*.cpp \
+					$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
+					$(DIR_SRC)/demo/simulation/webworker/producer/*.cpp)
 
 SRC_WEB_WORKER=	$(wildcard \
-						$(DIR_SRC)/demo/utilities/*.cpp \
-						$(DIR_SRC)/demo/utilities/math/*.cpp \
-						$(DIR_SRC)/demo/utilities/message/*.cpp \
-						$(DIR_SRC)/demo/utilities/string/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/*.cpp \
-						$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
-						$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
-						$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
-						$(DIR_SRC)/demo/simulation/webworker/consumer/*.cpp)
+					$(DIR_SRC)/demo/utilities/*.cpp \
+					$(DIR_SRC)/demo/utilities/math/*.cpp \
+					$(DIR_SRC)/demo/utilities/message/*.cpp \
+					$(DIR_SRC)/demo/utilities/string/*.cpp \
+					$(DIR_SRC)/demo/simulation/logic/*.cpp \
+					$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
+					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp \
+					$(DIR_SRC)/demo/simulation/webworker/message/*.cpp \
+					$(DIR_SRC)/demo/simulation/webworker/consumer/*.cpp)
 
 endif
 
@@ -236,13 +219,6 @@ OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, \
 							$(OBJDIR_BULLET_DYNAMICS)/%.o, \
 							$(SRC_BULLET_DYNAMICS))
 
-#
-
-#
-
-#### /BULLET_SRC
-
-
 
 #######
 
@@ -269,9 +245,7 @@ ifeq ($(build_platform),native_pthread)
 						-std=c++17 \
 						-Wall -W -Wextra -Wunused \
 						-I$(DIR_SRC) \
-						-I$(DIR_BULLET) \
-						\
-						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
+						-I$(DIR_BULLET)
 
 	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
 						-lSDL2_image \
@@ -302,9 +276,6 @@ else ifeq ($(build_platform),web_wasm_pthread)
 					-s GL_PREINITIALIZED_CONTEXT=1 \
 					-s ASYNCIFY
 
-	### those flags are left unused on purpose
-	### the "SharedArrayBuffer" feature is disabled everywhere for secutiry reasons (since Jan 2018)
-	### this feature is required for the browser emulation of the C++ multithreading to work
 	COMMON_FLAGS+=	-s USE_PTHREADS=1 \
 					-s PTHREAD_POOL_SIZE=4
 
@@ -312,9 +283,7 @@ else ifeq ($(build_platform),web_wasm_pthread)
 							-std=c++17 \
 							-Wall -W -Wextra -Wunused \
 							-I$(DIR_SRC) \
-							-I$(DIR_BULLET) \
-							\
-							-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"'
+							-I$(DIR_BULLET)
 
 	LDFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
 							\
@@ -324,19 +293,13 @@ else ifeq ($(build_platform),web_wasm_pthread)
 							\
 							-lopenal
 
-
-	# value must be a power of 2 (16, 32, 64, etc.).
+	# value must be a power of 2 (16, 32, 64. 128, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
 	LDFLAGS_WEB_PTHREAD+=	-s TOTAL_MEMORY=128Mb
 
 	# assets loading
-	# => This cannot be used with pthread (TypeError: Browser.BlobBuilder is not a constructor)
-	# LDFLAGS_WEB_PTHREAD+=	--use-preload-plugins --preload-file ./assets/
-	# => This works
 	LDFLAGS_WEB_PTHREAD+=	--preload-file ./assets/
-	# => This works but make the index.js heavier
-	# LDFLAGS_WEB_PTHREAD+=	--embed-file ./assets/
 
 	# hacky hack to make the multithreading works with wasm
 	LDFLAGS_WEB_PTHREAD+=	-Wl,--shared-memory,--no-check-features
@@ -344,7 +307,6 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	LDFLAGS_WEB_PTHREAD+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 
 	# now using wasm as faster than asm.js
-	# LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1 -s BINARYEN_TRAP_MODE="clamp"
 	LDFLAGS_WEB_PTHREAD+=	-s WASM=1 -s BINARYEN_IGNORE_IMPLICIT_TRAPS=1
 
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
@@ -369,14 +331,10 @@ else ifeq ($(build_platform),web_wasm_webworker)
 
 	COMMON_LDFLAGS=		$(BUILD_FLAG)
 
-	# value must be a power of 2 (16, 32, 64, etc.).
+	# value must be a power of 2 (16, 32, 64, 128, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
 	# Compile with ALLOW_MEMORY_GROWTH if you want a growable heap (slower though).
 	COMMON_LDFLAGS+=	-s TOTAL_MEMORY=128Mb
-
-	# # assets loading
-	# COMMON_LDFLAGS+=	--use-preload-plugins --preload-file ./assets/
-	# # COMMON_LDFLAGS+=	--embed-file ./assets/
 
 	COMMON_LDFLAGS+=	-s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 
@@ -393,7 +351,6 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1 \
 						\
-						-DD_CIRCUIT_FILENAME='"assets/circuits/default.txt"' \
 						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
 						-DD_WORKER_MAIN='"onMessage"'
 
@@ -412,9 +369,10 @@ else ifeq ($(build_platform),web_wasm_webworker)
 	LDFLAGS_WEB_MAIN=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_MAIN) \
 						\
-						-lopenal \
-						\
-						--use-preload-plugins --preload-file ./assets/
+						-lopenal
+
+	# assets loading
+	LDFLAGS_WEB_MAIN+=	--use-preload-plugins --preload-file ./assets/
 
 	LDFLAGS_WEB_WORKER=	$(COMMON_LDFLAGS) \
 						$(FLAGS_WEB_WORKER)

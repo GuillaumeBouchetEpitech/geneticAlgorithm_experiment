@@ -20,7 +20,7 @@ struct t_modelVertex
     glm::vec3 color;
 };
 
-void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices);
+void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices); // declaration
 
 void loadCarModel(std::vector<t_modelVertex>& vertices)
 {
@@ -32,26 +32,23 @@ void loadWheelModel(std::vector<t_modelVertex>& vertices)
     loadModel("CarWheel.obj", vertices);
 }
 
-void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices)
+void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices) // definition
 {
     const std::string objFile = "./assets/model/" + filename;
     const std::string mtlDir = "./assets/model/";
+
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
+    std::string errMsg;
 
-    std::string err;
+    bool loadingSuccess = tinyobj::LoadObj(&attrib, &shapes, &materials, &errMsg, objFile.c_str(), mtlDir.c_str());
 
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, objFile.c_str(), mtlDir.c_str());
+    if (!loadingSuccess)
+        D_THROW(std::runtime_error, "tinyobj::LoadObj failed to open");
 
-    if (!err.empty())
-        D_MYLOG(err);
-
-    if (!ret)
-    {
-        D_MYLOG("LoadObj exit");
-        exit(1);
-    }
+    if (!errMsg.empty())
+        D_THROW(std::runtime_error, "tinyobj::LoadObj error, message: " << errMsg);
 
     // Loop over shapes
     for (std::size_t shape = 0; shape < shapes.size(); ++shape)
@@ -213,14 +210,12 @@ void Data::initialiseGeometries()
 
         geometryBuilder.build(graphic.geometries.particles.firework);
 
-        auto& firework = graphic.geometries.particles.firework;
-
         std::vector<glm::vec3> particlesVertices;
 
         generateSphereVerticesFilled(0.5f, particlesVertices);
 
-        firework.updateBuffer(0, particlesVertices);
-        firework.setPrimitiveCount(particlesVertices.size());
+        graphic.geometries.particles.firework.updateBuffer(0, particlesVertices);
+        graphic.geometries.particles.firework.setPrimitiveCount(particlesVertices.size());
 
     } // particles geometries
 
@@ -326,26 +321,20 @@ void Data::initialiseGeometries()
 
         { // chassis geometry (instanced)
 
-            auto& geometry = graphic.geometries.model.car;
-
             std::vector<t_modelVertex> modelVertices;
-
             loadCarModel(modelVertices);
 
-            geometry.updateBuffer(0, modelVertices);
-            geometry.setPrimitiveCount(modelVertices.size());
+            graphic.geometries.model.car.updateBuffer(0, modelVertices);
+            graphic.geometries.model.car.setPrimitiveCount(modelVertices.size());
         }
 
         { // wheel geometry (instanced)
 
-            auto& geometry = graphic.geometries.model.wheel;
-
             std::vector<t_modelVertex> modelVertices;
-
             loadWheelModel(modelVertices);
 
-            geometry.updateBuffer(0, modelVertices);
-            geometry.setPrimitiveCount(modelVertices.size());
+            graphic.geometries.model.wheel.updateBuffer(0, modelVertices);
+            graphic.geometries.model.wheel.setPrimitiveCount(modelVertices.size());
         }
 
     } // model geometry
@@ -366,10 +355,7 @@ void Data::initialiseGeometries()
         geometryBuilder
             .setPrimitiveType(GL_LINE_STRIP); // <= reused instead of reset
 
-        auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-
-        bestNewCarsTrails.resize(5);
-        for (auto& wheelsTrail : bestNewCarsTrails)
+        for (auto& wheelsTrail : graphic.geometries.wireframes.bestNewCarsTrails)
             for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
                 geometryBuilder.build(wheelsTrail.wheels[ii]);
 

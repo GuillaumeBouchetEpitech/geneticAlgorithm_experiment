@@ -1,10 +1,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "WorkerConsumer.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
@@ -19,8 +15,11 @@ namespace /* anonymous */
 extern "C"
 {
 
+// hacky way to force the name of the function to be from the macro "D_WORKER_MAIN"
+#define WORKER_MAIN_FUNC_NAME(func_name) _ ## func_name
+
 EMSCRIPTEN_KEEPALIVE
-void onMessage(char* dataPointer, int dataSize, void* arg)
+void WORKER_MAIN_FUNC_NAME(D_WORKER_MAIN)(char* dataPointer, int dataSize, void* arg)
 {
     static_cast<void>(arg); // <= unused
 

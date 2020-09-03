@@ -1,10 +1,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "WorkerProducer.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
@@ -18,15 +14,11 @@ WorkerProducer::WorkerProducer(const t_def& def)
     _flags[e_Status::eProcessing] = false;
     _flags[e_Status::eUpdated] = false;
 
-    // _contacts.reserve(64);
-
     _carsData.resize(def.genomesPerCore);
 
     {
         _message.clear();
         _message << char(messages::client::eLoadWorker);
-
-        // _message << def.filename;
 
         _message << def.startTransform.position;
         _message << def.startTransform.quaternion;
@@ -48,25 +40,25 @@ WorkerProducer::WorkerProducer(const t_def& def)
             _message << layerValue;
         _message << topology.getOutput();
 
-        send();
+        _send();
     }
 }
 
-void    WorkerProducer::onMessageCallback(char* dataPointer, int dataSize, void* arg)
+void    WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg)
 {
     WorkerProducer* workerProducer = static_cast<WorkerProducer*>(arg);
 
-    workerProducer->processMessage(dataPointer, dataSize);
+    workerProducer->_processMessage(dataPointer, dataSize);
 }
 
-void    WorkerProducer::processMessage(const char* dataPointer, int dataSize)
+void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 {
     _flags[e_Status::eProcessing] = false;
 
-    MessageView message(dataPointer, dataSize);
+    MessageView receivedMsg(dataPointer, dataSize);
 
     char messageType = 0;
-    message >> messageType;
+    receivedMsg >> messageType;
 
     switch (messages::server(messageType))
     {
@@ -79,11 +71,11 @@ void    WorkerProducer::processMessage(const char* dataPointer, int dataSize)
 
         case messages::server::eSimulationResult:
         {
-            message >> _coreState.delta >> _coreState.genomesAlive;
+            receivedMsg >> _coreState.delta >> _coreState.genomesAlive;
 
             for (auto& car : _carsData)
             {
-                message
+                receivedMsg
                     >> car.isAlive
                     >> car.life
                     >> car.fitness
@@ -93,30 +85,18 @@ void    WorkerProducer::processMessage(const char* dataPointer, int dataSize)
                 if (!car.isAlive)
                     continue;
 
-                message >> car.transform;
+                receivedMsg >> car.transform;
                 for (auto& transform : car.wheelsTransform)
-                    message >> transform;
+                    receivedMsg >> transform;
 
                 for (auto& sensor : car.eyeSensors)
-                    message >> sensor.near >> sensor.far >> sensor.value;
+                    receivedMsg >> sensor.near >> sensor.far >> sensor.value;
 
                 auto& gSensor = car.groundSensor;
-                message >> gSensor.near >> gSensor.far >> gSensor.value;
+                receivedMsg >> gSensor.near >> gSensor.far >> gSensor.value;
 
                 auto& output = car.neuralNetworkOutput;
-                message >> output.steer >> output.speed;
-            }
-
-            {
-                // unsigned int contactNumber = 0;
-                // message >> contactNumber;
-
-                // glm::vec3    position, normal;
-                // for (unsigned int ii = 0; ii < contactNumber; ++ii)
-                // {
-                //  message >> position >> normal;
-                //  _contacts.push_back({ position, normal });
-                // }
+                receivedMsg >> output.steer >> output.speed;
             }
 
             _flags[e_Status::eUpdated] = true;
@@ -130,16 +110,19 @@ void    WorkerProducer::processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void    WorkerProducer::send()
+void    WorkerProducer::_send()
 {
     _flags[e_Status::eProcessing] = true;
 
     char*           dataPointer = const_cast<char*>(_message.getData());
     unsigned int    dataSize = _message.getSize();
 
-    em_worker_callback_func     callback = WorkerProducer::onMessageCallback;
+    em_worker_callback_func callback = WorkerProducer::_onMessageCallback;
 
-    emscripten_call_worker(_workerHandle, D_WORKER_MAIN, dataPointer, dataSize, callback, (void*)this);
+// hacky way to force the name of the function to be from the macro "D_WORKER_MAIN"
+#define WORKER_MAIN_FUNC_NAME(func_name) "_" # func_name
+
+    emscripten_call_worker(_workerHandle, WORKER_MAIN_FUNC_NAME(D_WORKER_MAIN), dataPointer, dataSize, callback, (void*)this);
 }
 
 void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
@@ -156,7 +139,7 @@ void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNet
         _message.append(weights.data(), weights.size() * sizeof(float));
     }
 
-    send();
+    _send();
 }
 
 void    WorkerProducer::processSimulation()
@@ -164,7 +147,7 @@ void    WorkerProducer::processSimulation()
     _message.clear();
     _message << char(messages::client::eProcessSimulation);
 
-    send();
+    _send();
 }
 
 bool    WorkerProducer::isLoaded() const
@@ -191,14 +174,3 @@ const AbstactSimulation::t_coreState&   WorkerProducer::getCoreState() const
 {
     return _coreState;
 }
-
-// const WorkerProducer::t_contacts&    WorkerProducer::getContactsData() const
-// {
-//  return _contacts;
-// }
-
-// void WorkerProducer::clearContactsData()
-// {
-//  _contacts.clear();
-// }
-

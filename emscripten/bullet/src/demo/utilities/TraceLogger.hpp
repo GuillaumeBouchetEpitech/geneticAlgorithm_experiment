@@ -4,8 +4,7 @@
 #include <sstream> // <= std::stringstream
 #include <cstring> // <= strrchr()
 
-// #include <iostream>
-// #include <iomanip>
+#include <ostream>
 
 class TraceLogger
 {
@@ -33,15 +32,9 @@ public:
 }
 
 // one line macro allowing flexible logs with the current time and "stacktrace"
-#define D_MYLOG_MAKE_LOG(stringMsg) \
-{ \
-    TraceLogger::log(stringMsg); \
-}
-
-// one line macro allowing flexible logs with the current time and "stacktrace"
 #define D_MYLOG(streamMsg) \
 { \
     std::string log; \
     D_MYLOG_MAKE_PREFIXED_STRING(log, streamMsg) \
-    D_MYLOG_MAKE_LOG(log) \
+    TraceLogger::log(log); \
 }

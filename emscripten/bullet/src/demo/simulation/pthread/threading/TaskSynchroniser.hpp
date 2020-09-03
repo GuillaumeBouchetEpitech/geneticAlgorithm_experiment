@@ -4,36 +4,40 @@
 #include <mutex>
 #include <condition_variable>
 
-// this class handle all locking and conditional variable interactions
-class TaskSynchroniser
+namespace multiThreading
 {
-private:
-    std::mutex              _mutex;
-    std::condition_variable _condVar;
-    bool                    _notified = false;
 
-public:
-    // this class act like a scoped lock but notify before unlocking
-    class ScopedLockedNotifier
+    // this class handle all locking and conditional variable interactions
+    class TaskSynchroniser
     {
     private:
-        TaskSynchroniser& _data;
+        std::mutex              _mutex;
+        std::condition_variable _condVar;
+        bool                    _notified = false;
 
     public:
-        ScopedLockedNotifier(TaskSynchroniser& data);
-        ~ScopedLockedNotifier();
+        // this class act like a scoped lock but notify before unlocking
+        class ScopedLockedNotifier
+        {
+        private:
+            TaskSynchroniser& _synchroniser;
+
+        public:
+            ScopedLockedNotifier(TaskSynchroniser& synchroniser);
+            ~ScopedLockedNotifier();
+        };
+
+    public:
+        TaskSynchroniser() = default;
+
+    public:
+        bool waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds = 0.0f);
+        void notify();
+
+    public:
+        std::unique_lock<std::mutex> makeScopedLock();
+        ScopedLockedNotifier makeScopedLockNotifier();
+        bool isNotified() const;
     };
 
-public:
-    TaskSynchroniser() = default;
-
-public:
-    bool waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds = 0.0f);
-    bool waitUntilNotified(float seconds = 0.0f);
-    void notify();
-
-public:
-    std::unique_lock<std::mutex> makeScopedLock();
-    ScopedLockedNotifier makeScopedLockNotifier();
-    bool isNotified() const;
 };

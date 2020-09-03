@@ -32,7 +32,7 @@ public: // external structures
 private: // attributs
 
     PhysicWorld& _physicWorld;
-    PhysicVehicle* _vehicle = nullptr;
+    PhysicVehicle* _physicVehicle = nullptr;
 
     float _fitness;
     bool _isAlive;

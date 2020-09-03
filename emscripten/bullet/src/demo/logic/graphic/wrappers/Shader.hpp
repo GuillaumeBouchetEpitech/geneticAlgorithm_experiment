@@ -28,12 +28,6 @@ public:
         std::vector<std::string> uniforms;
     };
 
-    struct t_uniformBlockData
-    {
-        GLint   id;
-        GLuint  layout;
-    };
-
 private:
     GLuint  _programId = 0;
     std::map<std::string, GLint>    _attributesMap;

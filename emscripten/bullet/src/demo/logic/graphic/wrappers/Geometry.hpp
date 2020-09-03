@@ -74,10 +74,10 @@ public:
     void render() const;
 
 public:
-    template <typename T>
-    void updateBuffer(int index, const std::vector<T>& data, bool dynamic = false) const
+    template <typename ElemType>
+    void updateBuffer(int index, const std::vector<ElemType>& data, bool dynamic = false) const
     {
-        updateBuffer(index, static_cast<const void*>(data.data()), data.size() * sizeof(T), dynamic);
+        updateBuffer(index, static_cast<const void*>(data.data()), data.size() * sizeof(ElemType), dynamic);
     }
 
     void setPrimitiveStart(unsigned int start);

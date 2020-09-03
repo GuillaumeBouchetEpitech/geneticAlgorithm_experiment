@@ -3,10 +3,6 @@
 
 #include "demo/defines.hpp"
 
-#if not defined D_WEB_WEBWORKER_BUILD
-#   error "exclude this file to build natively or with multi thread support"
-#endif
-
 #include "demo/simulation/AbstactSimulation.hpp"
 
 #include "demo/simulation/logic/CircuitBuilder.hpp"
@@ -83,8 +79,8 @@ public:
     virtual void setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback) override;
 
 public:
-    virtual const GeneticAlgorithm::t_genomes& getGenomes() const override;
-    virtual const GeneticAlgorithm::t_genome& getBestGenome() const override;
+    virtual const t_genomes& getGenomes() const override;
+    virtual const Genome& getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
 
 };

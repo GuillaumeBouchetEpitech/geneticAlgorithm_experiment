@@ -67,8 +67,8 @@ public:
     virtual void setOnGenerationEndCallback(t_generationEndCallback callback) = 0;
 
 public:
-    virtual const GeneticAlgorithm::t_genomes& getGenomes() const = 0;
-    virtual const GeneticAlgorithm::t_genome& getBestGenome() const = 0;
+    virtual const t_genomes& getGenomes() const = 0;
+    virtual const Genome& getBestGenome() const = 0;
     virtual unsigned int getGenerationNumber() const = 0;
 
 };

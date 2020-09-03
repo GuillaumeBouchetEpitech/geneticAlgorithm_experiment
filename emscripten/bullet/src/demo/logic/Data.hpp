@@ -144,7 +144,7 @@ public:
                 {
                     std::array<Geometry, 4> wheels;
                 };
-                std::vector<t_wheelsTrail> bestNewCarsTrails;
+                std::array<t_wheelsTrail, 5> bestNewCarsTrails;
             }
             wireframes;
 

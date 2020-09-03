@@ -1,9 +1,7 @@
 
 #include "FrustumCulling.hpp"
 
-#include "demo/utilities/types.hpp"
-
-void FrustumCulling::normalizePlane(e_FrustumSide side)
+void FrustumCulling::_normalizePlane(e_FrustumSide side)
 {
     float magnitude = sqrtf(
         _frustum[toUnderlying(side)][toUnderlying(e_PlaneData::eA)] * _frustum[toUnderlying(side)][toUnderlying(e_PlaneData::eA)] +
@@ -63,117 +61,117 @@ void FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& m
     _frustum[toUnderlying(e_FrustumSide::eRight)][toUnderlying(e_PlaneData::eB)] = clip[ 7] - clip[ 4];
     _frustum[toUnderlying(e_FrustumSide::eRight)][toUnderlying(e_PlaneData::eC)] = clip[11] - clip[ 8];
     _frustum[toUnderlying(e_FrustumSide::eRight)][toUnderlying(e_PlaneData::eD)] = clip[15] - clip[12];
-    normalizePlane(e_FrustumSide::eRight);
+    _normalizePlane(e_FrustumSide::eRight);
 
     _frustum[toUnderlying(e_FrustumSide::eLeft)][toUnderlying(e_PlaneData::eA)] = clip[ 3] + clip[ 0];
     _frustum[toUnderlying(e_FrustumSide::eLeft)][toUnderlying(e_PlaneData::eB)] = clip[ 7] + clip[ 4];
     _frustum[toUnderlying(e_FrustumSide::eLeft)][toUnderlying(e_PlaneData::eC)] = clip[11] + clip[ 8];
     _frustum[toUnderlying(e_FrustumSide::eLeft)][toUnderlying(e_PlaneData::eD)] = clip[15] + clip[12];
-    normalizePlane(e_FrustumSide::eLeft);
+    _normalizePlane(e_FrustumSide::eLeft);
 
 
     _frustum[toUnderlying(e_FrustumSide::eBottom)][toUnderlying(e_PlaneData::eA)] = clip[ 3] + clip[ 1];
     _frustum[toUnderlying(e_FrustumSide::eBottom)][toUnderlying(e_PlaneData::eB)] = clip[ 7] + clip[ 5];
     _frustum[toUnderlying(e_FrustumSide::eBottom)][toUnderlying(e_PlaneData::eC)] = clip[11] + clip[ 9];
     _frustum[toUnderlying(e_FrustumSide::eBottom)][toUnderlying(e_PlaneData::eD)] = clip[15] + clip[13];
-    normalizePlane(e_FrustumSide::eBottom);
+    _normalizePlane(e_FrustumSide::eBottom);
 
     _frustum[toUnderlying(e_FrustumSide::eTop)][toUnderlying(e_PlaneData::eA)] = clip[ 3] - clip[ 1];
     _frustum[toUnderlying(e_FrustumSide::eTop)][toUnderlying(e_PlaneData::eB)] = clip[ 7] - clip[ 5];
     _frustum[toUnderlying(e_FrustumSide::eTop)][toUnderlying(e_PlaneData::eC)] = clip[11] - clip[ 9];
     _frustum[toUnderlying(e_FrustumSide::eTop)][toUnderlying(e_PlaneData::eD)] = clip[15] - clip[13];
-    normalizePlane(e_FrustumSide::eTop);
+    _normalizePlane(e_FrustumSide::eTop);
 
 
     _frustum[toUnderlying(e_FrustumSide::eBack)][toUnderlying(e_PlaneData::eA)] = clip[ 3] - clip[ 2];
     _frustum[toUnderlying(e_FrustumSide::eBack)][toUnderlying(e_PlaneData::eB)] = clip[ 7] - clip[ 6];
     _frustum[toUnderlying(e_FrustumSide::eBack)][toUnderlying(e_PlaneData::eC)] = clip[11] - clip[10];
     _frustum[toUnderlying(e_FrustumSide::eBack)][toUnderlying(e_PlaneData::eD)] = clip[15] - clip[14];
-    normalizePlane(e_FrustumSide::eBack);
+    _normalizePlane(e_FrustumSide::eBack);
 
     _frustum[toUnderlying(e_FrustumSide::eFront)][toUnderlying(e_PlaneData::eA)] = clip[ 3] + clip[ 2];
     _frustum[toUnderlying(e_FrustumSide::eFront)][toUnderlying(e_PlaneData::eB)] = clip[ 7] + clip[ 6];
     _frustum[toUnderlying(e_FrustumSide::eFront)][toUnderlying(e_PlaneData::eC)] = clip[11] + clip[10];
     _frustum[toUnderlying(e_FrustumSide::eFront)][toUnderlying(e_PlaneData::eD)] = clip[15] + clip[14];
-    normalizePlane(e_FrustumSide::eFront);
+    _normalizePlane(e_FrustumSide::eFront);
 
 }
 
-bool FrustumCulling::pointInFrustum(const glm::vec3& v) const
+bool FrustumCulling::pointInFrustum(const glm::vec3& center) const
 {
-    for (int ii = 0; ii < 6; ++ii)
-        if ( _frustum[ii][toUnderlying(e_PlaneData::eA)] * v.x +
-             _frustum[ii][toUnderlying(e_PlaneData::eB)] * v.y +
-             _frustum[ii][toUnderlying(e_PlaneData::eC)] * v.z +
+    for (int ii = 0; ii < toUnderlying(e_FrustumSide::eCount); ++ii)
+        if ( _frustum[ii][toUnderlying(e_PlaneData::eA)] * center.x +
+             _frustum[ii][toUnderlying(e_PlaneData::eB)] * center.y +
+             _frustum[ii][toUnderlying(e_PlaneData::eC)] * center.z +
              _frustum[ii][toUnderlying(e_PlaneData::eD)] <= 0 )
             return false;
 
     return true;
 }
 
-bool FrustumCulling::sphereInFrustum(const glm::vec3& v, float radius) const
+bool FrustumCulling::sphereInFrustum(const glm::vec3& center, float radius) const
 {
-    for (int ii = 0; ii < 6; ++ii)
-        if ( _frustum[ii][toUnderlying(e_PlaneData::eA)] * v.x +
-             _frustum[ii][toUnderlying(e_PlaneData::eB)] * v.y +
-             _frustum[ii][toUnderlying(e_PlaneData::eC)] * v.z +
+    for (int ii = 0; ii < toUnderlying(e_FrustumSide::eCount); ++ii)
+        if ( _frustum[ii][toUnderlying(e_PlaneData::eA)] * center.x +
+             _frustum[ii][toUnderlying(e_PlaneData::eB)] * center.y +
+             _frustum[ii][toUnderlying(e_PlaneData::eC)] * center.z +
              _frustum[ii][toUnderlying(e_PlaneData::eD)] <= -radius )
             return false;
 
     return true;
 }
 
-bool FrustumCulling::cubeInFrustum(const glm::vec3& v, const glm::vec3& s2) const
+bool FrustumCulling::cubeInFrustum(const glm::vec3& center, const glm::vec3& size) const
 {
-    glm::vec3 s = s2 * 0.5f;
+    glm::vec3 halfSize = size * 0.5f;
 
-    for (int ii = 0; ii < 6; ++ii)
+    for (int ii = 0; ii < toUnderlying(e_FrustumSide::eCount); ++ii)
     {
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x - s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y - s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z - s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x - halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y - halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z - halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x + s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y - s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z - s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x + halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y - halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z - halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x - s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y + s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z - s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x - halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y + halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z - halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x + s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y + s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z - s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x + halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y + halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z - halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x - s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y - s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z + s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x - halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y - halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z + halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x + s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y - s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z + s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x + halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y - halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z + halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x - s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y + s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z + s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x - halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y + halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z + halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 
-        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (v.x + s.x) +
-            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (v.y + s.y) +
-            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (v.z + s.z) +
+        if (_frustum[ii][toUnderlying(e_PlaneData::eA)] * (center.x + halfSize.x) +
+            _frustum[ii][toUnderlying(e_PlaneData::eB)] * (center.y + halfSize.y) +
+            _frustum[ii][toUnderlying(e_PlaneData::eC)] * (center.z + halfSize.z) +
             _frustum[ii][toUnderlying(e_PlaneData::eD)] > 0)
             continue;
 

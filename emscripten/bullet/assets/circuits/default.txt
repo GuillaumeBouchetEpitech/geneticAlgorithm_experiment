@@ -184,15 +184,15 @@ KNOTS_DUAL 30 0 0     30 0 0
 
 # final death looping
 KNOTS_COLOR 0.75 0.25 0.25
-KNOTS_DUAL  75   0   0      75   0   0
-KNOTS_DUAL  75 +10  75      75 +10  75
-KNOTS_DUAL -75 +10  75     -75 +10  75
-KNOTS_DUAL -75 +10 -75     -75 +10 -75
+KNOTS_DUAL  85   0   0      85   0   0
+KNOTS_DUAL  85 +10  85      85 +10  85
+KNOTS_DUAL -85 +10  85     -85 +10  85
+KNOTS_DUAL -85 +10 -85     -85 +10 -85
 KNOTS_DUAL   0   0 -75       0   0 -75
 KNOTS_DUAL   0   0 -75       0   0 -75
-KNOTS_DUAL  75 +10 -75      75 +10 -75
-KNOTS_DUAL  75   0   0      75   0   0
-KNOTS_DUAL  75   0   0      75   0   0
+KNOTS_DUAL  85 +10 -85      85 +10 -85
+KNOTS_DUAL  85   0   0      85   0   0
+KNOTS_DUAL  85   0   0      85   0   0
 # final death looping
 
 

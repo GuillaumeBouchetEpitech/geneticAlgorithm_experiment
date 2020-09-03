@@ -32,7 +32,7 @@ namespace utilities
     typedef void (*t_getDataFunc)(GLuint shader, GLenum pname, GLint *params);
     typedef void (*t_getInfoFunc)(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog);
 
-    void printInfo(GLuint id, t_getDataFunc getDataFunc, t_getInfoFunc getInfoFunc)
+    void _printInfo(GLuint id, t_getDataFunc getDataFunc, t_getInfoFunc getInfoFunc)
     {
         GLint infoLogLength = 0;
         getDataFunc(id, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -42,7 +42,7 @@ namespace utilities
 
         auto infoLog = std::make_unique<char[]>(infoLogLength);
 
-        GLsizei    lengthUsed;
+        GLsizei lengthUsed;
         getInfoFunc(id, infoLogLength, &lengthUsed, infoLog.get());
 
         if (lengthUsed == 0)
@@ -53,12 +53,12 @@ namespace utilities
 
     void printShaderInfo(GLuint shader)
     {
-        utilities::printInfo(shader, glGetShaderiv, glGetShaderInfoLog);
+        utilities::_printInfo(shader, glGetShaderiv, glGetShaderInfoLog);
     }
 
     void printProgramInfo(GLuint program)
     {
-        utilities::printInfo(program, glGetProgramiv, glGetProgramInfoLog);
+        utilities::_printInfo(program, glGetProgramiv, glGetProgramInfoLog);
     }
 
     GLuint loadShader(GLenum type, const std::string& source)
@@ -188,7 +188,7 @@ Shader::~Shader()
 void Shader::bind() const
 {
     if (!_programId)
-        D_THROW(std::runtime_error, "not initialised");
+        D_THROW(std::runtime_error, "shader not initialised");
 
     glUseProgram(_programId);
 }

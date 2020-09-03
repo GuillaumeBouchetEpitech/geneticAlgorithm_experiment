@@ -16,99 +16,116 @@ void Data::initialiseSimulation()
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    logic.simulation->setOnWorkersReadyCallback([this]() {
-
+    logic.simulation->setOnWorkersReadyCallback([this]() -> void
+    {
+        // leave the "WEB WORKERS LOADING" message for at least 1 second
         logic.state.countdown = 1000;
     });
 
 #endif
 
-    logic.simulation->setOnGenerationResetCallback([this]() {
+    logic.simulation->setOnGenerationResetCallback([this]() -> void
+    {
+        { // switch the current state
 
-        StateManager::get()->changeState(StateManager::States::eStartGeneration);
+            StateManager::get()->changeState(StateManager::States::eStartGeneration);
 
-        auto& carsTrails = logic.carsTrails;
-        const auto& simulation = *logic.simulation;
-        const auto& genomes = simulation.getGenomes();
-        unsigned int totalCars = simulation.getTotalCars();
+        } // switch the current state
 
-        // reset trail map
+        { // handle the car trails
 
-        carsTrails.genomeIndexMap.clear();
+            auto& carsTrails = logic.carsTrails;
+            const auto& simulation = *logic.simulation;
+            const auto& genomes = simulation.getGenomes();
+            unsigned int totalCars = simulation.getTotalCars();
 
-        for (unsigned int ii = 0; ii < totalCars; ++ii)
-        {
-            // initialise trail map
+            // reset trail map
+            carsTrails.genomeIndexMap.clear();
 
-            const auto& genome = genomes[ii];
-            const auto& carData = simulation.getCarResult(ii);
-
-            // record the trail index with it's genome id in the lookup map
-            carsTrails.genomeIndexMap[genome.id] = ii;
-
-            auto& currentTrail = logic.carsTrails.allWheelsTrails[ii];
-
-            // reset the old data
-
-            for (unsigned int ii = 0; ii < currentTrail.wheels.size(); ++ii)
-                currentTrail.wheels[ii].clear();
-
-            // initialise the new data
-
-            for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+            for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
-                glm::vec4 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                // initialise trail map
 
-                currentTrail.wheels[ii].push_back(wheelOrigin);
+                const auto& genome = genomes[ii];
+                const auto& carData = simulation.getCarResult(ii);
+
+                // record the trail index with it's genome id in the lookup map
+                carsTrails.genomeIndexMap[genome.id] = ii;
+
+                auto& currentTrail = carsTrails.allWheelsTrails[ii];
+
+                // reset the old data
+
+                for (unsigned int ii = 0; ii < currentTrail.wheels.size(); ++ii)
+                    currentTrail.wheels[ii].clear();
+
+                // initialise the new data
+
+                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                {
+                    glm::vec4 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                    currentTrail.wheels[ii].push_back(wheelOrigin);
+                }
             }
-        }
+
+        } // handle the car trails
     });
 
-    logic.simulation->setOnGenerationStepCallback([this]() {
-
+    logic.simulation->setOnGenerationStepCallback([this]() -> void
+    {
         const auto& simulation = *logic.simulation;
-        unsigned int totalCars = simulation.getTotalCars();
 
-        for (unsigned int ii = 0; ii < totalCars; ++ii)
-        {
-            const auto& carData = simulation.getCarResult(ii);
+        { // handle the car trails
 
-            if (carData.isAlive == false)
-                continue;
+            unsigned int totalCars = simulation.getTotalCars();
 
-            auto& currentWheelsTrail = logic.carsTrails.allWheelsTrails[ii];
-
-            for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+            for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
-                glm::vec3 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                const auto& carData = simulation.getCarResult(ii);
 
-                currentWheelsTrail.wheels[ii].push_back(wheelOrigin);
+                if (carData.isAlive == false)
+                    continue;
+
+                auto& currentWheelsTrail = logic.carsTrails.allWheelsTrails[ii];
+
+                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                {
+                    glm::vec3 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+                    currentWheelsTrail.wheels[ii].push_back(wheelOrigin);
+                }
             }
-        }
 
-        auto& cores = logic.cores;
+        } // handle the car trails
 
-        for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
-        {
-            const auto& coreState = simulation.getCoreState(ii);
+        { // handle the core data
 
-            if (!logic.isAccelerated)
-                cores.statesData[ii].delta = 0;
+            auto& cores = logic.cores;
 
-            cores.statesData[ii].delta += coreState.delta;
-            cores.statesData[ii].genomesAlive = coreState.genomesAlive;
+            for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
+            {
+                const auto& coreState = simulation.getCoreState(ii);
 
-            // record core state history
-            auto& currCoreHistory = cores.statesHistory[ii];
-            currCoreHistory[cores.currHistoryIndex] = cores.statesData[ii];
-        }
+                if (!logic.isAccelerated)
+                    cores.statesData[ii].delta = 0;
 
-        // move to next core state history index
-        cores.currHistoryIndex = (cores.currHistoryIndex + 1) % cores.maxStateHistory;
+                cores.statesData[ii].delta += coreState.delta;
+                cores.statesData[ii].genomesAlive = coreState.genomesAlive;
+
+                // record core state history
+                auto& currCoreHistory = cores.statesHistory[ii];
+                currCoreHistory[cores.currHistoryIndex] = cores.statesData[ii];
+            }
+
+            // move to next core state history index
+            cores.currHistoryIndex = (cores.currHistoryIndex + 1) % cores.maxStateHistory;
+
+        } // handle the core data
     });
 
-    logic.simulation->setOnGenomeDieCallback([this](unsigned int genomeIndex) {
-
+    logic.simulation->setOnGenomeDieCallback([this](unsigned int genomeIndex) -> void
+    {
         const auto& simulation = *logic.simulation;
 
         const auto& carData = simulation.getCarResult(genomeIndex);
@@ -120,9 +137,10 @@ void Data::initialiseSimulation()
         sounds.manager.playRandom(carPos);
     });
 
-    logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) {
+    logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void
+    {
+        { // hanlde the stats
 
-        {
             const auto& bestGenome = logic.simulation->getBestGenome();
             auto& fitnessStats = logic.fitnessStats;
             auto& allStats = fitnessStats.allStats;
@@ -148,32 +166,37 @@ void Data::initialiseSimulation()
             }
 
             allStats.push_back(bestGenome.fitness);
-        }
+
+        } // hanlde the stats
 
         if (!isSmarter)
             return;
 
-        const auto& bestGenome = logic.simulation->getBestGenome();
-        auto& carsTrails = logic.carsTrails;
-        auto& currentTrailIndex = carsTrails.currentTrailIndex;
+        { // handle the car trails
 
-        auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
-        if (it == carsTrails.genomeIndexMap.end())
-            return;
+            const auto& bestGenome = logic.simulation->getBestGenome();
+            auto& carsTrails = logic.carsTrails;
+            auto& currentTrailIndex = carsTrails.currentTrailIndex;
 
-        auto dataIndex = it->second;
+            auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
+            if (it == carsTrails.genomeIndexMap.end())
+                return;
 
-        const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
-        auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-        auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
+            auto dataIndex = it->second;
 
-        for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
-        {
-            currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
-            currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
-        }
+            const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
+            auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
+            auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
 
-        currentTrailIndex = (currentTrailIndex + 1) % 5; // <= hardcoded
+            for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+            {
+                currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
+                currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
+            }
+
+            currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
+
+        } // handle the car trails
     });
 }
 

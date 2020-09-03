@@ -39,6 +39,16 @@ private:
     typedef std::vector<t_particle> t_particles;
 
 private:
+
+    struct t_attributes
+    {
+        glm::vec3   position;
+        float       scale;
+        glm::vec3   color;
+    };
+
+    std::vector<t_attributes> _particlesInstances;
+
     t_particles _particles;
 
 };

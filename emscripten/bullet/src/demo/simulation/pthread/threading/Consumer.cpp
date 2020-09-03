@@ -5,77 +5,91 @@
 
 #include <chrono>
 
-Consumer::Consumer(Producer& producer)
-    : _producer(producer)
+namespace multiThreading
 {
-    _thread = std::thread(&Consumer::_threadedMethod, this);
 
-    // here we wait for the thread to be running
-    while (!_running)
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
-}
+    Consumer::Consumer(Producer& producer)
+        : _producer(producer)
+    {
+        _thread = std::thread(&Consumer::_threadedMethod, this);
 
-Consumer::~Consumer()
-{
-    quit();
-}
+        // here we wait for the thread to be running
+        while (!_running)
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
 
-//
-//
+    Consumer::~Consumer()
+    {
+        quit();
+    }
 
-void Consumer::execute(const t_task::t_work& work)
-{
-    auto lockNotifier = _waitProducer.makeScopedLockNotifier();
-    _work = work;
-}
+    //
+    //
 
-void Consumer::quit()
-{
-    if (!_running)
-        return;
-
+    void Consumer::execute(const t_task::t_work& work)
     {
         auto lockNotifier = _waitProducer.makeScopedLockNotifier();
 
-        _running = false;
+        // this part is locked and will notify at then end of the scope
+
+        _work = work;
     }
 
-    if (_thread.joinable())
-        _thread.join();
-}
-
-//
-//
-
-bool Consumer::isRunning() const
-{
-    return _running;
-}
-
-bool Consumer::isAvailable() const
-{
-    return !_waitProducer.isNotified();
-}
-
-//
-//
-
-void Consumer::_threadedMethod()
-{
-    _running = true;
-
-    auto lock = _waitProducer.makeScopedLock();
-    while (_running)
+    void Consumer::quit()
     {
-        _waitProducer.waitUntilNotified(lock);
-
-         // this part is locked
-
         if (!_running)
-            break; // quit scenario
+            return;
 
-        _work();
+        {
+            auto lockNotifier = _waitProducer.makeScopedLockNotifier();
 
-        _producer._notifyWorkDone(this);
+            // this part is locked and will notify at then end of the scope
+
+            _running = false;
+        }
+
+        if (_thread.joinable())
+            _thread.join();
     }
-}
+
+    //
+    //
+
+    bool Consumer::isRunning() const
+    {
+        return _running;
+    }
+
+    bool Consumer::isAvailable() const
+    {
+        return !_waitProducer.isNotified();
+    }
+
+    //
+    //
+
+    void Consumer::_threadedMethod()
+    {
+        _running = true;
+
+        auto lock = _waitProducer.makeScopedLock();
+
+        // this part is locked
+
+        while (_running)
+        {
+            // wait -> release the lock for other thread(s)
+            _waitProducer.waitUntilNotified(lock);
+
+            // this part is locked
+
+            if (!_running)
+                break; // quit scenario
+
+            _work();
+
+            _producer._notifyWorkDone(this);
+        }
+    }
+
+};
