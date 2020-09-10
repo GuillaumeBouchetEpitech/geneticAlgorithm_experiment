@@ -254,6 +254,8 @@ const onGlobalPageLoad = async () => {
     catch (err) {
 
         logger.error(`[JS] wasm script: loading failed, err=${err.message}`);
+
+        showErrorText(`Error<br>message:<br>${err.message}`);
     }
 };
 

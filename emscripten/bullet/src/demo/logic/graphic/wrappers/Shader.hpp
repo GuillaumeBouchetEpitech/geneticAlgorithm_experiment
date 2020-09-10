@@ -5,7 +5,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 class UniformBufferObject;
 
@@ -30,8 +30,8 @@ public:
 
 private:
     GLuint  _programId = 0;
-    std::map<std::string, GLint>    _attributesMap;
-    std::map<std::string, GLint>    _uniformsMap;
+    std::unordered_map<std::string, GLint>  _attributesMap;
+    std::unordered_map<std::string, GLint>  _uniformsMap;
 
 public:
     Shader(const t_def& def);

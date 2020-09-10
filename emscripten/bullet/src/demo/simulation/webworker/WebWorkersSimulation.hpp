@@ -22,12 +22,14 @@ class WebWorkersSimulation
 private:
     enum class WorkerRequest : unsigned int
     {
-        eNone = 0,
-        eWorkersLoading,
-        eResetAndProcess,
-        eProcess,
+        None = 0,
+        WorkersLoading,
+        ResetAndProcess,
+        Process,
     }
-    _currentRequest = WorkerRequest::eNone;
+    _currentRequest = WorkerRequest::None;
+
+    glm::vec3 _startPosition;
 
     std::vector<WorkerProducer*> _workerProducers;
 
@@ -82,5 +84,6 @@ public:
     virtual const t_genomes& getGenomes() const override;
     virtual const Genome& getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
+    virtual const glm::vec3& getStartPosition() const override;
 
 };

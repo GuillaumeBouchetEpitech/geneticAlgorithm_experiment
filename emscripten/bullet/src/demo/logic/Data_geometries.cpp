@@ -198,15 +198,15 @@ void Data::initialiseGeometries()
 
         geometryBuilder
             .reset()
-            .setShader(graphic.shaders.particles)
+            .setShader(*graphic.shaders.particles)
             .setPrimitiveType(GL_TRIANGLES)
             .addVbo()
-            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
+            .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
             .addVbo()
             .setVboAsInstanced()
-            .addVboAttribute("a_offsetPosition", Geometry::e_attrType::eVec3f, 0)
-            .addVboAttribute("a_offsetScale", Geometry::e_attrType::eFloat, 3)
-            .addVboAttribute("a_offsetColor", Geometry::e_attrType::eVec3f, 4);
+            .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
+            .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 3)
+            .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 4);
 
         geometryBuilder.build(graphic.geometries.particles.firework);
 
@@ -225,11 +225,11 @@ void Data::initialiseGeometries()
 
             geometryBuilder
                 .reset()
-                .setShader(graphic.shaders.stackRenderer)
+                .setShader(*graphic.shaders.stackRenderer)
                 .setPrimitiveType(GL_LINES)
                 .addVbo()
-                .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
-                .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3);
+                .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+                .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3);
 
             geometryBuilder.build(graphic.geometries.stackRenderer.lines);
 
@@ -241,11 +241,11 @@ void Data::initialiseGeometries()
 
             geometryBuilder
                 .reset()
-                .setShader(graphic.shaders.stackRenderer)
+                .setShader(*graphic.shaders.stackRenderer)
                 .setPrimitiveType(GL_TRIANGLES)
                 .addVbo()
-                .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
-                .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3);
+                .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+                .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3);
 
             geometryBuilder.build(graphic.geometries.stackRenderer.triangles);
 
@@ -259,16 +259,16 @@ void Data::initialiseGeometries()
 
         geometryBuilder
             .reset()
-            .setShader(graphic.shaders.hudText)
+            .setShader(*graphic.shaders.hudText)
             .setPrimitiveType(GL_TRIANGLES)
             .addVbo()
-            .addVboAttribute("a_position", Geometry::e_attrType::eVec2f, 0)
-            .addVboAttribute("a_texCoord", Geometry::e_attrType::eVec2f, 2)
+            .addVboAttribute("a_position", Geometry::AttrType::Vec2f, 0)
+            .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 2)
             .addVbo()
             .setVboAsInstanced()
-            .addVboAttribute("a_offsetPosition", Geometry::e_attrType::eVec2f, 0)
-            .addVboAttribute("a_offsetTexCoord", Geometry::e_attrType::eVec2f, 2)
-            .addVboAttribute("a_offsetScale", Geometry::e_attrType::eFloat, 4);
+            .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec2f, 0)
+            .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f, 2)
+            .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 4);
 
         geometryBuilder.build(graphic.geometries.hudText.letters);
 
@@ -306,15 +306,15 @@ void Data::initialiseGeometries()
 
         geometryBuilder
             .reset()
-            .setShader(graphic.shaders.model)
+            .setShader(*graphic.shaders.model)
             .setPrimitiveType(GL_TRIANGLES)
             .addVbo()
-            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
-            .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3)
+            .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+            .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
             .addVbo()
             .setVboAsInstanced()
-            .addVboAttribute("a_offsetTransform", Geometry::e_attrType::eMat4f, 0)
-            .addVboAttribute("a_offsetColor", Geometry::e_attrType::eVec3f, 16);
+            .addVboAttribute("a_offsetTransform", Geometry::AttrType::Mat4f, 0)
+            .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 16);
 
         geometryBuilder.build(graphic.geometries.model.car);
         geometryBuilder.build(graphic.geometries.model.wheel);
@@ -343,10 +343,10 @@ void Data::initialiseGeometries()
 
         geometryBuilder
             .reset()
-            .setShader(graphic.shaders.wireframes)
+            .setShader(*graphic.shaders.wireframes)
             .setPrimitiveType(GL_LINES)
             .addVbo()
-            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0);
+            .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0);
 
         geometryBuilder.build(graphic.geometries.wireframes.circuitSkelton);
 
@@ -365,13 +365,13 @@ void Data::initialiseGeometries()
 
         geometryBuilder
             .reset()
-            .setShader(graphic.shaders.animatedCircuit)
+            .setShader(*graphic.shaders.animatedCircuit)
             .setPrimitiveType(GL_TRIANGLES)
             .addVbo()
-            .addVboAttribute("a_position", Geometry::e_attrType::eVec3f, 0)
-            .addVboAttribute("a_color", Geometry::e_attrType::eVec3f, 3)
-            .addVboAttribute("a_normal", Geometry::e_attrType::eVec3f, 6)
-            .addVboAttribute("a_index", Geometry::e_attrType::eFloat, 9);
+            .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+            .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
+            .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
+            .addVboAttribute("a_index", Geometry::AttrType::Float, 9);
 
         geometryBuilder.build(graphic.geometries.animatedCircuit.ground);
         geometryBuilder.build(graphic.geometries.animatedCircuit.walls);

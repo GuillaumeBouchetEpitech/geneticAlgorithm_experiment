@@ -4,7 +4,7 @@
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 class Shader;
 
@@ -20,8 +20,8 @@ public:
     typedef std::vector<t_offset> t_lettersOffset;
 
 public:
-    t_lettersOffset             _lettersOffset;
-    std::map<char, glm::vec2>   _lettersTexCoordMap;
+    t_lettersOffset                     _lettersOffset;
+    std::unordered_map<char, glm::vec2> _lettersTexCoordMap;
 
 public:
     TextRenderer() = default;

@@ -111,7 +111,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld)
         btVector3   connectionPoint;
         bool        isFrontWheel;
     };
-    std::array<t_wheel, toUnderlying(e_Wheels::eCount)> wheels{{
+    std::array<t_wheel, toUnderlying(Wheels::Count)> wheels{{
         // front right
         { { chassisHalfExtents[0] - wheelSide,
             chassisHalfExtents[1] - wheelRadius,
@@ -164,15 +164,15 @@ PhysicVehicle::~PhysicVehicle()
 void PhysicVehicle::applyEngineForce(float engineForce)
 {
     // rear wheels
-    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(e_Wheels::eBackLeft));
-    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(e_Wheels::eBackRight));
+    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(Wheels::BackLeft));
+    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(Wheels::BackRight));
 }
 
 void PhysicVehicle::setSteeringValue(float vehicleSteering)
 {
     // front wheels
-    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(e_Wheels::eFrontLeft));
-    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(e_Wheels::eFrontRight));
+    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(Wheels::FrontLeft));
+    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(Wheels::FrontRight));
 }
 
 void PhysicVehicle::reset()
@@ -183,13 +183,13 @@ void PhysicVehicle::reset()
     _bullet.carChassis->forceActivationState(ACTIVE_TAG);
     _bullet.carChassis->setDeactivationTime(0);
 
-    for (unsigned int ii = 0; ii < toUnderlying(e_Wheels::eCount); ++ii)
+    for (unsigned int ii = 0; ii < toUnderlying(Wheels::Count); ++ii)
         _bullet.vehicle->setBrake(1000, ii);
 
     _bullet.vehicle->resetSuspension();
     _bullet.vehicle->updateVehicle(0);
 
-    for (unsigned int ii = 0; ii < toUnderlying(e_Wheels::eCount); ++ii)
+    for (unsigned int ii = 0; ii < toUnderlying(Wheels::Count); ++ii)
         _bullet.vehicle->setBrake(0, ii);
 
     // enableContactResponse();

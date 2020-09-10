@@ -3,7 +3,7 @@
 
 #include "thirdparty/GLMath.hpp"
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -21,8 +21,8 @@ private:
     std::vector<ALuint> _sources;
     unsigned int currentSource = 0;
 
-    std::map<std::string, ALuint>   _bufferMap;
-    std::vector<std::string>        _buffersNames;
+    std::unordered_map<std::string, ALuint> _bufferMap;
+    std::vector<std::string>                _buffersNames;
 
 public:
     OpenALSoundManager();

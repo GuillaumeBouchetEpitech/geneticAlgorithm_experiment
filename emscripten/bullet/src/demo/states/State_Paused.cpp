@@ -47,19 +47,6 @@ void State_Paused::update(int delta)
     static_cast<void>(delta); // <= unused
 }
 
-
-void State_Paused::render(const SDL_Window& window)
-{
-    static_cast<void>(window); // <= unused
-
-    Scene::renderAll();
-}
-
-void State_Paused::resize(int width, int height)
-{
-    Data::get().graphic.camera.viewportSize = { width, height };
-}
-
 void State_Paused::visibility(bool visible)
 {
     static_cast<void>(visible); // <= unused

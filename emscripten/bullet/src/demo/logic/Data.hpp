@@ -11,11 +11,11 @@
 
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
+#include "graphic/wrappers/Shader.hpp"
 
 #include "sounds/OpenALSoundManager.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
-// #include "demo/simulation/SimulationFacade.hpp"
 
 #include "demo/states/StateManager.hpp"
 
@@ -23,10 +23,9 @@
 
 #include <string>
 #include <list>
-#include <map>
+#include <unordered_map>
 #include <array>
-
-class Shader;
+#include <memory> // <= unique_ptr / make_unique
 
 class Data
     : public NonCopyable
@@ -106,12 +105,12 @@ public:
 
         struct t_shaders
         {
-            Shader* stackRenderer = nullptr;
-            Shader* wireframes = nullptr;
-            Shader* animatedCircuit = nullptr;
-            Shader* hudText = nullptr;
-            Shader* particles = nullptr;
-            Shader* model = nullptr;
+            std::unique_ptr<Shader> stackRenderer;
+            std::unique_ptr<Shader> wireframes;
+            std::unique_ptr<Shader> animatedCircuit;
+            std::unique_ptr<Shader> hudText;
+            std::unique_ptr<Shader> particles;
+            std::unique_ptr<Shader> model;
         }
         shaders;
 
@@ -200,7 +199,7 @@ public:
         struct t_state
         {
             StateManager::States previousState;
-            int countdown = 0;
+            int countdown = 750;
         }
         state;
 
@@ -213,8 +212,7 @@ public:
 
         NeuralNetworkTopology annTopology;
 
-        AbstactSimulation* simulation = nullptr;
-        // SimulationFacade* simulation = nullptr;
+        std::unique_ptr<AbstactSimulation> simulation = nullptr;
 
         struct t_cores
         {
@@ -235,15 +233,6 @@ public:
         bool isPaused = false;
         bool isAccelerated = false;
 
-        struct t_generationData
-        {
-            int generationNumber = -1;
-            int bestFitness = -1;
-        };
-
-        std::vector<t_generationData> generationDatas;
-        t_generationData bestGenerationDatas;
-
         struct t_leaderCarData
         {
             float timeoutUntilNewLeader = 0;
@@ -254,7 +243,7 @@ public:
 
         struct t_carsTrails
         {
-            std::map<unsigned int, unsigned int> genomeIndexMap;
+            std::unordered_map<unsigned int, unsigned int> genomeIndexMap;
 
             struct t_wheelsTrail
             {
@@ -302,7 +291,7 @@ public:
 
     struct t_input
     {
-        std::map<int, bool> keys;
+        std::unordered_map<int, bool> keys;
 
         struct t_mouse
         {

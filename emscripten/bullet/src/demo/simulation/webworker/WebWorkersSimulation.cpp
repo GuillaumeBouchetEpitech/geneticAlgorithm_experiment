@@ -29,8 +29,9 @@ void WebWorkersSimulation::initialise(const t_def& def)
 
     //
 
+    _startPosition = circuit.getStartTransform().position;
+
     WorkerProducer::t_def workerDef;
-    // workerDef.filename = def.filename;
     workerDef.startTransform = circuit.getStartTransform();
     workerDef.knots = circuit.getKnots();
     workerDef.genomesPerCore = _genomesPerCore;
@@ -39,7 +40,7 @@ void WebWorkersSimulation::initialise(const t_def& def)
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
         _workerProducers.push_back(new WorkerProducer(workerDef));
 
-    _currentRequest = WorkerRequest::eWorkersLoading;
+    _currentRequest = WorkerRequest::WorkersLoading;
 }
 
 void WebWorkersSimulation::update()
@@ -54,7 +55,7 @@ void WebWorkersSimulation::update()
 
     // if this line is reached it mean the worker(s) are now available
 
-    if (_currentRequest == WorkerRequest::eWorkersLoading)
+    if (_currentRequest == WorkerRequest::WorkersLoading)
     {
         // ask to reset if any worker(s) are not yet updated
         // => it should only happen the first time
@@ -78,12 +79,12 @@ void WebWorkersSimulation::update()
         incompleteSimulation = true;
     }
 
-    if (_currentRequest == WorkerRequest::eResetAndProcess)
+    if (_currentRequest == WorkerRequest::ResetAndProcess)
     {
         if (_callbacks.onGenerationReset)
             _callbacks.onGenerationReset();
     }
-    else if (_currentRequest == WorkerRequest::eProcess)
+    else if (_currentRequest == WorkerRequest::Process)
     {
         for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
         {
@@ -137,7 +138,7 @@ void WebWorkersSimulation::_processSimulation()
     for (auto* workerProducer : _workerProducers)
         workerProducer->processSimulation();
 
-    _currentRequest = WorkerRequest::eProcess;
+    _currentRequest = WorkerRequest::Process;
 }
 
 void WebWorkersSimulation::_resetAndProcessSimulation()
@@ -151,7 +152,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation()
         _workerProducers[ii]->resetAndProcessSimulation(neuralNetworks);
     }
 
-    _currentRequest = WorkerRequest::eResetAndProcess;
+    _currentRequest = WorkerRequest::ResetAndProcess;
 }
 
 unsigned int WebWorkersSimulation::getTotalCores() const
@@ -217,4 +218,9 @@ const Genome& WebWorkersSimulation::getBestGenome() const
 unsigned int WebWorkersSimulation::getGenerationNumber() const
 {
     return _geneticAlgorithm.getGenerationNumber();
+}
+
+const glm::vec3& WebWorkersSimulation::getStartPosition() const
+{
+    return _startPosition;
 }

@@ -7,7 +7,7 @@
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
-#include <set>
+#include <unordered_set>
 #include <functional>
 
 class btBroadphaseInterface;
@@ -88,8 +88,8 @@ public:
     // vehicle
 
 private:
-    std::vector<PhysicVehicle*> _vehicles;
-    std::set<PhysicVehicle*>    _liveVehicles;
+    std::vector<PhysicVehicle*>         _vehicles;
+    std::unordered_set<PhysicVehicle*>  _liveVehicles;
 public:
     PhysicVehicle*  createVehicle();
     void            destroyVehicle(PhysicVehicle* vehicle);

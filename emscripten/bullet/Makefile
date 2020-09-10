@@ -312,7 +312,8 @@ else ifeq ($(build_platform),web_wasm_pthread)
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
 						-I$(DIR_BULLET) \
-						-DBT_NO_PROFILE
+						-DBT_NO_PROFILE \
+						-DSIMD_FORCE_INLINE=inline
 
 ifeq ($(build_mode),debug)
 
@@ -379,7 +380,8 @@ else ifeq ($(build_platform),web_wasm_webworker)
 
 	CXXFLAGS_BULLET=	$(CXXFLAGS_COMMON) \
 						-I$(DIR_BULLET) \
-						-DBT_NO_PROFILE
+						-DBT_NO_PROFILE \
+						-DSIMD_FORCE_INLINE=inline
 
 ifeq ($(build_mode),debug)
 

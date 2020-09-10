@@ -29,22 +29,22 @@ void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     char messageType = 0;
     receivedMsg >> messageType;
 
-    switch (messages::client(messageType))
+    switch (Messages::Client(messageType))
     {
-        case messages::client::eLoadWorker:
+        case Messages::Client::LoadWorker:
         {
             _initialiseSimulation(receivedMsg);
             break;
         }
 
-        case messages::client::eResetAndProcessSimulation:
+        case Messages::Client::ResetAndProcessSimulation:
         {
             _resetSimulation(receivedMsg);
             _processSimulation();
             break;
         }
 
-        case messages::client::eProcessSimulation:
+        case Messages::Client::ProcessSimulation:
         {
             _processSimulation();
             break;
@@ -166,7 +166,7 @@ void    WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
     } // generate neural networks
 
     _message.clear();
-    _message << char(messages::server::eWebWorkerLoaded);
+    _message << char(Messages::Server::WebWorkerLoaded);
 
     _send();
 }
@@ -230,7 +230,7 @@ void    WorkerConsumer::_processSimulation()
     // send back the result
 
     _message.clear();
-    _message << char(messages::server::eSimulationResult);
+    _message << char(Messages::Server::SimulationResult);
 
     _message << delta << genomesAlive;
 

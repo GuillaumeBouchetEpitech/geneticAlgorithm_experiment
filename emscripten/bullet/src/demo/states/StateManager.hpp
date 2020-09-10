@@ -37,19 +37,20 @@ public:
     enum class States: int
     {
 #if defined D_WEB_WEBWORKER_BUILD
-        eWorkersLoading = 0,
-        eRunning,
+        WorkersLoading = 0,
+        Running,
 #else
-        eRunning = 0,
+        Running = 0,
 #endif
-        ePaused,
-        eStartGeneration,
+        Paused,
+        StartGeneration,
+        EndGeneration,
 
-        eTotal
+        Total
     };
 
 private:
-    typedef std::array<IState*, toUnderlying(States::eTotal)> t_States;
+    typedef std::array<IState*, toUnderlying(States::Total)> t_States;
     t_States _states;
 
     States _currentState;

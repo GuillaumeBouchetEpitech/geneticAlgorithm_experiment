@@ -193,8 +193,8 @@ void Scene::_updateMatrices()
             glm::vec3 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
 
             if (// do not update the third person camera if not in a correct state
-                (StateManager::get()->getState() == StateManager::States::eRunning ||
-                 StateManager::get()->getState() == StateManager::States::eStartGeneration) &&
+                (StateManager::get()->getState() == StateManager::States::Running ||
+                 StateManager::get()->getState() == StateManager::States::StartGeneration) &&
                 // do not update the third person camera if too close from the target
                 glm::distance(carOrigin, camera.thirdPersonCenter) > 0.1f)
             {
@@ -228,6 +228,10 @@ void Scene::_updateMatrices()
 
 void Scene::_updateCircuitAnimation()
 {
+    if (StateManager::get()->getState() != StateManager::States::StartGeneration &&
+        StateManager::get()->getState() != StateManager::States::Running)
+        return;
+
     auto& logic = Data::get().logic;
     const auto& simulation = *logic.simulation;
     auto& graphic = Data::get().graphic;
@@ -716,7 +720,7 @@ void Scene::_renderHUD()
         { // big titles
 
 #if defined D_WEB_WEBWORKER_BUILD
-            if (StateManager::get()->getState() == StateManager::States::eWorkersLoading)
+            if (StateManager::get()->getState() == StateManager::States::WorkersLoading)
             {
                 float scale = 2.0f;
 
@@ -730,13 +734,13 @@ void Scene::_renderHUD()
             }
 #endif
 
-            if (StateManager::get()->getState() == StateManager::States::ePaused)
+            if (StateManager::get()->getState() == StateManager::States::Paused)
             {
                 float scale = 5.0f;
                 textRenderer.push({ 400 - 3 * 16 * scale, 300 - 8 * scale }, "PAUSED", scale);
             }
 
-            if (StateManager::get()->getState() == StateManager::States::eStartGeneration)
+            if (StateManager::get()->getState() == StateManager::States::StartGeneration)
             {
                 float scale = 2.0f;
 

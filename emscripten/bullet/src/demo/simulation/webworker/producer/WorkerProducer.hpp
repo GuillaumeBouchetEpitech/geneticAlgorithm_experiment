@@ -36,15 +36,15 @@ public:
 private:
     worker_handle   _workerHandle;
 
-    enum e_Status
+    enum Status
     {
-        eWebWorkerLoaded = 0,
-        eProcessing,
-        eUpdated,
-        eCount
+        WebWorkerLoaded = 0,
+        Processing,
+        Updated,
+        Count
     };
 
-    std::bitset<e_Status::eCount> _flags;
+    std::bitset<Status::Count> _flags;
 
     AbstactSimulation::t_coreState _coreState;
 

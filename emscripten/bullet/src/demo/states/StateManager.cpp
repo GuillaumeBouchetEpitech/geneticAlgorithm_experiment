@@ -10,6 +10,7 @@
 #include "State_Running.hpp"
 #include "State_Paused.hpp"
 #include "State_StartGeneration.hpp"
+#include "State_EndGeneration.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
 
@@ -24,17 +25,18 @@ StateManager::StateManager()
     // allocate states
 
 #if defined D_WEB_WEBWORKER_BUILD
-    _states[toUnderlying(States::eWorkersLoading)] = new State_WebWorkersLoading();
+    _states[toUnderlying(States::WorkersLoading)] = new State_WebWorkersLoading();
 #endif
 
-    _states[toUnderlying(States::eRunning)] = new State_Running();
-    _states[toUnderlying(States::ePaused)] = new State_Paused();
-    _states[toUnderlying(States::eStartGeneration)] = new State_StartGeneration();
+    _states[toUnderlying(States::Running)] = new State_Running();
+    _states[toUnderlying(States::Paused)] = new State_Paused();
+    _states[toUnderlying(States::StartGeneration)] = new State_StartGeneration();
+    _states[toUnderlying(States::EndGeneration)] = new State_EndGeneration();
 
 #if defined D_WEB_WEBWORKER_BUILD
-    _currentState = States::eWorkersLoading;
+    _currentState = States::WorkersLoading;
 #else
-    _currentState = States::eStartGeneration;
+    _currentState = States::StartGeneration;
 #endif
 }
 

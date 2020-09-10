@@ -15,12 +15,12 @@ public:
 
 public:
     GeometryBuilder& reset();
-    GeometryBuilder& setShader(Shader* shader);
+    GeometryBuilder& setShader(Shader& shader);
     GeometryBuilder& setPrimitiveType(GLint primitiveType);
     GeometryBuilder& addVbo();
     GeometryBuilder& setVboAsInstanced();
     GeometryBuilder& addVboAttribute(const std::string& name,
-                                     Geometry::e_attrType type,
+                                     Geometry::AttrType type,
                                      std::size_t index = 0);
     GeometryBuilder& setVboStride(unsigned int stride);
     Geometry& build(Geometry& geometry);

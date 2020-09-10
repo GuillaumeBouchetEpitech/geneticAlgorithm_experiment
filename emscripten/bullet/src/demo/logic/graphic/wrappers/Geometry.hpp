@@ -17,14 +17,14 @@ class Shader;
 class Geometry
 {
 public:
-    enum class e_attrType
+    enum class AttrType
     {
-        eFloat,
-        eVec2f,
-        eVec3f,
-        eVec4f,
-        eMat3f,
-        eMat4f
+        Float,
+        Vec2f,
+        Vec3f,
+        Vec4f,
+        Mat3f,
+        Mat4f
     };
 
     struct t_def
@@ -34,7 +34,7 @@ public:
             struct t_attr
             {
                 std::string name = "";
-                e_attrType  type = e_attrType::eFloat;
+                AttrType    type = AttrType::Float;
                 std::size_t index = 0;
 
                 t_attr() = default;

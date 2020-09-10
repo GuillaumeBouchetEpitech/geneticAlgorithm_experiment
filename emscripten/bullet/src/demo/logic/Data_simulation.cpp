@@ -26,12 +26,6 @@ void Data::initialiseSimulation()
 
     logic.simulation->setOnGenerationResetCallback([this]() -> void
     {
-        { // switch the current state
-
-            StateManager::get()->changeState(StateManager::States::eStartGeneration);
-
-        } // switch the current state
-
         { // handle the car trails
 
             auto& carsTrails = logic.carsTrails;
@@ -139,7 +133,15 @@ void Data::initialiseSimulation()
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void
     {
-        { // hanlde the stats
+        { // switch the current state
+
+            StateManager::get()->changeState(StateManager::States::EndGeneration);
+
+            logic.leaderCar.index = -1;
+
+        } // switch the current state
+
+        { // handle the stats
 
             const auto& bestGenome = logic.simulation->getBestGenome();
             auto& fitnessStats = logic.fitnessStats;

@@ -1,13 +1,8 @@
 
 #include "Data.hpp"
 
-#include "graphic/wrappers/Shader.hpp"
-
-#include <memory> // <= make_unique
-
 void Data::initialiseShaders()
 {
-
     { // shaders
 
         { // create the stackRenderer shader
@@ -18,7 +13,7 @@ void Data::initialiseShaders()
             def.attributes = { "a_position", "a_color" };
             def.uniforms = { "u_composedMatrix" };
 
-            graphic.shaders.stackRenderer = new Shader(def);
+            graphic.shaders.stackRenderer = std::make_unique<Shader>(def);
         }
 
         { // create the wireframes shader
@@ -30,7 +25,7 @@ void Data::initialiseShaders()
             def.attributes = { "a_position" };
             def.uniforms = { "u_composedMatrix", "u_color" };
 
-            graphic.shaders.wireframes = new Shader(def);
+            graphic.shaders.wireframes = std::make_unique<Shader>(def);
         }
 
         { // create the animated circuit shader
@@ -42,7 +37,7 @@ void Data::initialiseShaders()
             def.attributes = { "a_position", "a_color", "a_normal", "a_index" };
             def.uniforms = { "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit" };
 
-            graphic.shaders.animatedCircuit = new Shader(def);
+            graphic.shaders.animatedCircuit = std::make_unique<Shader>(def);
         }
 
         { // create the hud text shader
@@ -57,7 +52,7 @@ void Data::initialiseShaders()
             };
             def.uniforms = { "u_composedMatrix", "u_texture", };
 
-            graphic.shaders.hudText = new Shader(def);
+            graphic.shaders.hudText = std::make_unique<Shader>(def);
         }
 
         { // particles
@@ -71,7 +66,7 @@ void Data::initialiseShaders()
             };
             def.uniforms = { "u_composedMatrix" };
 
-            graphic.shaders.particles = new Shader(def);
+            graphic.shaders.particles = std::make_unique<Shader>(def);
         }
 
         { // model (chassis + wheels)
@@ -82,17 +77,15 @@ void Data::initialiseShaders()
             def.attributes = { "a_position", "a_color", "a_offsetTransform", "a_offsetColor" };
             def.uniforms = { "u_composedMatrix" };
 
-            graphic.shaders.model = new Shader(def);
+            graphic.shaders.model = std::make_unique<Shader>(def);
         }
 
     } // shaders
 
     { // textures
 
-        // font textre
         bool pixelated = true;
         graphic.textures.textFont.load("assets/textures/ascii_font.png", pixelated);
 
     } // textures
-
 }

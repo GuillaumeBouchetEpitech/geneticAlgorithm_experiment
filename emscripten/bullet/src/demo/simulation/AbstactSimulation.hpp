@@ -70,5 +70,6 @@ public:
     virtual const t_genomes& getGenomes() const = 0;
     virtual const Genome& getBestGenome() const = 0;
     virtual unsigned int getGenerationNumber() const = 0;
+    virtual const glm::vec3& getStartPosition() const = 0;
 
 };

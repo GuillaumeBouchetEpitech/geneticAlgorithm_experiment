@@ -6,8 +6,6 @@
 #include <vector>
 #include <array>
 
-#define D_PARTICLE_TRAIL_SIZE 6
-
 class ParticleManager
 {
 public:
@@ -28,7 +26,9 @@ private:
         glm::vec3   color;
         float       life;
         float       maxLife;
-        std::array<glm::vec3, D_PARTICLE_TRAIL_SIZE>    trail;
+
+        static constexpr std::size_t trail_size = 6;
+        std::array<glm::vec3, trail_size> trail;
 
         t_particle(const glm::vec3& position,
                    const glm::vec3& linearVelocity,

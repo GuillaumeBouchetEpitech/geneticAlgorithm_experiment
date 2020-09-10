@@ -25,13 +25,6 @@ Data* Data::_instance = nullptr;
 
 Data::~Data()
 {
-    delete logic.simulation;
-    delete graphic.shaders.stackRenderer;
-    delete graphic.shaders.wireframes;
-    delete graphic.shaders.animatedCircuit;
-    delete graphic.shaders.hudText;
-    delete graphic.shaders.particles;
-    delete graphic.shaders.model;
 }
 
 void Data::initialise()
@@ -42,15 +35,13 @@ void Data::initialise()
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    logic.simulation = new WebWorkersSimulation();
+    logic.simulation = std::make_unique<WebWorkersSimulation>();
 
 #else
 
-    logic.simulation = new PthreadSimulation();
+    logic.simulation = std::make_unique<PthreadSimulation>();
 
 #endif
-
-    // logic.simulation = new SimulationFacade();
 
     initialiseCircuit();
     initialiseSimulation();

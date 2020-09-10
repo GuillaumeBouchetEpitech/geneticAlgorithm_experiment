@@ -21,13 +21,13 @@ private:
     friend PhysicWorld;
 
 private:
-    enum class e_Wheels: unsigned int
+    enum class Wheels: unsigned int
     {
-        eFrontLeft = 0,
-        eFrontRight,
-        eBackLeft,
-        eBackRight,
-        eCount,
+        FrontLeft = 0,
+        FrontRight,
+        BackLeft,
+        BackRight,
+        Count,
     };
 
     struct bullet

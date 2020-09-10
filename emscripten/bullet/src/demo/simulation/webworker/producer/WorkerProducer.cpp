@@ -10,15 +10,15 @@ WorkerProducer::WorkerProducer(const t_def& def)
 {
     _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
 
-    _flags[e_Status::eWebWorkerLoaded] = false;
-    _flags[e_Status::eProcessing] = false;
-    _flags[e_Status::eUpdated] = false;
+    _flags[Status::WebWorkerLoaded] = false;
+    _flags[Status::Processing] = false;
+    _flags[Status::Updated] = false;
 
     _carsData.resize(def.genomesPerCore);
 
     {
         _message.clear();
-        _message << char(messages::client::eLoadWorker);
+        _message << char(Messages::Client::LoadWorker);
 
         _message << def.startTransform.position;
         _message << def.startTransform.quaternion;
@@ -53,23 +53,23 @@ void    WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void
 
 void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 {
-    _flags[e_Status::eProcessing] = false;
+    _flags[Status::Processing] = false;
 
     MessageView receivedMsg(dataPointer, dataSize);
 
     char messageType = 0;
     receivedMsg >> messageType;
 
-    switch (messages::server(messageType))
+    switch (Messages::Server(messageType))
     {
-        case messages::server::eWebWorkerLoaded:
+        case Messages::Server::WebWorkerLoaded:
         {
             D_MYLOG("web worker loaded");
-            _flags[e_Status::eWebWorkerLoaded] = true;
+            _flags[Status::WebWorkerLoaded] = true;
             break;
         }
 
-        case messages::server::eSimulationResult:
+        case Messages::Server::SimulationResult:
         {
             receivedMsg >> _coreState.delta >> _coreState.genomesAlive;
 
@@ -99,7 +99,7 @@ void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                 receivedMsg >> output.steer >> output.speed;
             }
 
-            _flags[e_Status::eUpdated] = true;
+            _flags[Status::Updated] = true;
             break;
         }
 
@@ -112,7 +112,7 @@ void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 
 void    WorkerProducer::_send()
 {
-    _flags[e_Status::eProcessing] = true;
+    _flags[Status::Processing] = true;
 
     char*           dataPointer = const_cast<char*>(_message.getData());
     unsigned int    dataSize = _message.getSize();
@@ -128,7 +128,7 @@ void    WorkerProducer::_send()
 void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
 {
     _message.clear();
-    _message << char(messages::client::eResetAndProcessSimulation);
+    _message << char(Messages::Client::ResetAndProcessSimulation);
 
     std::vector<float>  weights;
 
@@ -145,24 +145,24 @@ void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNet
 void    WorkerProducer::processSimulation()
 {
     _message.clear();
-    _message << char(messages::client::eProcessSimulation);
+    _message << char(Messages::Client::ProcessSimulation);
 
     _send();
 }
 
 bool    WorkerProducer::isLoaded() const
 {
-    return _flags[e_Status::eWebWorkerLoaded];
+    return _flags[Status::WebWorkerLoaded];
 }
 
 bool    WorkerProducer::isProcessing() const
 {
-    return _flags[e_Status::eProcessing];
+    return _flags[Status::Processing];
 }
 
 bool    WorkerProducer::isUpdated() const
 {
-    return _flags[e_Status::eUpdated];
+    return _flags[Status::Updated];
 }
 
 const t_carsData&   WorkerProducer::getCarsData() const

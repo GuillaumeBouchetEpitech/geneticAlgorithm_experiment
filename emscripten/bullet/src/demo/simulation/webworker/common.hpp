@@ -3,20 +3,20 @@
 
 #include "demo/defines.hpp"
 
-namespace messages
+namespace Messages
 {
-    enum class client : int
+    enum class Client : int
     {
-        eLoadWorker = 0,
-        eResetAndProcessSimulation,
-        eProcessSimulation,
-        eUnknown,
+        LoadWorker = 0,
+        ResetAndProcessSimulation,
+        ProcessSimulation,
+        Unknown,
     };
 
-    enum class server : int
+    enum class Server : int
     {
-        eWebWorkerLoaded = 0,
-        eSimulationResult,
-        eUnknown
+        WebWorkerLoaded = 0,
+        SimulationResult,
+        Unknown
     };
 };

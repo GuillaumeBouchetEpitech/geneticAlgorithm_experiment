@@ -5,7 +5,7 @@
 
 #include "demo/utilities/types.hpp"
 
-#include <cmath>
+#include <array>
 
 class FrustumCulling
 {
@@ -18,32 +18,34 @@ public:
     bool cubeInFrustum(const glm::vec3& v, const glm::vec3& s) const;
 
 private:
-    enum class e_FrustumSide: unsigned int
+    enum class FrustumSide: unsigned int
     {
-        eRight = 0,
-        eLeft,
-        eBottom,
-        eTop,
-        eBack,
-        eFront,
+        right = 0,
+        left,
+        bottom,
+        top,
+        back,
+        front,
 
-        eCount,
+        count,
     };
 
-    enum class e_PlaneData: unsigned int
+    enum class PlaneData: unsigned int
     {
-        eA = 0,
-        eB,
-        eC,
-        eD,
+        A = 0,
+        B,
+        C,
+        D,
 
-        eCount,
+        count,
     };
 
 private:
-    float _frustum[toUnderlying(e_FrustumSide::eCount)][toUnderlying(e_PlaneData::eCount)];
+    // float _frustum[toUnderlying(FrustumSide::count)][toUnderlying(PlaneData::count)];
+    // std::array<std::array<float, toUnderlying(PlaneData::count)>, toUnderlying(FrustumSide::count)> _frustum;
+    std::array<float[toUnderlying(PlaneData::count)], toUnderlying(FrustumSide::count)> _frustum;
 
 private:
-    void _normalizePlane(e_FrustumSide side);
+    void _normalizePlane(FrustumSide side);
 
 };

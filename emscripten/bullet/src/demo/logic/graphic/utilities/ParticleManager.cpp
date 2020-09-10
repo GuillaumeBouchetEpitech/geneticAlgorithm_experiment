@@ -30,7 +30,7 @@ void ParticleManager::update(float delta)
     }
 
     // pre-allocate (1 position + N trailing positions)
-    _particlesInstances.reserve(_particles.size() * D_PARTICLE_TRAIL_SIZE);
+    _particlesInstances.reserve(_particles.size() * (1 + t_particle::trail_size));
     _particlesInstances.clear();
 
     for (auto& particle : _particles)

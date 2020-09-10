@@ -51,12 +51,12 @@ void    Geometry::initialise(Shader& shader, const t_def& def)
             {
                 switch (attr.type)
                 {
-                case e_attrType::eFloat: stride += 1; break;
-                case e_attrType::eVec2f: stride += 2; break;
-                case e_attrType::eVec3f: stride += 3; break;
-                case e_attrType::eVec4f: stride += 4; break;
-                case e_attrType::eMat3f: stride += 9; break;
-                case e_attrType::eMat4f: stride += 16; break;
+                case AttrType::Float: stride += 1; break;
+                case AttrType::Vec2f: stride += 2; break;
+                case AttrType::Vec3f: stride += 3; break;
+                case AttrType::Vec4f: stride += 4; break;
+                case AttrType::Mat3f: stride += 9; break;
+                case AttrType::Mat4f: stride += 16; break;
                 }
             }
             stride *= sizeof(float);
@@ -68,23 +68,23 @@ void    Geometry::initialise(Shader& shader, const t_def& def)
             int totalRows = 1;
             switch (attr.type)
             {
-                case e_attrType::eFloat:
+                case AttrType::Float:
                     rowSize = 1;
                     break;
-                case e_attrType::eVec2f:
+                case AttrType::Vec2f:
                     rowSize = 2;
                     break;
-                case e_attrType::eVec3f:
+                case AttrType::Vec3f:
                     rowSize = 3;
                     break;
-                case e_attrType::eVec4f:
+                case AttrType::Vec4f:
                     rowSize = 4;
                     break;
-                case e_attrType::eMat3f:
+                case AttrType::Mat3f:
                     rowSize = 3;
                     totalRows = 3;
                     break;
-                case e_attrType::eMat4f:
+                case AttrType::Mat4f:
                     rowSize = 4;
                     totalRows = 4;
                     break;

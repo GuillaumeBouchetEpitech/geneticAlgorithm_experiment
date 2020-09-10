@@ -255,23 +255,23 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     smoothedVertices.reserve(512); // pre-allocate, ease the reallocation
 
     {
-        enum class e_SplineType: unsigned int
+        enum class SplineType: unsigned int
         {
-            eLeftX = 0,
-            eLeftY,
-            eLeftZ,
-            eRightX,
-            eRightY,
-            eRightZ,
-            eMinDistance,
-            eColorR,
-            eColorG,
-            eColorB,
+            leftX = 0,
+            leftY,
+            leftZ,
+            rightX,
+            rightY,
+            rightZ,
+            minDistance,
+            colorR,
+            colorG,
+            colorB,
 
-            eCount,
+            count,
         };
 
-        const unsigned int  dimension = toUnderlying(e_SplineType::eCount);
+        const unsigned int  dimension = toUnderlying(SplineType::count);
 
         const unsigned int  degree = 3;
         const float*        knotsData = &_knots.front().left.x;
@@ -284,25 +284,23 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
         const unsigned int maxIterations = 1000;
         const float step = 1.0f / maxIterations; // tiny steps
-        // const float minimumDistance = 2.0f;
 
         for (float coef = 0.0f; coef <= 1.0f; coef += step)
         {
-            vertex.left.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftX));
-            vertex.left.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftY));
-            vertex.left.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eLeftZ));
-            vertex.right.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightX));
-            vertex.right.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightY));
-            vertex.right.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eRightZ));
+            vertex.left.x = smoother.calcAt(coef, toUnderlying(SplineType::leftX));
+            vertex.left.y = smoother.calcAt(coef, toUnderlying(SplineType::leftY));
+            vertex.left.z = smoother.calcAt(coef, toUnderlying(SplineType::leftZ));
+            vertex.right.x = smoother.calcAt(coef, toUnderlying(SplineType::rightX));
+            vertex.right.y = smoother.calcAt(coef, toUnderlying(SplineType::rightY));
+            vertex.right.z = smoother.calcAt(coef, toUnderlying(SplineType::rightZ));
 
-            float minDistance = smoother.calcAt(coef, toUnderlying(e_SplineType::eMinDistance));
+            float minDistance = smoother.calcAt(coef, toUnderlying(SplineType::minDistance));
 
             if (!smoothedVertices.empty())
             {
                 // both left and right vertices must be far enough to be included
                 const auto& lastVertex = smoothedVertices.back();
-                // if (glm::length(vertex.left - lastVertex.left) < minimumDistance ||
-                //     glm::length(vertex.right - lastVertex.right) < minimumDistance)
+
                 if (glm::length(vertex.left - lastVertex.left) < minDistance ||
                     glm::length(vertex.right - lastVertex.right) < minDistance)
                     continue;
@@ -313,9 +311,9 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
                 glm::length(vertex.right) < 0.001f)
                 continue; // TODO: fix it
 
-            vertex.color.x = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorR));
-            vertex.color.y = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorG));
-            vertex.color.z = smoother.calcAt(coef, toUnderlying(e_SplineType::eColorB));
+            vertex.color.x = smoother.calcAt(coef, toUnderlying(SplineType::colorR));
+            vertex.color.y = smoother.calcAt(coef, toUnderlying(SplineType::colorG));
+            vertex.color.z = smoother.calcAt(coef, toUnderlying(SplineType::colorB));
 
             smoothedVertices.push_back(vertex);
         }

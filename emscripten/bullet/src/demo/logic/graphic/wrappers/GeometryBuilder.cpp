@@ -21,9 +21,9 @@ GeometryBuilder& GeometryBuilder::reset()
     return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setShader(Shader* shader)
+GeometryBuilder& GeometryBuilder::setShader(Shader& shader)
 {
-    _shader = shader;
+    _shader = &shader;
 
     return *this;
 }
@@ -53,7 +53,7 @@ GeometryBuilder& GeometryBuilder::setVboAsInstanced()
 }
 
 GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
-                                                  Geometry::e_attrType type,
+                                                  Geometry::AttrType type,
                                                   std::size_t index /*= 0*/)
 {
     if (_def.vbos.empty())

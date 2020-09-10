@@ -81,5 +81,6 @@ public:
     virtual const t_genomes& getGenomes() const override;
     virtual const Genome& getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
+    virtual const glm::vec3& getStartPosition() const override;
 
 };

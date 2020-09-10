@@ -3,15 +3,12 @@
 
 #include "State_AbstractSimulation.hpp"
 
-class State_Paused
+class State_EndGeneration
     : public State_AbstractSimulation
 {
 public:
     virtual void enter() override;
-    virtual void leave() override;
 
 public:
-    virtual void handleEvent(const SDL_Event&) override;
     virtual void update(int) override;
-    virtual void visibility(bool visible) override;
 };

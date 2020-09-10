@@ -24,8 +24,8 @@ void Data::initialiseCircuit()
     groundVertices.reserve(2048); // pre-allocate
     wallsVertices.reserve(groundVertices.capacity() * 2); // pre-allocate, <= 1 ground 2 walls
 
-     const glm::vec3    greyColor = { 0.6f, 0.6f, 0.6f };
-    const glm::vec3     whiteColor = { 1.0f, 1.0f, 1.0f };
+    const glm::vec3 greyColor = { 0.6f, 0.6f, 0.6f };
+    const glm::vec3 whiteColor = { 1.0f, 1.0f, 1.0f };
 
     const float maxFloat = std::numeric_limits<float>::max();
     auto& boundaries = logic.circuitAnimation.boundaries;
@@ -67,7 +67,7 @@ void Data::initialiseCircuit()
 
         for (int index : indices)
         {
-            bool firstLine = (index < 2);
+            bool firstLine = (index < 2); // hacky
 
             const auto& color = (firstLine ? whiteColor : colors[index]);
 
@@ -99,7 +99,7 @@ void Data::initialiseCircuit()
 
         for (int index : indices)
         {
-            bool firstLine = (index < 2);
+            bool firstLine = (index < 2); // hacky
 
             const auto& color = (firstLine ? whiteColor : greyColor);
 

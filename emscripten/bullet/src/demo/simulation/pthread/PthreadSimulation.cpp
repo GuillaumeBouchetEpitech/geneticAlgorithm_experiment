@@ -294,3 +294,8 @@ unsigned int PthreadSimulation::getGenerationNumber() const
 {
     return _geneticAlgorithm.getGenerationNumber();
 }
+
+const glm::vec3& PthreadSimulation::getStartPosition() const
+{
+    return _startTransform.position;
+}
