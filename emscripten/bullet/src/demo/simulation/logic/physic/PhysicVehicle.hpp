@@ -42,7 +42,7 @@ private:
     _bullet;
 
 private:
-    PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld);
+    PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask);
     ~PhysicVehicle();
 
 public:

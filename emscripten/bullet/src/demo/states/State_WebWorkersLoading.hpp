@@ -12,6 +12,9 @@ class State_WebWorkersLoading
     : public State_AbstractSimulation
 {
 public:
+    virtual void enter() override;
+
+public:
     virtual void handleEvent(const SDL_Event&) override;
     virtual void update(int) override;
     virtual void render(const SDL_Window&) override;

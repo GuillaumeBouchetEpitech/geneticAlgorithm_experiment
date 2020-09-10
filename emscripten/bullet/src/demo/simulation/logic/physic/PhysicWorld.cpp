@@ -100,7 +100,10 @@ void PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indice
 
 PhysicVehicle* PhysicWorld::createVehicle()
 {
-    PhysicVehicle* vehicle = new PhysicVehicle(*_bullet.dynamicsWorld);
+    short group = toUnderlying(PhysicWorld::Groups::vehicle);
+    short mask = toUnderlying(PhysicWorld::Masks::vehicle);
+
+    PhysicVehicle* vehicle = new PhysicVehicle(*_bullet.dynamicsWorld, group, mask);
 
     addVehicle(vehicle);
 

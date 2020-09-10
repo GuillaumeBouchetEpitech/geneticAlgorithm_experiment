@@ -15,6 +15,11 @@
 
 #include "thirdparty/GLMath.hpp"
 
+void State_WebWorkersLoading::enter()
+{
+    Data::get().logic.state.countdown = 0;
+}
+
 void State_WebWorkersLoading::handleEvent(const SDL_Event& event)
 {
     static_cast<void>(event); // <= unused

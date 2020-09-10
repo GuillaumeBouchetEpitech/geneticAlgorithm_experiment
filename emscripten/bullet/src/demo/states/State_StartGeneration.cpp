@@ -49,7 +49,7 @@ void State_StartGeneration::update(int deltaTime)
 
     } // camera tracking
 
-    Data::get().logic.state.countdown -= deltaTime;
-    if (Data::get().logic.state.countdown <= 0)
+    logic.state.countdown -= deltaTime;
+    if (logic.state.countdown <= 0)
         StateManager::get()->changeState(StateManager::States::Running);
 }

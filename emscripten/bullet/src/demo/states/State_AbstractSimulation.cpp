@@ -90,7 +90,6 @@ void State_AbstractSimulation::update(int deltaTime)
     float elapsedTime = float(deltaTime) / 1000.0f;
 
     auto& data = Data::get();
-    auto& logic = data.logic;
     auto& graphic = data.graphic;
     auto& camera = graphic.camera;
 
@@ -173,7 +172,7 @@ void State_AbstractSimulation::update(int deltaTime)
 #if not defined D_WEB_WEBWORKER_BUILD
 
             // only pthread builds support this
-            logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
+            data.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
 #endif
         } // keyboard event(s)

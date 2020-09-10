@@ -199,7 +199,7 @@ public:
         struct t_state
         {
             StateManager::States previousState;
-            int countdown = 750;
+            int countdown = 0;
         }
         state;
 

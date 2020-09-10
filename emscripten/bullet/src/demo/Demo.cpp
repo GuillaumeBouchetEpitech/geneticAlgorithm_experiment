@@ -28,7 +28,6 @@ Demo::Demo(int width, int height)
 
     // hacky?
     data.logic.state.previousState = StateManager::get()->getState();
-    data.logic.state.countdown = 750;
 
     Scene::initialise();
 }

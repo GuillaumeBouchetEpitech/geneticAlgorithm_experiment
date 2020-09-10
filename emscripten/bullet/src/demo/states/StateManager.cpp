@@ -38,6 +38,8 @@ StateManager::StateManager()
 #else
     _currentState = States::StartGeneration;
 #endif
+
+    _states[toUnderlying(_currentState)]->enter();
 }
 
 StateManager::~StateManager()
