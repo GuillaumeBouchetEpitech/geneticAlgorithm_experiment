@@ -77,7 +77,10 @@ void PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indi
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id);
     btRigidBody* body = trimesh->_bullet.body;
 
-    _bullet.dynamicsWorld->addRigidBody(body, toUnderlying(Groups::ground), toUnderlying(Masks::ground));
+    short group = asValue(PhysicWorld::Groups::ground);
+    short mask = asValue(PhysicWorld::Masks::ground);
+
+    _bullet.dynamicsWorld->addRigidBody(body, group, mask);
 
     body->setUserPointer((void*)trimesh);
 
@@ -89,7 +92,10 @@ void PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indice
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1);
     btRigidBody* body = trimesh->_bullet.body;
 
-    _bullet.dynamicsWorld->addRigidBody(body, toUnderlying(Groups::wall), toUnderlying(Masks::wall));
+    short group = asValue(PhysicWorld::Groups::wall);
+    short mask = asValue(PhysicWorld::Masks::wall);
+
+    _bullet.dynamicsWorld->addRigidBody(body, group, mask);
 
     body->setUserPointer((void*)trimesh);
 
@@ -100,12 +106,12 @@ void PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indice
 
 PhysicVehicle* PhysicWorld::createVehicle()
 {
-    short group = toUnderlying(PhysicWorld::Groups::vehicle);
-    short mask = toUnderlying(PhysicWorld::Masks::vehicle);
+    short group = asValue(PhysicWorld::Groups::vehicle);
+    short mask = asValue(PhysicWorld::Masks::vehicle);
 
     PhysicVehicle* vehicle = new PhysicVehicle(*_bullet.dynamicsWorld, group, mask);
 
-    addVehicle(vehicle);
+    addVehicle(*vehicle);
 
     _vehicles.push_back(vehicle);
 
@@ -118,7 +124,7 @@ void PhysicWorld::destroyVehicle(PhysicVehicle* vehicle)
     if (it != _vehicles.end())
         return; // no found
 
-    removeVehicle(vehicle);
+    removeVehicle(*vehicle);
 
     _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
     _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
@@ -128,28 +134,31 @@ void PhysicWorld::destroyVehicle(PhysicVehicle* vehicle)
     delete vehicle;
 }
 
-void PhysicWorld::addVehicle(PhysicVehicle* vehicle)
+void PhysicWorld::addVehicle(PhysicVehicle& vehicle)
 {
-    if (vehicle == nullptr || _liveVehicles.count(vehicle) > 0)
+    if (_liveVehicles.count(&vehicle) > 0)
         return;
 
-    vehicle->reset();
+    vehicle.reset();
 
-    _bullet.dynamicsWorld->addRigidBody(vehicle->_bullet.carChassis, toUnderlying(Groups::vehicle), toUnderlying(Masks::vehicle));
-    _bullet.dynamicsWorld->addVehicle(vehicle->_bullet.vehicle);
+    short group = asValue(PhysicWorld::Groups::vehicle);
+    short mask = asValue(PhysicWorld::Masks::vehicle);
 
-    _liveVehicles.insert(vehicle);
+    _bullet.dynamicsWorld->addRigidBody(vehicle._bullet.carChassis, group, mask);
+    _bullet.dynamicsWorld->addVehicle(vehicle._bullet.vehicle);
+
+    _liveVehicles.insert(&vehicle);
 }
 
-void PhysicWorld::removeVehicle(PhysicVehicle* vehicle)
+void PhysicWorld::removeVehicle(PhysicVehicle& vehicle)
 {
-    if (vehicle == nullptr || _liveVehicles.count(vehicle) == 0)
+    if (_liveVehicles.count(&vehicle) == 0)
         return;
 
-    _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
-    _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+    _bullet.dynamicsWorld->removeRigidBody(vehicle._bullet.carChassis);
+    _bullet.dynamicsWorld->removeVehicle(vehicle._bullet.vehicle);
 
-    _liveVehicles.erase(vehicle);
+    _liveVehicles.erase(&vehicle);
 }
 
 const std::vector<PhysicVehicle*>& PhysicWorld::getVehicles() const

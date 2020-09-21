@@ -11,18 +11,7 @@
 
 #include <emscripten/emscripten.h> // <= emscripten_worker_respond()
 
-WorkerConsumer::WorkerConsumer()
-{
-
-    // m_contacts.reserve(32);
-    // _physicWorld.setOnContact([this](const glm::vec3& position, const glm::vec3& normal) {
-
-    //  m_contacts.push_back(std::make_pair(position, normal));
-    // });
-
-}
-
-void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
+void WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
 {
     MessageView receivedMsg(dataPointer, dataSize);
 
@@ -57,12 +46,12 @@ void    WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void    WorkerConsumer::_send()
+void WorkerConsumer::_send()
 {
-    emscripten_worker_respond(const_cast<char*>(_message.getData()), _message.getSize());
+    emscripten_worker_respond(const_cast<char*>(_messageToSend.getData()), _messageToSend.getSize());
 }
 
-void    WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
+void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 {
     CircuitBuilder::t_startTransform startTransform;
     CircuitBuilder::t_knots circuitKnots;
@@ -74,6 +63,7 @@ void    WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
     unsigned int                layerOutput = 0;
 
     { // read initialisation packet
+
         receivedMsg >> startTransform.position;
         receivedMsg >> startTransform.quaternion;
 
@@ -165,13 +155,13 @@ void    WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
     } // generate neural networks
 
-    _message.clear();
-    _message << char(Messages::Server::WebWorkerLoaded);
+    _messageToSend.clear();
+    _messageToSend << char(Messages::Server::WebWorkerLoaded);
 
     _send();
 }
 
-void    WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
+void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
 {
     const unsigned int floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
     const unsigned int byteWeightsSize = floatWeightsSize * sizeof(float);
@@ -195,7 +185,7 @@ void    WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
     // m_contacts.clear();
 }
 
-void    WorkerConsumer::_processSimulation()
+void WorkerConsumer::_processSimulation()
 {
     // update the simulation
 
@@ -229,10 +219,10 @@ void    WorkerConsumer::_processSimulation()
 
     // send back the result
 
-    _message.clear();
-    _message << char(Messages::Server::SimulationResult);
+    _messageToSend.clear();
+    _messageToSend << char(Messages::Server::SimulationResult);
 
-    _message << delta << genomesAlive;
+    _messageToSend << delta << genomesAlive;
 
     glm::mat4   transform;
 
@@ -240,7 +230,7 @@ void    WorkerConsumer::_processSimulation()
     {
         const auto& car = _cars[ii];
 
-        _message
+        _messageToSend
             << car.isAlive()
             << car.getLife()
             << car.getFitness()
@@ -253,21 +243,21 @@ void    WorkerConsumer::_processSimulation()
         const auto& vehicle = car.getVehicle();
 
         // record the transformation matrix of the car
-        _message << vehicle.getOpenGLMatrix(transform);
+        _messageToSend << vehicle.getOpenGLMatrix(transform);
 
         // record the transformation matrix of the wheels
         for (int jj = 0; jj < 4; ++jj)
-            _message << vehicle.getWheelOpenGLMatrix(jj, transform);
+            _messageToSend << vehicle.getWheelOpenGLMatrix(jj, transform);
 
         const auto& eyeSensors = car.getEyeSensors();
         for (const auto& sensor : eyeSensors)
-            _message << sensor.near << sensor.far << sensor.value;
+            _messageToSend << sensor.near << sensor.far << sensor.value;
 
         const auto& gSensor = car.getGroundSensor();
-        _message << gSensor.near << gSensor.far << gSensor.value;
+        _messageToSend << gSensor.near << gSensor.far << gSensor.value;
 
         const auto& output = car.getNeuralNetworkOutput();
-        _message << output.steer << output.speed;
+        _messageToSend << output.steer << output.speed;
     }
 
     _send();

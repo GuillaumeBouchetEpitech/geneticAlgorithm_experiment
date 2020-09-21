@@ -38,6 +38,12 @@ public:
                 std::size_t index = 0;
 
                 t_attr() = default;
+
+                t_attr(const std::string& name, AttrType type, std::size_t index)
+                    : name(name)
+                    , type(type)
+                    , index(index)
+                {}
             };
 
             unsigned int    stride = 0;
@@ -74,10 +80,10 @@ public:
     void render() const;
 
 public:
-    template <typename ElemType>
-    void updateBuffer(int index, const std::vector<ElemType>& data, bool dynamic = false) const
+    template <typename VertexType>
+    void updateBuffer(int index, const std::vector<VertexType>& data, bool dynamic = false) const
     {
-        updateBuffer(index, static_cast<const void*>(data.data()), data.size() * sizeof(ElemType), dynamic);
+        updateBuffer(index, static_cast<const void*>(data.data()), data.size() * sizeof(VertexType), dynamic);
     }
 
     void setPrimitiveStart(unsigned int start);

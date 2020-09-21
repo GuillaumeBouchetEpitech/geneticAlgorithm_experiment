@@ -3,6 +3,8 @@
 
 #include "WorkerProducer.hpp"
 
+#include "../preprocessing.hpp"
+
 #include "demo/utilities/ErrorHandler.hpp"
 // #include "demo/utilities/TraceLogger.hpp"
 
@@ -119,10 +121,7 @@ void    WorkerProducer::_send()
 
     em_worker_callback_func callback = WorkerProducer::_onMessageCallback;
 
-// hacky way to force the name of the function to be from the macro "D_WORKER_MAIN"
-#define WORKER_MAIN_FUNC_NAME(func_name) "_" # func_name
-
-    emscripten_call_worker(_workerHandle, WORKER_MAIN_FUNC_NAME(D_WORKER_MAIN), dataPointer, dataSize, callback, (void*)this);
+    emscripten_call_worker(_workerHandle, WORKER_MAIN_STR, dataPointer, dataSize, callback, (void*)this);
 }
 
 void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)

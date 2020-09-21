@@ -57,7 +57,7 @@ private:
     void initialiseGeometries();
     void initialiseSounds();
     void initialiseCircuit();
-    void initialiseSimulation();
+    void initialiseSimulationCallbacks();
 
 public:
 
@@ -88,7 +88,8 @@ public:
                 struct t_matrices
                 {
                     glm::mat4 projection;
-                    glm::mat4 modelView;
+                    glm::mat4 model;
+                    glm::mat4 view;
                     glm::mat4 composed;
                 };
 
@@ -143,7 +144,10 @@ public:
                 {
                     std::array<Geometry, 4> wheels;
                 };
+
                 std::array<t_wheelsTrail, 5> bestNewCarsTrails;
+
+                Geometry leaderCarTrail;
             }
             wireframes;
 
@@ -282,7 +286,7 @@ public:
 
         struct t_fitnessStats
         {
-            const unsigned int maxStats = 10;
+            constexpr static unsigned int maxStats = 10;
             std::vector<float> allStats;
         }
         fitnessStats;

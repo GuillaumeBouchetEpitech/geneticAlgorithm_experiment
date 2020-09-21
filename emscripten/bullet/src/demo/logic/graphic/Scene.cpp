@@ -86,13 +86,18 @@ void Scene::renderAll()
         auto& camera = data.graphic.camera;
         const auto& matrices = camera.matrices;
 
-        camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
+        // camera.frustumCulling.calculateFrustum(matrices.scene.projection, matrices.scene.modelView);
+        glm::mat4 modelView = matrices.scene.view * matrices.scene.model;
+        camera.frustumCulling.calculateFrustum(matrices.scene.projection, modelView);
 
         if (!Data::get().logic.isAccelerated)
             Scene::_renderLeadingCarSensors(matrices.scene.composed);
 
         Scene::_renderParticles(matrices.scene.composed);
+
         Scene::_renderCars(matrices.scene.composed);
+        // Scene::_renderCars(matrices.scene);
+
         Scene::_renderWireframesGeometries(matrices.scene.composed);
         Scene::_renderAnimatedCircuit(matrices.scene.composed);
 
@@ -113,11 +118,16 @@ void Scene::renderAll()
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
+            // camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
+            glm::mat4 modelView = matrices.thirdPerson.view * matrices.thirdPerson.model;
+            camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, modelView);
 
             Scene::_renderLeadingCarSensors(matrices.thirdPerson.composed);
             Scene::_renderParticles(matrices.thirdPerson.composed);
+
             Scene::_renderCars(matrices.thirdPerson.composed);
+            // Scene::_renderCars(matrices.thirdPerson);
+
             Scene::_renderWireframesGeometries(matrices.thirdPerson.composed);
             Scene::_renderAnimatedCircuit(matrices.thirdPerson.composed);
 
@@ -170,9 +180,12 @@ void Scene::_updateMatrices()
         glm::mat4 modelMatrix = glm::mat4(1.0f); // <= identity matrix
         modelMatrix = glm::translate(modelMatrix, -camera.center);
 
-        matrices.scene.modelView = viewMatrix * modelMatrix;
+        // matrices.scene.modelView = viewMatrix * modelMatrix;
+        matrices.scene.model = modelMatrix;
+        matrices.scene.view = viewMatrix;
 
-        matrices.scene.composed = matrices.scene.projection * matrices.scene.modelView;
+        // matrices.scene.composed = matrices.scene.projection * matrices.scene.modelView;
+        matrices.scene.composed = matrices.scene.projection * matrices.scene.view * matrices.scene.model;
     }
 
     { // third person
@@ -183,7 +196,9 @@ void Scene::_updateMatrices()
         {
             camera.thirdPersonCenter = camera.center;
 
-            matrices.thirdPerson.modelView = matrices.scene.modelView;
+            // matrices.thirdPerson.modelView = matrices.scene.modelView;
+            matrices.thirdPerson.model = matrices.scene.model;
+            matrices.thirdPerson.view = matrices.scene.view;
             matrices.thirdPerson.composed = matrices.scene.composed;
         }
         else
@@ -206,9 +221,12 @@ void Scene::_updateMatrices()
             glm::vec3 eye = camera.thirdPersonCenter;
             glm::vec3 center = carOrigin;
             glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
-            matrices.thirdPerson.modelView = glm::lookAt(eye, center, upAxis);
+            // matrices.thirdPerson.modelView = glm::lookAt(eye, center, upAxis);
+            matrices.thirdPerson.model = glm::identity<glm::mat4>();
+            matrices.thirdPerson.view = glm::lookAt(eye, center, upAxis);
 
-            matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.modelView;
+            // matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.modelView;
+            matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.model * matrices.thirdPerson.view;
         }
     }
 
@@ -409,6 +427,8 @@ void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
 }
 
 void Scene::_renderCars(const glm::mat4& sceneMatrix)
+// void Scene::_renderCars(const Data::t_graphic::t_cameraData::t_matricesData::t_matrices& matrices)
+
 {
     // instanced geometrie(s)
 
@@ -419,6 +439,13 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
 
         GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+        // glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(matrices.composed));
+        // // GLint projectionMatrixLoc = graphic.shaders.model->getUniform("u_projectionMatrix");
+        // // glUniformMatrix4fv(projectionMatrixLoc, 1, false, glm::value_ptr(matrices.projection));
+        // // GLint modelMatrixLoc = graphic.shaders.model->getUniform("u_modelMatrix");
+        // // glUniformMatrix4fv(modelMatrixLoc, 1, false, glm::value_ptr(matrices.model));
+        // // GLint viewMatrixLoc = graphic.shaders.model->getUniform("u_viewMatrix");
+        // // glUniformMatrix4fv(viewMatrixLoc, 1, false, glm::value_ptr(matrices.view));
 
         {
             const auto& logic = Data::get().logic;
@@ -430,6 +457,11 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
             {
                 glm::mat4   tranform;
                 glm::vec3   color;
+
+                t_attributes(const glm::mat4& tranform, const glm::vec3& color)
+                    : tranform(tranform)
+                    , color(color)
+                {}
             };
 
             std::vector<t_attributes> modelsChassisMatrices;
@@ -470,9 +502,9 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
                 //
                 // transforms
 
-                modelsChassisMatrices.push_back({ chassisTransform, color });
+                modelsChassisMatrices.emplace_back(chassisTransform, color);
                 for (const auto& wheelTransform : carData.wheelsTransform)
-                    modelWheelsMatrices.push_back({ wheelTransform, color });
+                    modelWheelsMatrices.emplace_back(wheelTransform, color);
             }
 
             graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);
@@ -493,7 +525,8 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
 {
     // static geometrie(s) (mono color)
 
-    const auto& graphic = Data::get().graphic;
+    const auto& data = Data::get();
+    const auto& graphic = data.graphic;
     const auto& shader = *graphic.shaders.wireframes;
     const auto& wireframes = graphic.geometries.wireframes;
 
@@ -503,18 +536,56 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
     GLint colorLoc = shader.getUniform("u_color");
-    glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
 
-    wireframes.circuitSkelton.render();
+    { // circuit skeleton
+
+        glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
+
+        wireframes.circuitSkelton.render();
+
+    } // circuit skeleton
 
     if (!trails)
         return;
 
     glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
-    for (const auto& currentCarTrail : wireframes.bestNewCarsTrails)
-        for (const auto& wheelTrail : currentCarTrail.wheels)
-            wheelTrail.render();
+    { // best trails
+
+        for (const auto& currentCarTrail : wireframes.bestNewCarsTrails)
+            for (const auto& wheelTrail : currentCarTrail.wheels)
+                wheelTrail.render();
+
+    } // best trails
+
+    { // leader trail
+
+        if (data.logic.leaderCar.index >= 0)
+        {
+            auto& reusedGeometry = Data::get().graphic.geometries.wireframes.leaderCarTrail;
+
+            const auto& trailData = data.logic.carsTrails.allWheelsTrails[data.logic.leaderCar.index];
+
+            // rely on only the 30 last positions recorded
+            const int maxSize = 30;
+
+            for (const auto& currWheel : trailData.wheels)
+            {
+                if (currWheel.empty())
+                    continue;
+
+                const int totalSize = currWheel.size();
+                const int currSize = std::min(totalSize, maxSize);
+
+                const float* buffer = &currWheel[totalSize - currSize].x;
+
+                reusedGeometry.updateBuffer(0, buffer, currSize * sizeof(glm::vec3), true);
+                reusedGeometry.setPrimitiveCount(currSize);
+                reusedGeometry.render();
+            }
+        }
+
+    } // leader trail
 }
 
 void Scene::_renderAnimatedCircuit(const glm::mat4& sceneMatrix)
@@ -658,7 +729,8 @@ void Scene::_renderHUD()
 
                     bool result = sceneToScreen(
                         carPos,
-                        scene.modelView,
+                        // scene.modelView,
+                        scene.view * scene.model,
                         scene.projection,
                         viewportPos,
                         graphic.camera.viewportSize,

@@ -8,15 +8,24 @@
 
 namespace /*anonymous*/
 {
+    bool isLittleEndian()
+    {
+        short value = 1;
+        return reinterpret_cast<char*>(&value)[0] == 1;
+    }
 
     std::int32_t convert_to_int(char* buffer, std::size_t len)
     {
         std::int32_t a = 0;
-        // if (std::endian::native == std::endian::little)
+        if (isLittleEndian())
+        {
             std::memcpy(&a, buffer, len);
-        // else
-        //     for (std::size_t i = 0; i < len; ++i)
-        //         reinterpret_cast<char*>(&a)[3 - i] = buffer[i];
+        }
+        else
+        {
+            for (std::size_t i = 0; i < len; ++i)
+                reinterpret_cast<char*>(&a)[3 - i] = buffer[i];
+        }
         return a;
     }
 

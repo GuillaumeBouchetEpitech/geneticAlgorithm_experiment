@@ -134,7 +134,7 @@ void CircuitBuilder::load(const std::string& filename)
                     D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
             }
 
-            rawKnots.push_back({ left, right, currentMinDistance, currentColor });
+            rawKnots.emplace_back(left, right, currentMinDistance, currentColor);
         }
         else
         {
@@ -196,8 +196,8 @@ void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
         vertices.push_back(knot.left);
         vertices.push_back(knot.right);
         // "on the floor" value
-        vertices.push_back({ knot.left.x, knot.left.y, 0.0f });
-        vertices.push_back({ knot.right.x, knot.right.y, 0.0f });
+        vertices.emplace_back(knot.left.x, knot.left.y, 0.0f);
+        vertices.emplace_back(knot.right.x, knot.right.y, 0.0f);
 
         // from "the floor" to the "real" value
 
@@ -252,7 +252,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     // smooth the circuit
 
     t_knots smoothedVertices;
-    smoothedVertices.reserve(512); // pre-allocate, ease the reallocation
+    smoothedVertices.reserve(2048); // pre-allocate, ease the reallocation
 
     {
         enum class SplineType: unsigned int
@@ -271,7 +271,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
             count,
         };
 
-        const unsigned int  dimension = toUnderlying(SplineType::count);
+        const unsigned int  dimension = asValue(SplineType::count);
 
         const unsigned int  degree = 3;
         const float*        knotsData = &_knots.front().left.x;
@@ -287,33 +287,34 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
         for (float coef = 0.0f; coef <= 1.0f; coef += step)
         {
-            vertex.left.x = smoother.calcAt(coef, toUnderlying(SplineType::leftX));
-            vertex.left.y = smoother.calcAt(coef, toUnderlying(SplineType::leftY));
-            vertex.left.z = smoother.calcAt(coef, toUnderlying(SplineType::leftZ));
-            vertex.right.x = smoother.calcAt(coef, toUnderlying(SplineType::rightX));
-            vertex.right.y = smoother.calcAt(coef, toUnderlying(SplineType::rightY));
-            vertex.right.z = smoother.calcAt(coef, toUnderlying(SplineType::rightZ));
+            vertex.left.x = smoother.calcAt(coef, asValue(SplineType::leftX));
+            vertex.left.y = smoother.calcAt(coef, asValue(SplineType::leftY));
+            vertex.left.z = smoother.calcAt(coef, asValue(SplineType::leftZ));
+            vertex.right.x = smoother.calcAt(coef, asValue(SplineType::rightX));
+            vertex.right.y = smoother.calcAt(coef, asValue(SplineType::rightY));
+            vertex.right.z = smoother.calcAt(coef, asValue(SplineType::rightZ));
 
-            float minDistance = smoother.calcAt(coef, toUnderlying(SplineType::minDistance));
+            float minDistance = smoother.calcAt(coef, asValue(SplineType::minDistance));
 
             if (!smoothedVertices.empty())
             {
                 // both left and right vertices must be far enough to be included
                 const auto& lastVertex = smoothedVertices.back();
 
-                if (glm::length(vertex.left - lastVertex.left) < minDistance ||
-                    glm::length(vertex.right - lastVertex.right) < minDistance)
+                if (glm::distance(lastVertex.left, vertex.left) < minDistance ||
+                    glm::distance(lastVertex.right, vertex.right) < minDistance)
                     continue;
             }
 
             // check for invalid values (it create graphic and physic artifacts)
-            if (glm::length(vertex.left) < 0.001f ||
-                glm::length(vertex.right) < 0.001f)
+            const float minLength = 0.001f;
+            if (glm::length(vertex.left) < minLength ||
+                glm::length(vertex.right) < minLength)
                 continue; // TODO: fix it
 
-            vertex.color.x = smoother.calcAt(coef, toUnderlying(SplineType::colorR));
-            vertex.color.y = smoother.calcAt(coef, toUnderlying(SplineType::colorG));
-            vertex.color.z = smoother.calcAt(coef, toUnderlying(SplineType::colorB));
+            vertex.color.r = smoother.calcAt(coef, asValue(SplineType::colorR));
+            vertex.color.g = smoother.calcAt(coef, asValue(SplineType::colorG));
+            vertex.color.b = smoother.calcAt(coef, asValue(SplineType::colorB));
 
             smoothedVertices.push_back(vertex);
         }
@@ -323,25 +324,38 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     //
     // generate circuit
 
-    const int patchesPerKnot = 6;
+    const unsigned int patchesPerKnot = 6;
 
-    glm::vec3 prevNormal(0, 0, 0);
+    glm::vec3 prevNormal;
+
+    struct t_circuitPatchData
+    {
+        t_vec3Array vertices;
+        t_vec3Array normals;
+
+        t_circuitPatchData()
+        {
+            vertices.reserve(512); // pre-allocate
+            normals.reserve(512); // pre-allocate
+        }
+    };
+
+    t_indices indices;
+    t_circuitPatchData ground;
+    t_circuitPatchData leftWall;
+    t_circuitPatchData rightWall;
+    t_vec3Array circuitPatchColors;
+
+    indices.reserve(512); // pre-allocate
+    circuitPatchColors.reserve(512); // pre-allocate
 
     for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerKnot)
     {
-        t_indices indices;
-
-        struct t_circuitPatchData
-        {
-            t_vec3Array vertices;
-            t_vec3Array normals;
-        };
-
-        t_circuitPatchData ground;
-        t_circuitPatchData leftWall;
-        t_circuitPatchData rightWall;
-
-        t_vec3Array circuitPatchColors;
+        indices.clear();
+        ground.vertices.clear();
+        leftWall.vertices.clear();
+        rightWall.vertices.clear();
+        circuitPatchColors.clear();
 
         //
         //
@@ -391,15 +405,15 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
             ground.vertices.push_back(currRight);
             ground.vertices.push_back(currLeft);
 
-            circuitPatchColors.push_back(prevColor);
-            circuitPatchColors.push_back(prevColor);
-            circuitPatchColors.push_back(currColor);
-            circuitPatchColors.push_back(currColor);
+            ground.normals.push_back(prevNormal);
+            ground.normals.push_back(prevNormal);
+            ground.normals.push_back(currNormal);
+            ground.normals.push_back(currNormal);
 
-            ground.normals.push_back(prevNormal);
-            ground.normals.push_back(prevNormal);
-            ground.normals.push_back(currNormal);
-            ground.normals.push_back(currNormal);
+            circuitPatchColors.push_back(prevColor);
+            circuitPatchColors.push_back(prevColor);
+            circuitPatchColors.push_back(currColor);
+            circuitPatchColors.push_back(currColor);
 
             //
 

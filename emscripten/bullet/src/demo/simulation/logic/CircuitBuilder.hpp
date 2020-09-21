@@ -25,6 +25,20 @@ public:
         glm::vec3 right;
         float minDistance;
         glm::vec3 color;
+
+        t_knot() = default;
+
+        t_knot(
+            const glm::vec3& left,
+            const glm::vec3& right,
+            float minDistance,
+            const glm::vec3& color
+        )
+            : left(left)
+            , right(right)
+            , minDistance(minDistance)
+            , color(color)
+        {}
     };
     typedef std::vector<t_knot> t_knots;
     typedef t_knot t_circuitVertex;

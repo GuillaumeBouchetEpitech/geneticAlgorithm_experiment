@@ -18,6 +18,12 @@ struct t_modelVertex
 {
     glm::vec3 position;
     glm::vec3 color;
+    // glm::vec3 normal;
+
+    t_modelVertex(glm::vec3& position, glm::vec3& color)
+        : position(position)
+        , color(color)
+    {}
 };
 
 void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices); // declaration
@@ -36,6 +42,8 @@ void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices
 {
     const std::string objFile = "./assets/model/" + filename;
     const std::string mtlDir = "./assets/model/";
+
+    vertices.reserve(8 * 1024);
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -69,22 +77,24 @@ void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices
 
             const auto& diffuse = materials[materialId].diffuse;
             glm::vec3 color = { diffuse[0], diffuse[1], diffuse[2] };
+            glm::vec3 position;
+            // glm::vec3 normal;
 
             // Loop over vertices in the face.
             for (std::size_t vertex = 0; vertex < faceVerex; ++vertex)
             {
                 // access to vertex
                 tinyobj::index_t index = indices[indexOffset + vertex];
-                tinyobj::real_t vx = attrib.vertices[3 * index.vertex_index + 0];
-                tinyobj::real_t vy = attrib.vertices[3 * index.vertex_index + 1];
-                tinyobj::real_t vz = attrib.vertices[3 * index.vertex_index + 2];
-                // tinyobj::real_t nx = attrib.normals[3*index.normal_index+0];
-                // tinyobj::real_t ny = attrib.normals[3*index.normal_index+1];
-                // tinyobj::real_t nz = attrib.normals[3*index.normal_index+2];
+                position.x = attrib.vertices[3 * index.vertex_index + 0];
+                position.y = attrib.vertices[3 * index.vertex_index + 1];
+                position.z = attrib.vertices[3 * index.vertex_index + 2];
+                // normal.x = attrib.normals[3*index.normal_index+0];
+                // normal.y = attrib.normals[3*index.normal_index+1];
+                // normal.z = attrib.normals[3*index.normal_index+2];
                 // tinyobj::real_t tx = attrib.texcoords[2*index.texcoord_index+0];
                 // tinyobj::real_t ty = attrib.texcoords[2*index.texcoord_index+1];
 
-                vertices.push_back({ { vx, vy, vz }, color });
+                vertices.emplace_back(position, color);
             }
             indexOffset += faceVerex;
         }
@@ -167,19 +177,20 @@ void generateSphereVerticesFilled(float radius,
     const float Z = 0.850650808352039932f * radius;
     const float N = 0.0f;
 
-    static const std::vector<glm::vec3> positions = {
-        {-X, N, Z}, { X, N, Z}, {-X, N,-Z}, { X, N,-Z},
-        { N, Z, X}, { N, Z,-X}, { N,-Z, X}, { N,-Z,-X},
-        { Z, X, N}, {-Z, X, N}, { Z,-X, N}, {-Z,-X, N}
-    };
+    static const std::array<glm::vec3, 12> positions{{
+        { -X, N, Z }, {  X, N, Z }, { -X, N,-Z }, {  X, N,-Z },
+        {  N, Z, X }, {  N, Z,-X }, {  N,-Z, X }, {  N,-Z,-X },
+        {  Z, X, N }, { -Z, X, N }, {  Z,-X, N }, { -Z,-X, N }
+    }};
 
-    static const std::vector<glm::ivec3> indices = {
+    static const std::array<glm::ivec3, 20> indices{{
         { 0, 4, 1}, { 0, 9, 4}, { 9, 5, 4}, { 4, 5, 8}, { 4, 8, 1},
         { 8,10, 1}, { 8, 3,10}, { 5, 3, 8}, { 5, 2, 3}, { 2, 7, 3},
         { 7,10, 3}, { 7, 6,10}, { 7,11, 6}, {11, 0, 6}, { 0, 1, 6},
         { 6, 1,10}, { 9, 0,11}, { 9,11, 2}, { 9, 2, 5}, { 7, 2,11}
-    };
+    }};
 
+    vertices.clear();
     vertices.reserve(indices.size() * 3); // pre-allocate
     for (const glm::ivec3& index : indices) {
         vertices.push_back(positions[index.x]);
@@ -311,6 +322,7 @@ void Data::initialiseGeometries()
             .addVbo()
             .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
             .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
+            // .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
             .addVbo()
             .setVboAsInstanced()
             .addVboAttribute("a_offsetTransform", Geometry::AttrType::Mat4f, 0)
@@ -358,6 +370,8 @@ void Data::initialiseGeometries()
         for (auto& wheelsTrail : graphic.geometries.wireframes.bestNewCarsTrails)
             for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
                 geometryBuilder.build(wheelsTrail.wheels[ii]);
+
+        geometryBuilder.build(graphic.geometries.wireframes.leaderCarTrail);
 
     } // wireframe
 

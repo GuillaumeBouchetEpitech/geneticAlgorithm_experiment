@@ -25,13 +25,13 @@ StateManager::StateManager()
     // allocate states
 
 #if defined D_WEB_WEBWORKER_BUILD
-    _states[toUnderlying(States::WorkersLoading)] = new State_WebWorkersLoading();
+    _states[asValue(States::WorkersLoading)] = new State_WebWorkersLoading();
 #endif
 
-    _states[toUnderlying(States::Running)] = new State_Running();
-    _states[toUnderlying(States::Paused)] = new State_Paused();
-    _states[toUnderlying(States::StartGeneration)] = new State_StartGeneration();
-    _states[toUnderlying(States::EndGeneration)] = new State_EndGeneration();
+    _states[asValue(States::Running)] = new State_Running();
+    _states[asValue(States::Paused)] = new State_Paused();
+    _states[asValue(States::StartGeneration)] = new State_StartGeneration();
+    _states[asValue(States::EndGeneration)] = new State_EndGeneration();
 
 #if defined D_WEB_WEBWORKER_BUILD
     _currentState = States::WorkersLoading;
@@ -39,7 +39,7 @@ StateManager::StateManager()
     _currentState = States::StartGeneration;
 #endif
 
-    _states[toUnderlying(_currentState)]->enter();
+    _states[asValue(_currentState)]->enter();
 }
 
 StateManager::~StateManager()
@@ -76,11 +76,11 @@ StateManager* StateManager::get()
 
 void StateManager::changeState(States nextState)
 {
-    _states[toUnderlying(_currentState)]->leave();
+    _states[asValue(_currentState)]->leave();
 
     _currentState = nextState;
 
-    _states[toUnderlying(_currentState)]->enter();
+    _states[asValue(_currentState)]->enter();
 }
 
 StateManager::States StateManager::getState() const
@@ -91,25 +91,25 @@ StateManager::States StateManager::getState() const
 
 void StateManager::handleEvent(const SDL_Event& event)
 {
-    _states[toUnderlying(_currentState)]->handleEvent(event);
+    _states[asValue(_currentState)]->handleEvent(event);
 }
 
 void StateManager::update(int delta)
 {
-    _states[toUnderlying(_currentState)]->update(delta);
+    _states[asValue(_currentState)]->update(delta);
 }
 
 void StateManager::render(const SDL_Window& window)
 {
-    _states[toUnderlying(_currentState)]->render(window);
+    _states[asValue(_currentState)]->render(window);
 }
 
 void StateManager::resize(int width, int height)
 {
-    _states[toUnderlying(_currentState)]->resize(width, height);
+    _states[asValue(_currentState)]->resize(width, height);
 }
 
 void StateManager::visibility(bool visible)
 {
-    _states[toUnderlying(_currentState)]->visibility(visible);
+    _states[asValue(_currentState)]->visibility(visible);
 }

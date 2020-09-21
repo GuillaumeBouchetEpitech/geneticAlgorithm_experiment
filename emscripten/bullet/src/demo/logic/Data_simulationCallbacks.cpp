@@ -8,11 +8,9 @@
 #include <iomanip>
 #include <sstream>
 
-void Data::initialiseSimulation()
+void Data::initialiseSimulationCallbacks()
 {
-    logic.fitnessStats.allStats.reserve(logic.fitnessStats.maxStats); // pre-allocate
-    for (unsigned int ii = 0; ii < logic.fitnessStats.maxStats; ++ii)
-        logic.fitnessStats.allStats.push_back(0.0f);
+    logic.fitnessStats.allStats.resize(logic.fitnessStats.maxStats, 0.0f);
 
 #if defined D_WEB_WEBWORKER_BUILD
 
@@ -59,7 +57,7 @@ void Data::initialiseSimulation()
                 {
                     glm::vec4 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    currentTrail.wheels[ii].push_back(wheelOrigin);
+                    currentTrail.wheels[ii].emplace_back(wheelOrigin);
                 }
             }
 
@@ -87,7 +85,7 @@ void Data::initialiseSimulation()
                 {
                     glm::vec3 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    currentWheelsTrail.wheels[ii].push_back(wheelOrigin);
+                    currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
                 }
             }
 
@@ -167,7 +165,7 @@ void Data::initialiseSimulation()
                 allStats.pop_back(); // erase last
             }
 
-            allStats.push_back(bestGenome.fitness);
+            allStats.emplace_back(bestGenome.fitness);
 
         } // hanlde the stats
 

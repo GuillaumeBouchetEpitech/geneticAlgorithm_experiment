@@ -77,7 +77,10 @@ bool GeneticAlgorithm::breedPopulation()
 
         for (unsigned int ii = 0; ii < _bestGenomes.size(); ++ii)
             if (_bestGenomes[ii].fitness > 0.0f)
-                offsprings.push_back(_bestGenomes[ii]); // copy, realloc of the weights
+            {
+                // copy, realloc of the weights
+                offsprings.push_back(_bestGenomes[ii]);
+            }
 
     } // elitism: keep the current best
 
@@ -118,7 +121,8 @@ bool GeneticAlgorithm::breedPopulation()
             _reproduce(parentGenomeA, parentGenomeB, newOffspring);
             _mutate(newOffspring);
 
-            offsprings.push_back(std::move(newOffspring)); // move, no realloc of the weights
+            // move, no realloc of the weights
+            offsprings.push_back(std::move(newOffspring));
         }
 
     } // crossover: breed best genomes
@@ -128,15 +132,18 @@ bool GeneticAlgorithm::breedPopulation()
         // if there is any space left: add some random genome.
         int remainingOffsprings = int(_genomes.size() - offsprings.size());
 
+        const unsigned int totalWeights = _neuralNetworkTopology.getTotalWeights();
+
         for (int ii = 0; ii < remainingOffsprings; ++ii)
         {
             Genome newGenome;
 
-            newGenome.weights.resize(_neuralNetworkTopology.getTotalWeights());
-            for (float& weight : newGenome.weights)
-                weight = t_RNG::getRangedValue(-1.0f, 1.0f);
+            newGenome.weights.reserve(totalWeights);
+            for (unsigned int jj = 0; jj < totalWeights; ++jj)
+                newGenome.weights.push_back(t_RNG::getRangedValue(-1.0f, 1.0f));
 
-            offsprings.push_back(std::move(newGenome)); // move, no realloc of the weights
+            // move, no realloc of the weights
+            offsprings.push_back(std::move(newGenome));
         }
 
     } // diversity: add random genomes
@@ -179,8 +186,6 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
                                   const Genome& parentB,
                                   Genome& offspring) const
 {
-    offspring.weights.resize(_neuralNetworkTopology.getTotalWeights());
-
     // 50/50 chances for both parents
     int chancesForParentA = 50;
 
@@ -191,12 +196,16 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
         chancesForParentA = 30;
 
     // crossover
-    for (unsigned int ii = 0; ii < offspring.weights.size(); ++ii)
+
+    const unsigned int totalWeights = _neuralNetworkTopology.getTotalWeights();
+    offspring.weights.reserve(totalWeights);
+
+    for (unsigned int ii = 0; ii < totalWeights; ++ii)
     {
         if (t_RNG::getRangedValue(0, 100) < chancesForParentA)
-            offspring.weights[ii] = parentA.weights[ii];
+            offspring.weights.push_back(parentA.weights[ii]);
         else
-            offspring.weights[ii] = parentB.weights[ii];
+            offspring.weights.push_back(parentB.weights[ii]);
     }
 }
 

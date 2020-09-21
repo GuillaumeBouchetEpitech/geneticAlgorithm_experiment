@@ -5,18 +5,18 @@
 
 void FrustumCulling::_normalizePlane(FrustumSide side)
 {
-    auto& sideArray = _frustum[toUnderlying(side)];
+    auto& sideArray = _frustum[asValue(side)];
 
     float magnitude = std::sqrt(
-        sideArray[toUnderlying(PlaneData::A)] * sideArray[toUnderlying(PlaneData::A)] +
-        sideArray[toUnderlying(PlaneData::B)] * sideArray[toUnderlying(PlaneData::B)] +
-        sideArray[toUnderlying(PlaneData::C)] * sideArray[toUnderlying(PlaneData::C)]
+        sideArray[asValue(PlaneData::A)] * sideArray[asValue(PlaneData::A)] +
+        sideArray[asValue(PlaneData::B)] * sideArray[asValue(PlaneData::B)] +
+        sideArray[asValue(PlaneData::C)] * sideArray[asValue(PlaneData::C)]
     );
 
-    sideArray[toUnderlying(PlaneData::A)] /= magnitude;
-    sideArray[toUnderlying(PlaneData::B)] /= magnitude;
-    sideArray[toUnderlying(PlaneData::C)] /= magnitude;
-    sideArray[toUnderlying(PlaneData::D)] /= magnitude;
+    sideArray[asValue(PlaneData::A)] /= magnitude;
+    sideArray[asValue(PlaneData::B)] /= magnitude;
+    sideArray[asValue(PlaneData::C)] /= magnitude;
+    sideArray[asValue(PlaneData::D)] /= magnitude;
 }
 
 void FrustumCulling::calculateFrustum(const glm::mat4& proj, const glm::mat4& modl)
@@ -36,52 +36,52 @@ void FrustumCulling::calculateFrustum(const glm::mat4& proj, const glm::mat4& mo
 
 #undef D_SET_CLIP
 
-    _frustum[toUnderlying(FrustumSide::right)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][0];
-    _frustum[toUnderlying(FrustumSide::right)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][0];
-    _frustum[toUnderlying(FrustumSide::right)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][0];
-    _frustum[toUnderlying(FrustumSide::right)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][0];
+    _frustum[asValue(FrustumSide::right)][asValue(PlaneData::A)] = clip[0][3] - clip[0][0];
+    _frustum[asValue(FrustumSide::right)][asValue(PlaneData::B)] = clip[1][3] - clip[1][0];
+    _frustum[asValue(FrustumSide::right)][asValue(PlaneData::C)] = clip[2][3] - clip[2][0];
+    _frustum[asValue(FrustumSide::right)][asValue(PlaneData::D)] = clip[3][3] - clip[3][0];
     _normalizePlane(FrustumSide::right);
 
-    _frustum[toUnderlying(FrustumSide::left)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][0];
-    _frustum[toUnderlying(FrustumSide::left)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][0];
-    _frustum[toUnderlying(FrustumSide::left)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][0];
-    _frustum[toUnderlying(FrustumSide::left)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][0];
+    _frustum[asValue(FrustumSide::left)][asValue(PlaneData::A)] = clip[0][3] + clip[0][0];
+    _frustum[asValue(FrustumSide::left)][asValue(PlaneData::B)] = clip[1][3] + clip[1][0];
+    _frustum[asValue(FrustumSide::left)][asValue(PlaneData::C)] = clip[2][3] + clip[2][0];
+    _frustum[asValue(FrustumSide::left)][asValue(PlaneData::D)] = clip[3][3] + clip[3][0];
     _normalizePlane(FrustumSide::left);
 
 
-    _frustum[toUnderlying(FrustumSide::bottom)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][1];
-    _frustum[toUnderlying(FrustumSide::bottom)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][1];
-    _frustum[toUnderlying(FrustumSide::bottom)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][1];
-    _frustum[toUnderlying(FrustumSide::bottom)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][1];
+    _frustum[asValue(FrustumSide::bottom)][asValue(PlaneData::A)] = clip[0][3] + clip[0][1];
+    _frustum[asValue(FrustumSide::bottom)][asValue(PlaneData::B)] = clip[1][3] + clip[1][1];
+    _frustum[asValue(FrustumSide::bottom)][asValue(PlaneData::C)] = clip[2][3] + clip[2][1];
+    _frustum[asValue(FrustumSide::bottom)][asValue(PlaneData::D)] = clip[3][3] + clip[3][1];
     _normalizePlane(FrustumSide::bottom);
 
-    _frustum[toUnderlying(FrustumSide::top)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][1];
-    _frustum[toUnderlying(FrustumSide::top)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][1];
-    _frustum[toUnderlying(FrustumSide::top)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][1];
-    _frustum[toUnderlying(FrustumSide::top)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][1];
+    _frustum[asValue(FrustumSide::top)][asValue(PlaneData::A)] = clip[0][3] - clip[0][1];
+    _frustum[asValue(FrustumSide::top)][asValue(PlaneData::B)] = clip[1][3] - clip[1][1];
+    _frustum[asValue(FrustumSide::top)][asValue(PlaneData::C)] = clip[2][3] - clip[2][1];
+    _frustum[asValue(FrustumSide::top)][asValue(PlaneData::D)] = clip[3][3] - clip[3][1];
     _normalizePlane(FrustumSide::top);
 
 
-    _frustum[toUnderlying(FrustumSide::back)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][2];
-    _frustum[toUnderlying(FrustumSide::back)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][2];
-    _frustum[toUnderlying(FrustumSide::back)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][2];
-    _frustum[toUnderlying(FrustumSide::back)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][2];
+    _frustum[asValue(FrustumSide::back)][asValue(PlaneData::A)] = clip[0][3] - clip[0][2];
+    _frustum[asValue(FrustumSide::back)][asValue(PlaneData::B)] = clip[1][3] - clip[1][2];
+    _frustum[asValue(FrustumSide::back)][asValue(PlaneData::C)] = clip[2][3] - clip[2][2];
+    _frustum[asValue(FrustumSide::back)][asValue(PlaneData::D)] = clip[3][3] - clip[3][2];
     _normalizePlane(FrustumSide::back);
 
-    _frustum[toUnderlying(FrustumSide::front)][toUnderlying(PlaneData::A)] = clip[0][3] - clip[0][2];
-    _frustum[toUnderlying(FrustumSide::front)][toUnderlying(PlaneData::B)] = clip[1][3] - clip[1][2];
-    _frustum[toUnderlying(FrustumSide::front)][toUnderlying(PlaneData::C)] = clip[2][3] - clip[2][2];
-    _frustum[toUnderlying(FrustumSide::front)][toUnderlying(PlaneData::D)] = clip[3][3] - clip[3][2];
+    _frustum[asValue(FrustumSide::front)][asValue(PlaneData::A)] = clip[0][3] + clip[0][2];
+    _frustum[asValue(FrustumSide::front)][asValue(PlaneData::B)] = clip[1][3] + clip[1][2];
+    _frustum[asValue(FrustumSide::front)][asValue(PlaneData::C)] = clip[2][3] + clip[2][2];
+    _frustum[asValue(FrustumSide::front)][asValue(PlaneData::D)] = clip[3][3] + clip[3][2];
     _normalizePlane(FrustumSide::front);
 }
 
 bool FrustumCulling::pointInFrustum(const glm::vec3& center) const
 {
     for (const auto& sideArray : _frustum)
-        if (sideArray[toUnderlying(PlaneData::A)] * center.x +
-            sideArray[toUnderlying(PlaneData::B)] * center.y +
-            sideArray[toUnderlying(PlaneData::C)] * center.z +
-            sideArray[toUnderlying(PlaneData::D)] <= 0)
+        if (sideArray[asValue(PlaneData::A)] * center.x +
+            sideArray[asValue(PlaneData::B)] * center.y +
+            sideArray[asValue(PlaneData::C)] * center.z +
+            sideArray[asValue(PlaneData::D)] <= 0)
             return false;
 
     return true;
@@ -90,10 +90,10 @@ bool FrustumCulling::pointInFrustum(const glm::vec3& center) const
 bool FrustumCulling::sphereInFrustum(const glm::vec3& center, float radius) const
 {
     for (const auto& sideArray : _frustum)
-        if (sideArray[toUnderlying(PlaneData::A)] * center.x +
-            sideArray[toUnderlying(PlaneData::B)] * center.y +
-            sideArray[toUnderlying(PlaneData::C)] * center.z +
-            sideArray[toUnderlying(PlaneData::D)] <= -radius)
+        if (sideArray[asValue(PlaneData::A)] * center.x +
+            sideArray[asValue(PlaneData::B)] * center.y +
+            sideArray[asValue(PlaneData::C)] * center.z +
+            sideArray[asValue(PlaneData::D)] <= -radius)
             return false;
 
     return true;
@@ -105,52 +105,52 @@ bool FrustumCulling::cubeInFrustum(const glm::vec3& center, const glm::vec3& siz
 
     for (const auto& sideArray : _frustum)
     {
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x - halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y - halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z - halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x - halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y - halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z - halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x + halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y - halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z - halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x + halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y - halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z - halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x - halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y + halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z - halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x - halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y + halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z - halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x + halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y + halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z - halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x + halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y + halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z - halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x - halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y - halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z + halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x - halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y - halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z + halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x + halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y - halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z + halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x + halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y - halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z + halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x - halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y + halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z + halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x - halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y + halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z + halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
-        if (sideArray[toUnderlying(PlaneData::A)] * (center.x + halfSize.x) +
-            sideArray[toUnderlying(PlaneData::B)] * (center.y + halfSize.y) +
-            sideArray[toUnderlying(PlaneData::C)] * (center.z + halfSize.z) +
-            sideArray[toUnderlying(PlaneData::D)] > 0)
+        if (sideArray[asValue(PlaneData::A)] * (center.x + halfSize.x) +
+            sideArray[asValue(PlaneData::B)] * (center.y + halfSize.y) +
+            sideArray[asValue(PlaneData::C)] * (center.z + halfSize.z) +
+            sideArray[asValue(PlaneData::D)] > 0)
             continue;
 
         return false;

@@ -1,32 +1,21 @@
 
 #pragma once
 
+#include "AbstractMessage.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 #include <string>
 
 class MessageView
+    : public AbstractMessage
 {
-protected:
-    char* _dataPointer = nullptr;
-    unsigned int _dataSize = 0;
-    unsigned int _readIndex = 0;
-
 public:
     MessageView() = default;
     MessageView(const char* pData, unsigned int size);
-    virtual ~MessageView();
 
 public:
     MessageView& read(void* pData, unsigned int size);
-
-    virtual void clear();
-
-public:
-    void resetReadIndex();
-    // bool verifySizeLeft(unsigned int size) const;
-    const char* getData() const;
-    unsigned int getSize() const;
 
 public:
     MessageView& operator >>(bool& data);

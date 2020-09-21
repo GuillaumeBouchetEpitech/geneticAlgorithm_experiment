@@ -20,8 +20,9 @@ Genome::Genome(const Genome& other)
 // move ctor
 Genome::Genome(Genome&& other)
 {
-    id = other.id;
-    fitness = other.fitness;
+    std::swap(id, other.id);
+    std::swap(fitness, other.fitness);
+
     weights = std::move(other.weights);
 }
 
@@ -30,8 +31,6 @@ Genome& Genome::operator=(const Genome& other)
 {
     id = other.id;
     fitness = other.fitness;
-
-    weights.clear();
     weights = other.weights;
 
     return *this;
@@ -42,10 +41,9 @@ Genome& Genome::operator=(Genome&& other)
 {
     if (this != &other)
     {
-        id = other.id;
-        fitness = other.fitness;
+        std::swap(id, other.id);
+        std::swap(fitness, other.fitness);
 
-        weights.clear();
         weights = std::move(other.weights);
     }
 

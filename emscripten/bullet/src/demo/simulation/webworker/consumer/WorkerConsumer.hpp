@@ -32,10 +32,10 @@ private:
 
     CircuitBuilder::t_startTransform    _startTransform;
 
-    MessageBuffer   _message;
+    MessageBuffer   _messageToSend;
 
 public:
-    WorkerConsumer();
+    WorkerConsumer() = default;
 
 public:
     void    processMessage(const char* dataPointer, int dataSize);

@@ -50,7 +50,7 @@ public:
     };
 
 private:
-    typedef std::array<IState*, toUnderlying(States::Total)> t_States;
+    typedef std::array<IState*, asValue(States::Total)> t_States;
     t_States _states;
 
     States _currentState;

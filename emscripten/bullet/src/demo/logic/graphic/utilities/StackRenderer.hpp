@@ -12,6 +12,11 @@ public:
     {
         glm::vec3 position;
         glm::vec3 color;
+
+        t_vertex(const glm::vec3& position, const glm::vec3& color)
+            : position(position)
+            , color(color)
+        {}
     };
     typedef std::vector<t_vertex> t_vertices;
 

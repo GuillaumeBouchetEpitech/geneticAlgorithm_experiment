@@ -1,9 +1,12 @@
 
 #pragma once
 
-#include "thirdparty/OpenGLES.hpp"
+#include "thirdparty/OpenGLES.hpp" // SDL_Event + SDL_Window
+
+#include "demo/utilities/NonCopyable.hpp"
 
 class IState
+    : public NonCopyable
 {
 public:
     virtual ~IState() {};

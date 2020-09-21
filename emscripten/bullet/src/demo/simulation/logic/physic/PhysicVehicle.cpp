@@ -36,7 +36,6 @@ public:
 
         if (rayCallback.hasHit())
         {
-
             const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
             if (body && body->hasContactResponse())
             {
@@ -132,7 +131,6 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
     btRaycastVehicle::btVehicleTuning tuning;
     _bullet.vehicleRayCaster = new CustomVehicleRaycaster(dynamicsWorld, group, mask);
 
-
     _bullet.vehicle = new btRaycastVehicle(tuning, _bullet.carChassis, _bullet.vehicleRayCaster);
 
     // never allow the deactivation (sleep) state of the vehicle
@@ -156,7 +154,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
         btVector3   connectionPoint;
         bool        isFrontWheel;
     };
-    std::array<t_wheel, toUnderlying(Wheels::Count)> wheels{{
+    std::array<t_wheel, asValue(Wheels::Count)> wheels{{
         // front right
         { { chassisHalfExtents[0] - wheelSide,
             chassisHalfExtents[1] - wheelRadius,
@@ -209,15 +207,15 @@ PhysicVehicle::~PhysicVehicle()
 void PhysicVehicle::applyEngineForce(float engineForce)
 {
     // rear wheels
-    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(Wheels::BackLeft));
-    _bullet.vehicle->applyEngineForce(engineForce, toUnderlying(Wheels::BackRight));
+    _bullet.vehicle->applyEngineForce(engineForce, asValue(Wheels::BackLeft));
+    _bullet.vehicle->applyEngineForce(engineForce, asValue(Wheels::BackRight));
 }
 
 void PhysicVehicle::setSteeringValue(float vehicleSteering)
 {
     // front wheels
-    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(Wheels::FrontLeft));
-    _bullet.vehicle->setSteeringValue(vehicleSteering, toUnderlying(Wheels::FrontRight));
+    _bullet.vehicle->setSteeringValue(vehicleSteering, asValue(Wheels::FrontLeft));
+    _bullet.vehicle->setSteeringValue(vehicleSteering, asValue(Wheels::FrontRight));
 }
 
 void PhysicVehicle::reset()
@@ -228,13 +226,13 @@ void PhysicVehicle::reset()
     _bullet.carChassis->forceActivationState(ACTIVE_TAG);
     _bullet.carChassis->setDeactivationTime(0);
 
-    for (unsigned int ii = 0; ii < toUnderlying(Wheels::Count); ++ii)
+    for (unsigned int ii = 0; ii < asValue(Wheels::Count); ++ii)
         _bullet.vehicle->setBrake(1000, ii);
 
     _bullet.vehicle->resetSuspension();
     _bullet.vehicle->updateVehicle(0);
 
-    for (unsigned int ii = 0; ii < toUnderlying(Wheels::Count); ++ii)
+    for (unsigned int ii = 0; ii < asValue(Wheels::Count); ++ii)
         _bullet.vehicle->setBrake(0, ii);
 
     // enableContactResponse();
@@ -261,7 +259,6 @@ void PhysicVehicle::setPosition(const glm::vec3& position)
     initialTransform.setOrigin(pos);
 
     _bullet.carChassis->setWorldTransform(initialTransform);
-    // _bullet.motionState->setWorldTransform(initialTransform);
 }
 
 void PhysicVehicle::setRotation(const glm::vec4& rotation)
@@ -273,7 +270,6 @@ void PhysicVehicle::setRotation(const glm::vec4& rotation)
     initialTransform.setRotation(rot);
 
     _bullet.carChassis->setWorldTransform(initialTransform);
-    // _bullet.motionState->setWorldTransform(initialTransform);
 }
 
 const glm::mat4& PhysicVehicle::getOpenGLMatrix(glm::mat4& mat4x4) const

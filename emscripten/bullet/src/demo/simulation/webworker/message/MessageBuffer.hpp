@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "MessageView.hpp"
+#include "AbstractMessage.hpp"
 
 #include <vector>
 
 class MessageBuffer
-    : public MessageView
+    : public AbstractMessage
 {
-protected:
+private:
     std::vector<char> _dataContainer;
 
 public:

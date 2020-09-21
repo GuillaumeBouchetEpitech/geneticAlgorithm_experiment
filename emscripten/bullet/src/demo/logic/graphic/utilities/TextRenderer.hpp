@@ -16,6 +16,12 @@ public:
         glm::vec2    position;
         glm::vec2    texCoord;
         float        scale;
+
+        t_offset(const glm::vec2& position, const glm::vec2& texCoord, float scale)
+            : position(position)
+            , texCoord(texCoord)
+            , scale(scale)
+        {}
     };
     typedef std::vector<t_offset> t_lettersOffset;
 

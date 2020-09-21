@@ -51,8 +51,8 @@ void ParticleManager::update(float delta)
 
         // push as instance
         for (const auto& trailPos : particle.trail)
-            _particlesInstances.push_back({ trailPos, localScale, particle.color });
-        _particlesInstances.push_back({ particle.position, localScale, particle.color });
+            _particlesInstances.emplace_back(trailPos, localScale, particle.color);
+        _particlesInstances.emplace_back(particle.position, localScale, particle.color);
     }
 
     auto& firework = Data::get().graphic.geometries.particles.firework;
@@ -85,7 +85,7 @@ void ParticleManager::emitParticles(const glm::vec3& position)
 
         float life = t_RNG::getRangedValue(0.5f, 1.5f);
 
-        _particles.push_back({ position, velocity, color, scale, life });
+        _particles.emplace_back(position, velocity, color, scale, life);
     }
 }
 

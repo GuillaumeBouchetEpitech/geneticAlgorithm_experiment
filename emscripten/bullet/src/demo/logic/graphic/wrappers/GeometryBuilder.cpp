@@ -59,7 +59,7 @@ GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
     if (_def.vbos.empty())
         D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
-    _def.vbos.back().attrs.push_back({ name, type, index });
+    _def.vbos.back().attrs.emplace_back(name, type, index);
 
     return *this;
 }

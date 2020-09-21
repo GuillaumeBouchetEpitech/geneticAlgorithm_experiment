@@ -13,7 +13,7 @@ attribute float a_index;
 
 varying vec4 v_color;
 
-const vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 k_white = vec4(1.0, 1.0, 1.0, 1.0);
 
 void main(void)
 {
@@ -44,7 +44,7 @@ void main(void)
 	}
 	else
 	{
-		v_color = mix(vec4(a_color, u_alpha), white, deformationCoef);
+		v_color = mix(vec4(a_color, u_alpha), k_white, deformationCoef);
 		// v_color = vec4(a_color, u_alpha * (0.5 + 0.5 * (1.0 - deformationCoef)));
 		// v_color = vec4(a_color, u_alpha);
 

@@ -42,8 +42,9 @@ Car::Car(PhysicWorld& physicWorld,
          const glm::vec3& position,
          const glm::vec4& quaternion)
     : _physicWorld(physicWorld)
+    , _physicVehicle(*_physicWorld.createVehicle())
 {
-    _physicVehicle = _physicWorld.createVehicle();
+    // _physicVehicle = _physicWorld.createVehicle();
 
     reset(position, quaternion);
 }
@@ -87,8 +88,8 @@ void Car::update(const NeuralNetwork& neuralNetwork)
     _output.steer = output[0]; // steering angle: left/right
     _output.speed = output[1]; // speed coef: forward/backward
 
-    _physicVehicle->setSteeringValue(_output.steer * k_steeringMaxValue);
-    _physicVehicle->applyEngineForce(_output.speed * k_speedMaxValue);
+    _physicVehicle.setSteeringValue(_output.steer * k_steeringMaxValue);
+    _physicVehicle.applyEngineForce(_output.speed * k_speedMaxValue);
 
     ++_totalUpdateNumber;
 }
@@ -96,7 +97,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
 void Car::_updateSensors()
 {
     glm::mat4 transform;
-    _physicVehicle->getOpenGLMatrix(transform);
+    _physicVehicle.getOpenGLMatrix(transform);
 
     { // eye sensor
 
@@ -137,8 +138,8 @@ void Car::_collideEyeSensors()
 
         // eye sensors collide ground + walls
         PhysicWorld::t_raycastParams params(sensor.near, sensor.far);
-        params.collisionGroup = toUnderlying(PhysicWorld::Groups::sensor);
-        params.collisionMask = toUnderlying(PhysicWorld::Masks::eyeSensor);
+        params.collisionGroup = asValue(PhysicWorld::Groups::sensor);
+        params.collisionMask = asValue(PhysicWorld::Masks::eyeSensor);
 
         bool hasHit = _physicWorld.raycast(params);
 
@@ -157,8 +158,8 @@ void Car::_collideGroundSensor()
 
     // ground sensor collide only ground
     PhysicWorld::t_raycastParams params(_groundSensor.near, _groundSensor.far);
-    params.collisionGroup = toUnderlying(PhysicWorld::Groups::sensor);
-    params.collisionMask = toUnderlying(PhysicWorld::Masks::groundSensor);
+    params.collisionGroup = asValue(PhysicWorld::Groups::sensor);
+    params.collisionMask = asValue(PhysicWorld::Masks::groundSensor);
 
     bool hasHitGround = _physicWorld.raycast(params);
 
@@ -184,7 +185,7 @@ void Car::_collideGroundSensor()
         }
         // else if (_groundIndex + 1 > hasHitGroundIndex)
         // {
-        //     _physicVehicle->disableContactResponse();
+        //     _physicVehicle.disableContactResponse();
         // }
     }
 
@@ -205,9 +206,9 @@ void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
     _output.steer = 0.0f;
     _output.speed = 0.0f;
 
-    _physicVehicle->reset();
-    _physicVehicle->setPosition({ position.x, position.y, position.z });
-    _physicVehicle->setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
+    _physicVehicle.reset();
+    _physicVehicle.setPosition({ position.x, position.y, position.z });
+    _physicVehicle.setRotation({ quaternion.x, quaternion.y, quaternion.z, quaternion.w });
 
     _updateSensors();
 
@@ -246,7 +247,7 @@ const Car::t_neuralNetworkOutput& Car::getNeuralNetworkOutput() const
 
 const PhysicVehicle& Car::getVehicle() const
 {
-    return *_physicVehicle;
+    return _physicVehicle;
 }
 
 float Car::getLife() const

@@ -7,11 +7,7 @@
 #include <cstring> // <= std::memcpy
 
 MessageView::MessageView(const char* dataPointer, unsigned int dataSize)
-    : _dataPointer(const_cast<char*>(dataPointer))
-    , _dataSize(dataSize)
-{}
-
-MessageView::~MessageView()
+    : AbstractMessage(dataPointer, dataSize)
 {}
 
 //
@@ -28,28 +24,6 @@ MessageView& MessageView::read(void* dataPointer, unsigned int dataSize)
     std::memcpy(dataPointer, _dataPointer + _readIndex, dataSize);
     _readIndex += dataSize;
     return *this;
-}
-
-void MessageView::clear()
-{
-    _dataPointer = nullptr;
-    _dataSize = 0;
-    _readIndex = 0;
-}
-
-void MessageView::resetReadIndex()
-{
-    _readIndex = 0;
-}
-
-const char* MessageView::getData() const
-{
-    return _dataPointer;
-}
-
-unsigned int MessageView::getSize() const
-{
-    return _dataSize;
 }
 
 //

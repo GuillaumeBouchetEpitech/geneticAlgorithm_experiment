@@ -8,8 +8,8 @@ void Data::initialiseShaders()
         { // create the stackRenderer shader
 
             Shader::t_def def;
-            def.filenames.vertex = "assets/shaders/stackRenderer.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/stackRenderer.glsl.frag.c";
+            def.filenames.vertex = "assets/shaders/stackRenderer.vert.glsl";
+            def.filenames.fragment = "assets/shaders/stackRenderer.frag.glsl";
             def.attributes = { "a_position", "a_color" };
             def.uniforms = { "u_composedMatrix" };
 
@@ -20,8 +20,8 @@ void Data::initialiseShaders()
 
             Shader::t_def def;
 
-            def.filenames.vertex = "assets/shaders/wireframes.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/wireframes.glsl.frag.c";
+            def.filenames.vertex = "assets/shaders/wireframes.vert.glsl";
+            def.filenames.fragment = "assets/shaders/wireframes.frag.glsl";
             def.attributes = { "a_position" };
             def.uniforms = { "u_composedMatrix", "u_color" };
 
@@ -32,8 +32,8 @@ void Data::initialiseShaders()
 
             Shader::t_def def;
 
-            def.filenames.vertex = "assets/shaders/animatedCircuit.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/animatedCircuit.glsl.frag.c";
+            def.filenames.vertex = "assets/shaders/animatedCircuit.vert.glsl";
+            def.filenames.fragment = "assets/shaders/animatedCircuit.frag.glsl";
             def.attributes = { "a_position", "a_color", "a_normal", "a_index" };
             def.uniforms = { "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit" };
 
@@ -44,8 +44,8 @@ void Data::initialiseShaders()
 
             Shader::t_def def;
 
-            def.filenames.vertex = "assets/shaders/hudText.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/hudText.glsl.frag.c";
+            def.filenames.vertex = "assets/shaders/hudText.vert.glsl";
+            def.filenames.fragment = "assets/shaders/hudText.frag.glsl";
             def.attributes = {
                 "a_position", "a_texCoord",
                 "a_offsetPosition", "a_offsetTexCoord", "a_offsetScale"
@@ -58,8 +58,8 @@ void Data::initialiseShaders()
         { // particles
 
             Shader::t_def def;
-            def.filenames.vertex = "assets/shaders/particles.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/particles.glsl.frag.c";
+            def.filenames.vertex = "assets/shaders/particles.vert.glsl";
+            def.filenames.fragment = "assets/shaders/particles.frag.glsl";
             def.attributes = {
                 "a_position",
                 "a_offsetPosition", "a_offsetScale", "a_offsetColor"
@@ -72,10 +72,20 @@ void Data::initialiseShaders()
         { // model (chassis + wheels)
 
             Shader::t_def def;
-            def.filenames.vertex = "assets/shaders/model.glsl.vert.c";
-            def.filenames.fragment = "assets/shaders/model.glsl.frag.c";
-            def.attributes = { "a_position", "a_color", "a_offsetTransform", "a_offsetColor" };
-            def.uniforms = { "u_composedMatrix" };
+            def.filenames.vertex = "assets/shaders/model.vert.glsl";
+            def.filenames.fragment = "assets/shaders/model.frag.glsl";
+            def.attributes = {
+                "a_position", "a_color",
+                "a_offsetTransform", "a_offsetColor"
+                // "a_position", "a_color", "a_normal",
+                // "a_offsetTransform", "a_offsetColor"
+            };
+            def.uniforms = {
+                "u_composedMatrix",
+                // "u_projectionMatrix",
+                // "u_modelMatrix",
+                // "u_viewMatrix",
+            };
 
             graphic.shaders.model = std::make_unique<Shader>(def);
         }

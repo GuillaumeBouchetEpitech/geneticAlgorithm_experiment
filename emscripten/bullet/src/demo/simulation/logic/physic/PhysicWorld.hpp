@@ -34,11 +34,11 @@ public:
 
     enum class Masks : short
     {
-        ground              = toUnderlying(Groups::all),
-        wall                = toUnderlying(Groups::all),
-        vehicle             = toUnderlying(Groups::ground),
-        eyeSensor           = toUnderlying(Groups::ground) | toUnderlying(Groups::wall),
-        groundSensor        = toUnderlying(Groups::ground),
+        ground              = asValue(Groups::all),
+        wall                = asValue(Groups::all),
+        vehicle             = asValue(Groups::ground),
+        eyeSensor           = asValue(Groups::ground) | asValue(Groups::wall),
+        groundSensor        = asValue(Groups::ground),
     };
 
 public:
@@ -93,8 +93,8 @@ private:
 public:
     PhysicVehicle*  createVehicle();
     void            destroyVehicle(PhysicVehicle* vehicle);
-    void            addVehicle(PhysicVehicle* vehicle);
-    void            removeVehicle(PhysicVehicle* vehicle);
+    void            addVehicle(PhysicVehicle& vehicle);
+    void            removeVehicle(PhysicVehicle& vehicle);
 
     const std::vector<PhysicVehicle*>&  getVehicles() const;
 
@@ -121,8 +121,8 @@ public:
 
         t_raycastParams(const glm::vec3& rayFrom,
                         const glm::vec3& rayTo,
-                        short group = toUnderlying(Groups::all),
-                        short mask = toUnderlying(Groups::all))
+                        short group = asValue(Groups::all),
+                        short mask = asValue(Groups::all))
             : from(rayFrom)
             , to(rayTo)
             , collisionGroup(group)

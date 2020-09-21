@@ -43,13 +43,16 @@ void Data::initialise()
 
 #endif
 
+    initialiseSimulationCallbacks();
     initialiseCircuit();
-    initialiseSimulation();
 
-    // logic.carsTrails.allTrails.resize(logic.simulation->getTotalCars());
     logic.carsTrails.allWheelsTrails.resize(logic.simulation->getTotalCars());
+    for (auto& trail : logic.carsTrails.allWheelsTrails)
+        for (auto& wheel : trail.wheels)
+            wheel.reserve(2048); // pre-allocate
 
-    {
+    { // compute the top left HUD text
+
         std::stringstream sstr;
 
         const GLubyte* glVersion = glGetString(GL_VERSION);
@@ -89,24 +92,23 @@ void Data::initialise()
 #endif
 
         logic.hudText.header = sstr.str();
-    }
+
+    } // compute the top left HUD text
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    {
+    { // compute the bottom right HUD text
+
         std::stringstream sstr;
 
-        // sstr
-        //     << "WebWorker fallback " << std::endl
-        //     << "for pthread support" << std::endl
-        //     << "try Chrome Desktop ";
         sstr
             << "WebWorker as a fallback " << std::endl
             << "=> for pthread support" << std::endl
             << "=> consider Chrome Desktop";
 
         logic.hudText.pthreadWarning = sstr.str();
-    }
+
+    } // compute the bottom right HUD text
 
 #endif
 

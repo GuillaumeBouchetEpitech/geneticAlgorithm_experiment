@@ -41,9 +41,7 @@ private:
     };
 
 private:
-    // float _frustum[toUnderlying(FrustumSide::count)][toUnderlying(PlaneData::count)];
-    // std::array<std::array<float, toUnderlying(PlaneData::count)>, toUnderlying(FrustumSide::count)> _frustum;
-    std::array<float[toUnderlying(PlaneData::count)], toUnderlying(FrustumSide::count)> _frustum;
+    std::array<float[asValue(PlaneData::count)], asValue(FrustumSide::count)> _frustum;
 
 private:
     void _normalizePlane(FrustumSide side);

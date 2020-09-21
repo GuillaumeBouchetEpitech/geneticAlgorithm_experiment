@@ -19,7 +19,7 @@ StackRenderer::~StackRenderer()
 //     if (_lineVertices.size() == _lineVertices.capacity())
 //         flush();
 
-//     _lineVertices.push_back(vertex);
+//     _lineVertices.emplace_back(vertex);
 // }
 
 void StackRenderer::pushLine(const glm::vec3& posA,
@@ -29,8 +29,8 @@ void StackRenderer::pushLine(const glm::vec3& posA,
     if (_lineVertices.size() + 2 >= _lineVertices.capacity())
         flush();
 
-    _lineVertices.push_back({ posA, color });
-    _lineVertices.push_back({ posB, color });
+    _lineVertices.emplace_back(posA, color);
+    _lineVertices.emplace_back(posB, color);
 }
 
 void StackRenderer::pushCross(const glm::vec3& pos,
@@ -59,9 +59,9 @@ void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB,
     if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
         flush();
 
-    _triangleVertices.push_back({ posA, color });
-    _triangleVertices.push_back({ posB, color });
-    _triangleVertices.push_back({ posC, color });
+    _triangleVertices.emplace_back(posA, color);
+    _triangleVertices.emplace_back(posB, color);
+    _triangleVertices.emplace_back(posC, color);
 }
 
 void StackRenderer::pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec3& color)

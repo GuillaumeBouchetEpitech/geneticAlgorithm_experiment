@@ -45,6 +45,12 @@ private:
         glm::vec3   position;
         float       scale;
         glm::vec3   color;
+
+        t_attributes(const glm::vec3& position, float scale, const glm::vec3& color)
+            : position(position)
+            , scale(scale)
+            , color(color)
+        {}
     };
 
     std::vector<t_attributes> _particlesInstances;

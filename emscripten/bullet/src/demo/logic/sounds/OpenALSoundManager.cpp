@@ -44,7 +44,7 @@ OpenALSoundManager::OpenALSoundManager()
         alListenerfv(AL_ORIENTATION, listenerOri);
         D_CHECK_AL_ERRORS();
 
-        alListenerf(AL_GAIN, 0.5f); // maximum global volume
+        alListenerf(AL_GAIN, 1.0f); // maximum global volume
         D_CHECK_AL_ERRORS();
     }
 
@@ -65,7 +65,7 @@ OpenALSoundManager::OpenALSoundManager()
             alSourcef(currSource, AL_GAIN, 1.0f);
             D_CHECK_AL_ERRORS();
 
-            alSourcef(currSource, AL_MIN_GAIN, 0.05f); // minimum volume
+            alSourcef(currSource, AL_MIN_GAIN, 0.25f); // minimum volume
             D_CHECK_AL_ERRORS();
 
             alSourcef(currSource, AL_MAX_GAIN, 1.0f); // maximum volume
@@ -106,7 +106,7 @@ void OpenALSoundManager::setEnabled(bool enabled)
 
     _enabled = enabled;
 
-    alListenerf(AL_GAIN, enabled ? 0.5f : 0.0f); // maximum global volume
+    alListenerf(AL_GAIN, enabled ? 1.0f : 0.0f); // maximum global volume
     D_CHECK_AL_ERRORS();
 }
 

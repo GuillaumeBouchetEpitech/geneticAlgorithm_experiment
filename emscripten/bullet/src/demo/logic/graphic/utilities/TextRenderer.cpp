@@ -148,7 +148,7 @@ void    TextRenderer::push(const glm::vec2& position,
 
         const auto& texCoord = it->second;
 
-        _lettersOffset.push_back({ currPos, texCoord, scale });
+        _lettersOffset.emplace_back(currPos, texCoord, scale);
 
         currPos.x += letterSize.x * scale;
     }
