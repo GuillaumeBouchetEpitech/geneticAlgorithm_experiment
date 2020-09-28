@@ -7,7 +7,7 @@ const os    = require('os');
 const port  = parseInt(process.argv[2] || 9000, 10);
 
 // useful to test on local WiFi with a smartphone
-const listWiFiIpAddresses = () => {
+const list_WiFi_IpAddresses = () => {
 
     const allInterfaces = [];
 
@@ -25,11 +25,11 @@ const listWiFiIpAddresses = () => {
 
             if (alias >= 1) {
                 // this single interface has multiple ipv4 addresses
-                allInterfaces.push(`ifname:${alias} ${iface.address}`);
+                allInterfaces.push(`ifname:${alias} http://${iface.address}:${port}/`);
             }
             else {
                 // this interface has only one ipv4 adress
-                allInterfaces.push(`ifname: ${iface.address}`);
+                allInterfaces.push(`ifname: http://${iface.address}:${port}/`);
             }
 
             ++alias;
@@ -59,7 +59,7 @@ const formatsMap = new Map([
     [ '.wasm',  'application/wasm'      ],
 ]);
 
-const onFileRequest = (req, res) => {
+const onFileRequest = async (req, res) => {
 
     console.log(`${req.method} ${req.url}`);
 
@@ -118,21 +118,34 @@ const onFileRequest = (req, res) => {
         contentType = "text/html"; // <= override the content type
     }
     else {
+
+        // if (pathname.indexOf("worker.wasm") !== -1) {
+
+        //     // simulate slow network
+
+        //     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        //     await sleep(500);
+        // }
+
         // read file from file system
         data = fs.readFileSync(pathname);
     }
 
     // if the file is found, set Content-type and send data
     res.setHeader('Content-type', formatsMap.get(ext) || contentType );
+
+    // attempt at preventing browser caching
     res.setHeader('Last-Modified', (new Date()).toString());
+
     res.end(data);
 }
 
 const onListen = () =>  {
-    console.log(`Server listening at http://127.0.0.1:${port}/`);
-    console.log(` => http://127.0.0.1:${port}/dist/index.html`);
 
-    listWiFiIpAddresses();
+    console.log(`Server listening`);
+    console.log(`=> http://127.0.0.1:${port}/`);
+    list_WiFi_IpAddresses();
 }
 
 http.createServer(onFileRequest).listen(port, onListen);

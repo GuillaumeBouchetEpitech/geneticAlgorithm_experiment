@@ -10,25 +10,25 @@
 class CircuitBuilder
 {
 public:
-    typedef std::vector<glm::vec3>  t_vec3Array;
-    typedef std::vector<int>        t_indices;
+    using Vec3Array = std::vector<glm::vec3>;
+    using Indices = std::vector<int>;
 
-    struct t_startTransform
+    struct StartTransform
     {
         glm::vec3 position;
         glm::vec4 quaternion;
     };
 
-    struct t_knot
+    struct Knot
     {
         glm::vec3 left;
         glm::vec3 right;
         float minDistance;
         glm::vec3 color;
 
-        t_knot() = default;
+        Knot() = default;
 
-        t_knot(
+        Knot(
             const glm::vec3& left,
             const glm::vec3& right,
             float minDistance,
@@ -40,32 +40,32 @@ public:
             , color(color)
         {}
     };
-    typedef std::vector<t_knot> t_knots;
-    typedef t_knot t_circuitVertex;
+    using Knots = std::vector<Knot>;
+    using CircuitVertex = Knot;
 
 public:
-    typedef std::function<void(const t_vec3Array& vertices,
-                               const t_indices& indices)> t_callbackNoNormals;
+    using CallbackNoNormals = std::function<void(const Vec3Array& vertices,
+                                                 const Indices& indices)>;
 
-    typedef std::function<void(const t_vec3Array& vertices,
-                               const t_vec3Array& colors,
-                               const t_vec3Array& normals,
-                               const t_indices& indices)> t_callbackNormals;
+    using CallbackNormals = std::function<void(const Vec3Array& vertices,
+                                               const Vec3Array& colors,
+                                               const Vec3Array& normals,
+                                               const Indices& indices)>;
 
 private:
-    t_startTransform _startTransform;
-    t_knots _knots;
+    StartTransform _startTransform;
+    Knots _knots;
 
 public:
     void load(const std::string& filename);
-    void load(const t_startTransform& startTransform, const t_knots& knots);
+    void load(const StartTransform& startTransform, const Knots& knots);
 
 public:
-    void generateSkeleton(t_callbackNoNormals onSkeletonPatch);
-    void generate(t_callbackNormals onNewGroundPatch, t_callbackNormals onNewWallPatch);
+    void generateSkeleton(CallbackNoNormals onSkeletonPatch);
+    void generate(CallbackNormals onNewGroundPatch, CallbackNormals onNewWallPatch);
 
 public:
-    const t_startTransform& getStartTransform() const;
-    const t_knots& getKnots() const;
+    const StartTransform& getStartTransform() const;
+    const Knots& getKnots() const;
 
 };

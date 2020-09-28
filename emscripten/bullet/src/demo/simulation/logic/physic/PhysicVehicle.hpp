@@ -63,4 +63,6 @@ public:
     int                 getNumWheels() const;
     const glm::mat4&    getWheelOpenGLMatrix(int index, glm::mat4& mat4x4) const;
 
+    glm::vec3           getVelocity() const;
+
 };

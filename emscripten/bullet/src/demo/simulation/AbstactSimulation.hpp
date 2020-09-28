@@ -7,31 +7,31 @@
 
 #include "machineLearning/GeneticAlgorithm.hpp"
 
-#include "demo/simulation/logic/t_carData.hpp"
+#include "demo/simulation/logic/CarData.hpp"
 
 #include <functional>
 
 class AbstactSimulation
 {
 public:
-    typedef std::function<void()> t_callback;
-    typedef std::function<void(unsigned int)> t_genomeDieCallback;
-    typedef std::function<void(bool)> t_generationEndCallback;
+    using SimpleCallback = std::function<void()>;
+    using GenomeDieCallback = std::function<void(unsigned int)>;
+    using GenerationEndCallback = std::function<void(bool)>;
 
-    struct t_def
+    struct Definition
     {
         std::string filename;
         unsigned int genomesPerCore = 0;
         unsigned int totalCores = 0;
         NeuralNetworkTopology neuralNetworkTopology;
-        CircuitBuilder::t_callbackNoNormals onSkeletonPatch = nullptr;
-        CircuitBuilder::t_callbackNormals onNewGroundPatch = nullptr;
-        CircuitBuilder::t_callbackNormals onNewWallPatch = nullptr;
+        CircuitBuilder::CallbackNoNormals onSkeletonPatch = nullptr;
+        CircuitBuilder::CallbackNormals onNewGroundPatch = nullptr;
+        CircuitBuilder::CallbackNormals onNewWallPatch = nullptr;
 
-        t_def() = default;
+        Definition() = default;
     };
 
-    struct t_coreState
+    struct CoreState
     {
         unsigned int delta = 0;
         unsigned int genomesAlive = 0;
@@ -42,32 +42,32 @@ public:
 
 public:
 
-    virtual void initialise(const t_def& def) = 0;
+    virtual void initialise(const Definition& def) = 0;
 
 public:
     virtual void update() = 0;
 
 public:
     virtual unsigned int getTotalCores() const = 0;
-    virtual const t_coreState& getCoreState(unsigned int index) const = 0;
-    virtual const t_carData& getCarResult(unsigned int index) const = 0;
+    virtual const CoreState& getCoreState(unsigned int index) const = 0;
+    virtual const CarData& getCarResult(unsigned int index) const = 0;
     virtual unsigned int getTotalCars() const = 0;
 
 public:
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    virtual void setOnWorkersReadyCallback(t_callback callback) = 0;
+    virtual void setOnWorkersReadyCallback(SimpleCallback callback) = 0;
 
 #endif
 
-    virtual void setOnGenerationResetCallback(t_callback callback) = 0;
-    virtual void setOnGenerationStepCallback(t_callback callback) = 0;
-    virtual void setOnGenomeDieCallback(t_genomeDieCallback callback) = 0;
-    virtual void setOnGenerationEndCallback(t_generationEndCallback callback) = 0;
+    virtual void setOnGenerationResetCallback(SimpleCallback callback) = 0;
+    virtual void setOnGenerationStepCallback(SimpleCallback callback) = 0;
+    virtual void setOnGenomeDieCallback(GenomeDieCallback callback) = 0;
+    virtual void setOnGenerationEndCallback(GenerationEndCallback callback) = 0;
 
 public:
-    virtual const t_genomes& getGenomes() const = 0;
+    virtual const Genomes& getGenomes() const = 0;
     virtual const Genome& getBestGenome() const = 0;
     virtual unsigned int getGenerationNumber() const = 0;
     virtual const glm::vec3& getStartPosition() const = 0;

@@ -8,28 +8,28 @@
 struct StackRenderer
 {
 public:
-    struct t_vertex
+    struct Vertex
     {
         glm::vec3 position;
         glm::vec3 color;
 
-        t_vertex(const glm::vec3& position, const glm::vec3& color)
+        Vertex(const glm::vec3& position, const glm::vec3& color)
             : position(position)
             , color(color)
         {}
     };
-    typedef std::vector<t_vertex> t_vertices;
+    using Vertices = std::vector<Vertex>;
 
 public:
-    t_vertices _lineVertices;
-    t_vertices _triangleVertices;
+    Vertices _lineVertices;
+    Vertices _triangleVertices;
 
 public:
     StackRenderer();
     ~StackRenderer();
 
 public:
-    void push(const t_vertex& vertex);
+    void push(const Vertex& vertex);
     void pushLine(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& color);
     void pushCross(const glm::vec3& pos, const glm::vec3& color, float halfExtent);
 

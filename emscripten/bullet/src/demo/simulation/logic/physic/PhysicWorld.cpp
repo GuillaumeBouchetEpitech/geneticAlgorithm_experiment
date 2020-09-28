@@ -72,7 +72,7 @@ void PhysicWorld::step()
 
 //
 
-void PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indices, int id)
+void PhysicWorld::createGround(const Vertices& vertices, const Indices& indices, int id)
 {
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id);
     btRigidBody* body = trimesh->_bullet.body;
@@ -87,7 +87,7 @@ void PhysicWorld::createGround(const t_vertices& vertices, const t_indices& indi
     _groundsTrimesh.push_back(trimesh);
 }
 
-void PhysicWorld::createWall(const t_vertices& vertices, const t_indices& indices)
+void PhysicWorld::createWall(const Vertices& vertices, const Indices& indices)
 {
     PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, -1);
     btRigidBody* body = trimesh->_bullet.body;
@@ -168,7 +168,7 @@ const std::vector<PhysicVehicle*>& PhysicWorld::getVehicles() const
 
 //
 
-bool PhysicWorld::raycast(PhysicWorld::t_raycastParams& params)
+bool PhysicWorld::raycast(PhysicWorld::RaycastParams& params)
 {
     btVector3 rayFrom(params.from.x, params.from.y, params.from.z);
     btVector3 rayTo(params.to.x, params.to.y, params.to.z);

@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-struct t_carData
+struct CarData
 {
     bool            isAlive;
     float           life;
@@ -16,6 +16,7 @@ struct t_carData
 
     glm::mat4                   transform;
     std::array<glm::mat4, 4>    wheelsTransform;
+    glm::vec3                   velocity;
 
 
     struct t_sensor
@@ -37,4 +38,4 @@ struct t_carData
 
 };
 
-typedef std::vector<t_carData>  t_carsData;
+using CarDatas = std::vector<CarData>;

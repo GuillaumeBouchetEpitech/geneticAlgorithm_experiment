@@ -61,14 +61,14 @@ private:
 
 public:
 
-    struct t_graphic
+    struct Graphic
     {
-        struct t_cameraData
+        struct CameraData
         {
             glm::vec2 viewportSize = { 800.0f, 600.0f };
 
             // glm::vec2 rotations = { -2.5f, 0.5f };
-            struct t_rotations
+            struct Rotations
             {
                 float theta = -2.5f;
                 float phi = 0.5f;
@@ -83,9 +83,9 @@ public:
 
             glm::vec3 thirdPersonCenter = { 0.0f, 0.0f, 0.0f };
 
-            struct t_matricesData
+            struct MatricesData
             {
-                struct t_matrices
+                struct Matrices
                 {
                     glm::mat4 projection;
                     glm::mat4 model;
@@ -93,8 +93,8 @@ public:
                     glm::mat4 composed;
                 };
 
-                t_matrices scene;
-                t_matrices thirdPerson;
+                Matrices scene;
+                Matrices thirdPerson;
 
                 glm::mat4 hud;
             }
@@ -104,7 +104,7 @@ public:
         }
         camera;
 
-        struct t_shaders
+        struct Shaders
         {
             std::unique_ptr<Shader> stackRenderer;
             std::unique_ptr<Shader> wireframes;
@@ -115,56 +115,56 @@ public:
         }
         shaders;
 
-        struct t_textures
+        struct Textures
         {
             Texture textFont;
         }
         textures;
 
-        struct t_geometries
+        struct Geometries
         {
-            struct t_particles
+            struct Particles
             {
                 Geometry firework;
             }
             particles;
 
-            struct t_stackRenderer
+            struct StackRenderer
             {
                 Geometry lines;
                 Geometry triangles;
             }
             stackRenderer;
 
-            struct t_wireframes
+            struct Wireframes
             {
                 Geometry circuitSkelton;
 
-                struct t_wheelsTrail
+                struct WheelsTrail
                 {
                     std::array<Geometry, 4> wheels;
                 };
 
-                std::array<t_wheelsTrail, 5> bestNewCarsTrails;
+                std::array<WheelsTrail, 5> bestNewCarsTrails;
 
                 Geometry leaderCarTrail;
             }
             wireframes;
 
-            struct t_animatedCircuit
+            struct AnimatedCircuit
             {
                 Geometry ground;
                 Geometry walls;
             }
             animatedCircuit;
 
-            struct t_hudText
+            struct HudText
             {
                 Geometry letters;
             }
             hudText;
 
-            struct t_model
+            struct Model
             {
                 Geometry car;
                 Geometry wheel;
@@ -177,7 +177,7 @@ public:
 
         ParticleManager particleManager;
 
-        struct t_hudText
+        struct HudText
         {
             const glm::vec2 textureSize = { 256, 256 };
             const glm::vec2 gridSize = { 16, 16 };
@@ -220,13 +220,13 @@ public:
 
         struct t_cores
         {
-            typedef std::vector<AbstactSimulation::t_coreState> t_statesData;
-            typedef std::vector<t_statesData> t_statesHistory;
+            using StatesData = std::vector<AbstactSimulation::CoreState> ;
+            using StatesHistory = std::vector<StatesData>;
 
             const unsigned int maxStateHistory = 60;
             unsigned int currHistoryIndex = 0;
-            t_statesData statesData;
-            t_statesHistory statesHistory;
+            StatesData statesData;
+            StatesHistory statesHistory;
 
             unsigned int genomesPerCore = 0;
             unsigned int totalCores = 0;
@@ -234,7 +234,6 @@ public:
         }
         cores;
 
-        bool isPaused = false;
         bool isAccelerated = false;
 
         struct t_leaderCarData

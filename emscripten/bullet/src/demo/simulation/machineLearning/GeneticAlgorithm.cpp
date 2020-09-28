@@ -8,7 +8,7 @@
 #include <iomanip> // <= std::fixed / setprecision
 #include <algorithm> // <= std::sort
 
-void GeneticAlgorithm::initialise(const t_def& def)
+void GeneticAlgorithm::initialise(const Definition& def)
 {
     if (def.totalGenomes == 0)
         D_THROW(std::invalid_argument,
@@ -27,14 +27,14 @@ void GeneticAlgorithm::initialise(const t_def& def)
     _genomes.resize(def.totalGenomes);
     _neuralNetworks.reserve(def.totalGenomes); // pre-allocate
 
-    t_RNG::ensureRandomSeed();
+    RNG::ensureRandomSeed();
 
     for (auto& genome : _genomes)
     {
         genome.weights.resize(_neuralNetworkTopology.getTotalWeights());
 
         for (float& weight : genome.weights)
-            weight = t_RNG::getRangedValue(-1.0f, 1.0f);
+            weight = RNG::getRangedValue(-1.0f, 1.0f);
 
         _neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
         _neuralNetworks.back().setWeights(genome.weights);
@@ -46,10 +46,10 @@ bool GeneticAlgorithm::breedPopulation()
     if (_genomes.empty())
         D_THROW(std::runtime_error, "not initialised");
 
-    t_genomes bestGenomes;
-    _getBestGenomes(bestGenomes);
+    Genomes latestBestGenomes;
+    _getBestGenomes(latestBestGenomes);
 
-    const auto& latestBestGenome = bestGenomes.front();
+    const auto& latestBestGenome = latestBestGenomes.front();
 
     const auto& bestGenome = _bestGenomes[0];
     bool smarterGeneration = (latestBestGenome.fitness > bestGenome.fitness);
@@ -67,10 +67,10 @@ bool GeneticAlgorithm::breedPopulation()
 
     // refresh the _bestGenomes internal array
     for (unsigned int ii = 0; ii < _bestGenomes.size(); ++ii)
-        if (_bestGenomes[ii].fitness < bestGenomes[ii].fitness)
-            _bestGenomes[ii] = bestGenomes[ii];
+        if (_bestGenomes[ii].fitness < latestBestGenomes[ii].fitness)
+            _bestGenomes[ii] = latestBestGenomes[ii];
 
-    t_genomes offsprings;
+    Genomes offsprings;
     offsprings.reserve(_genomes.size()); // pre-allocate
 
     { // elitism: keep the current best
@@ -86,18 +86,18 @@ bool GeneticAlgorithm::breedPopulation()
 
     { // crossover: breed best genomes
 
-        typedef std::pair<unsigned int, unsigned int> t_parentPair;
-        std::vector<t_parentPair> parentsPairsGenomes;
+        using ParentPair = std::pair<unsigned int, unsigned int>;
+        std::vector<ParentPair> parentsPairsGenomes;
 
         // build all the possible "parents" pairs
-        for (unsigned int ii = 0; ii < bestGenomes.size(); ++ii)
-            for (unsigned int jj = ii + 1; jj < bestGenomes.size(); ++jj)
+        for (unsigned int ii = 0; ii < latestBestGenomes.size(); ++ii)
+            for (unsigned int jj = ii + 1; jj < latestBestGenomes.size(); ++jj)
                 parentsPairsGenomes.push_back(std::make_pair(ii, jj));
 
         // sort the possible "parents" pair by summed fitness
-        auto cmpFunc = [&bestGenomes](const t_parentPair& a, const t_parentPair& b) {
-            float fitnessPairA = bestGenomes[a.first].fitness + bestGenomes[a.second].fitness;
-            float fitnessPairB = bestGenomes[b.first].fitness + bestGenomes[b.second].fitness;
+        auto cmpFunc = [&latestBestGenomes](const ParentPair& a, const ParentPair& b) {
+            float fitnessPairA = latestBestGenomes[a.first].fitness + latestBestGenomes[a.second].fitness;
+            float fitnessPairB = latestBestGenomes[b.first].fitness + latestBestGenomes[b.second].fitness;
             return (fitnessPairA > fitnessPairB); // <= the higher the better
         };
         std::sort(parentsPairsGenomes.begin(), parentsPairsGenomes.end(), cmpFunc);
@@ -113,8 +113,8 @@ bool GeneticAlgorithm::breedPopulation()
             if (maxOffspring-- <= 0)
                 break;
 
-            const auto& parentGenomeA = bestGenomes[parentPair.first];
-            const auto& parentGenomeB = bestGenomes[parentPair.second];
+            const auto& parentGenomeA = latestBestGenomes[parentPair.first];
+            const auto& parentGenomeB = latestBestGenomes[parentPair.second];
 
             Genome newOffspring;
 
@@ -140,7 +140,7 @@ bool GeneticAlgorithm::breedPopulation()
 
             newGenome.weights.reserve(totalWeights);
             for (unsigned int jj = 0; jj < totalWeights; ++jj)
-                newGenome.weights.push_back(t_RNG::getRangedValue(-1.0f, 1.0f));
+                newGenome.weights.push_back(RNG::getRangedValue(-1.0f, 1.0f));
 
             // move, no realloc of the weights
             offsprings.push_back(std::move(newGenome));
@@ -158,23 +158,23 @@ bool GeneticAlgorithm::breedPopulation()
     return smarterGeneration;
 }
 
-void GeneticAlgorithm::_getBestGenomes(t_genomes& output) const
+void GeneticAlgorithm::_getBestGenomes(Genomes& output) const
 {
     output.clear();
 
-    struct t_sortPair
+    struct SortPair
     {
         float           fitness;
         unsigned int    index;
     };
-    std::vector<t_sortPair> sortedGenomes;
+    std::vector<SortPair> sortedGenomes;
 
     sortedGenomes.reserve(_genomes.size()); // pre-allocate
     for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
         sortedGenomes.push_back({ _genomes[ii].fitness, ii });
 
     // sort by fitness, the higher the better
-    auto cmpFunc = [](const t_sortPair& a, const t_sortPair& b) { return a.fitness > b.fitness; };
+    auto cmpFunc = [](const SortPair& a, const SortPair& b) { return a.fitness > b.fitness; };
     std::sort(sortedGenomes.begin(), sortedGenomes.end(), cmpFunc);
 
     output.reserve(_genomes.size()); // pre-allocate
@@ -202,7 +202,7 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
 
     for (unsigned int ii = 0; ii < totalWeights; ++ii)
     {
-        if (t_RNG::getRangedValue(0, 100) < chancesForParentA)
+        if (RNG::getRangedValue(0, 100) < chancesForParentA)
             offspring.weights.push_back(parentA.weights[ii]);
         else
             offspring.weights.push_back(parentB.weights[ii]);
@@ -215,18 +215,18 @@ void GeneticAlgorithm::_mutate(Genome& genome) const
     const float mutationMaxEffect = 0.2f;
 
     for (float& weight : genome.weights)
-        if (t_RNG::getNormalisedValue() < mutationMaxChance)
-            weight += t_RNG::getRangedValue(-mutationMaxEffect, mutationMaxEffect);
+        if (RNG::getNormalisedValue() < mutationMaxChance)
+            weight += RNG::getRangedValue(-mutationMaxEffect, mutationMaxEffect);
 }
 
 //
 
-const GeneticAlgorithm::t_NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() const
+const GeneticAlgorithm::NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() const
 {
     return _neuralNetworks;
 }
 
-const t_genomes& GeneticAlgorithm::getGenomes() const
+const Genomes& GeneticAlgorithm::getGenomes() const
 {
     return _genomes;
 }

@@ -8,7 +8,7 @@
 #include "demo/utilities/ErrorHandler.hpp"
 // #include "demo/utilities/TraceLogger.hpp"
 
-WorkerProducer::WorkerProducer(const t_def& def)
+WorkerProducer::WorkerProducer(const Definition& def)
 {
     _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
 
@@ -46,14 +46,14 @@ WorkerProducer::WorkerProducer(const t_def& def)
     }
 }
 
-void    WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg)
+void WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg)
 {
     WorkerProducer* workerProducer = static_cast<WorkerProducer*>(arg);
 
     workerProducer->_processMessage(dataPointer, dataSize);
 }
 
-void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
+void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 {
     _flags[Status::Processing] = false;
 
@@ -91,6 +91,8 @@ void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                 for (auto& transform : car.wheelsTransform)
                     receivedMsg >> transform;
 
+                receivedMsg >> car.velocity;
+
                 for (auto& sensor : car.eyeSensors)
                     receivedMsg >> sensor.near >> sensor.far >> sensor.value;
 
@@ -112,7 +114,7 @@ void    WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void    WorkerProducer::_send()
+void WorkerProducer::_send()
 {
     _flags[Status::Processing] = true;
 
@@ -124,7 +126,7 @@ void    WorkerProducer::_send()
     emscripten_call_worker(_workerHandle, WORKER_MAIN_STR, dataPointer, dataSize, callback, (void*)this);
 }
 
-void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
+void WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
 {
     _message.clear();
     _message << char(Messages::Client::ResetAndProcessSimulation);
@@ -141,7 +143,7 @@ void    WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNet
     _send();
 }
 
-void    WorkerProducer::processSimulation()
+void WorkerProducer::processSimulation()
 {
     _message.clear();
     _message << char(Messages::Client::ProcessSimulation);
@@ -149,27 +151,27 @@ void    WorkerProducer::processSimulation()
     _send();
 }
 
-bool    WorkerProducer::isLoaded() const
+bool WorkerProducer::isLoaded() const
 {
     return _flags[Status::WebWorkerLoaded];
 }
 
-bool    WorkerProducer::isProcessing() const
+bool WorkerProducer::isProcessing() const
 {
     return _flags[Status::Processing];
 }
 
-bool    WorkerProducer::isUpdated() const
+bool WorkerProducer::isUpdated() const
 {
     return _flags[Status::Updated];
 }
 
-const t_carsData&   WorkerProducer::getCarsData() const
+const CarDatas& WorkerProducer::getCarsData() const
 {
     return _carsData;
 }
 
-const AbstactSimulation::t_coreState&   WorkerProducer::getCoreState() const
+const AbstactSimulation::CoreState& WorkerProducer::getCoreState() const
 {
     return _coreState;
 }

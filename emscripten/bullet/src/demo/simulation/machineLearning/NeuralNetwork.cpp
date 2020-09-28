@@ -55,27 +55,27 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
     _layerHidden.resize(_topology.getHiddens().size());
     for (unsigned int ii = 0; ii < _layerHidden.size(); ++ii)
     {
-        t_layer& newLayer = _layerHidden[ii];
+        Layer& newLayer = _layerHidden[ii];
 
         unsigned int currentLayerSize = _topology.getHiddens()[ii];
 
         newLayer.resize(currentLayerSize);
-        for (t_neuron& newNeuron : newLayer)
+        for (Neuron& newNeuron : newLayer)
         {
             newNeuron.weights.resize(previousLayerSize);
             for (float& newWeight : newNeuron.weights)
-                newWeight = t_RNG::getRangedValue(-1.0f, 1.0f);
+                newWeight = RNG::getRangedValue(-1.0f, 1.0f);
         }
 
         previousLayerSize = currentLayerSize;
     }
 
     _layerOutput.resize(_topology.getOutput());
-    for (t_neuron& newNeuron : _layerOutput)
+    for (Neuron& newNeuron : _layerOutput)
     {
         newNeuron.weights.resize(previousLayerSize);
         for (float& newWeight : newNeuron.weights)
-            newWeight = t_RNG::getRangedValue(-1.0f, 1.0f);
+            newWeight = RNG::getRangedValue(-1.0f, 1.0f);
     }
 }
 
@@ -96,7 +96,7 @@ void NeuralNetwork::process(const std::vector<float>& input,
     std::vector<float>  hiddenOutput;
 
     // Cycle over all the neurons and sum their weights against the inputs.
-    for (const t_layer& currentLayer : _layerHidden)
+    for (const Layer& currentLayer : _layerHidden)
     {
         _processLayer(currentLayer, hiddenInput, hiddenOutput);
 
@@ -108,7 +108,7 @@ void NeuralNetwork::process(const std::vector<float>& input,
     _processLayer(_layerOutput, hiddenInput, output);
 }
 
-void NeuralNetwork::_processLayer(const t_layer& layer,
+void NeuralNetwork::_processLayer(const Layer& layer,
                                   const std::vector<float>& input,
                                   std::vector<float>& output) const
 {
@@ -145,12 +145,12 @@ void NeuralNetwork::setWeights(const std::vector<float>& inputWeights)
 
     unsigned int weightsIndex = 0;
 
-    for (t_layer& layer : _layerHidden)
-        for (t_neuron& neuron : layer)
+    for (Layer& layer : _layerHidden)
+        for (Neuron& neuron : layer)
             for (float& weight : neuron.weights)
                 weight = inputWeights[weightsIndex++];
 
-    for (t_neuron& neuron : _layerOutput)
+    for (Neuron& neuron : _layerOutput)
         for (float& weight : neuron.weights)
             weight = inputWeights[weightsIndex++];
 }
@@ -160,12 +160,12 @@ void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
     outputWeights.clear();
     outputWeights.reserve(_topology.getTotalWeights()); // pre-allocate
 
-    for (const t_layer& layer : _layerHidden)
-        for (const t_neuron& neuron : layer)
+    for (const Layer& layer : _layerHidden)
+        for (const Neuron& neuron : layer)
             for (const float weight : neuron.weights)
                 outputWeights.push_back( weight );
 
-    for (const t_neuron& neuron : _layerOutput)
+    for (const Neuron& neuron : _layerOutput)
         for (const float weight : neuron.weights)
             outputWeights.push_back( weight );
 }

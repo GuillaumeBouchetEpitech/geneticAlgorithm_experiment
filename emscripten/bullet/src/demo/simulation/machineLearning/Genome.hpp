@@ -21,4 +21,4 @@ public:
     std::vector<float> weights;
 };
 
-typedef std::vector<Genome> t_genomes;
+using Genomes = std::vector<Genome>;

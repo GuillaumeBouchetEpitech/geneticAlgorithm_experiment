@@ -24,16 +24,14 @@ StateManager::StateManager()
 {
     // allocate states
 
-#if defined D_WEB_WEBWORKER_BUILD
-    _states[asValue(States::WorkersLoading)] = new State_WebWorkersLoading();
-#endif
-
-    _states[asValue(States::Running)] = new State_Running();
-    _states[asValue(States::Paused)] = new State_Paused();
-    _states[asValue(States::StartGeneration)] = new State_StartGeneration();
-    _states[asValue(States::EndGeneration)] = new State_EndGeneration();
+    _states[asValue(States::Running)]           = new State_Running();
+    _states[asValue(States::Paused)]            = new State_Paused();
+    _states[asValue(States::StartGeneration)]   = new State_StartGeneration();
+    _states[asValue(States::EndGeneration)]     = new State_EndGeneration();
 
 #if defined D_WEB_WEBWORKER_BUILD
+    _states[asValue(States::WorkersLoading)]    = new State_WebWorkersLoading();
+
     _currentState = States::WorkersLoading;
 #else
     _currentState = States::StartGeneration;

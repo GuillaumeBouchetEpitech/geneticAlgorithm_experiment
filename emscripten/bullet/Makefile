@@ -102,7 +102,7 @@ OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
 
 ifneq ($(build_platform),web_wasm_webworker)
 
-# pthread (native + web)
+# pthread (native + web-pthread)
 
 SRC_NATIVE=		$(wildcard \
 					$(DIR_SRC)/*.cpp \
@@ -120,16 +120,16 @@ SRC_NATIVE=		$(wildcard \
 					$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 					$(DIR_SRC)/demo/simulation/*.cpp \
 					$(DIR_SRC)/demo/simulation/pthread/*.cpp \
-					$(DIR_SRC)/demo/simulation/pthread/threading/*.cpp \
+					$(DIR_SRC)/demo/simulation/pthread/multithreading/*.cpp \
 					$(DIR_SRC)/demo/simulation/logic/*.cpp \
 					$(DIR_SRC)/demo/simulation/logic/physic/*.cpp \
 					$(DIR_SRC)/demo/simulation/machineLearning/*.cpp)
 
-SRC_WEB_PTHREAD=	$(SRC_NATIVE) # same as native build
+SRC_WEB_PTHREAD=	$(SRC_NATIVE) # web-pthread same as native
 
 else
 
-# webworker (web only)
+# web-webworker only
 
 SRC_WEB_MAIN=	$(wildcard \
 					$(DIR_SRC)/*.cpp \

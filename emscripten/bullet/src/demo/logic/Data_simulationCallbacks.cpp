@@ -125,20 +125,12 @@ void Data::initialiseSimulationCallbacks()
         const glm::vec3 extraHeight(0.0f, 0.0f, 1.0f);
         glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
 
-        graphic.particleManager.emitParticles(carPos);
+        graphic.particleManager.emitParticles(carPos, carData.velocity);
         sounds.manager.playRandom(carPos);
     });
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void
     {
-        { // switch the current state
-
-            StateManager::get()->changeState(StateManager::States::EndGeneration);
-
-            logic.leaderCar.index = -1;
-
-        } // switch the current state
-
         { // handle the stats
 
             const auto& bestGenome = logic.simulation->getBestGenome();
@@ -155,48 +147,59 @@ void Data::initialiseSimulationCallbacks()
             const float prevLastOne = allStats[allStats.size() - 2];
             const float currLastOne = allStats[allStats.size() - 1];
 
-            if (currLastOne > prevLastOne) // last one is smarter
+            if (currLastOne > prevLastOne)
             {
-                if (allStats.size() == fitnessStats.maxStats)
-                    allStats.erase(allStats.begin() + 0); // erase fisrt
+                // last one is smarter -> erase first, push latest
+                allStats.erase(allStats.begin());
+                allStats.emplace_back(bestGenome.fitness);
             }
-            else // last one is not smarter
+            else
             {
-                allStats.pop_back(); // erase last
+                // last one is not smarter -> replace last
+                allStats.pop_back();
+                allStats.emplace_back(bestGenome.fitness);
             }
 
-            allStats.emplace_back(bestGenome.fitness);
-
-        } // hanlde the stats
-
-        if (!isSmarter)
-            return;
+        } // handle the stats
 
         { // handle the car trails
 
-            const auto& bestGenome = logic.simulation->getBestGenome();
-            auto& carsTrails = logic.carsTrails;
-            auto& currentTrailIndex = carsTrails.currentTrailIndex;
-
-            auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
-            if (it == carsTrails.genomeIndexMap.end())
-                return;
-
-            auto dataIndex = it->second;
-
-            const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
-            auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-            auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
-
-            for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+            if (isSmarter)
             {
-                currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
-                currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
+                const auto& bestGenome = logic.simulation->getBestGenome();
+                auto& carsTrails = logic.carsTrails;
+                auto& currentTrailIndex = carsTrails.currentTrailIndex;
+
+                auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
+                if (it != carsTrails.genomeIndexMap.end()) // <= this should never fail
+                {
+                    auto dataIndex = it->second;
+
+                    const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
+                    auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
+                    auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
+
+                    for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+                    {
+                        currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
+                        currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
+                    }
+
+                    // increase the currently used trail index (loop if too high)
+                    currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
+                }
             }
 
-            currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
-
         } // handle the car trails
+
+        { // switch the current state
+
+            StateManager::get()->changeState(StateManager::States::EndGeneration);
+
+            logic.leaderCar.index = -1;
+
+        } // switch the current state
+
     });
 }
 

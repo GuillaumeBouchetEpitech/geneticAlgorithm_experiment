@@ -4,6 +4,23 @@
 #include "demo/logic/Data.hpp"
 #include "demo/utilities/math/RandomNumberGenerator.hpp"
 
+ParticleManager::Particle::Particle(const glm::vec3& position,
+                                        const glm::vec3& linearVelocity,
+                                        const glm::vec3& color,
+                                        float scale,
+                                        float life)
+    : position(position)
+    , linearVelocity(linearVelocity)
+    , scale(scale)
+    , color(color)
+    , life(life)
+    , maxLife(life)
+{
+    // initialise the particle's trail
+    for (auto& trailPos : trail)
+        trailPos = position;
+}
+
 ParticleManager::ParticleManager()
 {
     _particles.reserve(2048); // pre-allocate
@@ -12,13 +29,11 @@ ParticleManager::ParticleManager()
 
 void ParticleManager::update(float delta)
 {
+    // update particle's life and handle removal of dead particles
     for (unsigned int ii = 0; ii < _particles.size();)
     {
-        auto& particle = _particles[ii];
-
-        // update particle's life
-        particle.life -= delta;
-        if (particle.life > 0.0f)
+        _particles[ii].life -= delta;
+        if (_particles[ii].life > 0.0f)
         {
             ++ii;
             continue;
@@ -30,7 +45,7 @@ void ParticleManager::update(float delta)
     }
 
     // pre-allocate (1 position + N trailing positions)
-    _particlesInstances.reserve(_particles.size() * (1 + t_particle::trail_size));
+    _particlesInstances.reserve(_particles.size() * (1 + Particle::trail_size));
     _particlesInstances.clear();
 
     for (auto& particle : _particles)
@@ -47,7 +62,7 @@ void ParticleManager::update(float delta)
         particle.linearVelocity.z -= 20.0f * delta;
 
         // update scale
-        float localScale = particle.life / particle.maxLife * particle.scale;
+        const float localScale = particle.life / particle.maxLife * particle.scale;
 
         // push as instance
         for (const auto& trailPos : particle.trail)
@@ -63,44 +78,45 @@ void ParticleManager::update(float delta)
 
 void ParticleManager::emitParticles(const glm::vec3& position)
 {
-    const int totalParticles = t_RNG::getRangedValue(10, 15);
-    const float maxVelocity = 25.0f;
-
-    for (int ii = 0; ii < totalParticles; ++ii)
-    {
-        glm::vec3 velocity = {
-            t_RNG::getRangedValue(-1.0f, 1.0f),
-            t_RNG::getRangedValue(-1.0f, 1.0f),
-            t_RNG::getRangedValue(-1.0f, 1.0f),
-        };
-        velocity = glm::normalize(velocity) * maxVelocity;
-
-        glm::vec3 color = {
-            t_RNG::getRangedValue(0.5f, 1.0f),
-            t_RNG::getRangedValue(0.5f, 1.0f),
-            t_RNG::getRangedValue(0.5f, 1.0f),
-        };
-
-        float scale = t_RNG::getRangedValue(0.5f, 1.5f);
-
-        float life = t_RNG::getRangedValue(0.5f, 1.5f);
-
-        _particles.emplace_back(position, velocity, color, scale, life);
-    }
+    emitParticles(position, glm::vec3(0));
 }
 
-ParticleManager::t_particle::t_particle(const glm::vec3& position,
-                                        const glm::vec3& linearVelocity,
-                                        const glm::vec3& color,
-                                        float scale,
-                                        float life)
-    : position(position)
-    , linearVelocity(linearVelocity)
-    , scale(scale)
-    , color(color)
-    , life(life)
-    , maxLife(life)
+void ParticleManager::emitParticles(const glm::vec3& position, const glm::vec3& velocity)
 {
-    for (auto& trailPos : trail)
-        trailPos = position;
+    const unsigned int totalParticles = RNG::getRangedValue(10, 15);
+
+    const float maxVelLength = 10.0f;
+    const float velLength = std::min(glm::length(velocity), maxVelLength);
+    glm::vec3 normalizedVel(0);
+    if (velLength > 0)
+    {
+        if (velLength < maxVelLength)
+            normalizedVel = velocity / maxVelLength; // smaller than max velocity
+        else
+            normalizedVel = glm::normalize(velocity); // max velocity
+    }
+
+    for (unsigned int ii = 0; ii < totalParticles; ++ii)
+    {
+        const float maxVelocity = RNG::getRangedValue(15.0f, 25.0f);
+
+        const glm::vec3 velPertubation = {
+            RNG::getRangedValue(-1.0f, 1.0f),
+            RNG::getRangedValue(-1.0f, 1.0f),
+            RNG::getRangedValue(-1.0f, 1.0f),
+        };
+        const glm::vec3 particleVel = glm::normalize(normalizedVel + velPertubation) * maxVelocity;
+
+        const glm::vec3 color = {
+            RNG::getRangedValue(0.5f, 1.0f),
+            RNG::getRangedValue(0.5f, 1.0f),
+            RNG::getRangedValue(0.5f, 1.0f),
+        };
+
+        const float scale = RNG::getRangedValue(0.5f, 1.5f);
+
+        const float life = RNG::getRangedValue(0.5f, 1.5f);
+
+        _particles.emplace_back(position, particleVel, color, scale, life);
+    }
 }

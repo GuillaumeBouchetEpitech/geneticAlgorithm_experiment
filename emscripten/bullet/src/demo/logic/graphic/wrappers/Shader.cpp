@@ -29,10 +29,10 @@ namespace utilities
         return true;
     }
 
-    typedef void (*t_getDataFunc)(GLuint shader, GLenum pname, GLint *params);
-    typedef void (*t_getInfoFunc)(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog);
+    using GetDataFunc = void (*)(GLuint shader, GLenum pname, GLint *params);
+    using GetInfoFunc = void (*)(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog);
 
-    void _printInfo(GLuint id, t_getDataFunc getDataFunc, t_getInfoFunc getInfoFunc)
+    void _printInfo(GLuint id, GetDataFunc getDataFunc, GetInfoFunc getInfoFunc)
     {
         GLint infoLogLength = 0;
         getDataFunc(id, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -93,7 +93,7 @@ namespace utilities
 
 //
 
-Shader::Shader(const t_def& def)
+Shader::Shader(const Definition& def)
 {
     std::string    vertexSourceCode;
     std::string    fragmentSourceCode;

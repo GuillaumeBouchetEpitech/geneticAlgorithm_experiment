@@ -70,7 +70,7 @@ float basisDeg5(float x)
 
 };
 
-void BSpline::initialise(const BSpline::t_def& def)
+void BSpline::initialise(const Definition& def)
 {
     _def = def;
 

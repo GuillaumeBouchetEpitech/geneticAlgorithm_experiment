@@ -27,19 +27,19 @@ public:
         Mat4f
     };
 
-    struct t_def
+    struct Definition
     {
-        struct t_vbo
+        struct Vbo
         {
-            struct t_attr
+            struct Attr
             {
                 std::string name = "";
                 AttrType    type = AttrType::Float;
                 std::size_t index = 0;
 
-                t_attr() = default;
+                Attr() = default;
 
-                t_attr(const std::string& name, AttrType type, std::size_t index)
+                Attr(const std::string& name, AttrType type, std::size_t index)
                     : name(name)
                     , type(type)
                     , index(index)
@@ -49,18 +49,18 @@ public:
             unsigned int    stride = 0;
             bool            instanced = false;
 
-            std::vector<t_attr> attrs;
+            std::vector<Attr> attrs;
 
-            t_vbo() = default;
+            Vbo() = default;
         };
 
-        std::vector<t_vbo> vbos;
+        std::vector<Vbo> vbos;
 
         GLint primitiveType = GL_LINES;
     };
 
 private:
-    t_def               _def;
+    Definition          _def;
     VertexArrayObject   _vao;
     VertexBufferObject  _vbo;
     GLint               _primitiveType = GL_LINES;
@@ -73,7 +73,7 @@ public:
     Geometry() = default;
 
 public:
-    void initialise(Shader& shader, const t_def& def);
+    void initialise(Shader& shader, const Definition& def);
 
 public:
     void updateBuffer(int index, const void* data, int dataSize, bool dynamic = false) const;

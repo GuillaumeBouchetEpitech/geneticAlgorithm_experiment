@@ -42,10 +42,8 @@ public:
     };
 
 public:
-    typedef std::function<void(const glm::vec3&, const glm::vec3&)> t_onContact;
-
-    typedef std::vector<glm::vec3>  t_vertices;
-    typedef std::vector<int>        t_indices;
+    using Vertices = std::vector<glm::vec3>;
+    using Indices = std::vector<int>;
 
 private:
 
@@ -80,8 +78,8 @@ private:
     std::vector<PhysicTrimesh*> _groundsTrimesh;
     std::vector<PhysicTrimesh*> _wallsTrimesh;
 public:
-    void    createGround(const t_vertices& vertices, const t_indices& indices, int id);
-    void    createWall(const t_vertices& vertices, const t_indices& indices);
+    void    createGround(const Vertices& vertices, const Indices& indices, int id);
+    void    createWall(const Vertices& vertices, const Indices& indices);
 
     //
     //
@@ -103,7 +101,7 @@ public:
     // raycast
 
 public:
-    struct t_raycastParams
+    struct RaycastParams
     {
         glm::vec3   from;
         glm::vec3   to;
@@ -111,7 +109,7 @@ public:
         short   collisionGroup;
         short   collisionMask;
 
-        struct t_result
+        struct Result
         {
             bool        hasHit = false;
             glm::vec3   impactPoint;
@@ -119,7 +117,7 @@ public:
         }
         result;
 
-        t_raycastParams(const glm::vec3& rayFrom,
+        RaycastParams(const glm::vec3& rayFrom,
                         const glm::vec3& rayTo,
                         short group = asValue(Groups::all),
                         short mask = asValue(Groups::all))
@@ -131,6 +129,6 @@ public:
     };
 
 public:
-    bool    raycast(t_raycastParams& params);
+    bool    raycast(RaycastParams& params);
 
 };

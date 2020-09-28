@@ -20,4 +20,4 @@ public:
     static float getRangedValue(float min, float max);
 };
 
-typedef RandomNumberGenerator t_RNG;
+using RNG = RandomNumberGenerator;

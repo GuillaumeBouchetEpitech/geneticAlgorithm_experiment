@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 void NeuralNetworkTopology::init(unsigned int input,
-                                 const t_hiddenLayers& hiddens,
+                                 const HiddenLayers& hiddens,
                                  unsigned int output,
                                  bool useBias /*= true*/)
 {
@@ -97,7 +97,7 @@ unsigned int NeuralNetworkTopology::getOutput() const
     return _output;
 }
 
-const NeuralNetworkTopology::t_hiddenLayers& NeuralNetworkTopology::getHiddens() const
+const NeuralNetworkTopology::HiddenLayers& NeuralNetworkTopology::getHiddens() const
 {
     return _hiddens;
 }

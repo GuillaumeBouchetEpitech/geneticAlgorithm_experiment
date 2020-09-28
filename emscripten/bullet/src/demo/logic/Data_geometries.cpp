@@ -6,39 +6,36 @@
 
 #include "demo/defines.hpp"
 
-
-#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
-#include "thirdparty/tinyobjloader/tiny_obj_loader.h"
-
+#include "thirdparty/TinyObjLoader.hpp"
 
 namespace /*anonymous*/
 {
 
-struct t_modelVertex
+struct ModelVertex
 {
     glm::vec3 position;
     glm::vec3 color;
     // glm::vec3 normal;
 
-    t_modelVertex(glm::vec3& position, glm::vec3& color)
+    ModelVertex(glm::vec3& position, glm::vec3& color)
         : position(position)
         , color(color)
     {}
 };
 
-void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices); // declaration
+void loadModel(const std::string& filename, std::vector<ModelVertex>& vertices); // declaration
 
-void loadCarModel(std::vector<t_modelVertex>& vertices)
+void loadCarModel(std::vector<ModelVertex>& vertices)
 {
     loadModel("CarNoWheels.obj", vertices);
 }
 
-void loadWheelModel(std::vector<t_modelVertex>& vertices)
+void loadWheelModel(std::vector<ModelVertex>& vertices)
 {
     loadModel("CarWheel.obj", vertices);
 }
 
-void loadModel(const std::string& filename, std::vector<t_modelVertex>& vertices) // definition
+void loadModel(const std::string& filename, std::vector<ModelVertex>& vertices) // definition
 {
     const std::string objFile = "./assets/model/" + filename;
     const std::string mtlDir = "./assets/model/";
@@ -283,7 +280,7 @@ void Data::initialiseGeometries()
 
         geometryBuilder.build(graphic.geometries.hudText.letters);
 
-        struct t_vertex
+        struct Vertex
         {
             glm::vec2 position;
             glm::vec2 texCoord;
@@ -293,7 +290,7 @@ void Data::initialiseGeometries()
         const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
         const glm::vec2 texCoord = letterSize / hudText.textureSize;
 
-        std::array<t_vertex, 4> vertices{{
+        std::array<Vertex, 4> vertices{{
             { { +letterSize.x,             0 }, { texCoord.x, texCoord.y } },
             { {             0,             0 }, {          0, texCoord.y } },
             { { +letterSize.x, +letterSize.y }, { texCoord.x,          0 } },
@@ -302,7 +299,7 @@ void Data::initialiseGeometries()
 
         std::array<int, 6> indices{{ 1,0,2,  1,3,2 }};
 
-        std::vector<t_vertex> letterVertices;
+        std::vector<Vertex> letterVertices;
         letterVertices.reserve(indices.size()); // pre-allocate
 
         for (int index : indices)
@@ -333,7 +330,7 @@ void Data::initialiseGeometries()
 
         { // chassis geometry (instanced)
 
-            std::vector<t_modelVertex> modelVertices;
+            std::vector<ModelVertex> modelVertices;
             loadCarModel(modelVertices);
 
             graphic.geometries.model.car.updateBuffer(0, modelVertices);
@@ -342,7 +339,7 @@ void Data::initialiseGeometries()
 
         { // wheel geometry (instanced)
 
-            std::vector<t_modelVertex> modelVertices;
+            std::vector<ModelVertex> modelVertices;
             loadWheelModel(modelVertices);
 
             graphic.geometries.model.wheel.updateBuffer(0, modelVertices);

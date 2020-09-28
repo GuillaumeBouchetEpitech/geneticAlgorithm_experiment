@@ -122,9 +122,9 @@ void TextRenderer::initialise()
 
 //
 
-void    TextRenderer::push(const glm::vec2& position,
-                           const std::string& message,
-                           float scale /*= 1.0f*/)
+void TextRenderer::push(const glm::vec2& position,
+                        const std::string& message,
+                        float scale /*= 1.0f*/)
 {
     const auto& hudText = Data::get().graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
@@ -154,12 +154,12 @@ void    TextRenderer::push(const glm::vec2& position,
     }
 }
 
-void    TextRenderer::clear()
+void TextRenderer::clear()
 {
     _lettersOffset.clear();
 }
 
-void    TextRenderer::render()
+void TextRenderer::render()
 {
     if (_lettersOffset.empty())
         return;

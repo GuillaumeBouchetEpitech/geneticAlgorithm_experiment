@@ -7,7 +7,7 @@ void Data::initialiseShaders()
 
         { // create the stackRenderer shader
 
-            Shader::t_def def;
+            Shader::Definition def;
             def.filenames.vertex = "assets/shaders/stackRenderer.vert.glsl";
             def.filenames.fragment = "assets/shaders/stackRenderer.frag.glsl";
             def.attributes = { "a_position", "a_color" };
@@ -18,7 +18,7 @@ void Data::initialiseShaders()
 
         { // create the wireframes shader
 
-            Shader::t_def def;
+            Shader::Definition def;
 
             def.filenames.vertex = "assets/shaders/wireframes.vert.glsl";
             def.filenames.fragment = "assets/shaders/wireframes.frag.glsl";
@@ -30,7 +30,7 @@ void Data::initialiseShaders()
 
         { // create the animated circuit shader
 
-            Shader::t_def def;
+            Shader::Definition def;
 
             def.filenames.vertex = "assets/shaders/animatedCircuit.vert.glsl";
             def.filenames.fragment = "assets/shaders/animatedCircuit.frag.glsl";
@@ -42,7 +42,7 @@ void Data::initialiseShaders()
 
         { // create the hud text shader
 
-            Shader::t_def def;
+            Shader::Definition def;
 
             def.filenames.vertex = "assets/shaders/hudText.vert.glsl";
             def.filenames.fragment = "assets/shaders/hudText.frag.glsl";
@@ -57,7 +57,7 @@ void Data::initialiseShaders()
 
         { // particles
 
-            Shader::t_def def;
+            Shader::Definition def;
             def.filenames.vertex = "assets/shaders/particles.vert.glsl";
             def.filenames.fragment = "assets/shaders/particles.frag.glsl";
             def.attributes = {
@@ -71,7 +71,7 @@ void Data::initialiseShaders()
 
         { // model (chassis + wheels)
 
-            Shader::t_def def;
+            Shader::Definition def;
             def.filenames.vertex = "assets/shaders/model.vert.glsl";
             def.filenames.fragment = "assets/shaders/model.frag.glsl";
             def.attributes = {

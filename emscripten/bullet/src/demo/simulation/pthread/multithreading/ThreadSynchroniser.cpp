@@ -1,22 +1,22 @@
 
-#include "TaskSynchroniser.hpp"
+#include "ThreadSynchroniser.hpp"
 
 #include <chrono>
 
-namespace multiThreading
+namespace multithreading
 {
 
     //
     //
     // ScopedLockedNotifier
 
-    TaskSynchroniser::ScopedLockedNotifier::ScopedLockedNotifier(TaskSynchroniser& synchroniser)
+    ThreadSynchroniser::ScopedLockedNotifier::ScopedLockedNotifier(ThreadSynchroniser& synchroniser)
         : _synchroniser(synchroniser)
     {
         _synchroniser._mutex.lock(); // scoped lock part
     }
 
-    TaskSynchroniser::ScopedLockedNotifier::~ScopedLockedNotifier()
+    ThreadSynchroniser::ScopedLockedNotifier::~ScopedLockedNotifier()
     {
         // added value compared to a simple scoped lock
         // -> we notify before unlocking the mutex
@@ -29,7 +29,7 @@ namespace multiThreading
     //
     //
 
-    bool TaskSynchroniser::waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds /*= 0.0f*/)
+    bool ThreadSynchroniser::waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds /*= 0.0f*/)
     {
         _notified = false;
 
@@ -51,23 +51,23 @@ namespace multiThreading
         return true; // we did not time out
     }
 
-    void TaskSynchroniser::notify()
+    void ThreadSynchroniser::notify()
     {
         _notified = true;
         _condVar.notify_one();
     }
 
-    std::unique_lock<std::mutex> TaskSynchroniser::makeScopedLock()
+    std::unique_lock<std::mutex> ThreadSynchroniser::makeScopedLock()
     {
         return std::unique_lock<std::mutex>(_mutex);
     }
 
-    TaskSynchroniser::ScopedLockedNotifier TaskSynchroniser::makeScopedLockNotifier()
+    ThreadSynchroniser::ScopedLockedNotifier ThreadSynchroniser::makeScopedLockNotifier()
     {
         return ScopedLockedNotifier(*this);
     }
 
-    bool TaskSynchroniser::isNotified() const
+    bool ThreadSynchroniser::isNotified() const
     {
         return _notified;
     }

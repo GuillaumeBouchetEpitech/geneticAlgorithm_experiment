@@ -19,10 +19,18 @@
         font-family: arial;
       }
 
-      h2 {
+      h1 {
+        font-size: 30px;
         border: 10px 0px 0px 0px;
         margin: 10px 0px 0px 0px;
         padding: 10px 0px 0px 0px;
+      }
+
+      h2 {
+        font-size: 20px;
+        border: 7px 0px 0px 0px;
+        margin: 7px 0px 0px 0px;
+        padding: 7px 0px 0px 0px;
       }
 
       #renderArea {
@@ -60,7 +68,7 @@
       }
 
       #loggerOutput {
-        width: 100%;
+        width: 99%;
         margin: 0px auto;
         border: 0px none;
         padding: 0px none;
@@ -108,39 +116,34 @@
           <h1>Artificial Intelligence</h1>
           <h2>Self Learning 3D Cars Using A Genetic Algorithm</h2>
 
-          <p><a href="https://github.com/GuillaumeBouchetEpitech/geneticAlgorithm_experiment/tree/master/emscripten/bullet">Source code (GitHub)</a></p>
+          <h2>Source Code</h2>
+          <p><a href="https://github.com/GuillaumeBouchetEpitech/geneticAlgorithm_experiment/tree/master/emscripten/bullet">GitHub Link</a></p>
 
-          <h2>Note</h2>
-          <p>The 'success' of the AI is quite random, which mean that sometime <b>you might want to reload this page</b> and hope for a smarter AI.</p>
           <h2>Change the total amount of cars:</h2>
           <p>
-            <!-- <button onclick="window.reloadWithDifferentCarAmount(10)" class="button blueButton">try with 30 cars</button> -->
             <button onclick="window.reloadWithDifferentCarAmount(30)" class="button blueButton">try with 90 cars</button>
             <button onclick="window.reloadWithDifferentCarAmount(90)" class="button redButton">try with 270 cars</button>
           </p>
 
           <h2>FAQ:</h2>
-          <p>
-            <u>Camera controls?</u> <i>Just use the "arrows or WASD or ZQSD"</i><br/>
-
-            <u>What are the white strips on the circuit?</u> <i>The checkpoints used to reward the cars, +1 point per checkpoint.</i><br/>
-
-            <u>What are the green lines on the leading car?</u> <i>The car's sensors, the "eye" of the car, it hit the ground and the "walls".</i><br/>
-
-            <u>What is the red line on the leading car?</u> <i>The car's "ground sensor", it help reward the car when passing checkpoints.</i><br/>
-
-            <u>What are the white/grey lines alongside the circuit?</u> <i>The skelton used to build the circuit, interpolated with a BSpline.</i><br/>
-          </p>
-
-          <h2>Technology</h2>
-          <p><u>This project:</u></p>
           <ul>
-            <li>is develloped in C++.</li>
-            <li>use Bullet for the physic.</li>
-            <li>use OpenGL-ES/WebGL for the rendering.</li>
-            <li>use the emscripten compiler (C++ to WebAssembly).</li>
-            <li>was created on a Linux OS (BUT Windows is doable).</li>
+            <li><u>Camera controls?</u> <i>You can use the arrows or WASD or ZQSD or your mouse or your touch screen</i></li>
+            <li><u>What are the white strips on the circuit?</u> <i>The checkpoints used to reward the cars, +1 point per checkpoint.</i></li>
+            <li><u>What are the green lines on the leading car?</u> <i>The car's sensors, the "eye" of the car, it hit the ground and the "walls".</i></li>
+            <li><u>What is the white line on the leading car?</u> <i>The car's "ground sensor", it help reward the car when passing checkpoints.</i></li>
+            <li><u>What are the white/grey lines alongside the circuit?</u> <i>The skelton used to build the circuit, interpolated with a BSpline.</i></li>
           </ul>
+
+          <h2>Technologies</h2>
+          <ul>
+            <li>it is develloped in C++ (emscripten compiler to WebAssembly).</li>
+            <li>it uses Bullet Physics for the physic.</li>
+            <li>it uses OpenGL-ES2/WebGL1 for the rendering.</li>
+            <li>it was created on a Linux OS (BUT Windows is doable).</li>
+          </ul>
+
+          <h2>Note</h2>
+          <p>The 'success' of the AI is quite random, which mean that sometime <b>you might want to reload this page</b> and hope for a smarter AI.</p>
         </td>
       </tr>
 

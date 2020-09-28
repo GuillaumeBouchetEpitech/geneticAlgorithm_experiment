@@ -1,17 +1,17 @@
 
 #include "Consumer.hpp"
 
-#include "Producer.hpp"
-
 #include <chrono>
 
-namespace multiThreading
+namespace multithreading
 {
 
-    Consumer::Consumer(Producer& producer)
+    Consumer::Consumer(IProducer& producer)
         : _producer(producer)
     {
         _thread = std::thread(&Consumer::_threadedMethod, this);
+
+        _running = false; // the consumer's thread will set it to true
 
         // here we wait for the thread to be running
         while (!_running)
@@ -26,7 +26,7 @@ namespace multiThreading
     //
     //
 
-    void Consumer::execute(const t_task::t_work& work)
+    void Consumer::execute(const WorkCallback& work)
     {
         auto lockNotifier = _waitProducer.makeScopedLockNotifier();
 

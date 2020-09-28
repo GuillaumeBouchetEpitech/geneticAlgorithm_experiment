@@ -30,7 +30,7 @@ private:
     NeuralNetworkTopology       _neuralNetworkTopology;
     std::vector<NeuralNetwork>  _neuralNetworks;
 
-    CircuitBuilder::t_startTransform    _startTransform;
+    CircuitBuilder::StartTransform    _startTransform;
 
     MessageBuffer   _messageToSend;
 

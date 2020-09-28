@@ -1,34 +1,33 @@
 
 #pragma once
 
-#include "t_task.hpp"
-#include "TaskSynchroniser.hpp"
+#include "IProducer.hpp"
+#include "ThreadSynchroniser.hpp"
 
 #include <functional>
 
 #include <thread>
 
-namespace multiThreading
+namespace multithreading
 {
-
     class Consumer
     {
     private:
         std::thread _thread;
-        TaskSynchroniser _waitProducer;
+        ThreadSynchroniser _waitProducer;
 
         bool _running = false;
 
-        t_task::t_work _work;
+        WorkCallback _work;
 
-        class Producer& _producer;
+        IProducer& _producer;
 
     public:
-        Consumer(class Producer& producer);
+        explicit Consumer(IProducer& producer);
         ~Consumer();
 
     public:
-        void execute(const t_task::t_work& work);
+        void execute(const WorkCallback& work);
         void quit();
 
     public:

@@ -16,14 +16,14 @@ class PhysicVehicle;
 class Car
 {
 public: // external structures
-    struct t_sensor
+    struct Sensor
     {
         glm::vec3 near, far;
         float value = 0.0f;
     };
-    typedef std::array<t_sensor, 15> t_sensors;
+    using Sensors = std::array<Sensor, 15>;
 
-    struct t_neuralNetworkOutput
+    struct NeuralNetworkOutput
     {
         float steer = 0.0f;
         float speed = 0.0f;
@@ -40,12 +40,12 @@ private: // attributs
     unsigned int _totalUpdateNumber;
 
     // TODO : use enumeration
-    t_sensors _eyeSensors;
-    t_sensor _groundSensor;
+    Sensors _eyeSensors;
+    Sensor  _groundSensor;
 
     int _groundIndex;
 
-    t_neuralNetworkOutput _output;
+    NeuralNetworkOutput _output;
 
 public: // ctor/dtor
     Car(PhysicWorld& physicWorld,
@@ -62,12 +62,12 @@ private: // methods
     void _collideGroundSensor();
 
 public: // setter/getter
-    const t_sensors&                getEyeSensors() const;
-    const t_sensor&                 getGroundSensor() const;
+    const Sensors&                  getEyeSensors() const;
+    const Sensor&                   getGroundSensor() const;
     float                           getFitness() const;
     bool                            isAlive() const;
     int                             getGroundIndex() const;
-    const t_neuralNetworkOutput&    getNeuralNetworkOutput() const;
+    const NeuralNetworkOutput&      getNeuralNetworkOutput() const;
     const PhysicVehicle&            getVehicle() const;
     float                           getLife() const;
     unsigned int                    getTotalUpdates() const;

@@ -15,7 +15,7 @@ private:
     friend UniformBufferObject;
 
 public:
-    struct t_def
+    struct Definition
     {
         struct t_filenames
         {
@@ -34,7 +34,7 @@ private:
     std::unordered_map<std::string, GLint>  _uniformsMap;
 
 public:
-    Shader(const t_def& def);
+    Shader(const Definition& def);
     ~Shader();
 
 public:

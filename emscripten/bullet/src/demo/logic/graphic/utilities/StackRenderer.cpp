@@ -14,7 +14,7 @@ StackRenderer::~StackRenderer()
 
 //
 
-// void StackRenderer::push(const t_vertex& vertex)
+// void StackRenderer::push(const Vertex& vertex)
 // {
 //     if (_lineVertices.size() == _lineVertices.capacity())
 //         flush();

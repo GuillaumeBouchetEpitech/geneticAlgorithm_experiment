@@ -4,11 +4,11 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace multiThreading
+namespace multithreading
 {
 
     // this class handle all locking and conditional variable interactions
-    class TaskSynchroniser
+    class ThreadSynchroniser
     {
     private:
         std::mutex              _mutex;
@@ -19,16 +19,20 @@ namespace multiThreading
         // this class act like a scoped lock but notify before unlocking
         class ScopedLockedNotifier
         {
+            friend ThreadSynchroniser;
+
         private:
-            TaskSynchroniser& _synchroniser;
+            ThreadSynchroniser& _synchroniser;
+
+        private:
+            ScopedLockedNotifier(ThreadSynchroniser& synchroniser);
 
         public:
-            ScopedLockedNotifier(TaskSynchroniser& synchroniser);
             ~ScopedLockedNotifier();
         };
 
     public:
-        TaskSynchroniser() = default;
+        ThreadSynchroniser() = default;
 
     public:
         bool waitUntilNotified(std::unique_lock<std::mutex>& lock, float seconds = 0.0f);

@@ -1,17 +1,15 @@
 
-#include "demo/defines.hpp"
-
 #include "Producer.hpp"
 
 #include <algorithm>
 #include <chrono>
 
-#if defined D_WEB_BUILD
-#   include <emscripten.h>
-#endif
-
-namespace multiThreading
+namespace multithreading
 {
+
+    Producer::Task::Task(const WorkCallback& work)
+        : work(work)
+    {}
 
     Producer::Producer(unsigned int totalCores)
     {
@@ -20,9 +18,15 @@ namespace multiThreading
 
         // launch consumers
 
-        _consumers.reserve(totalConsumers); // pre-allocate
         for (int ii = 0; ii < totalConsumers; ++ii)
-            _consumers.push_back(new Consumer(*this));
+        {
+            Consumer * newConsumer = new Consumer(*this);
+
+            _consumers.push_back(newConsumer);
+            _freeConsumers.push_back(newConsumer);
+        }
+
+        _running = false; // the producer's thread will set it to true
 
         // launch producer thread
 
@@ -41,45 +45,13 @@ namespace multiThreading
     //
     //
 
-    void Producer::push(const t_task::t_work& work)
+    void Producer::push(const WorkCallback& work)
     {
         auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
         // this part is locked and will notify at then end of the scope
 
-        _plannedTasks.push_back(t_task(work));
-    }
-
-    void Producer::push(const t_task::t_work& work, const t_task::t_work& complete)
-    {
-        auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
-
-        // this part is locked and will notify at then end of the scope
-
-        _plannedTasks.push_back(t_task(work, complete));
-    }
-
-    void Producer::update()
-    {
-        t_task* current;
-
-        while (!_completedTasks.empty())
-        {
-            current = &_completedTasks.front();
-
-            // must not be locked as it might push another task
-            if (current->_oncomplete)
-                current->_oncomplete();
-
-            {
-                auto lock = _waitOneTask.makeScopedLock();
-
-                // this part is locked
-
-                // this is locked in case a push_back happen at the same time
-                _completedTasks.pop_front();
-            }
-        }
+        _plannedTasks.push_back(Task(work));
     }
 
     void Producer::quit()
@@ -107,7 +79,9 @@ namespace multiThreading
 
             delete consumer;
         }
-        _consumers.clear();
+
+        _freeConsumers.clear();
+        _busyConsumers.clear();
     }
 
     void Producer::waitUntilAllCompleted()
@@ -150,15 +124,19 @@ namespace multiThreading
         // this part is locked and will notify at then end of the scope
 
         // find the task per consumer in the "running" list
-        auto comparison = [consumer](const t_task& task) { return task._consumer == consumer; };
+        auto comparison = [consumer](const Task& task) { return task.consumer == consumer; };
         auto itTask = std::find_if(_runningTasks.begin(), _runningTasks.end(), comparison);
 
         if (itTask == _runningTasks.end())
             return; // <= this should never fail
 
-        // move the task from "running" to "completed" (if any)
-        if (itTask->_oncomplete)
-            _completedTasks.push_back(*itTask);
+        // move consumer from free to busy
+        Consumer* currConsumer = itTask->consumer;
+        _freeConsumers.push_back(currConsumer);
+        auto itConsumer = std::find(_busyConsumers.begin(), _busyConsumers.end(), currConsumer);
+        if (itConsumer != _busyConsumers.end()) // <= this should never fail
+            _busyConsumers.erase(itConsumer);
+
         _runningTasks.erase(itTask);
 
         // wake up potentially waiting (main) thread
@@ -168,8 +146,9 @@ namespace multiThreading
 
     void Producer::_threadedMethod()
     {
-        _running = true;
         auto lock = _waitOneTask.makeScopedLock();
+
+        _running = true;
 
         // this part is locked
 
@@ -185,18 +164,21 @@ namespace multiThreading
 
             while (!_plannedTasks.empty())
             {
-                // find any available consumer
-                auto comparison = [](const Consumer* consumer) { return consumer->isAvailable(); };
-                auto itConsumer = std::find_if(_consumers.begin(), _consumers.end(), comparison);
-
-                if (itConsumer == _consumers.end())
+                if (_freeConsumers.empty())
                     break; // no consumer available, wait again
 
-                t_task& currentTask = _plannedTasks.front();
+                // move consumer from free to busy
+                Consumer* currConsumer = _freeConsumers.front();
+                _busyConsumers.push_back(currConsumer);
+                _freeConsumers.pop_front();
 
-                currentTask._consumer = *itConsumer;
-                currentTask._consumer->execute(currentTask._work);
+                Task& currentTask = _plannedTasks.front();
 
+                // run task
+                currentTask.consumer = currConsumer;
+                currConsumer->execute(currentTask.work);
+
+                // move task from planned to running
                 _runningTasks.push_back(currentTask);
                 _plannedTasks.pop_front();
             }

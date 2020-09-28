@@ -10,7 +10,7 @@
 #include "../message/MessageBuffer.hpp"
 #include "../message/MessageView.hpp"
 
-#include "demo/simulation/logic/t_carData.hpp"
+#include "demo/simulation/logic/CarData.hpp"
 
 #include "demo/simulation/AbstactSimulation.hpp"
 
@@ -23,14 +23,14 @@
 class WorkerProducer
 {
 public:
-    struct t_def
+    struct Definition
     {
-        CircuitBuilder::t_startTransform startTransform;
-        CircuitBuilder::t_knots knots;
+        CircuitBuilder::StartTransform startTransform;
+        CircuitBuilder::Knots knots;
         unsigned int genomesPerCore = 0;
         NeuralNetworkTopology neuralNetworkTopology;
 
-        t_def() = default;
+        Definition() = default;
     };
 
 private:
@@ -46,14 +46,14 @@ private:
 
     std::bitset<Status::Count> _flags;
 
-    AbstactSimulation::t_coreState _coreState;
+    AbstactSimulation::CoreState _coreState;
 
-    t_carsData _carsData;
+    CarDatas _carsData;
 
     MessageBuffer _message;
 
 public:
-    WorkerProducer(const t_def& def);
+    WorkerProducer(const Definition& def);
 
 private:
     static void _onMessageCallback(char* pData, int size, void* arg);
@@ -72,8 +72,8 @@ public:
     bool isLoaded() const;
     bool isProcessing() const;
     bool isUpdated() const;
-    const t_carsData& getCarsData() const;
+    const CarDatas& getCarsData() const;
 
-    const AbstactSimulation::t_coreState& getCoreState() const;
+    const AbstactSimulation::CoreState& getCoreState() const;
 
 };

@@ -33,7 +33,7 @@ void CircuitBuilder::load(const std::string& filename)
     //
     // parse file and extract skeleton
 
-    t_knots rawKnots;
+    Knots rawKnots;
 
     float currentMinDistance = 2.0f;
     glm::vec3 currentColor = { 0.0f, 0.0f, 0.0f };
@@ -102,7 +102,7 @@ void CircuitBuilder::load(const std::string& filename)
 
             currentColor = color;
         }
-        else if (type == "KNOTS_MINIMUM_DSTANCE")
+        else if (type == "KNOTS_MINIMUM_DISTANCE")
         {
             float minimumDistance;
 
@@ -163,8 +163,8 @@ void CircuitBuilder::load(const std::string& filename)
     }
 }
 
-void CircuitBuilder::load(const CircuitBuilder::t_startTransform& startTransform,
-                          const CircuitBuilder::t_knots& knots)
+void CircuitBuilder::load(const CircuitBuilder::StartTransform& startTransform,
+                          const CircuitBuilder::Knots& knots)
 {
     _startTransform = startTransform;
     _knots = knots;
@@ -173,7 +173,7 @@ void CircuitBuilder::load(const CircuitBuilder::t_startTransform& startTransform
 //
 //
 
-void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
+void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
 {
     if (!onSkeletonPatch)
         D_THROW(std::invalid_argument, "no callback provided");
@@ -181,9 +181,9 @@ void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
     if (_knots.empty())
         D_THROW(std::runtime_error, "not initialised");
 
-    t_vec3Array vertices;
-    t_vec3Array colors;
-    t_indices indices;
+    Vec3Array vertices;
+    Vec3Array colors;
+    Indices indices;
 
     vertices.reserve(_knots.size() * 4); // pre-allocate
     indices.reserve(_knots.size() * 8 + 8); // pre-allocate
@@ -238,8 +238,8 @@ void CircuitBuilder::generateSkeleton(t_callbackNoNormals onSkeletonPatch)
     onSkeletonPatch(vertices, indices);
 }
 
-void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
-                              t_callbackNormals onNewWallPatch)
+void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
+                              CallbackNormals onNewWallPatch)
 {
     if (_knots.empty())
         D_THROW(std::runtime_error, "not initialised");
@@ -251,7 +251,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     //
     // smooth the circuit
 
-    t_knots smoothedVertices;
+    Knots smoothedVertices;
     smoothedVertices.reserve(2048); // pre-allocate, ease the reallocation
 
     {
@@ -280,7 +280,7 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
         BSpline smoother;
         smoother.initialise({ knotsData, knotsLength, dimension, degree });
 
-        CircuitBuilder::t_circuitVertex vertex;
+        CircuitBuilder::CircuitVertex vertex;
 
         const unsigned int maxIterations = 1000;
         const float step = 1.0f / maxIterations; // tiny steps
@@ -328,23 +328,23 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
 
     glm::vec3 prevNormal;
 
-    struct t_circuitPatchData
+    struct CircuitPatchData
     {
-        t_vec3Array vertices;
-        t_vec3Array normals;
+        Vec3Array vertices;
+        Vec3Array normals;
 
-        t_circuitPatchData()
+        CircuitPatchData()
         {
             vertices.reserve(512); // pre-allocate
             normals.reserve(512); // pre-allocate
         }
     };
 
-    t_indices indices;
-    t_circuitPatchData ground;
-    t_circuitPatchData leftWall;
-    t_circuitPatchData rightWall;
-    t_vec3Array circuitPatchColors;
+    Indices indices;
+    CircuitPatchData ground;
+    CircuitPatchData leftWall;
+    CircuitPatchData rightWall;
+    Vec3Array circuitPatchColors;
 
     indices.reserve(512); // pre-allocate
     circuitPatchColors.reserve(512); // pre-allocate
@@ -466,12 +466,12 @@ void CircuitBuilder::generate(t_callbackNormals onNewGroundPatch,
     }
 }
 
-const CircuitBuilder::t_startTransform& CircuitBuilder::getStartTransform() const
+const CircuitBuilder::StartTransform& CircuitBuilder::getStartTransform() const
 {
     return _startTransform;
 }
 
-const CircuitBuilder::t_knots& CircuitBuilder::getKnots() const
+const CircuitBuilder::Knots& CircuitBuilder::getKnots() const
 {
     return _knots;
 }

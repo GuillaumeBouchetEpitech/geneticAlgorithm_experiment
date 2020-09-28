@@ -5,35 +5,41 @@
 
 #include <limits> // <= std::numeric_limits<T>::max()
 
-struct t_animatedVertex
+namespace /*anonymous*/
 {
-    glm::vec3 postion;
-    glm::vec3 color;
-    glm::vec3 normal; // <= animation
-    float limitId; // <= animation
 
-    t_animatedVertex() = default;
+    struct AnimatedVertex
+    {
+        glm::vec3 postion;
+        glm::vec3 color;
+        glm::vec3 normal; // <= animation
+        float limitId; // <= animation
 
-    t_animatedVertex(
-        const glm::vec3& postion,
-        const glm::vec3& color,
-        const glm::vec3& normal,
-        float limitId
-    )
-        : postion(postion)
-        , color(color)
-        , normal(normal)
-        , limitId(limitId)
+        AnimatedVertex() = default;
 
-    {}
+        AnimatedVertex(
+            const glm::vec3& postion,
+            const glm::vec3& color,
+            const glm::vec3& normal,
+            float limitId
+        )
+            : postion(postion)
+            , color(color)
+            , normal(normal)
+            , limitId(limitId)
+
+        {}
+    };
+
+    using AnimatedVertices = std::vector<AnimatedVertex>;
+
 };
-typedef std::vector<t_animatedVertex> t_animatedVertices;
 
 void Data::initialiseCircuit()
 {
-    std::vector<glm::vec3>  skeletonVertices;
-    t_animatedVertices      groundVertices;
-    t_animatedVertices      wallsVertices;
+    std::vector<glm::vec3> skeletonVertices;
+    AnimatedVertices groundVertices;
+    AnimatedVertices wallsVertices;
 
     // pre-allocattions
     skeletonVertices.reserve(1024);
@@ -52,8 +58,8 @@ void Data::initialiseCircuit()
         &boundaries,
         &skeletonVertices
     ](
-        const CircuitBuilder::t_vec3Array& vertices,
-        const CircuitBuilder::t_indices& indices
+        const CircuitBuilder::Vec3Array& vertices,
+        const CircuitBuilder::Indices& indices
     ) -> void
     {
         for (int index : indices)
@@ -82,10 +88,10 @@ void Data::initialiseCircuit()
         maxDeformation,
         &groundVertices
     ](
-        const CircuitBuilder::t_vec3Array& vertices,
-        const CircuitBuilder::t_vec3Array& colors,
-        const CircuitBuilder::t_vec3Array& normals,
-        const CircuitBuilder::t_indices& indices
+        const CircuitBuilder::Vec3Array& vertices,
+        const CircuitBuilder::Vec3Array& colors,
+        const CircuitBuilder::Vec3Array& normals,
+        const CircuitBuilder::Indices& indices
     ) -> void
     {
         // save it for "onWallPatch" bellow
@@ -101,9 +107,9 @@ void Data::initialiseCircuit()
             const auto& color = (firstLine ? whiteColor : colors[index]);
 
             glm::vec3 deformation = {
-                t_RNG::getRangedValue(-maxDeformation, maxDeformation),
-                t_RNG::getRangedValue(-maxDeformation, maxDeformation),
-                t_RNG::getRangedValue(-maxDeformation, maxDeformation)
+                RNG::getRangedValue(-maxDeformation, maxDeformation),
+                RNG::getRangedValue(-maxDeformation, maxDeformation),
+                RNG::getRangedValue(-maxDeformation, maxDeformation)
             };
 
             glm::vec3 normal = (normals[index] + deformation) * 4.0f;
@@ -122,10 +128,10 @@ void Data::initialiseCircuit()
         &greyColor,
         &wallsVertices
     ](
-        const CircuitBuilder::t_vec3Array& vertices,
-        const CircuitBuilder::t_vec3Array& colors,
-        const CircuitBuilder::t_vec3Array& normals,
-        const CircuitBuilder::t_indices& indices
+        const CircuitBuilder::Vec3Array& vertices,
+        const CircuitBuilder::Vec3Array& colors,
+        const CircuitBuilder::Vec3Array& normals,
+        const CircuitBuilder::Indices& indices
     ) -> void
     {
         static_cast<void>(colors); // <= unused
@@ -140,9 +146,9 @@ void Data::initialiseCircuit()
             const auto& color = (firstLine ? whiteColor : greyColor);
 
             glm::vec3 deformation = {
-                t_RNG::getRangedValue(-0.2f, 0.2f),
-                t_RNG::getRangedValue(-0.2f, 0.2f),
-                t_RNG::getRangedValue(-0.2f, 0.2f)
+                RNG::getRangedValue(-0.2f, 0.2f),
+                RNG::getRangedValue(-0.2f, 0.2f),
+                RNG::getRangedValue(-0.2f, 0.2f)
             };
 
             glm::vec3 normal = (normals[index] + deformation) * 4.0f;
@@ -164,7 +170,7 @@ void Data::initialiseCircuit()
     logic.cores.totalCores = 3;
     logic.cores.totalCars = logic.cores.totalCores * logic.cores.genomesPerCore;
 
-    AbstactSimulation::t_def simulationDef;
+    AbstactSimulation::Definition simulationDef;
     simulationDef.filename = "assets/circuits/default.txt";
     simulationDef.genomesPerCore = logic.cores.genomesPerCore;
     simulationDef.totalCores = logic.cores.totalCores;

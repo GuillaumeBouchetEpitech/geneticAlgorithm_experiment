@@ -427,7 +427,7 @@ void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
 }
 
 void Scene::_renderCars(const glm::mat4& sceneMatrix)
-// void Scene::_renderCars(const Data::t_graphic::t_cameraData::t_matricesData::t_matrices& matrices)
+// void Scene::_renderCars(const Data::Graphic::CameraData::MatricesData::Matrices& matrices)
 
 {
     // instanced geometrie(s)
@@ -453,28 +453,31 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
 
             unsigned int totalCars = simulation.getTotalCars();
 
-            struct t_attributes
+            struct Attributes
             {
                 glm::mat4   tranform;
                 glm::vec3   color;
 
-                t_attributes(const glm::mat4& tranform, const glm::vec3& color)
+                Attributes(const glm::mat4& tranform, const glm::vec3& color)
                     : tranform(tranform)
                     , color(color)
                 {}
             };
 
-            std::vector<t_attributes> modelsChassisMatrices;
-            std::vector<t_attributes> modelWheelsMatrices;
+            std::vector<Attributes> modelsChassisMatrices;
+            std::vector<Attributes> modelWheelsMatrices;
 
             modelsChassisMatrices.reserve(totalCars); // pre-allocate
             modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
 
             glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
 
-            const glm::vec3 leaderColor(1, 1, 1);
-            const glm::vec3 lifeColor(0, 1, 0);
-            const glm::vec3 deathColor(1.0f, 0.0f, 0.0f);
+            const glm::vec3 whiteColor(1, 1, 1);
+            const glm::vec3 greenColor(0, 1, 0);
+            const glm::vec3 redColor(1, 0, 0);
+            const glm::vec3& leaderColor = whiteColor;
+            const glm::vec3& lifeColor = greenColor;
+            const glm::vec3& deathColor = redColor;
 
             for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
@@ -504,7 +507,7 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
 
                 modelsChassisMatrices.emplace_back(chassisTransform, color);
                 for (const auto& wheelTransform : carData.wheelsTransform)
-                    modelWheelsMatrices.emplace_back(wheelTransform, color);
+                    modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
             }
 
             graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);

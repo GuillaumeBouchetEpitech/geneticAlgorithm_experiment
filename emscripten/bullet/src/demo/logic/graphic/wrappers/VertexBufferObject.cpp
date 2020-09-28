@@ -45,7 +45,7 @@ void VertexBufferObject::bind(unsigned int index /* = 0 */) const
     if (index >= _ids.size())
         D_THROW(std::out_of_range, "index out of range, input=" << index << ", max=" << _ids.size());
 
-    glBindBuffer(GL_ARRAY_BUFFER, _ids.at(index));
+    glBindBuffer(GL_ARRAY_BUFFER, _ids[index]);
 }
 
 void VertexBufferObject::unbind()

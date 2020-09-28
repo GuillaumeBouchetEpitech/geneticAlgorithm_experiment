@@ -6,21 +6,21 @@
 class NeuralNetworkTopology
 {
 public:
-    typedef std::vector<unsigned int>   t_hiddenLayers;
+    using HiddenLayers = std::vector<unsigned int>;
 
 private: // attributs
-    unsigned int        _input = 0;
-    t_hiddenLayers      _hiddens;
-    unsigned int        _output = 0;
+    unsigned int    _input = 0;
+    HiddenLayers    _hiddens;
+    unsigned int    _output = 0;
 
-    bool                _useBias = false;
+    bool            _useBias = false;
 
-    unsigned int        _totalWeights = 0;
+    unsigned int    _totalWeights = 0;
 
 public:
     NeuralNetworkTopology() = default;
 
-    void init(unsigned int input, const t_hiddenLayers& hiddens, unsigned int output, bool useBias = true);
+    void init(unsigned int input, const HiddenLayers& hiddens, unsigned int output, bool useBias = true);
     void init(const std::initializer_list<unsigned int>& list, bool useBias = true);
 
 private:
@@ -30,11 +30,11 @@ public:
     bool isValid() const;
 
 public:
-    unsigned int            getInput() const;
-    unsigned int            getOutput() const;
-    const t_hiddenLayers&   getHiddens() const;
+    unsigned int        getInput() const;
+    unsigned int        getOutput() const;
+    const HiddenLayers& getHiddens() const;
 
-    bool                    isUsingBias() const;
+    bool                isUsingBias() const;
 
-    unsigned int            getTotalWeights() const;
+    unsigned int        getTotalWeights() const;
 };

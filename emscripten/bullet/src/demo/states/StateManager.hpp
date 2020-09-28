@@ -50,8 +50,8 @@ public:
     };
 
 private:
-    typedef std::array<IState*, asValue(States::Total)> t_States;
-    t_States _states;
+    using StateInstances = std::array<IState*, asValue(States::Total)>;
+    StateInstances _states;
 
     States _currentState;
 

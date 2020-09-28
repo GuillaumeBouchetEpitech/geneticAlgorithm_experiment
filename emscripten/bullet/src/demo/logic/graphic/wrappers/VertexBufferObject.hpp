@@ -14,14 +14,14 @@ public:
     ~VertexBufferObject();
 
 public:
-    void    allocate(unsigned int size = 1);
-    void    deallocate();
+    void allocate(unsigned int size = 1);
+    void deallocate();
 
 public:
-    bool    isAllocated() const;
+    bool isAllocated() const;
 
 public:
-    void    bind(unsigned int index = 0) const;
+    void bind(unsigned int index = 0) const;
 
 public:
     static void unbind();

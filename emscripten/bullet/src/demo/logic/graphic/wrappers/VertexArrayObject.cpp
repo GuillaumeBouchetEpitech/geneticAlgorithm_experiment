@@ -40,7 +40,7 @@ void VertexArrayObject::bind(unsigned int index /* = 0 */) const
     if (index >= _vaoIds.size())
         D_THROW(std::out_of_range, "index out of range, input=" << index << ", max=" << _vaoIds.size());
 
-    glBindVertexArray(_vaoIds.at(index));
+    glBindVertexArray(_vaoIds[index]);
 }
 
 void VertexArrayObject::unbind()

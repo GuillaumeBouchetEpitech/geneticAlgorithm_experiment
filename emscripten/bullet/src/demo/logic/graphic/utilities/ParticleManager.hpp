@@ -8,17 +8,8 @@
 
 class ParticleManager
 {
-public:
-    ParticleManager();
-
-public:
-    void update(float delta);
-
-public:
-    void emitParticles(const glm::vec3& position);
-
 private:
-    struct t_particle
+    struct Particle
     {
         glm::vec3   position;
         glm::vec3   linearVelocity;
@@ -30,13 +21,13 @@ private:
         static constexpr std::size_t trail_size = 6;
         std::array<glm::vec3, trail_size> trail;
 
-        t_particle(const glm::vec3& position,
+        Particle(const glm::vec3& position,
                    const glm::vec3& linearVelocity,
                    const glm::vec3& color,
                    float scale,
                    float life);
     };
-    typedef std::vector<t_particle> t_particles;
+    using Particles = std::vector<Particle>;
 
 private:
 
@@ -55,6 +46,15 @@ private:
 
     std::vector<t_attributes> _particlesInstances;
 
-    t_particles _particles;
+    Particles _particles;
 
+public:
+    ParticleManager();
+
+public:
+    void update(float delta);
+
+public:
+    void emitParticles(const glm::vec3& position);
+    void emitParticles(const glm::vec3& position, const glm::vec3& velocity);
 };

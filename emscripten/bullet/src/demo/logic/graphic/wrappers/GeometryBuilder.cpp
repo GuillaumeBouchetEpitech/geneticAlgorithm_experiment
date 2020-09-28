@@ -37,7 +37,7 @@ GeometryBuilder& GeometryBuilder::setPrimitiveType(GLint primitiveType)
 
 GeometryBuilder& GeometryBuilder::addVbo()
 {
-    _def.vbos.push_back(Geometry::t_def::t_vbo());
+    _def.vbos.push_back(Geometry::Definition::Vbo());
 
     return *this;
 }

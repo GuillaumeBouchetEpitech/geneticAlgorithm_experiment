@@ -201,7 +201,7 @@ void OpenALSoundManager::playRandom(const glm::vec3& pos)
     if (!_enabled)
         return;
 
-    int soundIndex = t_RNG::getRangedValue(0, _buffersNames.size());
+    int soundIndex = RNG::getRangedValue(0, _buffersNames.size());
 
     play(_buffersNames.at(soundIndex), pos);
 }

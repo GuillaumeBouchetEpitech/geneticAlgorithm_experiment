@@ -12,7 +12,7 @@ START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
 KNOTS_COLOR 0.25 0.25 0.75
 
 # starting rewards
-KNOTS_MINIMUM_DSTANCE   2
+KNOTS_MINIMUM_DISTANCE   2
 # starting rewards
 
 KNOTS_DUAL   5  15  5       5   5  5
@@ -78,7 +78,7 @@ KNOTS_DUAL  90   0  0      90   0  0
 
 
 # decrease rewards
-KNOTS_MINIMUM_DSTANCE   3
+KNOTS_MINIMUM_DISTANCE   3
 # decrease rewards
 
 # infinity loop
@@ -111,7 +111,7 @@ KNOTS_MINIMUM_DSTANCE   3
     KNOTS_DUAL 40 0 7     40 0 0
 
 # increase rewards
-KNOTS_MINIMUM_DSTANCE   1.5
+KNOTS_MINIMUM_DISTANCE   1.5
 # increase rewards
 
         KNOTS_COLOR 0.75 0.25 0.75
@@ -120,7 +120,7 @@ KNOTS_MINIMUM_DSTANCE   1.5
         KNOTS_DUAL  -60 -60 6   -50 -50 6
 
 # decrease rewards
-KNOTS_MINIMUM_DSTANCE   3
+KNOTS_MINIMUM_DISTANCE   3
 # decrease rewards
 
         KNOTS_DUAL  -60 60 6    -50 50 6
@@ -139,7 +139,7 @@ KNOTS_MINIMUM_DSTANCE   3
 # /infinity loop
 
 # decrease rewards
-KNOTS_MINIMUM_DSTANCE   3
+KNOTS_MINIMUM_DISTANCE   3
 # decrease rewards
 
 KNOTS_COLOR 0.25 0.25 0.75

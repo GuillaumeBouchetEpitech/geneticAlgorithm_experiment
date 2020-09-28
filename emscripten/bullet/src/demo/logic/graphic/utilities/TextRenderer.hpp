@@ -11,36 +11,36 @@ class Shader;
 struct TextRenderer
 {
 public:
-    struct t_offset
+    struct LetterOffset
     {
         glm::vec2    position;
         glm::vec2    texCoord;
         float        scale;
 
-        t_offset(const glm::vec2& position, const glm::vec2& texCoord, float scale)
+        LetterOffset(const glm::vec2& position, const glm::vec2& texCoord, float scale)
             : position(position)
             , texCoord(texCoord)
             , scale(scale)
         {}
     };
-    typedef std::vector<t_offset> t_lettersOffset;
+    using LettersOffsets = std::vector<LetterOffset>;
 
 public:
-    t_lettersOffset                     _lettersOffset;
+    LettersOffsets _lettersOffset;
     std::unordered_map<char, glm::vec2> _lettersTexCoordMap;
 
 public:
     TextRenderer() = default;
 
 public:
-    void    initialise();
+    void initialise();
 
 public:
-    void    push(const glm::vec2& position,
-                 const std::string& message,
-                 float scale = 1.0f);
+    void push(const glm::vec2& position,
+              const std::string& message,
+              float scale = 1.0f);
 
-    void    clear();
+    void clear();
 
-    void    render();
+    void render();
 };

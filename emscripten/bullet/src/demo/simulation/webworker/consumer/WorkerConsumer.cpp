@@ -53,8 +53,8 @@ void WorkerConsumer::_send()
 
 void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 {
-    CircuitBuilder::t_startTransform startTransform;
-    CircuitBuilder::t_knots circuitKnots;
+    CircuitBuilder::StartTransform startTransform;
+    CircuitBuilder::Knots circuitKnots;
 
     bool                        isUsingBias = true;
     unsigned int                layerInput = 0;
@@ -74,7 +74,7 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
         for (int ii = 0; ii < knotsLength; ++ii)
         {
-            CircuitBuilder::t_knot knot;
+            CircuitBuilder::Knot knot;
 
             receivedMsg >> knot.left >> knot.right >> knot.minDistance >> knot.color;
 
@@ -105,10 +105,10 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
         int physicIndex = 0;
 
-        auto onNewGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
-                                    const CircuitBuilder::t_vec3Array& colors,
-                                    const CircuitBuilder::t_vec3Array& normals,
-                                    const CircuitBuilder::t_indices& indices) -> void {
+        auto onNewGroundPatch = [&](const CircuitBuilder::Vec3Array& vertices,
+                                    const CircuitBuilder::Vec3Array& colors,
+                                    const CircuitBuilder::Vec3Array& normals,
+                                    const CircuitBuilder::Indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
             static_cast<void>(normals); // <= unused
@@ -116,10 +116,10 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
             _physicWorld.createGround(vertices, indices, physicIndex++);
         };
 
-        auto onNewWallPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
-                                const CircuitBuilder::t_vec3Array& colors,
-                                const CircuitBuilder::t_vec3Array& normals,
-                                const CircuitBuilder::t_indices& indices) -> void {
+        auto onNewWallPatch = [&](const CircuitBuilder::Vec3Array& vertices,
+                                  const CircuitBuilder::Vec3Array& colors,
+                                  const CircuitBuilder::Vec3Array& normals,
+                                  const CircuitBuilder::Indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
             static_cast<void>(normals); // <= unused
@@ -248,6 +248,8 @@ void WorkerConsumer::_processSimulation()
         // record the transformation matrix of the wheels
         for (int jj = 0; jj < 4; ++jj)
             _messageToSend << vehicle.getWheelOpenGLMatrix(jj, transform);
+
+        _messageToSend << vehicle.getVelocity();
 
         const auto& eyeSensors = car.getEyeSensors();
         for (const auto& sensor : eyeSensors)

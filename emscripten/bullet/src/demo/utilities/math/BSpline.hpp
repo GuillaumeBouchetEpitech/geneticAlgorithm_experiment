@@ -7,7 +7,7 @@
 class BSpline
 {
 public:
-    struct t_def
+    struct Definition
     {
         const float* knotsData;
         std::size_t knotsLength;
@@ -16,13 +16,13 @@ public:
     };
 
 public:
-    void initialise(const t_def& def);
+    void initialise(const Definition& def);
     float calcAt(float coef, unsigned int dimension) const;
 
 private:
-    typedef float (*t_baseFunc)(float);
+    using BaseFunc = float (*)(float);
 
-    t_def _def;
-    t_baseFunc _baseFunc = nullptr;
+    Definition _def;
+    BaseFunc _baseFunc = nullptr;
     unsigned int _rangeInterval;
 };

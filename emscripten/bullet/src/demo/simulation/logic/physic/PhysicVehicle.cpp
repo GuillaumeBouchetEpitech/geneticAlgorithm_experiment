@@ -9,46 +9,59 @@
 
 #include <array>
 
-class CustomVehicleRaycaster
-    : public btDefaultVehicleRaycaster
+namespace /*anonymous*/
 {
-private:
-	btDynamicsWorld& _dynamicsWorld;
-    short _group;
-    short _mask;
 
-public:
-    CustomVehicleRaycaster(btDynamicsWorld& world, short group, short mask)
-        : btDefaultVehicleRaycaster(&world)
-        , _dynamicsWorld(world)
-        , _group(group)
-        , _mask(mask)
-    {}
-
-    virtual void* castRay(const btVector3& from,const btVector3& to, btVehicleRaycasterResult& result) override
+    /**
+     * This class exist for the sole purpose of preventing
+     * the vehicle's raycasts to hit the circuit's "ghost wall"
+     */
+    class CustomVehicleRaycaster
+        : public btDefaultVehicleRaycaster
     {
-        btCollisionWorld::ClosestRayResultCallback rayCallback(from,to);
+    private:
 
-        rayCallback.m_collisionFilterGroup = _group;
-        rayCallback.m_collisionFilterMask = _mask;
+        // need to keep it as btDefaultVehicleRaycaster::m_dynamicsWorld is private
+        btDynamicsWorld& _dynamicsWorld;
 
-        _dynamicsWorld.rayTest(from, to, rayCallback);
+        short _group;
+        short _mask;
 
-        if (rayCallback.hasHit())
+    public:
+        CustomVehicleRaycaster(btDynamicsWorld& world, short group, short mask)
+            : btDefaultVehicleRaycaster(&world)
+            , _dynamicsWorld(world)
+            , _group(group)
+            , _mask(mask)
+        {}
+
+        virtual void* castRay(const btVector3& from,const btVector3& to, btVehicleRaycasterResult& result) override
         {
-            const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
-            if (body && body->hasContactResponse())
+            btCollisionWorld::ClosestRayResultCallback rayCallback(from,to);
+
+            // added value, we can specify the group/mask
+            rayCallback.m_collisionFilterGroup = _group;
+            rayCallback.m_collisionFilterMask = _mask;
+
+            _dynamicsWorld.rayTest(from, to, rayCallback);
+
+            if (rayCallback.hasHit())
             {
-                result.m_hitPointInWorld = rayCallback.m_hitPointWorld;
-                result.m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
-                result.m_hitNormalInWorld.normalize();
-                result.m_distFraction = rayCallback.m_closestHitFraction;
-                return (void*)body;
+                const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+                if (body && body->hasContactResponse())
+                {
+                    result.m_hitPointInWorld = rayCallback.m_hitPointWorld;
+                    result.m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
+                    result.m_hitNormalInWorld.normalize();
+                    result.m_distFraction = rayCallback.m_closestHitFraction;
+                    return (void*)body;
+                }
             }
+            return 0;
         }
-        return 0;
-    }
-};
+    };
+
+}; // namespace /*anonymous*/
 
 PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask)
 {
@@ -56,54 +69,54 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
     //
     // STATS
 
-    btVector3 wheelDirectionCS0(0.0f, 0.0f, -1.0f); // down axis: -Z (toward the ground)
-    btVector3 wheelAxleCS(1.0f, 0.0f, 0.0f); // rotation axis: +X
-    float wheelRadius = 0.5f;
-    float wheelWidth = 0.2f;
-    float wheelSide = wheelWidth * 0.3f;
+    const btVector3 wheelDirectionCS0(0.0f, 0.0f, -1.0f); // down axis: -Z (toward the ground)
+    const btVector3 wheelAxleCS(1.0f, 0.0f, 0.0f); // rotation axis: +X
+    const float wheelRadius = 0.5f;
+    const float wheelWidth = 0.2f;
+    const float wheelSide = wheelWidth * 0.3f;
 
     // The maximum length of the suspension (metres)
-    float suspensionRestLength = 0.3f;
+    const float suspensionRestLength = 0.3f;
 
     // The maximum distance the suspension can be compressed (centimetres)
-    float maxSuspensionTravelCm = 20.0f; // <= 0.2 metres
+    const float maxSuspensionTravelCm = 20.0f; // <= 0.2 metres
 
     // The coefficient of friction between the tyre and the ground.
     // Should be about 0.8 for realistic cars, but can increased for better handling.
     // Set large (10000.0) for kart racers
-    float wheelFriction = 100.0f; // <= "kart racer"
+    const float wheelFriction = 100.0f; // <= "kart racer"
 
     // The stiffness constant for the suspension.
     // => 10.0: "Offroad buggy"
     // => 50.0: "Sports car"
     // => 200.0: "F1 Car"
-    float suspensionStiffness = 100.0f; // <= "Sports/F1 Car"
+    const float suspensionStiffness = 100.0f; // <= "Sports/F1 Car"
 
     // The damping coefficient for when the suspension is compressed.
     // Set to k * 2.0 * btSqrt(m_suspensionStiffness) so k is proportional to critical damping.
     // k = 0.0 undamped & bouncy, k = 1.0 critical damping
     // 0.1 to 0.3 are good values
-    float wheelsDampingCompression = 0.3f;
+    const float wheelsDampingCompression = 0.3f;
 
     // The damping coefficient for when the suspension is expanding.
     // See the comments for m_wheelsDampingCompression for how to set k.
     // m_wheelsDampingRelaxation should be slightly larger than m_wheelsDampingCompression, eg 0.2 to 0.5
-    float wheelsDampingRelaxation = 0.5f;
+    const float wheelsDampingRelaxation = 0.5f;
 
     // Reduces the rolling torque applied from the wheels that cause the vehicle to roll over.
     // This is a bit of a hack, but it's quite effective. 0.0 = no roll, 1.0 = physical behaviour.
     // If m_frictionSlip is too high, you'll need to reduce this to stop the vehicle rolling over.
     // You should also try lowering the vehicle's centre of mass
-    float rollInfluence = 0.5f;
+    const float rollInfluence = 0.5f;
 
     //
     //
     // CHASSIS
 
-    float front = 2.0f; // <= Y
-    float width = 1.0f; // <= X
-    float height = 0.5f; // <= Z
-    btVector3 chassisHalfExtents(width, front, height);
+    const float front = 2.0f; // <= Y
+    const float width = 1.0f; // <= X
+    const float height = 0.5f; // <= Z
+    const btVector3 chassisHalfExtents(width, front, height);
     _bullet.chassisShape = new btBoxShape(chassisHalfExtents);
 
     btTransform localTrans;
@@ -112,7 +125,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
     _bullet.compound = new btCompoundShape();
     _bullet.compound->addChildShape(localTrans, _bullet.chassisShape);
 
-    btScalar mass = 5.0f;
+    const btScalar mass = 5.0f;
     btVector3 localInertia(0.0f, 0.0f, 0.0f);
     _bullet.compound->calculateLocalInertia(mass, localInertia);
 
@@ -149,28 +162,29 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
     int forwardIndex = 1; // <= Y
     _bullet.vehicle->setCoordinateSystem(rightIndex, upIndex, forwardIndex);
 
-    struct t_wheel
+    struct WheelData
     {
         btVector3   connectionPoint;
         bool        isFrontWheel;
     };
-    std::array<t_wheel, asValue(Wheels::Count)> wheels{{
+
+    std::array<WheelData, asValue(Wheels::Count)> wheels{{
         // front right
-        { { chassisHalfExtents[0] - wheelSide,
-            chassisHalfExtents[1] - wheelRadius,
-            connectionHeight }, true },
+        { { +chassisHalfExtents[0] - wheelSide,
+            +chassisHalfExtents[1] - wheelRadius,
+            connectionHeight }, /*isFrontWheel = */ true },
         // front left
         { { -chassisHalfExtents[0] + wheelSide,
-            chassisHalfExtents[1] - wheelRadius,
-            connectionHeight }, true },
+            +chassisHalfExtents[1] - wheelRadius,
+            connectionHeight }, /*isFrontWheel = */ true },
         // rear right
-        { { chassisHalfExtents[0] - wheelSide,
+        { { +chassisHalfExtents[0] - wheelSide,
             -chassisHalfExtents[1] + wheelRadius,
-            connectionHeight }, false },
+            connectionHeight }, /*isFrontWheel = */ false },
         // rear left
         { { -chassisHalfExtents[0] + wheelSide,
             -chassisHalfExtents[1] + wheelRadius,
-            connectionHeight }, false }
+            connectionHeight }, /*isFrontWheel = */ false }
     }};
 
     for (auto& wheel : wheels)
@@ -289,4 +303,11 @@ const glm::mat4& PhysicVehicle::getWheelOpenGLMatrix(int index, glm::mat4& mat4x
 {
     _bullet.vehicle->getWheelTransformWS(index).getOpenGLMatrix(glm::value_ptr(mat4x4));
     return mat4x4;
+}
+
+glm::vec3 PhysicVehicle::getVelocity() const
+{
+    const auto& vel = _bullet.carChassis->getLinearVelocity();
+
+    return glm::vec3(vel[0], vel[1], vel[2]);
 }

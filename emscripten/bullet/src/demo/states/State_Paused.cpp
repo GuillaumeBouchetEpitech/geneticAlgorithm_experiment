@@ -11,22 +11,6 @@
 
 #include "thirdparty/GLMath.hpp"
 
-void State_Paused::enter()
-{
-    // D_MYLOG("step");
-
-    Data::get().logic.isPaused = true;
-}
-
-void State_Paused::leave()
-{
-    // D_MYLOG("step");
-
-    Data::get().logic.isPaused = false;
-}
-
-//
-
 void State_Paused::handleEvent(const SDL_Event& event)
 {
     switch (event.type)

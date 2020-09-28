@@ -5,7 +5,7 @@
 
 #include "demo/utilities/TraceLogger.hpp"
 
-void WebWorkersSimulation::initialise(const t_def& def)
+void WebWorkersSimulation::initialise(const Definition& def)
 {
     CircuitBuilder circuit;
     circuit.load(def.filename);
@@ -21,7 +21,7 @@ void WebWorkersSimulation::initialise(const t_def& def)
 
     _carLiveStatus.resize(_totalGenomes, true);
 
-    GeneticAlgorithm::t_def genAlgoDef;
+    GeneticAlgorithm::Definition genAlgoDef;
     genAlgoDef.topology = def.neuralNetworkTopology;
     genAlgoDef.totalGenomes = _totalGenomes;
 
@@ -31,14 +31,15 @@ void WebWorkersSimulation::initialise(const t_def& def)
 
     _startPosition = circuit.getStartTransform().position;
 
-    WorkerProducer::t_def workerDef;
+    WorkerProducer::Definition workerDef;
     workerDef.startTransform = circuit.getStartTransform();
     workerDef.knots = circuit.getKnots();
     workerDef.genomesPerCore = _genomesPerCore;
     workerDef.neuralNetworkTopology = def.neuralNetworkTopology;
 
+    _workerProducers.reserve(_totalCores);
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _workerProducers.push_back(new WorkerProducer(workerDef));
+        _workerProducers.emplace_back(workerDef);
 
     _currentRequest = WorkerRequest::WorkersLoading;
 }
@@ -49,8 +50,8 @@ void WebWorkersSimulation::update()
     // do nothing if the worker(s) are:
     // => not initialised
     // => not finished working
-    for (auto* workerProducer : _workerProducers)
-        if (!workerProducer->isLoaded() || workerProducer->isProcessing())
+    for (auto& workerProducer : _workerProducers)
+        if (!workerProducer.isLoaded() || workerProducer.isProcessing())
             return;
 
     // if this line is reached it mean the worker(s) are now available
@@ -135,8 +136,8 @@ void WebWorkersSimulation::update()
 
 void WebWorkersSimulation::_processSimulation()
 {
-    for (auto* workerProducer : _workerProducers)
-        workerProducer->processSimulation();
+    for (auto& workerProducer : _workerProducers)
+        workerProducer.processSimulation();
 
     _currentRequest = WorkerRequest::Process;
 }
@@ -149,7 +150,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation()
     {
         const auto& neuralNetworks = NNetworks.data() + ii * _genomesPerCore;
 
-        _workerProducers[ii]->resetAndProcessSimulation(neuralNetworks);
+        _workerProducers[ii].resetAndProcessSimulation(neuralNetworks);
     }
 
     _currentRequest = WorkerRequest::ResetAndProcess;
@@ -160,19 +161,17 @@ unsigned int WebWorkersSimulation::getTotalCores() const
     return _totalCores;
 }
 
-const AbstactSimulation::t_coreState& WebWorkersSimulation::getCoreState(unsigned int index) const
+const AbstactSimulation::CoreState& WebWorkersSimulation::getCoreState(unsigned int index) const
 {
-    return _workerProducers.at(index)->getCoreState();
+    return _workerProducers[index].getCoreState();
 }
 
-const t_carData& WebWorkersSimulation::getCarResult(unsigned int index) const
+const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const
 {
     const unsigned int  workerIndex = index / _genomesPerCore;
     const unsigned int  carDataIndex = index % _genomesPerCore;
 
-    const WorkerProducer*   workerProducer = _workerProducers.at(workerIndex);
-
-    return workerProducer->getCarsData().at(carDataIndex);
+    return _workerProducers[workerIndex].getCarsData().at(carDataIndex);
 }
 
 unsigned int WebWorkersSimulation::getTotalCars() const
@@ -180,32 +179,32 @@ unsigned int WebWorkersSimulation::getTotalCars() const
     return _totalGenomes;
 }
 
-void WebWorkersSimulation::setOnWorkersReadyCallback(AbstactSimulation::t_callback callback)
+void WebWorkersSimulation::setOnWorkersReadyCallback(AbstactSimulation::SimpleCallback callback)
 {
     _callbacks.onWorkersReady = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callback callback)
+void WebWorkersSimulation::setOnGenerationResetCallback(AbstactSimulation::SimpleCallback callback)
 {
     _callbacks.onGenerationReset = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
+void WebWorkersSimulation::setOnGenerationStepCallback(AbstactSimulation::SimpleCallback callback)
 {
     _callbacks.onGenerationStep = callback;
 }
 
-void WebWorkersSimulation::setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback)
+void WebWorkersSimulation::setOnGenomeDieCallback(AbstactSimulation::GenomeDieCallback callback)
 {
     _callbacks.onGenomeDie = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)
+void WebWorkersSimulation::setOnGenerationEndCallback(AbstactSimulation::GenerationEndCallback callback)
 {
     _callbacks.onGenerationEnd = callback;
 }
 
-const t_genomes& WebWorkersSimulation::getGenomes() const
+const Genomes& WebWorkersSimulation::getGenomes() const
 {
     return _geneticAlgorithm.getGenomes();
 }

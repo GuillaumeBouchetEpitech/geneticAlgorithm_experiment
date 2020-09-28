@@ -10,14 +10,14 @@
 class GeneticAlgorithm
 {
 public:
-    struct t_def
+    struct Definition
     {
         unsigned int totalGenomes = 0;
         NeuralNetworkTopology topology;
     };
 
 private: // attributs
-    t_genomes _genomes;
+    Genomes _genomes;
 
     unsigned int _currentGeneration = 1; // generation number
 
@@ -25,26 +25,26 @@ private: // attributs
 
     NeuralNetworkTopology _neuralNetworkTopology;
 
-    typedef std::vector<NeuralNetwork> t_NeuralNetworks;
-    t_NeuralNetworks _neuralNetworks;
+    using NeuralNetworks = std::vector<NeuralNetwork>;
+    NeuralNetworks _neuralNetworks;
 
 public: // ctor/dtor
     GeneticAlgorithm() = default;
 
 public: // methods
-    void initialise(const t_def& def);
+    void initialise(const Definition& def);
 
-public: // methods
+public: // method(s)
     bool breedPopulation();
 
-private: // methods
-    void _getBestGenomes(t_genomes& output) const;
+private: // method(s)
+    void _getBestGenomes(Genomes& output) const;
     void _reproduce(const Genome& parentA, const Genome& parentB, Genome& offspring) const;
     void _mutate(Genome& genome) const;
 
 public: // getter(s)
-    const t_NeuralNetworks& getNeuralNetworks() const;
-    const t_genomes& getGenomes() const;
+    const NeuralNetworks& getNeuralNetworks() const;
+    const Genomes& getGenomes() const;
     const Genome& getBestGenome() const;
     unsigned int getGenerationNumber() const;
 

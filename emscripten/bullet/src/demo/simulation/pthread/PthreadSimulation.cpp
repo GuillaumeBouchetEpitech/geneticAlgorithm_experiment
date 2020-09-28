@@ -6,7 +6,7 @@
 
 #include <chrono>
 
-void PthreadSimulation::initialise(const t_def& def)
+void PthreadSimulation::initialise(const Definition& def)
 {
     if (def.genomesPerCore == 0)
         D_THROW(std::invalid_argument,
@@ -22,13 +22,13 @@ void PthreadSimulation::initialise(const t_def& def)
     _genomesPerCore = def.genomesPerCore;
     unsigned int totalGenomes = _genomesPerCore * _totalCores;
 
-    GeneticAlgorithm::t_def genAlgoDef;
+    GeneticAlgorithm::Definition genAlgoDef;
     genAlgoDef.topology = def.neuralNetworkTopology;
     genAlgoDef.totalGenomes = totalGenomes;
 
     _geneticAlgorithm.initialise(genAlgoDef);
 
-    _multithreadProducer = new multiThreading::Producer(_totalCores);
+    _multithreadProducer = new multithreading::Producer(_totalCores);
 
     _physicWorlds.resize(_totalCores);
     _coreStates.resize(_totalCores);
@@ -36,10 +36,10 @@ void PthreadSimulation::initialise(const t_def& def)
     { // generate circuit
 
         int groundIndex = 0;
-        auto onNewPhysicGroundPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
-                                          const CircuitBuilder::t_vec3Array& colors,
-                                          const CircuitBuilder::t_vec3Array& normals,
-                                          const CircuitBuilder::t_indices& indices) -> void {
+        auto onNewPhysicGroundPatch = [&](const CircuitBuilder::Vec3Array& vertices,
+                                          const CircuitBuilder::Vec3Array& colors,
+                                          const CircuitBuilder::Vec3Array& normals,
+                                          const CircuitBuilder::Indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
             static_cast<void>(normals); // <= unused
@@ -52,10 +52,10 @@ void PthreadSimulation::initialise(const t_def& def)
                 def.onNewGroundPatch(vertices, colors, normals, indices);
         };
 
-        auto onNewPhysicWallPatch = [&](const CircuitBuilder::t_vec3Array& vertices,
-                                        const CircuitBuilder::t_vec3Array& colors,
-                                        const CircuitBuilder::t_vec3Array& normals,
-                                        const CircuitBuilder::t_indices& indices) -> void {
+        auto onNewPhysicWallPatch = [&](const CircuitBuilder::Vec3Array& vertices,
+                                        const CircuitBuilder::Vec3Array& colors,
+                                        const CircuitBuilder::Vec3Array& normals,
+                                        const CircuitBuilder::Indices& indices) -> void {
 
             static_cast<void>(colors); // <= unused
             static_cast<void>(normals); // <= unused
@@ -221,6 +221,8 @@ void PthreadSimulation::updateCarResult()
         for (unsigned int jj = 0; jj < 4; ++jj)
             vehicle.getWheelOpenGLMatrix(jj, carData.wheelsTransform[jj]);
 
+        carData.velocity = vehicle.getVelocity();
+
         const auto& eyeSensors = car.getEyeSensors();
         for (unsigned int jj = 0; jj < eyeSensors.size(); ++jj)
         {
@@ -245,12 +247,12 @@ unsigned int PthreadSimulation::getTotalCores() const
     return _totalCores;
 }
 
-const AbstactSimulation::t_coreState& PthreadSimulation::getCoreState(unsigned int index) const
+const AbstactSimulation::CoreState& PthreadSimulation::getCoreState(unsigned int index) const
 {
     return _coreStates.at(index);
 }
 
-const t_carData& PthreadSimulation::getCarResult(unsigned int index) const
+const CarData& PthreadSimulation::getCarResult(unsigned int index) const
 {
     return _carsData.at(index);
 }
@@ -260,27 +262,27 @@ unsigned int PthreadSimulation::getTotalCars() const
     return _carsData.size();
 }
 
-void PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::t_callback callback)
+void PthreadSimulation::setOnGenerationResetCallback(AbstactSimulation::SimpleCallback callback)
 {
     _callbacks.onResetAndProcess = callback;
 }
 
-void PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::t_callback callback)
+void PthreadSimulation::setOnGenerationStepCallback(AbstactSimulation::SimpleCallback callback)
 {
     _callbacks.onProcessStep = callback;
 }
 
-void PthreadSimulation::setOnGenomeDieCallback(AbstactSimulation::t_genomeDieCallback callback)
+void PthreadSimulation::setOnGenomeDieCallback(AbstactSimulation::GenomeDieCallback callback)
 {
     _callbacks.onGenomeDie = callback;
 }
 
-void PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::t_generationEndCallback callback)
+void PthreadSimulation::setOnGenerationEndCallback(AbstactSimulation::GenerationEndCallback callback)
 {
     _callbacks.onGenerationEnd = callback;
 }
 
-const t_genomes& PthreadSimulation::getGenomes() const
+const Genomes& PthreadSimulation::getGenomes() const
 {
     return _geneticAlgorithm.getGenomes();
 }

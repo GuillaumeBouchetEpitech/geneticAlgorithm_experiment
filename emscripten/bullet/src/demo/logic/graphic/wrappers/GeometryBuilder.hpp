@@ -6,7 +6,7 @@
 class GeometryBuilder
 {
 private:
-    Geometry::t_def _def;
+    Geometry::Definition _def;
     Shader* _shader = nullptr;
 
 public:
