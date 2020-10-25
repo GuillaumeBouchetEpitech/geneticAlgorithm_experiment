@@ -99,10 +99,7 @@ void Data::initialiseSimulationCallbacks()
             {
                 const auto& coreState = simulation.getCoreState(ii);
 
-                if (!logic.isAccelerated)
-                    cores.statesData[ii].delta = 0;
-
-                cores.statesData[ii].delta += coreState.delta;
+                cores.statesData[ii].delta = coreState.delta;
                 cores.statesData[ii].genomesAlive = coreState.genomesAlive;
 
                 // record core state history

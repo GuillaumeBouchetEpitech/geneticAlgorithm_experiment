@@ -246,8 +246,10 @@ void Scene::_updateMatrices()
 
 void Scene::_updateCircuitAnimation()
 {
-    if (StateManager::get()->getState() != StateManager::States::StartGeneration &&
-        StateManager::get()->getState() != StateManager::States::Running)
+    // do not run if not currently in one of those states
+    auto currentState = StateManager::get()->getState();
+    if (currentState != StateManager::States::StartGeneration &&
+        currentState != StateManager::States::Running)
         return;
 
     auto& logic = Data::get().logic;
@@ -580,9 +582,10 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
                 const int totalSize = currWheel.size();
                 const int currSize = std::min(totalSize, maxSize);
 
-                const float* buffer = &currWheel[totalSize - currSize].x;
+                const float* dataPointer = &currWheel[totalSize - currSize].x;
+                const int dataSize = currSize * sizeof(glm::vec3);
 
-                reusedGeometry.updateBuffer(0, buffer, currSize * sizeof(glm::vec3), true);
+                reusedGeometry.updateBuffer(0, dataPointer, dataSize, true);
                 reusedGeometry.setPrimitiveCount(currSize);
                 reusedGeometry.render();
             }

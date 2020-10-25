@@ -110,12 +110,12 @@ void Car::_updateSensors()
             {
                 auto& eyeSensor = _eyeSensors[sensorIndex++];
 
-                glm::vec4 newFarValue = {
+                glm::vec4 newFarValue(
                     constants::eyeMaxRange * std::sin(eyeAngle),
                     constants::eyeMaxRange * std::cos(eyeAngle),
                     constants::eyeHeight + eyeElevation,
                     1.0f
-                };
+                );
 
                 eyeSensor.near = newNearValue;
                 eyeSensor.far = transform * newFarValue;

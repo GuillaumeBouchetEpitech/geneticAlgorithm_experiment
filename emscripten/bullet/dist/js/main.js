@@ -1,4 +1,6 @@
 
+"use strict"
+
 import Logger from "./utilities/Logger.js";
 
 const onGlobalPageLoad = async () => {
@@ -56,10 +58,41 @@ const onGlobalPageLoad = async () => {
 
     try {
 
+        //
+        //
+        // WebWorker support
+
         if (!window.Worker)
             throw new Error(`missing WebWorker feature`);
 
         logger.log("[JS] WebWorker feature => supported");
+
+        //
+        //
+        // WebAssembly support
+
+        const wasmSupported = (() => {
+            try {
+                if (typeof(WebAssembly) === "object" && typeof(WebAssembly).instantiate === "function") {
+
+                    const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
+
+                    if (module instanceof WebAssembly.Module)
+                        return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+                }
+            } catch (err) {
+            }
+            return false;
+        })();
+
+        if (!wasmSupported)
+            throw new Error("missing WebAssembly feature (unsuported)");
+
+        logger.log("[JS] WebAssembly feature => supported");
+
+        //
+        //
+        // WebGL support
 
         if (!window.WebGLRenderingContext)
             throw new Error("missing WebGL feature (unsuported)");
@@ -68,7 +101,7 @@ const onGlobalPageLoad = async () => {
 
         const renderingContextAttribs = {
             // Boolean that indicates if the canvas contains an alpha buffer.
-            alpha: true,
+            alpha: false,
 
             // Boolean that indicates whether or not to perform anti-aliasing.
             antialias: false,
@@ -116,6 +149,8 @@ const onGlobalPageLoad = async () => {
         logger.log("[JS] WebGL context => initialised");
 
         //
+        //
+        // WebGL extensions support
 
         const webGLExtensions = webglCtx.getSupportedExtensions();
 
@@ -156,14 +191,14 @@ const onGlobalPageLoad = async () => {
     //
     // extract the "genomesPerCore" value from the url
 
-    function extractVarsFromUrl() {
+    const extractVarsFromUrl = () => {
         const varsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
         const vars = {};
         window.location.href.replace(varsRegexp, function (m, key, value) {
             vars[key] = value;
         });
         return vars;
-    }
+    };
 
     const vars = extractVarsFromUrl();
     window.genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
@@ -178,8 +213,7 @@ const onGlobalPageLoad = async () => {
         scriptFolder += "/pthread";
     }
     else {
-        logger.log("[JS] multithreading => unsupported");
-        logger.log("[JS]                => fallback to webworker version");
+        logger.log("[JS] multithreading => unsupported, fallback to webworker version");
 
         scriptFolder += "/webworker";
     }
@@ -188,13 +222,36 @@ const onGlobalPageLoad = async () => {
     //
     // setup the wasm module
 
+    // const DownloadingDataRegExp = /Downloading data\.\.\. \(([0-9]*)\/([0-9]*)\)/;
+
     const Module = {
-        locateFile: function(url) { return `${scriptFolder}/${url}`; },
-        print: function(text) { logger.log(`[C++] ${text}`); },
-        printErr: function(text) { logger.error(`[C++] ${text}`); },
-        setStatus: function(text) {
-            if (text)
+        downloadingDataRegExp: /Downloading data\.\.\. \(([0-9]*)\/([0-9]*)\)/,
+        locateFile: (url) => { return `${scriptFolder}/${url}`; },
+        print: (text) => { logger.log(`[C++] ${text}`); },
+        printErr: (text) => { logger.error(`[C++] ${text}`); },
+        setStatus: (text) => {
+
+            if (!text)
+                return;
+
+            // is the current message a "Downloading data..." one?
+            const cap = Module.downloadingDataRegExp.exec(text);
+            if (cap) {
+
+                // is the latest log a "Downloading data..." one?
+                if (Module.downloadingDataRegExp.test(logger.peekLast()))
+                    logger.popLast();
+
+                const current = cap[1];
+                const total = cap[2];
+                const percent = ((current/total) * 100).toFixed(0);
+
+                logger.log(`[JS] ${text} [${percent}%]`);
+            }
+            else {
+
                 logger.log(`[JS] ${text}`);
+            }
         },
         canvas: canvas,
         preinitializedWebGLContext: webglCtx,
@@ -243,7 +300,7 @@ const onGlobalPageLoad = async () => {
                 scriptElement.onerror = reject;
                 document.head.appendChild(scriptElement);
             });
-        }
+        };
 
         await scriptLoadingUtility(`./${scriptFolder}/index.js`)
 

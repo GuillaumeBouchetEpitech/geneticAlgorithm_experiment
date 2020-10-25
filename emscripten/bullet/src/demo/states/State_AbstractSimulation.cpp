@@ -6,10 +6,7 @@
 #include "StateManager.hpp"
 
 #include "demo/logic/Data.hpp"
-#include "demo/logic/graphic/wrappers/Shader.hpp"
 #include "demo/logic/graphic/Scene.hpp"
-
-// #include "demo/utilities/TraceLogger.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -73,7 +70,7 @@ void State_AbstractSimulation::handleEvent(const SDL_Event& event)
                 int coef = 4;
 #endif
 
-                glm::ivec2 newPosition = { event.motion.x, event.motion.y };
+                glm::ivec2 newPosition(event.motion.x, event.motion.y);
                 mouse.delta = (newPosition - mouse.position) * coef;
                 mouse.position = newPosition;
             }

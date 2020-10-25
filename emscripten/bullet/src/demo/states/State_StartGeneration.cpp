@@ -4,8 +4,6 @@
 #include "StateManager.hpp"
 
 #include "demo/logic/Data.hpp"
-#include "demo/logic/graphic/wrappers/Shader.hpp"
-#include "demo/logic/graphic/Scene.hpp"
 
 #include "thirdparty/GLMath.hpp"
 

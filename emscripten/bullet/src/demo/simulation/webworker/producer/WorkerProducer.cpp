@@ -12,9 +12,9 @@ WorkerProducer::WorkerProducer(const Definition& def)
 {
     _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
 
-    _flags[Status::WebWorkerLoaded] = false;
-    _flags[Status::Processing] = false;
-    _flags[Status::Updated] = false;
+    _flags[asValue(Status::WebWorkerLoaded)] = false;
+    _flags[asValue(Status::Processing)] = false;
+    _flags[asValue(Status::Updated)] = false;
 
     _carsData.resize(def.genomesPerCore);
 
@@ -48,14 +48,14 @@ WorkerProducer::WorkerProducer(const Definition& def)
 
 void WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg)
 {
-    WorkerProducer* workerProducer = static_cast<WorkerProducer*>(arg);
+    WorkerProducer* self = static_cast<WorkerProducer*>(arg);
 
-    workerProducer->_processMessage(dataPointer, dataSize);
+    self->_processMessage(dataPointer, dataSize);
 }
 
 void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 {
-    _flags[Status::Processing] = false;
+    _flags[asValue(Status::Processing)] = false;
 
     MessageView receivedMsg(dataPointer, dataSize);
 
@@ -67,7 +67,7 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
         case Messages::Server::WebWorkerLoaded:
         {
             D_MYLOG("web worker loaded");
-            _flags[Status::WebWorkerLoaded] = true;
+            _flags[asValue(Status::WebWorkerLoaded)] = true;
             break;
         }
 
@@ -103,7 +103,7 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                 receivedMsg >> output.steer >> output.speed;
             }
 
-            _flags[Status::Updated] = true;
+            _flags[asValue(Status::Updated)] = true;
             break;
         }
 
@@ -116,7 +116,7 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 
 void WorkerProducer::_send()
 {
-    _flags[Status::Processing] = true;
+    _flags[asValue(Status::Processing)] = true;
 
     char*           dataPointer = const_cast<char*>(_message.getData());
     unsigned int    dataSize = _message.getSize();
@@ -153,17 +153,17 @@ void WorkerProducer::processSimulation()
 
 bool WorkerProducer::isLoaded() const
 {
-    return _flags[Status::WebWorkerLoaded];
+    return _flags[asValue(Status::WebWorkerLoaded)];
 }
 
 bool WorkerProducer::isProcessing() const
 {
-    return _flags[Status::Processing];
+    return _flags[asValue(Status::Processing)];
 }
 
 bool WorkerProducer::isUpdated() const
 {
-    return _flags[Status::Updated];
+    return _flags[asValue(Status::Updated)];
 }
 
 const CarDatas& WorkerProducer::getCarsData() const

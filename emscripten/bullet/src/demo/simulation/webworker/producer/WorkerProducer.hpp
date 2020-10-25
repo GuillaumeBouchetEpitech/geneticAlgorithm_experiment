@@ -14,6 +14,8 @@
 
 #include "demo/simulation/AbstactSimulation.hpp"
 
+#include "demo/utilities/types.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 #include <bitset>
@@ -36,7 +38,7 @@ public:
 private:
     worker_handle   _workerHandle;
 
-    enum Status
+    enum class Status : unsigned int
     {
         WebWorkerLoaded = 0,
         Processing,
@@ -44,7 +46,7 @@ private:
         Count
     };
 
-    std::bitset<Status::Count> _flags;
+    std::bitset<asValue(Status::Count)> _flags;
 
     AbstactSimulation::CoreState _coreState;
 

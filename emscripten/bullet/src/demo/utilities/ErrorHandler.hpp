@@ -3,7 +3,7 @@
 
 #include "TraceLogger.hpp"
 
-// one line macro allowing flexible logs before throwing any exception type
+// one line exception macro
 #define D_THROW(exceptionType, exceptionMsg) \
 { \
     std::string log; \

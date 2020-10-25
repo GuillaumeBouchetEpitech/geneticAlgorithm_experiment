@@ -9,7 +9,7 @@ class Logger {
             throw new Error(`DOM elements not found, id=${textAreaElementId}`);
 
         this._lines = [];
-        this._maxLines = 20;
+        this._maxLines = 30;
 
         this._textAreaElement.value = ""; // <= clear any browser cache
     }
@@ -42,7 +42,7 @@ class Logger {
 
         this._lines.push(text);
         if (this._lines.length > this._maxLines)
-            this._lines.splice(0, this._maxLines - this._lines.length);
+            this._lines.splice(0, this._lines.length - this._maxLines);
 
         this._textAreaElement.value = `${this._lines.join("\n")}\n`;
 

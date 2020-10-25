@@ -198,16 +198,16 @@ public:
 
     //
 
-    struct t_logic
+    struct Logic
     {
-        struct t_state
+        struct State
         {
             StateManager::States previousState;
             int countdown = 0;
         }
         state;
 
-        struct t_metrics
+        struct Metrics
         {
             unsigned int updateTime = 0;
             unsigned int renderTime = 0;
@@ -218,7 +218,7 @@ public:
 
         std::unique_ptr<AbstactSimulation> simulation = nullptr;
 
-        struct t_cores
+        struct Cores
         {
             using StatesData = std::vector<AbstactSimulation::CoreState> ;
             using StatesHistory = std::vector<StatesData>;
@@ -236,7 +236,7 @@ public:
 
         bool isAccelerated = false;
 
-        struct t_leaderCarData
+        struct LeaderCarData
         {
             float timeoutUntilNewLeader = 0;
             int index = -1;
@@ -244,21 +244,21 @@ public:
         }
         leaderCar;
 
-        struct t_carsTrails
+        struct CarsTrails
         {
             std::unordered_map<unsigned int, unsigned int> genomeIndexMap;
 
-            struct t_wheelsTrail
+            struct WheelsTrail
             {
                 std::array<std::vector<glm::vec3>, 4> wheels;
             };
-            std::vector<t_wheelsTrail> allWheelsTrails;
+            std::vector<WheelsTrail> allWheelsTrails;
 
             unsigned int currentTrailIndex = 0;
         }
         carsTrails;
 
-        struct t_circuitAnimation
+        struct CircuitAnimation
         {
             float targetValue = 0.0f;
             float lowerValue = 0.0f;
@@ -266,7 +266,7 @@ public:
             float maxUpperValue = 0.0f;
             int maxPrimitiveCount = 0;
 
-            struct t_boundaries
+            struct Boundaries
             {
                 glm::vec3 min;
                 glm::vec3 max;
@@ -276,14 +276,14 @@ public:
         }
         circuitAnimation;
 
-        struct t_hudText
+        struct HudText
         {
             std::string header;
             std::string pthreadWarning;
         }
         hudText;
 
-        struct t_fitnessStats
+        struct FitnessStats
         {
             constexpr static unsigned int maxStats = 10;
             std::vector<float> allStats;
@@ -292,11 +292,11 @@ public:
     }
     logic;
 
-    struct t_input
+    struct Input
     {
         std::unordered_map<int, bool> keys;
 
-        struct t_mouse
+        struct Mouse
         {
             glm::ivec2 position = {0, 0};
             glm::ivec2 delta = {0, 0};

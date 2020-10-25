@@ -1,11 +1,12 @@
 
 #pragma once
 
+#include <random>
+
 class RandomNumberGenerator
 {
 private:
-    static unsigned long _seed;
-    static const int _max;
+    static std::mt19937 _engine;
 
 public:
     static void setSeed(int seed);

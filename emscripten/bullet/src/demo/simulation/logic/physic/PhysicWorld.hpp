@@ -23,22 +23,22 @@ class PhysicVehicle;
 class PhysicWorld
 {
 public:
-    enum class Groups : short
+    enum class Groups : unsigned short
     {
-        all         = -1,
-        sensor      = (1 << 0),
-        ground      = (1 << 1),
-        wall        = (1 << 2),
-        vehicle     = (1 << 3),
+        all     = 0b1111'1111'1111'1111,
+        sensor  = 0b0000'0000'0000'0001,
+        ground  = 0b0000'0000'0000'0010,
+        wall    = 0b0000'0000'0000'0100,
+        vehicle = 0b0000'0000'0000'1000,
     };
 
-    enum class Masks : short
+    enum class Masks : unsigned short
     {
-        ground              = asValue(Groups::all),
-        wall                = asValue(Groups::all),
-        vehicle             = asValue(Groups::ground),
-        eyeSensor           = asValue(Groups::ground) | asValue(Groups::wall),
-        groundSensor        = asValue(Groups::ground),
+        ground       = asValue(Groups::all),
+        wall         = asValue(Groups::all),
+        vehicle      = asValue(Groups::ground),
+        eyeSensor    = asValue(Groups::ground) | asValue(Groups::wall),
+        groundSensor = asValue(Groups::ground),
     };
 
 public:
@@ -118,9 +118,9 @@ public:
         result;
 
         RaycastParams(const glm::vec3& rayFrom,
-                        const glm::vec3& rayTo,
-                        short group = asValue(Groups::all),
-                        short mask = asValue(Groups::all))
+                      const glm::vec3& rayTo,
+                      short group = asValue(Groups::all),
+                      short mask = asValue(Groups::all))
             : from(rayFrom)
             , to(rayTo)
             , collisionGroup(group)

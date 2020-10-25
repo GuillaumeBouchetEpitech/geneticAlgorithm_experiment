@@ -31,7 +31,7 @@ public:
     resultString = sstr.str(); \
 }
 
-// one line macro allowing flexible logs with the current time and "stacktrace"
+// one line logging macro
 #define D_MYLOG(streamMsg) \
 { \
     std::string log; \

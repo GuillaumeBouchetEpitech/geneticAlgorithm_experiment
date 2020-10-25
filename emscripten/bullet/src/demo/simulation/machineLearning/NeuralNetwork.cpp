@@ -130,7 +130,6 @@ void NeuralNetwork::_processLayer(const Layer& layer,
         // output.push_back(activations::steeperSigmoid(sumValues)); // slow
         output.push_back(activations::rectifiedLinearUnit(sumValues)); // fast
     }
-
 }
 
 void NeuralNetwork::setWeights(const std::vector<float>& inputWeights)

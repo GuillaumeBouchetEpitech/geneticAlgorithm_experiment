@@ -58,7 +58,6 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
     bool                        isUsingBias = true;
     unsigned int                layerInput = 0;
-    unsigned int                totalHidden = 0;
     std::vector<unsigned int>   layerHidden;
     unsigned int                layerOutput = 0;
 
@@ -89,7 +88,11 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
         // extract neural network topology
         receivedMsg >> isUsingBias;
         receivedMsg >> layerInput;
+
+        unsigned int    totalHidden = 0;
         receivedMsg >> totalHidden;
+
+        layerHidden.reserve(totalHidden);
         for (unsigned int ii = 0; ii < totalHidden; ++ii)
         {
             unsigned int layerValue = 0;

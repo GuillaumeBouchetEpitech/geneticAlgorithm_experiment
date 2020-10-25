@@ -115,6 +115,7 @@ void PthreadSimulation::update()
             for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
             {
                 unsigned int index = threadIndex * _genomesPerCore + ii;
+
                 auto& car = _cars[index];
 
                 if (!car.isAlive())
@@ -149,7 +150,7 @@ void PthreadSimulation::update()
             break;
         }
 
-    updateCarResult();
+    _updateCarResult();
 
     if (_isFirstGenerationFrame)
     {
@@ -170,9 +171,10 @@ void PthreadSimulation::update()
     // rate genomes
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
     {
-        float extraFitness = float(_carsData[ii].totalUpdates) / 1000;
+        // this penalty reward fast cars (reaching farther in less updates)
+        const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
 
-        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - extraFitness);
+        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
     }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();
@@ -189,7 +191,7 @@ void PthreadSimulation::update()
     _isFirstGenerationFrame = true;
 }
 
-void PthreadSimulation::updateCarResult()
+void PthreadSimulation::_updateCarResult()
 {
     for (unsigned int ii = 0; ii < _cars.size(); ++ii)
     {

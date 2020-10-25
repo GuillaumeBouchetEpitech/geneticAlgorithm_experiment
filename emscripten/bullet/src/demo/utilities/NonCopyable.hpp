@@ -5,6 +5,7 @@ class NonCopyable
 {
 public:
     NonCopyable() = default;
+    virtual ~NonCopyable() = default;
 
     // disallow copy/move constructor
     NonCopyable(const NonCopyable&) = delete;

@@ -46,7 +46,6 @@ void WebWorkersSimulation::initialise(const Definition& def)
 
 void WebWorkersSimulation::update()
 {
-
     // do nothing if the worker(s) are:
     // => not initialised
     // => not finished working
@@ -168,8 +167,8 @@ const AbstactSimulation::CoreState& WebWorkersSimulation::getCoreState(unsigned 
 
 const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const
 {
-    const unsigned int  workerIndex = index / _genomesPerCore;
-    const unsigned int  carDataIndex = index % _genomesPerCore;
+    const unsigned int workerIndex = index / _genomesPerCore;
+    const unsigned int carDataIndex = index % _genomesPerCore;
 
     return _workerProducers[workerIndex].getCarsData().at(carDataIndex);
 }

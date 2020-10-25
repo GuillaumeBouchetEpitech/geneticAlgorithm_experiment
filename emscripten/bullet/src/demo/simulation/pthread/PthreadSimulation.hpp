@@ -63,7 +63,7 @@ public:
     virtual void update() override;
 
 private:
-    void updateCarResult();
+    void _updateCarResult();
 
 public:
     virtual unsigned int getTotalCores() const override;

@@ -12,11 +12,24 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 
 #include <cmath>
 
 //
 //
+
+namespace /*anonymous*/
+{
+    void validateFloat(float value, const std::string type)
+    {
+        if (glm::isnan(value))
+            D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
+
+        if (glm::isinf(value))
+            D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
+    };
+};
 
 void CircuitBuilder::load(const std::string& filename)
 {
@@ -38,6 +51,84 @@ void CircuitBuilder::load(const std::string& filename)
     float currentMinDistance = 2.0f;
     glm::vec3 currentColor = { 0.0f, 0.0f, 0.0f };
 
+    //
+    //
+    // build command handler
+
+    const char* cmd_start_transform_pos     = "START_TRANSFORM_POSITION";
+    const char* cmd_start_transform_quat    = "START_TRANSFORM_QUATERNION";
+    const char* cmd_knots_color             = "KNOTS_COLOR";
+    const char* cmd_knots_min_distance      = "KNOTS_MINIMUM_DISTANCE";
+    const char* cmd_knots_dual              = "KNOTS_DUAL";
+
+    std::unordered_map<std::string, std::function<void(std::istringstream&)>> commandsMap;
+
+    commandsMap[cmd_start_transform_pos] = [&](std::istringstream& isstr)
+    {
+        auto& value = _startTransform.position;
+        if (!(isstr >> value.x >> value.y >> value.z))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_start_transform_pos);
+
+        for (int ii = 0; ii < 3; ++ii)
+            validateFloat(value[ii], cmd_start_transform_pos);
+    };
+
+    commandsMap[cmd_start_transform_quat] = [&](std::istringstream& isstr)
+    {
+        auto& value = _startTransform.quaternion;
+        if (!(isstr >> value.x >> value.y >> value.z >> value.w))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_start_transform_quat);
+
+        for (int ii = 0; ii < 4; ++ii)
+            validateFloat(value[ii], cmd_start_transform_quat);
+    };
+
+    commandsMap[cmd_knots_color] = [&](std::istringstream& isstr)
+    {
+        glm::vec3 color;
+
+        if (!(isstr >> color.x >> color.y >> color.z))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_knots_color);
+
+        for (int ii = 0; ii < 3; ++ii)
+            validateFloat(color[ii], cmd_knots_color);
+
+        currentColor = color;
+    };
+
+    commandsMap[cmd_knots_min_distance] = [&](std::istringstream& isstr)
+    {
+        float minimumDistance;
+
+        if (!(isstr >> minimumDistance))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_knots_min_distance);
+
+        validateFloat(minimumDistance, cmd_knots_min_distance);
+
+        currentMinDistance = minimumDistance;
+    };
+
+    commandsMap[cmd_knots_dual] = [&](std::istringstream& isstr)
+    {
+        glm::vec3 left;
+        glm::vec3 right;
+
+        if (!(isstr >> left.x >> left.y >> left.z >> right.x >> right.y >> right.z))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_knots_dual);
+
+        for (int ii = 0; ii < 3; ++ii)
+        {
+            validateFloat(left[ii], cmd_knots_dual);
+            validateFloat(right[ii], cmd_knots_dual);
+        }
+
+        rawKnots.emplace_back(left, right, currentMinDistance, currentColor);
+    };
+
+    //
+    //
+    // parse data
+
     std::string textLine;
     while (std::getline(fileStream, textLine))
     {
@@ -50,96 +141,15 @@ void CircuitBuilder::load(const std::string& filename)
 
         std::istringstream isstr(textLine);
 
-        std::string type;
-        if (!(isstr >> type))
+        std::string cmdType;
+        if (!(isstr >> cmdType))
             D_THROW(std::runtime_error, "failure to extract the line type");
 
-        if (type == "START_TRANSFORM_POSITION")
-        {
-            auto& value = _startTransform.position;
-            if (!(isstr >> value.x >> value.y >> value.z))
-                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
+        auto itCmd = commandsMap.find(cmdType);
+        if (itCmd == commandsMap.end())
+            D_THROW(std::runtime_error, "unknown line type, type=" << cmdType);
 
-            for (int ii = 0; ii < 3; ++ii)
-            {
-                if (glm::isnan(value[ii]))
-                    D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-                if (glm::isinf(value[ii]))
-                    D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-            }
-        }
-        else if (type == "START_TRANSFORM_QUATERNION")
-        {
-            auto& value = _startTransform.quaternion;
-            if (!(isstr >> value.x >> value.y >> value.z >> value.w))
-                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
-
-            for (int ii = 0; ii < 4; ++ii)
-            {
-                if (glm::isnan(value[ii]))
-                    D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-                if (glm::isinf(value[ii]))
-                    D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-            }
-        }
-        else if (type == "KNOTS_COLOR")
-        {
-            glm::vec3 color;
-
-            if (!(isstr >> color.x >> color.y >> color.z))
-                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
-
-            for (int ii = 0; ii < 3; ++ii)
-            {
-                if (glm::isnan(color[ii]))
-                    D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-                if (glm::isinf(color[ii]))
-                    D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-            }
-
-            currentColor = color;
-        }
-        else if (type == "KNOTS_MINIMUM_DISTANCE")
-        {
-            float minimumDistance;
-
-            if (!(isstr >> minimumDistance))
-                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
-
-            if (glm::isnan(minimumDistance))
-                D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-            if (glm::isinf(minimumDistance))
-                D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-
-            currentMinDistance = minimumDistance;
-        }
-        else if (type == "KNOTS_DUAL")
-        {
-            glm::vec3 left;
-            glm::vec3 right;
-
-            if (!(isstr >> left.x >> left.y >> left.z >> right.x >> right.y >> right.z))
-                D_THROW(std::runtime_error, "failure to extract a line, type=" << type);
-
-            for (int ii = 0; ii < 3; ++ii)
-            {
-                if (glm::isnan(left[ii]) || glm::isnan(right[ii]))
-                    D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-                if (glm::isinf(left[ii]) || glm::isinf(right[ii]))
-                    D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-            }
-
-            rawKnots.emplace_back(left, right, currentMinDistance, currentColor);
-        }
-        else
-        {
-            D_THROW(std::runtime_error, "unknown line type, type=" << type);
-        }
+        itCmd->second(isstr);
     }
 
     //
@@ -182,7 +192,6 @@ void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
         D_THROW(std::runtime_error, "not initialised");
 
     Vec3Array vertices;
-    Vec3Array colors;
     Indices indices;
 
     vertices.reserve(_knots.size() * 4); // pre-allocate
@@ -294,7 +303,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             vertex.right.y = smoother.calcAt(coef, asValue(SplineType::rightY));
             vertex.right.z = smoother.calcAt(coef, asValue(SplineType::rightZ));
 
-            float minDistance = smoother.calcAt(coef, asValue(SplineType::minDistance));
+            const float minDistance = smoother.calcAt(coef, asValue(SplineType::minDistance));
 
             if (!smoothedVertices.empty())
             {
@@ -349,7 +358,10 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
     indices.reserve(512); // pre-allocate
     circuitPatchColors.reserve(512); // pre-allocate
 
-    for (unsigned int index = 1; index < smoothedVertices.size(); index += patchesPerKnot)
+    const unsigned int startIndex = 1;
+    for (unsigned int index = startIndex;
+         index < smoothedVertices.size();
+         index += patchesPerKnot)
     {
         indices.clear();
         ground.vertices.clear();
@@ -390,7 +402,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             glm::vec3 currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
 
             // for the first time
-            if (stepIndex == 1)
+            if (stepIndex == startIndex)
                 prevNormal = currNormal;
 
             glm::vec3 prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);

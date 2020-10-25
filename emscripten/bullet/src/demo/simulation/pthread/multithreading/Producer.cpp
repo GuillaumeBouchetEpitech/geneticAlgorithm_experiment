@@ -49,7 +49,7 @@ namespace multithreading
     {
         auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
-        // this part is locked and will notify at then end of the scope
+        // this part is locked and will notify at the end of the scope
 
         _plannedTasks.push_back(Task(work));
     }
@@ -63,7 +63,7 @@ namespace multithreading
         {
             auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
-            // this part is locked and will notify at then end of the scope
+            // this part is locked and will notify at the end of the scope
 
             _plannedTasks.clear();
             _running = false;
@@ -121,7 +121,7 @@ namespace multithreading
     {
         auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
-        // this part is locked and will notify at then end of the scope
+        // this part is locked and will notify at the end of the scope
 
         // find the task per consumer in the "running" list
         auto comparison = [consumer](const Task& task) { return task.consumer == consumer; };
@@ -148,9 +148,9 @@ namespace multithreading
     {
         auto lock = _waitOneTask.makeScopedLock();
 
-        _running = true;
-
         // this part is locked
+
+        _running = true;
 
         while (_running)
         {

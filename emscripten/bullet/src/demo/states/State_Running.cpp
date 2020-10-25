@@ -6,8 +6,6 @@
 #include "StateManager.hpp"
 
 #include "demo/logic/Data.hpp"
-#include "demo/logic/graphic/wrappers/Shader.hpp"
-#include "demo/logic/graphic/Scene.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -26,26 +24,22 @@ void State_Running::update(int deltaTime)
     auto& graphic = data.graphic;
     auto& camera = graphic.camera;
 
-#if not defined D_WEB_WEBWORKER_BUILD
-    {
-        int simualtionStep = (logic.isAccelerated ? 50 : 1);
+    { // simulation update
 
-        for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
-            logic.cores.statesData[ii].delta = 0;
+        const int simualtionSteps = (logic.isAccelerated ? 50 : 1);
 
-        for (int ii = 0; ii < simualtionStep; ++ii)
+        for (int ii = 0; ii < simualtionSteps; ++ii)
             simulation.update();
 
-    }
-#endif
+    } // simulation update
 
     { // camera tracking
 
         // done to avoid a spurious change of camera
-        // -> when going from the Running state to the EnGeneration state
+        // -> true changing states: Running -> EndGeneration
         if (StateManager::get()->getState() == StateManager::States::Running)
         {
-            glm::vec3   cameraNextCenter = camera.center;
+            glm::vec3   cameraNextCenter = logic.circuitAnimation.boundaries.center;
             float       cameraNextDistance = 200.0f;
 
             //
@@ -55,8 +49,6 @@ void State_Running::update(int deltaTime)
 
             if (logic.isAccelerated)
             {
-                cameraNextCenter = logic.circuitAnimation.boundaries.center;
-
                 leaderCar.timeoutUntilNewLeader = 0.0f;
                 leaderCar.index = -1;
                 leaderCar.totalTimeAsLeader = 0.0f;
@@ -105,19 +97,19 @@ void State_Running::update(int deltaTime)
                     if (leaderCar.index >= 0 && leaderCar.index != oldLeaderCarIndex)
                         leaderCar.totalTimeAsLeader = 0.0f; // new leader
                 }
-            }
 
-            // do we have a car to focus the camera on?
-            if (leaderCar.index >= 0)
-            {
-                const auto& carResult = simulation.getCarResult(leaderCar.index);
+                // do we have a car to focus the camera on?
+                if (leaderCar.index >= 0)
+                {
+                    const auto& carResult = simulation.getCarResult(leaderCar.index);
 
-                // this part elevate where the camera look along the up axis of the car
-                // => without it the camera look at the ground
-                // => mostly useful for a shoulder camera (TODO)
-                glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
+                    // this part elevate where the camera look along the up axis of the car
+                    // => without it the camera look at the ground
+                    // => mostly useful for a shoulder camera0
+                    glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
-                cameraNextCenter = carOrigin;
+                    cameraNextCenter = carOrigin;
+                }
             }
 
             //
@@ -133,9 +125,4 @@ void State_Running::update(int deltaTime)
 
     } // camera tracking
 
-#if defined D_WEB_WEBWORKER_BUILD
-
-    simulation.update();
-
-#endif
 }
