@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <iostream>
 
-#define D_CHECK_AL_ERRORS() checkAlErrors(__FILE__, __func__, __LINE__)
-// #define D_CHECK_AL_ERRORS()
+// #define D_CHECK_AL_ERRORS() checkAlErrors(__FILE__, __func__, __LINE__)
+#define D_CHECK_AL_ERRORS()
 
 OpenALSoundManager::OpenALSoundManager()
 {
@@ -30,7 +30,8 @@ OpenALSoundManager::OpenALSoundManager()
         D_THROW(std::runtime_error, "Fail to create the OpenAL context");
     }
 
-    {
+    { // listener
+
         alListener3f(AL_POSITION, 0, 0, 0);
         D_CHECK_AL_ERRORS();
 
@@ -46,9 +47,11 @@ OpenALSoundManager::OpenALSoundManager()
 
         alListenerf(AL_GAIN, 1.0f); // maximum global volume
         D_CHECK_AL_ERRORS();
-    }
 
-    {
+    } // listener
+
+    { // sources
+
         const unsigned int totalSources = 30;
 
         _sources.reserve(totalSources); // pre-allocate
@@ -91,7 +94,8 @@ OpenALSoundManager::OpenALSoundManager()
 
             _sources.push_back(currSource);
         }
-    }
+
+    } // sources
 }
 
 OpenALSoundManager::~OpenALSoundManager()

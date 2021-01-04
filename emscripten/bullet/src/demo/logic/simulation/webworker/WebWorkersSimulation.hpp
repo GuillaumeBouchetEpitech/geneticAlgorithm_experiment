@@ -3,11 +3,11 @@
 
 #include "demo/defines.hpp"
 
-#include "demo/simulation/AbstactSimulation.hpp"
+#include "demo/logic/simulation/AbstactSimulation.hpp"
 
-#include "demo/simulation/logic/CircuitBuilder.hpp"
+#include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 
-#include "demo/simulation/machineLearning/GeneticAlgorithm.hpp"
+#include "demo/logic/simulation/machineLearning/GeneticAlgorithm.hpp"
 
 #include "producer/WorkerProducer.hpp"
 #include "common.hpp"
@@ -26,8 +26,7 @@ private:
         WorkersLoading,
         ResetAndProcess,
         Process,
-    }
-    _currentRequest = WorkerRequest::None;
+    } _currentRequest = WorkerRequest::None;
 
     glm::vec3 _startPosition;
 
@@ -50,15 +49,14 @@ private:
         AbstactSimulation::SimpleCallback onGenerationStep;
         AbstactSimulation::GenomeDieCallback onGenomeDie;
         AbstactSimulation::GenerationEndCallback onGenerationEnd;
-    }
-    _callbacks;
+    } _callbacks;
 
 public:
     WebWorkersSimulation() = default;
     virtual ~WebWorkersSimulation() = default;
 
 public:
-    virtual void initialise(const Definition& def) override;
+    virtual void initialise(const Definition &def) override;
 
 public:
     virtual void update() override;
@@ -69,8 +67,8 @@ private:
 
 public:
     virtual unsigned int getTotalCores() const override;
-    virtual const AbstactSimulation::CoreState& getCoreState(unsigned int index) const override;
-    virtual const CarData& getCarResult(unsigned int index) const override;
+    virtual const AbstactSimulation::CoreState &getCoreState(unsigned int index) const override;
+    virtual const CarData &getCarResult(unsigned int index) const override;
     virtual unsigned int getTotalCars() const override;
 
 public:
@@ -81,9 +79,8 @@ public:
     virtual void setOnGenerationEndCallback(AbstactSimulation::GenerationEndCallback callback) override;
 
 public:
-    virtual const Genomes& getGenomes() const override;
-    virtual const Genome& getBestGenome() const override;
+    virtual const Genomes &getGenomes() const override;
+    virtual const Genome &getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
-    virtual const glm::vec3& getStartPosition() const override;
-
+    virtual const glm::vec3 &getStartPosition() const override;
 };

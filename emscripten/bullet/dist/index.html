@@ -99,6 +99,10 @@
       .redButton {
         background-color: #f44336;
       }
+
+      .grayButton {
+        background-color: #888888;
+      }
     </style>
   </head>
   <body>
@@ -121,8 +125,8 @@
 
           <h2>Change the total amount of cars:</h2>
           <p>
-            <button onclick="window.reloadWithDifferentCarAmount(30)" class="button blueButton">try with 90 cars</button>
-            <button onclick="window.reloadWithDifferentCarAmount(90)" class="button redButton">try with 270 cars</button>
+            <button id="try_with_90_cars" class="button grayButton">try with 90 cars</button>
+            <button id="try_with_270_cars" class="button grayButton">try with 270 cars</button>
           </p>
 
           <h2>FAQ:</h2>

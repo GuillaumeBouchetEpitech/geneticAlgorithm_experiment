@@ -7,11 +7,13 @@
 
 #include "machineLearning/GeneticAlgorithm.hpp"
 
-#include "demo/simulation/logic/CarData.hpp"
+#include "demo/logic/simulation/logic/CarData.hpp"
+#include "demo/utilities/NonCopyable.hpp"
 
 #include <functional>
 
 class AbstactSimulation
+    : public NonCopyable
 {
 public:
     using SimpleCallback = std::function<void()>;
@@ -41,20 +43,18 @@ public:
     virtual ~AbstactSimulation() = default;
 
 public:
-
-    virtual void initialise(const Definition& def) = 0;
+    virtual void initialise(const Definition &def) = 0;
 
 public:
     virtual void update() = 0;
 
 public:
     virtual unsigned int getTotalCores() const = 0;
-    virtual const CoreState& getCoreState(unsigned int index) const = 0;
-    virtual const CarData& getCarResult(unsigned int index) const = 0;
+    virtual const CoreState &getCoreState(unsigned int index) const = 0;
+    virtual const CarData &getCarResult(unsigned int index) const = 0;
     virtual unsigned int getTotalCars() const = 0;
 
 public:
-
 #if defined D_WEB_WEBWORKER_BUILD
 
     virtual void setOnWorkersReadyCallback(SimpleCallback callback) = 0;
@@ -67,9 +67,8 @@ public:
     virtual void setOnGenerationEndCallback(GenerationEndCallback callback) = 0;
 
 public:
-    virtual const Genomes& getGenomes() const = 0;
-    virtual const Genome& getBestGenome() const = 0;
+    virtual const Genomes &getGenomes() const = 0;
+    virtual const Genome &getBestGenome() const = 0;
     virtual unsigned int getGenerationNumber() const = 0;
-    virtual const glm::vec3& getStartPosition() const = 0;
-
+    virtual const glm::vec3 &getStartPosition() const = 0;
 };

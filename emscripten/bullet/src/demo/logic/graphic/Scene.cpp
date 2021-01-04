@@ -174,19 +174,17 @@ void Scene::_updateMatrices()
         glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
         glm::mat4 viewMatrix = glm::lookAt(camera.eye, center, upAxis);
 
-        // camera.front = glm::normalize(center - camera.eye);
         camera.front = glm::normalize(camera.eye - center);
 
         glm::mat4 modelMatrix = glm::mat4(1.0f); // <= identity matrix
         modelMatrix = glm::translate(modelMatrix, -camera.center);
 
-        // matrices.scene.modelView = viewMatrix * modelMatrix;
         matrices.scene.model = modelMatrix;
         matrices.scene.view = viewMatrix;
 
-        // matrices.scene.composed = matrices.scene.projection * matrices.scene.modelView;
         matrices.scene.composed = matrices.scene.projection * matrices.scene.view * matrices.scene.model;
-    }
+
+    } // scene
 
     { // third person
 
@@ -206,29 +204,34 @@ void Scene::_updateMatrices()
             const auto& carResult = simulation.getCarResult(logic.leaderCar.index);
 
             glm::vec3 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+            glm::vec3 carUpAxis = carResult.transform * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+
+            StateManager::States currentState = StateManager::get()->getState();
 
             if (// do not update the third person camera if not in a correct state
-                (StateManager::get()->getState() == StateManager::States::Running ||
-                 StateManager::get()->getState() == StateManager::States::StartGeneration) &&
+                (currentState == StateManager::States::Running ||
+                 currentState == StateManager::States::StartGeneration) &&
                 // do not update the third person camera if too close from the target
                 glm::distance(carOrigin, camera.thirdPersonCenter) > 0.1f)
             {
                 // simple lerp to setup the third person camera
                 const float lerpRatio = 0.1f;
                 camera.thirdPersonCenter += (carOrigin - camera.thirdPersonCenter) * lerpRatio;
+                camera.thirdPersonUpAxis += (carUpAxis - camera.thirdPersonUpAxis) * lerpRatio;
             }
 
             glm::vec3 eye = camera.thirdPersonCenter;
             glm::vec3 center = carOrigin;
-            glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
-            // matrices.thirdPerson.modelView = glm::lookAt(eye, center, upAxis);
+            glm::vec3 upAxis = camera.thirdPersonUpAxis;
+
+
             matrices.thirdPerson.model = glm::identity<glm::mat4>();
             matrices.thirdPerson.view = glm::lookAt(eye, center, upAxis);
 
-            // matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.modelView;
             matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.model * matrices.thirdPerson.view;
         }
-    }
+
+    } // third person
 
     { // hud
 
@@ -414,116 +417,98 @@ void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
     // instanced geometrie(s)
 
     const auto& graphic = Data::get().graphic;
+    const auto& shader = *graphic.shaders.particles;
+    const auto& geometry = graphic.geometries.particles.firework;
 
-    {
-        const auto& shader = *graphic.shaders.particles;
-        const auto& geometry = graphic.geometries.particles.firework;
+    shader.bind();
 
-        shader.bind();
+    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
-
-        geometry.render();
-    }
+    geometry.render();
 }
 
 void Scene::_renderCars(const glm::mat4& sceneMatrix)
-// void Scene::_renderCars(const Data::Graphic::CameraData::MatricesData::Matrices& matrices)
-
 {
     // instanced geometrie(s)
 
-    auto& graphic = Data::get().graphic;
+    auto& data = Data::get();
+    auto& graphic = data.graphic;
+    const auto& logic = data.logic;
+    const auto& simulation = *logic.simulation;
 
+    graphic.shaders.model->bind();
+
+    GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
+    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+
+    unsigned int totalCars = simulation.getTotalCars();
+
+    struct Attributes
     {
-        graphic.shaders.model->bind();
+        glm::mat4   tranform;
+        glm::vec3   color;
 
-        GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
-        // glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(matrices.composed));
-        // // GLint projectionMatrixLoc = graphic.shaders.model->getUniform("u_projectionMatrix");
-        // // glUniformMatrix4fv(projectionMatrixLoc, 1, false, glm::value_ptr(matrices.projection));
-        // // GLint modelMatrixLoc = graphic.shaders.model->getUniform("u_modelMatrix");
-        // // glUniformMatrix4fv(modelMatrixLoc, 1, false, glm::value_ptr(matrices.model));
-        // // GLint viewMatrixLoc = graphic.shaders.model->getUniform("u_viewMatrix");
-        // // glUniformMatrix4fv(viewMatrixLoc, 1, false, glm::value_ptr(matrices.view));
+        Attributes(const glm::mat4& tranform, const glm::vec3& color)
+            : tranform(tranform)
+            , color(color)
+        {}
+    };
 
-        {
-            const auto& logic = Data::get().logic;
-            const auto& simulation = *logic.simulation;
+    std::vector<Attributes> modelsChassisMatrices;
+    std::vector<Attributes> modelWheelsMatrices;
 
-            unsigned int totalCars = simulation.getTotalCars();
+    modelsChassisMatrices.reserve(totalCars); // pre-allocate
+    modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
 
-            struct Attributes
-            {
-                glm::mat4   tranform;
-                glm::vec3   color;
+    glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
 
-                Attributes(const glm::mat4& tranform, const glm::vec3& color)
-                    : tranform(tranform)
-                    , color(color)
-                {}
-            };
+    const glm::vec3 whiteColor(1, 1, 1);
+    const glm::vec3 greenColor(0, 1, 0);
+    const glm::vec3 redColor(1, 0, 0);
+    const glm::vec3& leaderColor = whiteColor;
+    const glm::vec3& lifeColor = greenColor;
+    const glm::vec3& deathColor = redColor;
 
-            std::vector<Attributes> modelsChassisMatrices;
-            std::vector<Attributes> modelWheelsMatrices;
+    for (unsigned int ii = 0; ii < totalCars; ++ii)
+    {
+        const auto& carData = simulation.getCarResult(ii);
 
-            modelsChassisMatrices.reserve(totalCars); // pre-allocate
-            modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
+        if (!carData.isAlive)
+            continue;
 
-            glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
+        //
+        // 3d clipping
 
-            const glm::vec3 whiteColor(1, 1, 1);
-            const glm::vec3 greenColor(0, 1, 0);
-            const glm::vec3 redColor(1, 0, 0);
-            const glm::vec3& leaderColor = whiteColor;
-            const glm::vec3& lifeColor = greenColor;
-            const glm::vec3& deathColor = redColor;
+        glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
+        glm::vec4 carOrigin = chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-            for (unsigned int ii = 0; ii < totalCars; ++ii)
-            {
-                const auto& carData = simulation.getCarResult(ii);
+        if (!graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 5.0f))
+            continue;
 
-                if (!carData.isAlive)
-                    continue;
+        //
+        // color
 
-                //
-                // 3d clipping
+        const bool isLeader = (logic.leaderCar.index == int(ii));
+        glm::vec3 targetColor = isLeader ? leaderColor : lifeColor;
+        glm::vec3 color = glm::mix(deathColor, targetColor, carData.life);
 
-                glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
-                glm::vec4 carOrigin = chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        //
+        // transforms
 
-                if (!graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 5.0f))
-                    continue;
-
-                //
-                // color
-
-                const bool isLeader = (logic.leaderCar.index == int(ii));
-                glm::vec3 targetColor = isLeader ? leaderColor : lifeColor;
-                glm::vec3 color = glm::mix(deathColor, targetColor, carData.life);
-
-                //
-                // transforms
-
-                modelsChassisMatrices.emplace_back(chassisTransform, color);
-                for (const auto& wheelTransform : carData.wheelsTransform)
-                    modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
-            }
-
-            graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);
-            graphic.geometries.model.car.setInstancedCount(modelsChassisMatrices.size());
-
-            graphic.geometries.model.wheel.updateBuffer(1, modelWheelsMatrices);
-            graphic.geometries.model.wheel.setInstancedCount(modelWheelsMatrices.size());
-
-        }
-
-        graphic.geometries.model.car.render();
-        graphic.geometries.model.wheel.render();
+        modelsChassisMatrices.emplace_back(chassisTransform, color);
+        for (const auto& wheelTransform : carData.wheelsTransform)
+            modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
     }
 
+    graphic.geometries.model.car.updateBuffer(1, modelsChassisMatrices);
+    graphic.geometries.model.car.setInstancedCount(modelsChassisMatrices.size());
+
+    graphic.geometries.model.wheel.updateBuffer(1, modelWheelsMatrices);
+    graphic.geometries.model.wheel.setInstancedCount(modelWheelsMatrices.size());
+
+    graphic.geometries.model.car.render();
+    graphic.geometries.model.wheel.render();
 }
 
 void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails /*= true*/)
@@ -733,9 +718,8 @@ void Scene::_renderHUD()
 
                     const glm::vec2 viewportPos(0, 0); // hardcoded :(
 
-                    bool result = sceneToScreen(
+                    bool isVisible = sceneToScreen(
                         carPos,
-                        // scene.modelView,
                         scene.view * scene.model,
                         scene.projection,
                         viewportPos,
@@ -743,7 +727,9 @@ void Scene::_renderHUD()
                         screenCoord
                     );
 
-                    if (result && screenCoord.z < 1.0f) // <= is false when out of range
+                    if (isVisible &&
+                        // out of range?
+                        screenCoord.z < 1.0f)
                     {
                         glm::vec2 textPos = { screenCoord.x + 50, screenCoord.y + 50 };
 
@@ -797,8 +783,10 @@ void Scene::_renderHUD()
 
         { // big titles
 
+            StateManager::States currentState = StateManager::get()->getState();
+
 #if defined D_WEB_WEBWORKER_BUILD
-            if (StateManager::get()->getState() == StateManager::States::WorkersLoading)
+            if (currentState == StateManager::States::WorkersLoading)
             {
                 float scale = 2.0f;
 
@@ -812,13 +800,16 @@ void Scene::_renderHUD()
             }
 #endif
 
-            if (StateManager::get()->getState() == StateManager::States::Paused)
+            if (currentState == StateManager::States::Paused)
             {
                 float scale = 5.0f;
-                textRenderer.push({ 400 - 3 * 16 * scale, 300 - 8 * scale }, "PAUSED", scale);
+
+                std::string message = "PAUSED";
+
+                textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
             }
 
-            if (StateManager::get()->getState() == StateManager::States::StartGeneration)
+            if (currentState == StateManager::States::StartGeneration)
             {
                 float scale = 2.0f;
 
@@ -945,181 +936,168 @@ void Scene::_renderHUD()
 
     } // cores history graphics
 
-    /**/
-    {
-        auto&       stackRenderer = graphic.stackRenderer;
-        const auto& shader = *graphic.shaders.stackRenderer;
+    auto&       stackRenderer = graphic.stackRenderer;
+    const auto& shader = *graphic.shaders.stackRenderer;
 
-        shader.bind();
+    shader.bind();
 
-        const auto& hudMatrix = graphic.camera.matrices.hud;
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+    const auto& hudMatrix = graphic.camera.matrices.hud;
+    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
-        //
-        // show progresses here
+    { // progresses curve
+
+        const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+
+        const glm::vec2 borderPos(10, 400);
+        const glm::vec2 borderSize(150, 75);
+
+        stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
+        const auto& allStats = logic.fitnessStats.allStats;
+
+        if (allStats.size() >= 2)
         {
-            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+            float maxFitness = 0.0f;
+            for (float stat : allStats)
+                maxFitness = std::max(maxFitness, stat);
 
-            const glm::vec2 borderPos(10, 400);
-            const glm::vec2 borderSize(150, 75);
+            float stepWidth = borderSize.x / (allStats.size() - 1);
+
+            for (unsigned int ii = 1; ii < allStats.size(); ++ii)
+            {
+                const float prevData = allStats[ii - 1];
+                const float currData = allStats[ii];
+
+                glm::vec2 prevPos = {
+                    stepWidth * (ii - 1),
+                    (prevData / maxFitness) * borderSize.y,
+                };
+                glm::vec2 currPos = {
+                    stepWidth * ii,
+                    (currData / maxFitness) * borderSize.y,
+                };
+
+                stackRenderer.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
+            }
+        }
+
+    } // progresses curve
+
+    { // topology
+
+        if (logic.leaderCar.index >= 0)
+        {
+
+            // const auto& bestGenome = logic.simulation->getBestGenome();
+
+            // bestGenome.weights;
+
+            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+            const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
+
+            const glm::vec2 borderPos(690, 215);
+            const glm::vec2 borderSize(100, 100);
 
             stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
-            const auto& allStats = logic.fitnessStats.allStats;
+            std::vector<unsigned int> topologyArray;
+            topologyArray.push_back(logic.annTopology.getInput());
+            for (const auto& hidden : logic.annTopology.getHiddens())
+                topologyArray.push_back(hidden);
+            topologyArray.push_back(logic.annTopology.getOutput());
 
-            if (allStats.size() >= 2)
+            std::vector<std::vector<glm::vec2>> allNeuronPos;
+            allNeuronPos.resize(topologyArray.size());
+
+            glm::vec2 neuronSize(7, 7);
+
+            for (unsigned int ii = 0; ii < topologyArray.size(); ++ii)
             {
-                float maxFitness = 0.0f;
-                for (float stat : allStats)
-                    maxFitness = std::max(maxFitness, stat);
+                unsigned int actualSize = topologyArray[ii];
 
-                float stepWidth = borderSize.x / (allStats.size() - 1);
+                glm::vec2 currPos = borderPos;
+                currPos.y += borderSize.y - borderSize.y / topologyArray.size() * (float(ii) + 0.5f);
 
-                for (unsigned int ii = 1; ii < allStats.size(); ++ii)
+                allNeuronPos[ii].reserve(actualSize); // pre-allocate
+
+                for (unsigned int jj = 0; jj < actualSize; ++jj)
                 {
-                    const float prevData = allStats[ii - 1];
-                    const float currData = allStats[ii];
+                    currPos.x += borderSize.x / (actualSize + 1);
 
-                    glm::vec2 prevPos = {
-                        stepWidth * (ii - 1),
-                        (prevData / maxFitness) * borderSize.y,
-                    };
-                    glm::vec2 currPos = {
-                        stepWidth * ii,
-                        (currData / maxFitness) * borderSize.y,
-                    };
-
-                    stackRenderer.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
+                    allNeuronPos[ii].push_back(currPos);
                 }
             }
+
+            // draw neurons
+            for (unsigned int ii = 0; ii < allNeuronPos.size(); ++ii)
+                for (unsigned int jj = 0; jj < allNeuronPos[ii].size(); ++jj)
+                    stackRenderer.pushRectangle(allNeuronPos[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
+
+            // draw connections
+            for (unsigned int ii = 1; ii < allNeuronPos.size(); ++ii)
+                for (unsigned int jj = 0; jj < allNeuronPos[ii - 1].size(); ++jj)
+                    for (unsigned int kk = 0; kk < allNeuronPos[ii].size(); ++kk)
+                        stackRenderer.pushLine(allNeuronPos[ii - 1][jj], allNeuronPos[ii][kk], greenColor);
         }
-        // show progresses here
-        //
 
-        //
-        // show topology here
+    } // topology
+
+    { // leader's eye
+
+        if (logic.leaderCar.index >= 0)
         {
-            if (logic.leaderCar.index >= 0)
-            {
+            const auto& leader = logic.simulation->getCarResult(logic.leaderCar.index);
 
-                // const auto& bestGenome = logic.simulation->getBestGenome();
+            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+            const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
+            const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-                // bestGenome.weights;
+            const glm::vec2 borderPos(690, 320);
+            const glm::vec2 borderSize(100, 60);
 
-                const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-                const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
+            stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
-                const glm::vec2 borderPos(690, 215);
-                const glm::vec2 borderSize(100, 100);
+            //
+            //
 
-                stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+            const unsigned int totalInputs = data.logic.annTopology.getInput();
+            const unsigned int layerSize = 5; // <= hardcoded :(
+            const unsigned int layerCount = totalInputs / layerSize;
 
-                std::vector<unsigned int> topologyArray;
-                topologyArray.push_back(logic.annTopology.getInput());
-                for (const auto& hidden : logic.annTopology.getHiddens())
-                    topologyArray.push_back(hidden);
-                topologyArray.push_back(logic.annTopology.getOutput());
+            //
+            //
 
-                std::vector<std::vector<glm::vec2>> allNeuronPos;
-                allNeuronPos.resize(topologyArray.size());
-
-                glm::vec2 neuronSize(7, 7);
-
-                for (unsigned int ii = 0; ii < topologyArray.size(); ++ii)
+            std::vector<glm::vec2> allPositions;
+            allPositions.reserve(totalInputs); // pre-allocate
+            for (unsigned int ii = 0; ii < layerCount; ++ii)
+                for (unsigned int jj = 0; jj < layerSize; ++jj)
                 {
-                    unsigned int actualSize = topologyArray[ii];
-
                     glm::vec2 currPos = borderPos;
-                    currPos.y += borderSize.y - borderSize.y / topologyArray.size() * (float(ii) + 0.5f);
 
-                    allNeuronPos[ii].reserve(actualSize); // pre-allocate
+                    currPos.x += borderSize.x * ((float(jj) + 0.5f) / layerSize);
+                    currPos.y += borderSize.y * ((float(ii) + 0.5f) / layerCount);
 
-                    for (unsigned int jj = 0; jj < actualSize; ++jj)
-                    {
-                        currPos.x += borderSize.x / (actualSize + 1);
-
-                        allNeuronPos[ii].push_back(currPos);
-                    }
+                    allPositions.push_back(currPos);
                 }
 
-                // draw neurons
-                for (unsigned int ii = 0; ii < allNeuronPos.size(); ++ii)
-                    for (unsigned int jj = 0; jj < allNeuronPos[ii].size(); ++jj)
-                        stackRenderer.pushRectangle(allNeuronPos[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
+            glm::vec2 eyeSize = {19, 19};
 
-                // draw connections
-                for (unsigned int ii = 1; ii < allNeuronPos.size(); ++ii)
-                    for (unsigned int jj = 0; jj < allNeuronPos[ii - 1].size(); ++jj)
-                        for (unsigned int kk = 0; kk < allNeuronPos[ii].size(); ++kk)
-                            stackRenderer.pushLine(allNeuronPos[ii - 1][jj], allNeuronPos[ii][kk], greenColor);
-            }
-        }
-        // show topology here
-        //
-
-        //
-        // show leader car's eye here
-        {
-            if (logic.leaderCar.index >= 0)
+            for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
             {
-                const auto& leader = logic.simulation->getCarResult(logic.leaderCar.index);
+                const auto& position = allPositions[ii];
 
-                const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-                const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
-                const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
+                stackRenderer.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
 
-                const glm::vec2 borderPos(690, 320);
-                const glm::vec2 borderSize(100, 60);
+                glm::vec3 color = glm::mix(redColor, greenColor, leader.eyeSensors[ii].value);
 
-                stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
-
-                //
-                //
-
-                const unsigned int totalInputs = data.logic.annTopology.getInput();
-                const unsigned int layerSize = 5; // <= hardcoded :(
-                const unsigned int layerCount = totalInputs / layerSize;
-
-                //
-                //
-
-                std::vector<glm::vec2> allPositions;
-                allPositions.reserve(totalInputs); // pre-allocate
-                for (unsigned int ii = 0; ii < layerCount; ++ii)
-                    for (unsigned int jj = 0; jj < layerSize; ++jj)
-                    {
-                        glm::vec2 currPos = borderPos;
-
-                        currPos.x += borderSize.x * ((float(jj) + 0.5f) / layerSize);
-                        currPos.y += borderSize.y * ((float(ii) + 0.5f) / layerCount);
-
-                        allPositions.push_back(currPos);
-                    }
-
-                glm::vec2 eyeSize = {19, 19};
-
-                for (unsigned int ii = 0; ii < allPositions.size(); ++ii)
-                {
-                    const auto& position = allPositions[ii];
-
-                    stackRenderer.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
-
-                    glm::vec3 color = glm::mix(redColor, greenColor, leader.eyeSensors[ii].value);
-
-                    stackRenderer.pushQuad(position, eyeSize, color);
-                }
-
-                // logic.simulation->getBestGenome().id;
-                // stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+                stackRenderer.pushQuad(position, eyeSize, color);
             }
         }
-        // show leader car's eye here
-        //
 
-        stackRenderer.flush();
-    }
-    //*/
+    } // leader's eye
+
+    stackRenderer.flush();
 
     glEnable(GL_DEPTH_TEST);
 }

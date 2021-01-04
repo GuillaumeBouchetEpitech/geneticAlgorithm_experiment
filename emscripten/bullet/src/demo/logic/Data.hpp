@@ -15,7 +15,7 @@
 
 #include "sounds/OpenALSoundManager.hpp"
 
-#include "demo/simulation/AbstactSimulation.hpp"
+#include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "demo/states/StateManager.hpp"
 
@@ -82,6 +82,7 @@ public:
             glm::vec3 front = { 1.0f, 0.0f, 0.0f };
 
             glm::vec3 thirdPersonCenter = { 0.0f, 0.0f, 0.0f };
+            glm::vec3 thirdPersonUpAxis = { 0.0f, 0.0f, 1.0f };
 
             struct MatricesData
             {

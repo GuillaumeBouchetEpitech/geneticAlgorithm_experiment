@@ -86,19 +86,30 @@ bool GeneticAlgorithm::breedPopulation()
 
     { // crossover: breed best genomes
 
-        using ParentPair = std::pair<unsigned int, unsigned int>;
+        struct ParentPair
+        {
+            unsigned int parentA;
+            unsigned int parentB;
+        };
+
         std::vector<ParentPair> parentsPairsGenomes;
 
         // build all the possible "parents" pairs
         for (unsigned int ii = 0; ii < latestBestGenomes.size(); ++ii)
             for (unsigned int jj = ii + 1; jj < latestBestGenomes.size(); ++jj)
-                parentsPairsGenomes.push_back(std::make_pair(ii, jj));
+                parentsPairsGenomes.push_back({ii, jj});
 
         // sort the possible "parents" pair by summed fitness
         auto cmpFunc = [&latestBestGenomes](const ParentPair& a, const ParentPair& b)
         {
-            float fitnessPairA = latestBestGenomes[a.first].fitness + latestBestGenomes[a.second].fitness;
-            float fitnessPairB = latestBestGenomes[b.first].fitness + latestBestGenomes[b.second].fitness;
+            float fitnessPairA = (
+                latestBestGenomes[a.parentA].fitness +
+                latestBestGenomes[a.parentB].fitness
+            );
+            float fitnessPairB = (
+                latestBestGenomes[b.parentA].fitness +
+                latestBestGenomes[b.parentB].fitness
+            );
             return (fitnessPairA > fitnessPairB); // <= the higher the better
         };
         std::sort(parentsPairsGenomes.begin(), parentsPairsGenomes.end(), cmpFunc);
@@ -114,8 +125,8 @@ bool GeneticAlgorithm::breedPopulation()
             if (maxOffspring-- <= 0)
                 break;
 
-            const auto& parentGenomeA = latestBestGenomes[parentPair.first];
-            const auto& parentGenomeB = latestBestGenomes[parentPair.second];
+            const auto& parentGenomeA = latestBestGenomes[parentPair.parentA];
+            const auto& parentGenomeB = latestBestGenomes[parentPair.parentB];
 
             Genome newOffspring;
 
@@ -139,7 +150,7 @@ bool GeneticAlgorithm::breedPopulation()
         {
             Genome newGenome;
 
-            newGenome.weights.reserve(totalWeights);
+            newGenome.weights.reserve(totalWeights); // pre-allocate
             for (unsigned int jj = 0; jj < totalWeights; ++jj)
                 newGenome.weights.push_back(RNG::getRangedValue(-1.0f, 1.0f));
 
@@ -204,7 +215,7 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
     const unsigned int totalWeights = _neuralNetworkTopology.getTotalWeights();
 
     offspring.weights.clear();
-    offspring.weights.reserve(totalWeights);
+    offspring.weights.reserve(totalWeights); // pre-allocate
 
     for (unsigned int ii = 0; ii < totalWeights; ++ii)
     {

@@ -1,15 +1,15 @@
 
 #pragma once
 
-#include "demo/simulation/AbstactSimulation.hpp"
+#include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "./multithreading/Producer.hpp"
 
-#include "demo/simulation/machineLearning/NeuralNetwork.hpp"
+#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 
-#include "demo/simulation/logic/Car.hpp"
-#include "demo/simulation/logic/CircuitBuilder.hpp"
-#include "demo/simulation/logic/physic/PhysicWorld.hpp"
+#include "demo/logic/simulation/logic/Car.hpp"
+#include "demo/logic/simulation/logic/CircuitBuilder.hpp"
+#include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
 
 #include <list>
 #include <vector>
@@ -19,9 +19,9 @@ class PthreadSimulation
     : public AbstactSimulation
 {
 private:
-    unsigned int    _totalCores = 0;
+    unsigned int _totalCores = 0;
 
-    multithreading::Producer* _multithreadProducer;
+    multithreading::Producer *_multithreadProducer;
 
     /**
      * need multiple physic worlds so that we can divide the
@@ -33,15 +33,15 @@ private:
 
     unsigned int _genomesPerCore = 0;
 
-    std::vector<Car>    _cars;
-    CarDatas            _carsData;
+    std::vector<Car> _cars;
+    CarDatas _carsData;
 
-    CircuitBuilder::StartTransform    _startTransform;
+    CircuitBuilder::StartTransform _startTransform;
 
     bool _isFirstGenerationFrame = true;
 
 private:
-    GeneticAlgorithm    _geneticAlgorithm;
+    GeneticAlgorithm _geneticAlgorithm;
 
     struct t_callbacks
     {
@@ -49,15 +49,14 @@ private:
         AbstactSimulation::SimpleCallback onProcessStep;
         AbstactSimulation::GenomeDieCallback onGenomeDie;
         AbstactSimulation::GenerationEndCallback onGenerationEnd;
-    }
-    _callbacks;
+    } _callbacks;
 
 public:
     PthreadSimulation() = default;
     virtual ~PthreadSimulation() = default;
 
 public:
-    virtual void initialise(const Definition& def) override;
+    virtual void initialise(const Definition &def) override;
 
 public:
     virtual void update() override;
@@ -67,8 +66,8 @@ private:
 
 public:
     virtual unsigned int getTotalCores() const override;
-    virtual const AbstactSimulation::CoreState& getCoreState(unsigned int index) const override;
-    virtual const CarData& getCarResult(unsigned int index) const override;
+    virtual const AbstactSimulation::CoreState &getCoreState(unsigned int index) const override;
+    virtual const CarData &getCarResult(unsigned int index) const override;
     virtual unsigned int getTotalCars() const override;
 
 public:
@@ -78,9 +77,8 @@ public:
     virtual void setOnGenerationEndCallback(AbstactSimulation::GenerationEndCallback callback) override;
 
 public:
-    virtual const Genomes& getGenomes() const override;
-    virtual const Genome& getBestGenome() const override;
+    virtual const Genomes &getGenomes() const override;
+    virtual const Genome &getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
-    virtual const glm::vec3& getStartPosition() const override;
-
+    virtual const glm::vec3 &getStartPosition() const override;
 };

@@ -9,18 +9,18 @@ PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
     : _index(index)
 {
     unsigned int vertNumber = vertices.size() * 3;
-    _vertices = new float[vertices.size() * 3];
-    std::memcpy(_vertices, vertices.data(), vertices.size() * sizeof(glm::vec3));
+    _vertices.reset(new float[vertices.size() * 3]);
+    std::memcpy(_vertices.get(), vertices.data(), vertices.size() * sizeof(glm::vec3));
     int vertStride = sizeof(glm::vec3);
 
     unsigned int triangleNumber = indices.size() / 3;
-    _indices = new int[indices.size()];
-    std::memcpy(_indices, indices.data(), indices.size() * sizeof(int));
+    _indices.reset(new int[indices.size()]);
+    std::memcpy(_indices.get(), indices.data(), indices.size() * sizeof(int));
     int indexStride = 3 * sizeof(int);
 
     _bullet.indexVertexArrays = new btTriangleIndexVertexArray(
-        triangleNumber, _indices, indexStride,
-        vertNumber, _vertices, vertStride
+        triangleNumber, _indices.get(), indexStride,
+        vertNumber, _vertices.get(), vertStride
     );
 
     bool useQuantizedAabbCompression = true;
@@ -40,9 +40,6 @@ PhysicTrimesh::~PhysicTrimesh()
     delete _bullet.body;
     delete _bullet.shape;
     delete _bullet.indexVertexArrays;
-
-    delete[] _indices;
-    delete[] _vertices;
 }
 
 int PhysicTrimesh::getIndex() const

@@ -169,13 +169,13 @@ void Car::_collideGroundSensor()
 
         _groundSensor.value = glm::length(_groundSensor.far - _groundSensor.near) / constants::groundMaxRange;
 
-        int hasHitGroundIndex = params.result.impactIndex;
+        int hitGroundIndex = params.result.impactIndex;
 
         // is this the next "ground geometry" index?
-        if (_groundIndex + 1 == hasHitGroundIndex)
+        if (_groundIndex + 1 == hitGroundIndex)
         {
             // update so it only get rewarded at the next "ground geometry"
-            _groundIndex = hasHitGroundIndex;
+            _groundIndex = hitGroundIndex;
 
             // restore health to full
             _health = constants::healthMaxValue;
@@ -183,7 +183,7 @@ void Car::_collideGroundSensor()
             // reward the genome
             ++_fitness;
         }
-        // else if (_groundIndex + 1 > hasHitGroundIndex)
+        // else if (_groundIndex + 1 > hitGroundIndex)
         // {
         //     _physicVehicle.disableContactResponse();
         // }

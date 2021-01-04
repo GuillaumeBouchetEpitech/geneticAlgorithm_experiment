@@ -14,8 +14,8 @@ const onGlobalPageLoad = async () => {
     };
     window.addEventListener("error", onBasicGlobalPageError);
 
-    const errorText = document.getElementById("errorText");
-    const canvas = document.getElementById("emscriptenCanvas");
+    const errorText = document.querySelector("#errorText");
+    const canvas = document.querySelector("#emscriptenCanvas");
 
     const showErrorText = (htmlText) => {
         canvas.style.display = "none"; // hide
@@ -26,6 +26,66 @@ const onGlobalPageLoad = async () => {
         errorText.style.display = "none"; // hide
         canvas.style.display = "block"; // show
     };
+
+    //
+    //
+    // buttons' logic
+
+    const extractVarsFromUrl = () => {
+        const varsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
+        const vars = {};
+        window.location.href.replace(varsRegexp, function (m, key, value) {
+            vars[key] = value;
+        });
+        return vars;
+    };
+
+    const vars = extractVarsFromUrl();
+    window.genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
+
+    const buttons = {
+        try_with_90_cars: document.querySelector("#try_with_90_cars"),
+        try_with_270_cars: document.querySelector("#try_with_270_cars"),
+    };
+
+    if (window.genomesPerCore != 30) {
+
+        buttons.try_with_90_cars.disabled = false;
+        buttons.try_with_270_cars.disabled = true;
+
+        // add blue class
+        if (!buttons.try_with_90_cars.classList.contains('blueButton'))
+            buttons.try_with_90_cars.classList.add('blueButton');
+
+        // remove grey class
+        if (buttons.try_with_90_cars.classList.contains('grayButton'))
+            buttons.try_with_90_cars.classList.remove('grayButton');
+
+        // handle events
+        buttons.try_with_90_cars.addEventListener("click", () => {
+            // simple reload
+            window.location.href = window.location.pathname + `?genomesPerCore=${30}`;
+        });
+    }
+    else {
+
+        buttons.try_with_90_cars.disabled = true;
+        buttons.try_with_270_cars.disabled = false;
+
+        // add red class
+        if (!buttons.try_with_270_cars.classList.contains('redButton'))
+            buttons.try_with_270_cars.classList.add('redButton');
+
+        // remove grey class
+        if (buttons.try_with_270_cars.classList.contains('grayButton'))
+            buttons.try_with_270_cars.classList.remove('grayButton');
+
+        // handle events
+        buttons.try_with_270_cars.addEventListener("click", () => {
+            // simple reload
+            window.location.href = window.location.pathname + `?genomesPerCore=${90}`;
+        });
+    }
 
     //
     //
@@ -155,7 +215,7 @@ const onGlobalPageLoad = async () => {
         const webGLExtensions = webglCtx.getSupportedExtensions();
 
         // NOTE: incomplete names, require indexOf()
-        const mandatoryWebGLExtensions = [ "instanced_arrays", "vertex_array_object" ];
+        const mandatoryWebGLExtensions = ["instanced_arrays", "vertex_array_object"];
 
         mandatoryWebGLExtensions.forEach((extensionName) => {
 
@@ -186,22 +246,6 @@ const onGlobalPageLoad = async () => {
     let scriptFolder = "wasm";
 
     const supportMultithreading = (window.SharedArrayBuffer !== undefined);
-
-    //
-    //
-    // extract the "genomesPerCore" value from the url
-
-    const extractVarsFromUrl = () => {
-        const varsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
-        const vars = {};
-        window.location.href.replace(varsRegexp, function (m, key, value) {
-            vars[key] = value;
-        });
-        return vars;
-    };
-
-    const vars = extractVarsFromUrl();
-    window.genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
 
     // extract the "genomesPerCore" value from the url
     //
@@ -244,7 +288,7 @@ const onGlobalPageLoad = async () => {
 
                 const current = cap[1];
                 const total = cap[2];
-                const percent = ((current/total) * 100).toFixed(0);
+                const percent = ((current / total) * 100).toFixed(0);
 
                 logger.log(`[JS] ${text} [${percent}%]`);
             }
@@ -292,7 +336,7 @@ const onGlobalPageLoad = async () => {
     try {
 
         const scriptLoadingUtility = (src) => {
-            return new Promise(function(resolve, reject) {
+            return new Promise((resolve, reject) => {
                 const scriptElement = document.createElement("script");
                 scriptElement.src = src;
                 scriptElement.onprogress = (event) => logger.log("event", event);
@@ -317,9 +361,3 @@ const onGlobalPageLoad = async () => {
 };
 
 window.addEventListener("load", onGlobalPageLoad);
-
-window.reloadWithDifferentCarAmount = (totalCars) => {
-
-    // simple reload
-    window.location.href = window.location.pathname + `?genomesPerCore=${totalCars}`;
-};

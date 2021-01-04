@@ -35,7 +35,9 @@ void Data::initialiseShaders()
             def.filenames.vertex = "assets/shaders/animatedCircuit.vert.glsl";
             def.filenames.fragment = "assets/shaders/animatedCircuit.frag.glsl";
             def.attributes = { "a_position", "a_color", "a_normal", "a_index" };
-            def.uniforms = { "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit" };
+            def.uniforms = {
+                "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit"
+            };
 
             graphic.shaders.animatedCircuit = std::make_unique<Shader>(def);
         }
@@ -50,7 +52,7 @@ void Data::initialiseShaders()
                 "a_position", "a_texCoord",
                 "a_offsetPosition", "a_offsetTexCoord", "a_offsetScale"
             };
-            def.uniforms = { "u_composedMatrix", "u_texture", };
+            def.uniforms = { "u_composedMatrix", "u_texture" };
 
             graphic.shaders.hudText = std::make_unique<Shader>(def);
         }
@@ -77,14 +79,9 @@ void Data::initialiseShaders()
             def.attributes = {
                 "a_position", "a_color",
                 "a_offsetTransform", "a_offsetColor"
-                // "a_position", "a_color", "a_normal",
-                // "a_offsetTransform", "a_offsetColor"
             };
             def.uniforms = {
-                "u_composedMatrix",
-                // "u_projectionMatrix",
-                // "u_modelMatrix",
-                // "u_viewMatrix",
+                "u_composedMatrix"
             };
 
             graphic.shaders.model = std::make_unique<Shader>(def);

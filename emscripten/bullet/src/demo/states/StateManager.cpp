@@ -31,7 +31,9 @@ StateManager::StateManager()
 
 #if defined D_WEB_WEBWORKER_BUILD
     _states[asValue(States::WorkersLoading)]    = new State_WebWorkersLoading();
+#endif
 
+#if defined D_WEB_WEBWORKER_BUILD
     _currentState = States::WorkersLoading;
 #else
     _currentState = States::StartGeneration;

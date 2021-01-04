@@ -31,7 +31,7 @@ void State_WebWorkersLoading::update(int deltaTime)
     }
     else
     {
-        // to ensure the message is visible, what the user is waiting for
+        // to ensure the message is visible (<= why the user waited)
         logic.state.countdown -= deltaTime;
         if (logic.state.countdown <= 0)
             StateManager::get()->changeState(StateManager::States::StartGeneration);

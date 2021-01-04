@@ -45,10 +45,6 @@ void main(void)
 	else
 	{
 		v_color = mix(vec4(a_color, u_alpha), k_white, deformationCoef);
-		// v_color = vec4(a_color, u_alpha * (0.5 + 0.5 * (1.0 - deformationCoef)));
-		// v_color = vec4(a_color, u_alpha);
-
-		// if (deformationCoef > 0.0)
 		position -= a_normal * deformationCoef;
 	}
 

@@ -3,16 +3,16 @@
 
 #include "demo/defines.hpp"
 
-#include "demo/simulation/machineLearning/NeuralNetwork.hpp"
-#include "demo/simulation/webworker/common.hpp"
-#include "demo/simulation/logic/CircuitBuilder.hpp"
+#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
+#include "demo/logic/simulation/webworker/common.hpp"
+#include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 
 #include "../message/MessageBuffer.hpp"
 #include "../message/MessageView.hpp"
 
-#include "demo/simulation/logic/CarData.hpp"
+#include "demo/logic/simulation/logic/CarData.hpp"
 
-#include "demo/simulation/AbstactSimulation.hpp"
+#include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "demo/utilities/types.hpp"
 
@@ -36,7 +36,7 @@ public:
     };
 
 private:
-    worker_handle   _workerHandle;
+    worker_handle _workerHandle;
 
     enum class Status : unsigned int
     {
@@ -55,27 +55,26 @@ private:
     MessageBuffer _message;
 
 public:
-    WorkerProducer(const Definition& def);
+    WorkerProducer(const Definition &def);
 
 private:
-    static void _onMessageCallback(char* pData, int size, void* arg);
+    static void _onMessageCallback(char *pData, int size, void *arg);
 
 private:
-    void _processMessage(const char* pData, int dataLength);
+    void _processMessage(const char *pData, int dataLength);
 
 private:
     void _send();
 
 public:
-    void resetAndProcessSimulation(const NeuralNetwork* pNeuralNetworks);
+    void resetAndProcessSimulation(const NeuralNetwork *pNeuralNetworks);
     void processSimulation();
 
 public:
     bool isLoaded() const;
     bool isProcessing() const;
     bool isUpdated() const;
-    const CarDatas& getCarsData() const;
+    const CarDatas &getCarsData() const;
 
-    const AbstactSimulation::CoreState& getCoreState() const;
-
+    const AbstactSimulation::CoreState &getCoreState() const;
 };

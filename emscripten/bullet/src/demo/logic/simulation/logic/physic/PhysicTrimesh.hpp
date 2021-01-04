@@ -4,6 +4,7 @@
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
+#include <memory>
 
 class btTriangleIndexVertexArray;
 class btBvhTriangleMeshShape;
@@ -18,9 +19,9 @@ private:
     friend PhysicWorld;
 
 private:
-    float*  _vertices = nullptr;
-    int*    _indices = nullptr;
-    int     _index = -1;
+    std::unique_ptr<float>  _vertices;
+    std::unique_ptr<int>    _indices;
+    int                     _index = -1;
 
     struct bullet
     {

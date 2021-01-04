@@ -196,7 +196,6 @@ void Data::initialiseSimulationCallbacks()
             logic.leaderCar.index = -1;
 
         } // switch the current state
-
     });
 }
 

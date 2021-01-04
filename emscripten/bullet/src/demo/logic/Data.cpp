@@ -9,9 +9,9 @@
 #include "demo/defines.hpp"
 
 #if defined D_WEB_WEBWORKER_BUILD
-#    include "demo/simulation/webworker/WebWorkersSimulation.hpp"
+#include "demo/logic/simulation/webworker/WebWorkersSimulation.hpp"
 #else
-#    include "demo/simulation/pthread/PthreadSimulation.hpp"
+#include "demo/logic/simulation/pthread/PthreadSimulation.hpp"
 #endif
 
 #include <iomanip>
@@ -21,7 +21,7 @@
 //
 // singleton
 
-Data* Data::_instance = nullptr;
+Data *Data::_instance = nullptr;
 
 Data::~Data()
 {
@@ -47,22 +47,22 @@ void Data::initialise()
     initialiseCircuit();
 
     logic.carsTrails.allWheelsTrails.resize(logic.simulation->getTotalCars());
-    for (auto& trail : logic.carsTrails.allWheelsTrails)
-        for (auto& wheel : trail.wheels)
+    for (auto &trail : logic.carsTrails.allWheelsTrails)
+        for (auto &wheel : trail.wheels)
             wheel.reserve(2048); // pre-allocate
 
     { // compute the top left HUD text
 
         std::stringstream sstr;
 
-        const GLubyte* glVersion = glGetString(GL_VERSION);
+        const GLubyte *glVersion = glGetString(GL_VERSION);
 
         std::string graphic;
         if (!glVersion)
             graphic = "unknown";
         else
         {
-            graphic = reinterpret_cast<const char*>(glVersion);
+            graphic = reinterpret_cast<const char *>(glVersion);
 
             const int messageMaxSize = 30;
             if (graphic.size() > messageMaxSize)
@@ -120,7 +120,7 @@ void Data::initialise()
 void Data::create()
 {
     if (_instance)
-        return;
+        D_THROW(std::runtime_error, "Data singleton already initialised");
 
     _instance = new Data();
     _instance->initialise();
@@ -128,10 +128,13 @@ void Data::create()
 
 void Data::destroy()
 {
+    if (!_instance)
+        D_THROW(std::runtime_error, "Data singleton already destroyed");
+
     delete _instance, _instance = nullptr;
 }
 
-Data& Data::get()
+Data &Data::get()
 {
     if (!_instance)
         D_THROW(std::runtime_error, "Data singleton not initialised");
