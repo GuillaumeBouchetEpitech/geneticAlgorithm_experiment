@@ -31,7 +31,6 @@ void Data::initialise()
 {
     initialiseShaders();
     initialiseGeometries();
-    initialiseSounds();
 
 #if defined D_WEB_WEBWORKER_BUILD
 

@@ -116,8 +116,6 @@ SRC_NATIVE=		$(wildcard \
 					$(DIR_SRC)/demo/logic/graphic/*.cpp \
 					$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 					$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-					$(DIR_SRC)/demo/logic/sounds/*.cpp \
-					$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/pthread/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/pthread/multithreading/*.cpp \
@@ -143,8 +141,6 @@ SRC_WEB_MAIN=	$(wildcard \
 					$(DIR_SRC)/demo/logic/graphic/*.cpp \
 					$(DIR_SRC)/demo/logic/graphic/utilities/*.cpp \
 					$(DIR_SRC)/demo/logic/graphic/wrappers/*.cpp \
-					$(DIR_SRC)/demo/logic/sounds/*.cpp \
-					$(DIR_SRC)/demo/logic/sounds/utilities/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/logic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/machineLearning/*.cpp \

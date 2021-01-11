@@ -13,8 +13,6 @@
 #include "graphic/wrappers/Texture.hpp"
 #include "graphic/wrappers/Shader.hpp"
 
-#include "sounds/OpenALSoundManager.hpp"
-
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "demo/states/StateManager.hpp"
@@ -55,7 +53,7 @@ public:
 private:
     void initialiseShaders();
     void initialiseGeometries();
-    void initialiseSounds();
+    // void initialiseSounds();
     void initialiseCircuit();
     void initialiseSimulationCallbacks();
 
@@ -188,14 +186,6 @@ public:
         hudText;
     }
     graphic;
-
-    //
-
-    struct t_sound
-    {
-        OpenALSoundManager manager;
-    }
-    sounds;
 
     //
 

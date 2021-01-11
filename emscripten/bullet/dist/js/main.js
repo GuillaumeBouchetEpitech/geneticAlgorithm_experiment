@@ -133,7 +133,7 @@ const onGlobalPageLoad = async () => {
 
         const wasmSupported = (() => {
             try {
-                if (typeof(WebAssembly) === "object" && typeof(WebAssembly).instantiate === "function") {
+                if (typeof(WebAssembly) === "object" && typeof(WebAssembly.instantiate) === "function") {
 
                     const module = new WebAssembly.Module(Uint8Array.of(0x0, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00));
 
@@ -245,11 +245,22 @@ const onGlobalPageLoad = async () => {
 
     let scriptFolder = "wasm";
 
-    const supportMultithreading = (window.SharedArrayBuffer !== undefined);
+    //
+    //
+    // multithreading support
 
-    // extract the "genomesPerCore" value from the url
-    //
-    //
+    let supportMultithreading = (window.SharedArrayBuffer !== undefined);
+
+    if (supportMultithreading) {
+
+        // also check if wasm support threading (chrome mobile)
+
+        const tmp_size = 8; // 8Mo, just for the check
+        const wasmMemory = new WebAssembly.Memory({ "initial": tmp_size, "maximum": tmp_size, "shared": true });
+
+        if (!(wasmMemory.buffer instanceof SharedArrayBuffer))
+            supportMultithreading = false;
+    }
 
     if (supportMultithreading) {
         logger.log("[JS] multithreading => supported");

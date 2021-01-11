@@ -822,47 +822,6 @@ void Scene::_renderHUD()
 
         } // big titles
 
-        { // volume
-
-            const auto& hudText = graphic.hudText;
-            const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
-
-            const float scale = 1.0f;
-            const float messageHeight = 4.0f * letterSize.y * scale;
-            const float messageHalfHeight = messageHeight * 0.25f;
-            float messageSize = 0.0f;
-            std::stringstream sstr;
-
-            if (data.sounds.manager.isEnabled())
-            {
-                sstr
-                    << "*-------*" << std::endl
-                    << "| SOUND |" << std::endl
-                    << "|ENABLED|" << std::endl
-                    << "*-------*";
-
-                messageSize = 9.0f;
-            }
-            else
-            {
-                sstr
-                    << "*--------*" << std::endl
-                    << "| SOUND  |" << std::endl
-                    << "|DISABLED|" << std::endl
-                    << "*--------*";
-
-                messageSize = 10.0f;
-            }
-
-            const float messageHalfSize = messageSize * 0.5f * scale;
-
-            const glm::vec2 center(720, 125);
-
-            std::string message = sstr.str();
-            textRenderer.push({ center.x - messageHalfSize * letterSize.x, 600 - center.y + messageHalfHeight }, message, scale);
-
-        } // volume
-
         textRenderer.render();
 
     } // texts

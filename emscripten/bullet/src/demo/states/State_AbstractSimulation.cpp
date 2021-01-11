@@ -103,31 +103,6 @@ void State_AbstractSimulation::update(int deltaTime)
                 mouse.delta = { 0, 0 };
             }
 
-            { // button sound on/off (hacky: to refactor)
-
-                if (!mouse.tracking && mouse.wasTracking)
-                {
-                    mouse.wasTracking = false;
-
-                    const auto& hudText = graphic.hudText;
-                    const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
-
-                    const glm::vec2 center(720, 125);
-                    const glm::vec2 size(10.0f * letterSize.x, 4.0f * letterSize.y);
-                    const glm::vec2 hsize = size * 0.5f;
-
-                    if (mouse.position.x > center.x - hsize.x &&
-                        mouse.position.x < center.x + hsize.x &&
-                        mouse.position.y > center.y - hsize.y &&
-                        mouse.position.y < center.y + hsize.y)
-                    {
-                        bool isEnabled = data.sounds.manager.isEnabled();
-                        data.sounds.manager.setEnabled(!isEnabled);
-                    }
-                }
-
-            } // button sound on/off (hacky: to refactor)
-
         } // mouse/touch event(s)
 
         { // keyboard event(s)
@@ -178,10 +153,6 @@ void State_AbstractSimulation::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-    }
-
-    {
-        data.sounds.manager.setListener(camera.eye, camera.front, {0, 0, 1});
     }
 }
 

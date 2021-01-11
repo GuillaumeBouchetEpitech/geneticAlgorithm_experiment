@@ -123,7 +123,6 @@ void Data::initialiseSimulationCallbacks()
         glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
 
         graphic.particleManager.emitParticles(carPos, carData.velocity);
-        sounds.manager.playRandom(carPos);
     });
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void
