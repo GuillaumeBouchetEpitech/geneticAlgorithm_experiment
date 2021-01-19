@@ -1,3 +1,4 @@
+#!/bin/bash
 
 #
 # INIT
@@ -12,48 +13,27 @@ GLM_TAG=0.9.9.2
 TINYOBJ_DIR=tinyobjloader
 TINYOBJ_URL=syoyo/tinyobjloader
 TINYOBJ_TAG=v1.0.6
+STB_DIR=stb
+STB_URL=nothings/stb
+STB_TAG=master
 
 mkdir -p $DIR_THIRDPARTY
 
-#
-# BULLET
+clone_repo() {
 
-cd $DIR_THIRDPARTY
+    CURR_URL=$1
+    CURR_TAG=$2
+    CURR_DIR=$3
 
-# reset
-rm -rf $BULLET3_DIR
+    cd $DIR_THIRDPARTY
 
-git clone \
-    --depth 1 \
-    --branch $BULLET3_TAG \
-    https://github.com/$BULLET3_URL \
-    $BULLET3_DIR
+    # reset
+    rm -rf $CURR_DIR
 
-#
-# GLM
+    git clone --depth 1 --branch $CURR_TAG https://github.com/$CURR_URL $CURR_DIR
+}
 
-cd $DIR_THIRDPARTY
-
-# reset
-rm -rf $GLM_DIR
-
-git clone \
-     --depth 1 \
-     --branch $GLM_TAG \
-     https://github.com/$GLM_URL \
-     $GLM_DIR
-
-#
-# TINYOBJ
-
-cd $DIR_THIRDPARTY
-
-# reset
-rm -rf $TINYOBJ_DIR
-
-git clone \
-    --depth 1 \
-    --branch $TINYOBJ_TAG \
-    https://github.com/$TINYOBJ_URL \
-    $TINYOBJ_DIR
-
+clone_repo $BULLET3_URL $BULLET3_TAG $BULLET3_DIR
+clone_repo $GLM_URL     $GLM_TAG     $GLM_DIR
+clone_repo $TINYOBJ_URL $TINYOBJ_TAG $TINYOBJ_DIR
+clone_repo $STB_URL     $STB_TAG     $STB_DIR

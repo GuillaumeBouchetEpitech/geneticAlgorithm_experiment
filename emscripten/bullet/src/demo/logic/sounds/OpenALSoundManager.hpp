@@ -13,16 +13,19 @@
 class OpenALSoundManager
 {
 private:
-    bool _enabled = false;
+    bool _enabled = true;
 
     ALCdevice* _device;
     ALCcontext* _context;
 
     std::vector<ALuint> _sources;
-    unsigned int currentSource = 0;
+    unsigned int _currentSource = 0;
+    unsigned int _currentSource_2 = 0; // hacky
 
-    std::unordered_map<std::string, ALuint> _bufferMap;
-    std::vector<std::string>                _buffersNames;
+    std::unordered_map<std::string, ALuint> _bufferExplosionMap;
+    std::vector<std::string>                _buffersExplosionNames;
+
+    ALuint _bufferCarEngine;
 
 public:
     OpenALSoundManager();
@@ -33,9 +36,15 @@ public:
     bool isEnabled() const;
 
 public:
-    void load(const std::string& filename);
-    void play(const std::string& filename, const glm::vec3& pos);
-    void playRandom(const glm::vec3& pos);
+    void loadExplosion(const std::string& filename);
+    void playExplosion(const std::string& filename, const glm::vec3& pos);
+    void playRandomExplosion(const glm::vec3& pos);
+
+public:
+    void loadCarEngine(const std::string& filename);
+    void playCarEngine(const glm::vec3& pos, float pitch);
+
+public:
     void setListener(const glm::vec3& pos,
                      const glm::vec3& front,
                      const glm::vec3& up);

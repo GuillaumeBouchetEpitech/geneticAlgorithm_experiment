@@ -1,13 +1,14 @@
 
 #include "Texture.hpp"
 
-#include <SDL2/SDL_image.h> // <= IMG_Load
+#include "thirdparty/STBImage.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 
 Texture::~Texture()
 {
-    glDeleteTextures(1, &_textureId);
+    if (_textureId != 0)
+        glDeleteTextures(1, &_textureId);
 }
 
 //
@@ -16,17 +17,29 @@ void Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
 {
     // TODO: make an "image" class?
 
-    SDL_Surface* surface = IMG_Load(filename.c_str());
-    if (!surface)
-        D_THROW(std::runtime_error, "fail to load image, filename=\"" << filename << "\"");
+    int width;
+    int height;
+    int bpp;
+    unsigned char* pixels = stbi_load(filename.c_str(), &width, &height, &bpp, 0);
 
-    _size = { surface->w, surface->h };
-
-    if ((surface->w & (surface->w - 1)) != 0)
+    if ((width & (width - 1)) != 0)
         D_THROW(std::runtime_error, "image width not a power of 2, filename=\"" << filename << "\"");
 
-    if ((surface->h & (surface->h - 1)) != 0)
+    if ((height & (height - 1)) != 0)
         D_THROW(std::runtime_error, "image height not a power of 2, filename=\"" << filename << "\"");
+
+    allocateBlank({ width, height }, pixelated, repeat, pixels);
+
+    stbi_image_free(pixels);
+}
+
+void Texture::allocateBlank(const glm::ivec2& size, bool pixelated /*= false*/,
+                            bool repeat /*= false*/, const GLvoid* pixels /*= nullptr*/)
+{
+    _size = size;
+
+    if (_size.x < 1 || _size.y < 1)
+        D_THROW(std::runtime_error, "image allocated with incorrect size");
 
     if (_textureId == 0)
         glGenTextures(1, &_textureId);
@@ -44,11 +57,9 @@ void Texture::load(const std::string& filename, bool pixelated /*= false*/, bool
 
     GLint level = 0;
     GLint border = 0;
-    glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, surface->w, surface->h, border, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+    glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, _size.x, _size.y, border, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    SDL_FreeSurface(surface);
 }
 
 const glm::ivec2& Texture::getSize() const

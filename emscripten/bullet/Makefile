@@ -244,7 +244,6 @@ ifeq ($(build_platform),native_pthread)
 						-I$(DIR_BULLET)
 
 	LDFLAGS_NATIVE=		$(BUILD_FLAG) \
-						-lSDL2_image \
 						-lSDL2 \
 						-lGLESv2 \
 						-pthread \
@@ -267,8 +266,6 @@ else ifeq ($(build_platform),web_wasm_pthread)
 
 	COMMON_FLAGS=	$(BUILD_FLAG) \
 					-s USE_SDL=2 \
-					-s USE_SDL_IMAGE=2 \
-					-s SDL2_IMAGE_FORMATS='["png"]' \
 					-s GL_PREINITIALIZED_CONTEXT=1 \
 					-s ASYNCIFY
 
@@ -344,8 +341,6 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-I$(DIR_SRC)
 
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
-						-s USE_SDL_IMAGE=2 \
-						-s SDL2_IMAGE_FORMATS='["png"]' \
 						-s GL_PREINITIALIZED_CONTEXT=1 \
 						\
 						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \

@@ -61,7 +61,6 @@ void Scene::renderSimple()
 
         Scene::_renderWireframesGeometries(scene.composed, false); // circuit only
     }
-
     { // HUD
 
         Scene::_renderHUD();
@@ -79,10 +78,8 @@ void Scene::renderAll()
 
     { // scene
 
-
         auto& data = Data::get();
         auto& logic = data.logic;
-        const auto& leaderCar = logic.leaderCar;
         auto& camera = data.graphic.camera;
         const auto& matrices = camera.matrices;
 
@@ -90,7 +87,7 @@ void Scene::renderAll()
         glm::mat4 modelView = matrices.scene.view * matrices.scene.model;
         camera.frustumCulling.calculateFrustum(matrices.scene.projection, modelView);
 
-        if (!Data::get().logic.isAccelerated)
+        if (!logic.isAccelerated)
             Scene::_renderLeadingCarSensors(matrices.scene.composed);
 
         Scene::_renderParticles(matrices.scene.composed);
@@ -100,41 +97,6 @@ void Scene::renderAll()
 
         Scene::_renderWireframesGeometries(matrices.scene.composed);
         Scene::_renderAnimatedCircuit(matrices.scene.composed);
-
-        // valid leading car?
-        if (!logic.isAccelerated && leaderCar.index >= 0)
-        {
-            const auto& viewportSize = camera.viewportSize;
-
-            const float divider = 5.0f; // ratio of the viewport current size
-            const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
-            const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.0f), thirdPViewportSize.y * 0.75f };
-
-            glViewport(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
-
-            glEnable(GL_SCISSOR_TEST);
-            glScissor(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            // camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
-            glm::mat4 modelView = matrices.thirdPerson.view * matrices.thirdPerson.model;
-            camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, modelView);
-
-            Scene::_renderLeadingCarSensors(matrices.thirdPerson.composed);
-            Scene::_renderParticles(matrices.thirdPerson.composed);
-
-            Scene::_renderCars(matrices.thirdPerson.composed);
-            // Scene::_renderCars(matrices.thirdPerson);
-
-            Scene::_renderWireframesGeometries(matrices.thirdPerson.composed);
-            Scene::_renderAnimatedCircuit(matrices.thirdPerson.composed);
-
-            glDisable(GL_SCISSOR_TEST);
-            glViewport(0, 0, viewportSize.x, viewportSize.y);
-        }
-
     }
 
     { // HUD
@@ -243,7 +205,21 @@ void Scene::_updateMatrices()
         glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
         glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
 
-        matrices.hud = projection * viewMatrix;
+        matrices.hud_ortho = projection * viewMatrix;
+    }
+
+    { // hud_perspective
+
+        const float fovy = glm::radians(70.0f);
+        const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
+        glm::mat4 projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+
+        glm::vec3 eye = { 400.0f, 300.0f, 425.0f };
+        glm::vec3 center = { 400.0f, 300.0f, 0.0f };
+        glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
+        glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
+
+        matrices.hud_perspective = projection * viewMatrix;
     }
 }
 
@@ -613,7 +589,7 @@ void Scene::_renderAnimatedCircuit(const glm::mat4& sceneMatrix)
     glEnable(GL_DEPTH_TEST);
 }
 
-void Scene::_renderHUD()
+void Scene::_renderHUD_ortho()
 {
     auto& data = Data::get();
     auto& graphic = data.graphic;
@@ -630,7 +606,7 @@ void Scene::_renderHUD()
 
         shader.bind();
 
-        const auto& hudMatrix = graphic.camera.matrices.hud;
+        const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
@@ -833,7 +809,7 @@ void Scene::_renderHUD()
 
         shader.bind();
 
-        const auto& hudMatrix = graphic.camera.matrices.hud;
+        const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
         GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
         glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
@@ -900,7 +876,7 @@ void Scene::_renderHUD()
 
     shader.bind();
 
-    const auto& hudMatrix = graphic.camera.matrices.hud;
+    const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
     GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
 
@@ -1059,4 +1035,88 @@ void Scene::_renderHUD()
     stackRenderer.flush();
 
     glEnable(GL_DEPTH_TEST);
+}
+
+void Scene::_renderHUD_thirdPerson()
+{
+    auto& data = Data::get();
+    auto& logic = data.logic;
+    const auto& leaderCar = logic.leaderCar;
+
+    // valid leading car?
+    if (logic.isAccelerated || leaderCar.index < 0)
+        return;
+
+    auto& camera = data.graphic.camera;
+    const auto& matrices = camera.matrices;
+
+    const auto& viewportSize = camera.viewportSize;
+
+    const float divider = 5.0f; // ratio of the viewport current size
+    const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
+    const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.05f), thirdPViewportSize.y * 0.75f };
+
+    glViewport(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
+    glm::mat4 modelView = matrices.thirdPerson.view * matrices.thirdPerson.model;
+    camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, modelView);
+
+    Scene::_renderLeadingCarSensors(matrices.thirdPerson.composed);
+    Scene::_renderParticles(matrices.thirdPerson.composed);
+
+    Scene::_renderCars(matrices.thirdPerson.composed);
+    // Scene::_renderCars(matrices.thirdPerson);
+
+    Scene::_renderWireframesGeometries(matrices.thirdPerson.composed);
+    Scene::_renderAnimatedCircuit(matrices.thirdPerson.composed);
+
+    glDisable(GL_SCISSOR_TEST);
+    glViewport(0, 0, viewportSize.x, viewportSize.y);
+}
+
+void Scene::_renderHUD()
+{
+    auto& data = Data::get();
+    auto& graphic = data.graphic;
+
+    { // render in framebuffer
+
+        graphic.frameBuffers.hud.bind();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // alpha must also be 0
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        Scene::_renderHUD_ortho();
+        Scene::_renderHUD_thirdPerson();
+
+        FrameBuffer::unbind();
+
+    } // render in framebuffer
+
+    { // render framebuffer texture in curved geometry
+
+        const auto& shader = *graphic.shaders.simpleTexture;
+
+        shader.bind();
+
+        const auto& hudMatrix = graphic.camera.matrices.hud_perspective;
+        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+
+        glDisable(GL_DEPTH_TEST);
+
+        graphic.textures.hud_color.bind();
+
+        graphic.geometries.hudPerspective.geometry.render();
+
+        glEnable(GL_DEPTH_TEST);
+
+    } // render framebuffer texture in curved geometry
 }

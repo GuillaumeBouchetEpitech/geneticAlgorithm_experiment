@@ -3,8 +3,6 @@
 
 #include "../ErrorHandler.hpp"
 
-#include <SDL2/SDL_image.h> // <= IMG_Init
-
 #include <stdexcept>
 
 #if defined __EMSCRIPTEN__
@@ -15,9 +13,6 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
-
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
-        D_THROW(std::runtime_error, "Could not initialise SDL image, error: " << IMG_GetError());
 
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -89,8 +84,6 @@ SDLWindowWrapper::~SDLWindowWrapper()
 void SDLWindowWrapper::_webStep(void* pData)
 {
     SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
-
-    // self->process();
 
     const unsigned int currentTime = SDL_GetTicks(); // in millisecond
     const unsigned int deltaTime = currentTime - self->_startTime;

@@ -137,7 +137,7 @@ void Data::initialiseSimulationCallbacks()
              * => if last stat was smartest
              * ===> erase first and push_back new one
              * => else
-             * ===> erase pop_back and push_back new one
+             * ===> erase back and push_back new one
              */
 
             const float prevLastOne = allStats[allStats.size() - 2];

@@ -87,6 +87,18 @@ void Data::initialiseShaders()
             graphic.shaders.model = std::make_unique<Shader>(def);
         }
 
+        { // create the simple texture shader
+
+            Shader::Definition def;
+
+            def.filenames.vertex = "assets/shaders/simpleTexture.vert.glsl";
+            def.filenames.fragment = "assets/shaders/simpleTexture.frag.glsl";
+            def.attributes = { "a_position", "a_texCoord" };
+            def.uniforms = { "u_composedMatrix", "u_texture" };
+
+            graphic.shaders.simpleTexture = std::make_unique<Shader>(def);
+        }
+
     } // shaders
 
     { // textures

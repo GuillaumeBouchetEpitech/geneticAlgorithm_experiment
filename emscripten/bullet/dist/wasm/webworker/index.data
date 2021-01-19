@@ -47,6 +47,17 @@ void main(void)
 
 precision mediump float;
 
+uniform sampler2D u_texture;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+    gl_FragColor = texture2D(u_texture, v_texCoord);
+}
+
+precision mediump float;
+
 varying vec3 v_color;
 
 void main(void)
@@ -163,6 +174,22 @@ void main(void)
 	}
 
 	gl_Position = u_composedMatrix * vec4(position, 1.0);
+}
+
+precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec3 a_position;
+attribute vec2 a_texCoord;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+
+	v_texCoord = a_texCoord;
 }
 
 precision mediump float;

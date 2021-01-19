@@ -18,16 +18,12 @@
 Demo::Demo(int width, int height)
     : SDLWindowWrapper(width, height)
 {
-    Data::create();
-
-    auto& data = Data::get();
-
-    data.graphic.camera.viewportSize = { width, height };
+    Data::create(width, height);
 
     StateManager::create();
 
     // hacky?
-    data.logic.state.previousState = StateManager::get()->getState();
+    Data::get().logic.state.previousState = StateManager::get()->getState();
 
     Scene::initialise();
 }

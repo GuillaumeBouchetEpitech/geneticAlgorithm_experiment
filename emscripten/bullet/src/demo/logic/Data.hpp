@@ -12,6 +12,8 @@
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
 #include "graphic/wrappers/Shader.hpp"
+#include "graphic/wrappers/FrameBuffer.hpp"
+#include "graphic/wrappers/RenderBuffer.hpp"
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
@@ -39,10 +41,10 @@ private:
     Data() = default;
     ~Data();
 private:
-    void initialise();
+    void initialise(int width, int height);
 
 public:
-    static void create();
+    static void create(int width, int height);
     static void destroy();
     static Data& get();
 
@@ -95,7 +97,8 @@ public:
                 Matrices scene;
                 Matrices thirdPerson;
 
-                glm::mat4 hud;
+                glm::mat4 hud_ortho;
+                glm::mat4 hud_perspective;
             }
             matrices;
 
@@ -111,14 +114,28 @@ public:
             std::unique_ptr<Shader> hudText;
             std::unique_ptr<Shader> particles;
             std::unique_ptr<Shader> model;
+            std::unique_ptr<Shader> simpleTexture;
         }
         shaders;
 
         struct Textures
         {
             Texture textFont;
+            Texture hud_color;
         }
         textures;
+
+        struct RenderBuffers
+        {
+            RenderBuffer hud_depth;
+        }
+        renderBuffers;
+
+        struct FrameBuffers
+        {
+            FrameBuffer hud;
+        }
+        frameBuffers;
 
         struct Geometries
         {
@@ -162,6 +179,12 @@ public:
                 Geometry letters;
             }
             hudText;
+
+            struct Hud
+            {
+                Geometry geometry;
+            }
+            hudPerspective;
 
             struct Model
             {

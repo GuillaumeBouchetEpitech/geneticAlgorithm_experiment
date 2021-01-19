@@ -27,10 +27,34 @@ Data::~Data()
 {
 }
 
-void Data::initialise()
+void Data::initialise(int width, int height)
 {
     initialiseShaders();
     initialiseGeometries();
+
+    graphic.camera.viewportSize = { width, height };
+
+    //
+    //
+    // initialise hud frame buffer
+
+    graphic.frameBuffers.hud.initialise();
+    graphic.frameBuffers.hud.bind();
+
+    graphic.textures.hud_color.allocateBlank({ width, height }, true, false);
+    graphic.textures.hud_color.bind();
+    graphic.frameBuffers.hud.attachColorTexture(graphic.textures.hud_color);
+
+    graphic.renderBuffers.hud_depth.allocateDepth({ width, height });
+    graphic.renderBuffers.hud_depth.bind();
+    graphic.frameBuffers.hud.attachDepthRenderBuffer(graphic.renderBuffers.hud_depth);
+
+    graphic.frameBuffers.hud.executeCheck();
+    FrameBuffer::unbind();
+
+    //
+    //
+    //
 
 #if defined D_WEB_WEBWORKER_BUILD
 
@@ -116,13 +140,13 @@ void Data::initialise()
 
 //
 
-void Data::create()
+void Data::create(int width, int height)
 {
     if (_instance)
         D_THROW(std::runtime_error, "Data singleton already initialised");
 
     _instance = new Data();
-    _instance->initialise();
+    _instance->initialise(width, height);
 }
 
 void Data::destroy()

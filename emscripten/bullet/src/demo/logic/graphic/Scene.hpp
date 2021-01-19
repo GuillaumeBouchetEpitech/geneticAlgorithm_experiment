@@ -26,6 +26,8 @@ private:
 
     static void _renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trails = true);
     static void _renderAnimatedCircuit(const glm::mat4& sceneMatrix);
+    static void _renderHUD_ortho();
+    static void _renderHUD_thirdPerson();
     static void _renderHUD();
 
 };
