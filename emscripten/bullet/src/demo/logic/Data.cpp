@@ -41,7 +41,7 @@ void Data::initialise(int width, int height)
     graphic.frameBuffers.hud.initialise();
     graphic.frameBuffers.hud.bind();
 
-    graphic.textures.hud_color.allocateBlank({ width, height }, true, false);
+    graphic.textures.hud_color.allocateBlank({ width, height }, false, false);
     graphic.textures.hud_color.bind();
     graphic.frameBuffers.hud.attachColorTexture(graphic.textures.hud_color);
 

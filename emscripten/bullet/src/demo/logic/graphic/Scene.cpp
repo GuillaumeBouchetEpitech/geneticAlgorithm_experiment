@@ -923,16 +923,11 @@ void Scene::_renderHUD_ortho()
 
         if (logic.leaderCar.index >= 0)
         {
-
-            // const auto& bestGenome = logic.simulation->getBestGenome();
-
-            // bestGenome.weights;
-
             const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
             const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
 
-            const glm::vec2 borderPos(690, 215);
-            const glm::vec2 borderSize(100, 100);
+            const glm::vec2 borderPos(640, 215);
+            const glm::vec2 borderSize(150, 150);
 
             stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
@@ -988,7 +983,7 @@ void Scene::_renderHUD_ortho()
             const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
             const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-            const glm::vec2 borderPos(690, 320);
+            const glm::vec2 borderPos(690, 370);
             const glm::vec2 borderSize(100, 60);
 
             stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
