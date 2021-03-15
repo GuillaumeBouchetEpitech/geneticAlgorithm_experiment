@@ -137,11 +137,9 @@ void Car::_collideEyeSensors()
         sensor.value = 1.0f;
 
         // eye sensors collide ground + walls
-        PhysicWorld::RaycastParams params(sensor.near, sensor.far);
-        params.collisionGroup = asValue(PhysicWorld::Groups::sensor);
-        params.collisionMask = asValue(PhysicWorld::Masks::eyeSensor);
+        PhysicWorld::RaycastParamsGroundsAndWalls params(sensor.near, sensor.far);
 
-        bool hasHit = _physicWorld.raycast(params);
+        bool hasHit = _physicWorld.raycastGroundsAndWalls(params);
 
         if (!hasHit)
             continue;
@@ -157,11 +155,9 @@ void Car::_collideGroundSensor()
     // raycast the ground to get the checkpoints validation
 
     // ground sensor collide only ground
-    PhysicWorld::RaycastParams params(_groundSensor.near, _groundSensor.far);
-    params.collisionGroup = asValue(PhysicWorld::Groups::sensor);
-    params.collisionMask = asValue(PhysicWorld::Masks::groundSensor);
+    PhysicWorld::RaycastParamsGrounds params(_groundSensor.near, _groundSensor.far);
 
-    bool hasHitGround = _physicWorld.raycast(params);
+    bool hasHitGround = _physicWorld.raycastGrounds(params);
 
     if (hasHitGround)
     {

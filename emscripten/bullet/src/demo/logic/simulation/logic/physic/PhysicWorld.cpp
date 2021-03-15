@@ -21,6 +21,25 @@ PhysicWorld::PhysicWorld()
         _bullet.collisionConfiguration
     );
     _bullet.dynamicsWorld->setGravity(btVector3(0, 0, -10));
+
+    { // ground plane
+
+        _bullet.ground.shape = new btStaticPlaneShape(btVector3(0, 0, 1), 1.0);
+
+        btScalar mass = 0;
+        btVector3 localInertia(0, 0, 0);
+        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, nullptr, _bullet.ground.shape, localInertia);
+
+        _bullet.ground.body = new btRigidBody(rbInfo);
+
+        _bullet.ground.body->setFriction(1.0f);
+
+        short group = asValue(PhysicWorld::Groups::ground);
+        short mask = asValue(PhysicWorld::Masks::ground);
+
+        _bullet.dynamicsWorld->addRigidBody(_bullet.ground.body, group, mask);
+
+    } // ground plane
 }
 
 PhysicWorld::~PhysicWorld()
@@ -55,6 +74,10 @@ PhysicWorld::~PhysicWorld()
         delete trimesh;
     }
 
+    _bullet.dynamicsWorld->removeRigidBody(_bullet.ground.body);
+    delete _bullet.ground.body;
+    delete _bullet.ground.shape;
+
     delete _bullet.dynamicsWorld;
     delete _bullet.solver;
     delete _bullet.collisionConfiguration;
@@ -72,9 +95,9 @@ void PhysicWorld::step()
 
 //
 
-void PhysicWorld::createGround(const Vertices& vertices, const Indices& indices, int id)
+void PhysicWorld::createGround(const Vertices& vertices, const Indices& indices, int groundIndex)
 {
-    PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, id);
+    PhysicTrimesh* trimesh = new PhysicTrimesh(vertices, indices, groundIndex);
     btRigidBody* body = trimesh->_bullet.body;
 
     short group = asValue(PhysicWorld::Groups::ground);
@@ -168,15 +191,43 @@ const std::vector<PhysicVehicle*>& PhysicWorld::getVehicles() const
 
 //
 
-bool PhysicWorld::raycast(PhysicWorld::RaycastParams& params)
+bool PhysicWorld::raycastGroundsAndWalls(PhysicWorld::RaycastParamsGroundsAndWalls& params)
 {
     btVector3 rayFrom(params.from.x, params.from.y, params.from.z);
     btVector3 rayTo(params.to.x, params.to.y, params.to.z);
 
     btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom, rayTo);
 
-    rayCallback.m_collisionFilterGroup = params.collisionGroup;
-    rayCallback.m_collisionFilterMask = params.collisionMask;
+    rayCallback.m_collisionFilterGroup = asValue(PhysicWorld::Groups::sensor);
+    rayCallback.m_collisionFilterMask = asValue(PhysicWorld::Masks::eyeSensor);
+
+    _bullet.dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
+
+    params.result.hasHit = rayCallback.hasHit();
+
+    if (!rayCallback.hasHit())
+        return false;
+
+    const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
+
+    if (!body || !body->hasContactResponse())
+        return false;
+
+    const auto& impact = rayCallback.m_hitPointWorld;
+    params.result.impactPoint = { impact[0], impact[1], impact[2] };
+
+    return true;
+}
+
+bool PhysicWorld::raycastGrounds(PhysicWorld::RaycastParamsGrounds& params)
+{
+    btVector3 rayFrom(params.from.x, params.from.y, params.from.z);
+    btVector3 rayTo(params.to.x, params.to.y, params.to.z);
+
+    btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom, rayTo);
+
+    rayCallback.m_collisionFilterGroup = asValue(PhysicWorld::Groups::sensor);
+    rayCallback.m_collisionFilterMask = asValue(PhysicWorld::Masks::groundSensor);
 
     _bullet.dynamicsWorld->rayTest(rayFrom, rayTo, rayCallback);
 
@@ -192,6 +243,7 @@ bool PhysicWorld::raycast(PhysicWorld::RaycastParams& params)
 
     void* userdata = body->getUserPointer();
 
+    // used by the ground sensor of the car to detect the current checkpoint
     if (userdata)
         params.result.impactIndex = static_cast<PhysicTrimesh*>(userdata)->getIndex();
 

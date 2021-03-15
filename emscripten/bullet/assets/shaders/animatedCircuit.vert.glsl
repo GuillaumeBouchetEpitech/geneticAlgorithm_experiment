@@ -21,17 +21,17 @@ void main(void)
 
 	if (a_index <= u_lowerLimit)
 	{
-		// not deformed (straigth walls)
+		// not deformed (normal shape)
 		deformationCoef = 0.0;
 	}
 	else if (a_index > u_upperLimit)
 	{
-		// fully deformed (shattered walls)
+		// fully deformed (shattered shape)
 		deformationCoef = 1.0;
 	}
 	else
 	{
-		// animated deformation
+		// animated deformation (normal shape <-> shattered shape)
 		deformationCoef = (a_index - u_lowerLimit) / (u_upperLimit - u_lowerLimit);
 	}
 
@@ -44,7 +44,10 @@ void main(void)
 	}
 	else
 	{
+		// modified color (normal color <-> white color)
 		v_color = mix(vec4(a_color, u_alpha), k_white, deformationCoef);
+
+		// modified shape (normal shape <-> shattered shape)
 		position -= a_normal * deformationCoef;
 	}
 

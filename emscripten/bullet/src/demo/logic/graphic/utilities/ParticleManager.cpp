@@ -58,8 +58,17 @@ void ParticleManager::update(float delta)
         // update current position
         particle.position += particle.linearVelocity * delta;
 
-        // apply fake gravity
-        particle.linearVelocity.z -= 20.0f * delta;
+        if (particle.position.z < 0.0f)
+        {
+            // bounce off the ground
+            particle.linearVelocity.z += 100.0f * delta;
+        }
+        else
+        {
+            // apply fake gravity
+            particle.linearVelocity.z -= 20.0f * delta;
+        }
+
 
         // update scale
         const float localScale = particle.life / particle.maxLife * particle.scale;

@@ -18,7 +18,8 @@ WorkerProducer::WorkerProducer(const Definition& def)
 
     _carsData.resize(def.genomesPerCore);
 
-    {
+    { // send intiialisation message to worker consumer
+
         _message.clear();
         _message << char(Messages::Client::LoadWorker);
 
@@ -28,7 +29,7 @@ WorkerProducer::WorkerProducer(const Definition& def)
         _message << int(def.knots.size());
 
         for (const auto& knot : def.knots)
-            _message << knot.left << knot.right << knot.minDistance << knot.color;
+            _message << knot.left << knot.right << knot.size << knot.color;
 
         _message << def.genomesPerCore;
 
@@ -42,8 +43,9 @@ WorkerProducer::WorkerProducer(const Definition& def)
             _message << layerValue;
         _message << topology.getOutput();
 
-        _send();
-    }
+        _sendToConsumer();
+
+    } // send intiialisation message to worker consumer
 }
 
 void WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg)
@@ -114,7 +116,7 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void WorkerProducer::_send()
+void WorkerProducer::_sendToConsumer()
 {
     _flags[asValue(Status::Processing)] = true;
 
@@ -140,7 +142,7 @@ void WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetwor
         _message.append(weights.data(), weights.size() * sizeof(float));
     }
 
-    _send();
+    _sendToConsumer();
 }
 
 void WorkerProducer::processSimulation()
@@ -148,7 +150,7 @@ void WorkerProducer::processSimulation()
     _message.clear();
     _message << char(Messages::Client::ProcessSimulation);
 
-    _send();
+    _sendToConsumer();
 }
 
 bool WorkerProducer::isLoaded() const

@@ -48,7 +48,7 @@ void CircuitBuilder::load(const std::string& filename)
 
     Knots rawKnots;
 
-    float currentMinDistance = 2.0f;
+    float currentKnotsSize = 2.0f;
     glm::vec3 currentColor = { 0.0f, 0.0f, 0.0f };
 
     //
@@ -58,7 +58,7 @@ void CircuitBuilder::load(const std::string& filename)
     const char* cmd_start_transform_pos     = "START_TRANSFORM_POSITION";
     const char* cmd_start_transform_quat    = "START_TRANSFORM_QUATERNION";
     const char* cmd_knots_color             = "KNOTS_COLOR";
-    const char* cmd_knots_min_distance      = "KNOTS_MINIMUM_DISTANCE";
+    const char* cmd_knots_size              = "KNOTS_SIZE";
     const char* cmd_knots_dual              = "KNOTS_DUAL";
 
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> commandsMap;
@@ -96,16 +96,16 @@ void CircuitBuilder::load(const std::string& filename)
         currentColor = color;
     };
 
-    commandsMap[cmd_knots_min_distance] = [&](std::istringstream& isstr)
+    commandsMap[cmd_knots_size] = [&](std::istringstream& isstr)
     {
-        float minimumDistance;
+        float knotsSize;
 
-        if (!(isstr >> minimumDistance))
-            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_knots_min_distance);
+        if (!(isstr >> knotsSize))
+            D_THROW(std::runtime_error, "failure to extract a line, type=" << cmd_knots_size);
 
-        validateFloat(minimumDistance, cmd_knots_min_distance);
+        validateFloat(knotsSize, cmd_knots_size);
 
-        currentMinDistance = minimumDistance;
+        currentKnotsSize = knotsSize;
     };
 
     commandsMap[cmd_knots_dual] = [&](std::istringstream& isstr)
@@ -122,7 +122,7 @@ void CircuitBuilder::load(const std::string& filename)
             validateFloat(right[ii], cmd_knots_dual);
         }
 
-        rawKnots.emplace_back(left, right, currentMinDistance, currentColor);
+        rawKnots.emplace_back(left, right, currentKnotsSize, currentColor);
     };
 
     //
@@ -197,6 +197,9 @@ void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
     vertices.reserve(_knots.size() * 4); // pre-allocate
     indices.reserve(_knots.size() * 8 + 8); // pre-allocate
 
+    // should be 0 but is not nice when shown with the chessboard floor
+    constexpr float floorValue = 0.0f;
+
     for (unsigned int ii = 0; ii < _knots.size(); ++ii)
     {
         const auto& knot = _knots[ii];
@@ -205,8 +208,8 @@ void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
         vertices.push_back(knot.left);
         vertices.push_back(knot.right);
         // "on the floor" value
-        vertices.emplace_back(knot.left.x, knot.left.y, 0.0f);
-        vertices.emplace_back(knot.right.x, knot.right.y, 0.0f);
+        vertices.emplace_back(knot.left.x, knot.left.y, floorValue);
+        vertices.emplace_back(knot.right.x, knot.right.y, floorValue);
 
         // from "the floor" to the "real" value
 
@@ -272,7 +275,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             rightX,
             rightY,
             rightZ,
-            minDistance,
+            size,
             colorR,
             colorG,
             colorB,
@@ -303,15 +306,15 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             vertex.right.y = smoother.calcAt(coef, asValue(SplineType::rightY));
             vertex.right.z = smoother.calcAt(coef, asValue(SplineType::rightZ));
 
-            const float minDistance = smoother.calcAt(coef, asValue(SplineType::minDistance));
+            const float knotSize = smoother.calcAt(coef, asValue(SplineType::size));
 
             if (!smoothedVertices.empty())
             {
                 // both left and right vertices must be far enough to be included
                 const auto& lastVertex = smoothedVertices.back();
 
-                if (glm::distance(lastVertex.left, vertex.left) < minDistance ||
-                    glm::distance(lastVertex.right, vertex.right) < minDistance)
+                if (glm::distance(lastVertex.left, vertex.left) < knotSize ||
+                    glm::distance(lastVertex.right, vertex.right) < knotSize)
                     continue;
             }
 
@@ -333,7 +336,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
     //
     // generate circuit
 
-    const unsigned int patchesPerKnot = 6;
+    constexpr std::size_t patchesPerKnot = 6;
 
     glm::vec3 prevNormal;
 
@@ -359,9 +362,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
     circuitPatchColors.reserve(512); // pre-allocate
 
     const unsigned int startIndex = 1;
-    for (unsigned int index = startIndex;
-         index < smoothedVertices.size();
-         index += patchesPerKnot)
+    for (std::size_t index = startIndex; index < smoothedVertices.size(); index += patchesPerKnot)
     {
         indices.clear();
         ground.vertices.clear();
@@ -375,10 +376,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
 
         int indicexIndex = 0;
 
-        for (unsigned int stepIndex = index;
-             stepIndex < smoothedVertices.size() &&
-             stepIndex < index + patchesPerKnot;
-             ++stepIndex)
+        for (std::size_t stepIndex = index; stepIndex < smoothedVertices.size() && stepIndex < index + patchesPerKnot; ++stepIndex)
         {
             const int currIndex = indicexIndex++ * 4;
             indices.push_back(currIndex + 0);

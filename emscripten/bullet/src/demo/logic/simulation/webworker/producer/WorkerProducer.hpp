@@ -6,13 +6,12 @@
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
+#include "demo/logic/simulation/logic/CarData.hpp"
+#include "demo/logic/simulation/AbstactSimulation.hpp"
+#include "demo/utilities/NonCopyable.hpp"
 
 #include "../message/MessageBuffer.hpp"
 #include "../message/MessageView.hpp"
-
-#include "demo/logic/simulation/logic/CarData.hpp"
-
-#include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "demo/utilities/types.hpp"
 
@@ -23,6 +22,7 @@
 #include <emscripten/emscripten.h> // <= worker_handle
 
 class WorkerProducer
+    : public NonCopyable
 {
 public:
     struct Definition
@@ -58,16 +58,16 @@ public:
     WorkerProducer(const Definition &def);
 
 private:
-    static void _onMessageCallback(char *pData, int size, void *arg);
+    static void _onMessageCallback(char* dataPointer, int dataSize, void* arg);
 
 private:
-    void _processMessage(const char *pData, int dataLength);
+    void _processMessage(const char* pData, int dataLength);
 
 private:
-    void _send();
+    void _sendToConsumer();
 
 public:
-    void resetAndProcessSimulation(const NeuralNetwork *pNeuralNetworks);
+    void resetAndProcessSimulation(const NeuralNetwork* pNeuralNetworks);
     void processSimulation();
 
 public:

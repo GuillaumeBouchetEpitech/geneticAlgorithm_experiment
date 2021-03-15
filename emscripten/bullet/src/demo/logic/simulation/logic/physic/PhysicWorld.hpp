@@ -1,8 +1,8 @@
 
 #pragma once
 
-
 #include "./demo/utilities/types.hpp"
+#include "./demo/utilities/NonCopyable.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -15,14 +15,17 @@ class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
 class btSequentialImpulseConstraintSolver;
 class btDiscreteDynamicsWorld;
-class btIDebugDraw;
+class btCollisionShape;
+class btRigidBody;
+// class btIDebugDraw;
 
 class PhysicTrimesh;
 class PhysicVehicle;
 
 class PhysicWorld
+    : public NonCopyable
 {
-public:
+private:
     enum class Groups : unsigned short
     {
         all     = 0b1111'1111'1111'1111,
@@ -54,6 +57,13 @@ private:
         btCollisionDispatcher*                  dispatcher = nullptr;
         btSequentialImpulseConstraintSolver*    solver = nullptr;
         btDiscreteDynamicsWorld*                dynamicsWorld = nullptr;
+
+        struct Ground
+        {
+            btCollisionShape*   shape = nullptr;
+            btRigidBody*        body = nullptr;
+        }
+        ground;
     }
     _bullet;
 
@@ -78,7 +88,7 @@ private:
     std::vector<PhysicTrimesh*> _groundsTrimesh;
     std::vector<PhysicTrimesh*> _wallsTrimesh;
 public:
-    void    createGround(const Vertices& vertices, const Indices& indices, int id);
+    void    createGround(const Vertices& vertices, const Indices& indices, int groundIndex);
     void    createWall(const Vertices& vertices, const Indices& indices);
 
     //
@@ -101,34 +111,42 @@ public:
     // raycast
 
 public:
-    struct RaycastParams
+    struct RaycastParamsGroundsAndWalls
     {
         glm::vec3   from;
         glm::vec3   to;
-
-        short   collisionGroup;
-        short   collisionMask;
 
         struct Result
         {
             bool        hasHit = false;
             glm::vec3   impactPoint;
-            int         impactIndex = -1;
         }
         result;
 
-        RaycastParams(const glm::vec3& rayFrom,
-                      const glm::vec3& rayTo,
-                      short group = asValue(Groups::all),
-                      short mask = asValue(Groups::all))
+        RaycastParamsGroundsAndWalls(const glm::vec3& rayFrom,
+                                     const glm::vec3& rayTo)
             : from(rayFrom)
             , to(rayTo)
-            , collisionGroup(group)
-            , collisionMask(mask)
+        {}
+    };
+
+    struct RaycastParamsGrounds
+        : public RaycastParamsGroundsAndWalls
+    {
+        struct Result
+            : public RaycastParamsGroundsAndWalls::Result
+        {
+            int impactIndex = -1;
+        }
+        result;
+
+        RaycastParamsGrounds(const glm::vec3& rayFrom, const glm::vec3& rayTo)
+            : RaycastParamsGroundsAndWalls(rayFrom, rayTo)
         {}
     };
 
 public:
-    bool    raycast(RaycastParams& params);
+    bool    raycastGroundsAndWalls(RaycastParamsGroundsAndWalls& params);
+    bool    raycastGrounds(RaycastParamsGrounds& params);
 
 };

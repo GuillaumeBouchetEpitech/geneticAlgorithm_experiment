@@ -78,14 +78,13 @@ void Data::initialiseCircuit()
         }
     };
 
-    float       latestSize = 0;
-    const float maxDeformation = 0.3f;
+    float latestSize = 0;
+    constexpr float maxDeformation = 0.5f;
 
     auto onGroundPatch = [
         this,
         &latestSize,
         &whiteColor,
-        maxDeformation,
         &groundVertices
     ](
         const CircuitBuilder::Vec3Array& vertices,
@@ -107,9 +106,9 @@ void Data::initialiseCircuit()
             const auto& color = (firstLine ? whiteColor : colors[index]);
 
             glm::vec3 deformation = {
-                RNG::getRangedValue(-maxDeformation, maxDeformation),
-                RNG::getRangedValue(-maxDeformation, maxDeformation),
-                RNG::getRangedValue(-maxDeformation, maxDeformation)
+                RNG::getRangedValue(-maxDeformation, +maxDeformation),
+                RNG::getRangedValue(-maxDeformation, +maxDeformation),
+                RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
             glm::vec3 normal = (normals[index] + deformation) * 4.0f;
@@ -120,6 +119,24 @@ void Data::initialiseCircuit()
         }
 
         logic.circuitAnimation.maxUpperValue += 1.0f;
+
+        { // flockingManager
+
+            glm::vec3 sum{0, 0, 0};
+            int total = 0;
+
+            for (const glm::vec3& vertex : vertices)
+            {
+                sum += vertex;
+                ++total;
+            }
+
+            if (total > 0)
+            {
+                graphic.flockingManager.addKnot(sum / float(total));
+            }
+
+        } // flockingManager
     };
 
     auto onWallPatch = [
@@ -146,9 +163,9 @@ void Data::initialiseCircuit()
             const auto& color = (firstLine ? whiteColor : greyColor);
 
             glm::vec3 deformation = {
-                RNG::getRangedValue(-0.2f, 0.2f),
-                RNG::getRangedValue(-0.2f, 0.2f),
-                RNG::getRangedValue(-0.2f, 0.2f)
+                RNG::getRangedValue(-maxDeformation, +maxDeformation),
+                RNG::getRangedValue(-maxDeformation, +maxDeformation),
+                RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
             glm::vec3 normal = (normals[index] + deformation) * 4.0f;
@@ -187,11 +204,11 @@ void Data::initialiseCircuit()
     logic.cores.statesData.resize(simulationDef.totalCores);
     logic.cores.statesHistory.resize(simulationDef.totalCores);
     for (auto& stateHistory : logic.cores.statesHistory)
-        stateHistory.resize(logic.cores.maxStateHistory);
+        stateHistory.resize(Data::Logic::Cores::maxStateHistory);
 
     boundaries.center = boundaries.min + (boundaries.max - boundaries.min) * 0.5f;
 
-    graphic.camera.center = boundaries.center;
+    graphic.camera.center = logic.simulation->getStartPosition();
     graphic.camera.distance = 200.0f;
 
     { // compute circuit skeleton wireframe geometry

@@ -10,7 +10,7 @@ START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
 # departure straight
 
 # starting rewards
-KNOTS_MINIMUM_DISTANCE   2
+KNOTS_SIZE   2
 
 KNOTS_COLOR 0.25 0.25 0.75
 
@@ -18,7 +18,7 @@ KNOTS_DUAL   5  15  5       5   5  5
 KNOTS_DUAL  90   0  0      90   0  0
 
 # decrease rewards
-KNOTS_MINIMUM_DISTANCE   4
+KNOTS_SIZE   4
 
 # departure straight
 #
@@ -61,7 +61,7 @@ KNOTS_DUAL 40 0 7     40 0 0
 # horizontal loop (right)
 
 # increase rewards
-KNOTS_MINIMUM_DISTANCE   1.5
+KNOTS_SIZE   1.5
 
     KNOTS_COLOR 0.75 0.25 0.75
 
@@ -69,7 +69,7 @@ KNOTS_MINIMUM_DISTANCE   1.5
     KNOTS_DUAL  -60 -60 6   -50 -50 6
 
 # decrease rewards
-KNOTS_MINIMUM_DISTANCE   4
+KNOTS_SIZE   4
 
     KNOTS_DUAL  -60 60 6    -50 50 6
     KNOTS_DUAL  60 60 6     50 50 6
@@ -164,6 +164,9 @@ KNOTS_DUAL 30 0 0     30 0 0
     KNOTS_DUAL  85 +10 -85      85 +10 -85
     KNOTS_DUAL  85   0   0      85   0   0
     KNOTS_DUAL  85   0   0      85   0   0
+
+    # small straight runway
+    KNOTS_DUAL  10   0   0      10   0   0
 
 # final looping
 #

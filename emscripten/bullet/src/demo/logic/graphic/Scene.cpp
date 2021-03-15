@@ -4,7 +4,7 @@
 #include "demo/states/StateManager.hpp"
 
 #include "demo/logic/Data.hpp"
-#include "demo/logic/graphic/wrappers/Shader.hpp"
+#include "demo/logic/graphic/wrappers/ShaderProgram.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
 
@@ -59,14 +59,17 @@ void Scene::renderSimple()
 
         const auto& scene = Data::get().graphic.camera.matrices.scene;
 
+        Scene::_renderFloor(scene.composed);
+
         Scene::_renderWireframesGeometries(scene.composed, false); // circuit only
     }
+
     { // HUD
 
         Scene::_renderHUD();
     }
 
-    Shader::unbind();
+    ShaderProgram::unbind();
 }
 
 void Scene::renderAll()
@@ -90,10 +93,13 @@ void Scene::renderAll()
         if (!logic.isAccelerated)
             Scene::_renderLeadingCarSensors(matrices.scene.composed);
 
+        data.graphic.flockingManager.render(matrices.scene.composed);
+
         Scene::_renderParticles(matrices.scene.composed);
 
+        Scene::_renderFloor(matrices.scene.composed);
+
         Scene::_renderCars(matrices.scene.composed);
-        // Scene::_renderCars(matrices.scene);
 
         Scene::_renderWireframesGeometries(matrices.scene.composed);
         Scene::_renderAnimatedCircuit(matrices.scene.composed);
@@ -104,7 +110,7 @@ void Scene::renderAll()
         Scene::_renderHUD();
     }
 
-    Shader::unbind();
+    ShaderProgram::unbind();
 }
 
 void Scene::_updateMatrices()
@@ -123,8 +129,8 @@ void Scene::_updateMatrices()
 
         matrices.scene.projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
 
-        // clamp vertical rotation [-89..+89]
-        const float verticalLimit = glm::radians(89.0f);
+        // clamp vertical rotation [-45..+45]
+        const float verticalLimit = glm::radians(45.0f);
         camera.rotations.phi = glm::clamp(camera.rotations.phi, -verticalLimit, verticalLimit);
 
         camera.eye = {
@@ -156,7 +162,6 @@ void Scene::_updateMatrices()
         {
             camera.thirdPersonCenter = camera.center;
 
-            // matrices.thirdPerson.modelView = matrices.scene.modelView;
             matrices.thirdPerson.model = matrices.scene.model;
             matrices.thirdPerson.view = matrices.scene.view;
             matrices.thirdPerson.composed = matrices.scene.composed;
@@ -174,7 +179,7 @@ void Scene::_updateMatrices()
                 (currentState == StateManager::States::Running ||
                  currentState == StateManager::States::StartGeneration) &&
                 // do not update the third person camera if too close from the target
-                glm::distance(carOrigin, camera.thirdPersonCenter) > 0.1f)
+                glm::distance(carOrigin, camera.thirdPersonCenter) > 0.25f)
             {
                 // simple lerp to setup the third person camera
                 const float lerpRatio = 0.1f;
@@ -195,7 +200,7 @@ void Scene::_updateMatrices()
 
     } // third person
 
-    { // hud
+    { // hud ortho
 
         const auto& vSize = camera.viewportSize;
         glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
@@ -206,7 +211,8 @@ void Scene::_updateMatrices()
         glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
 
         matrices.hud_ortho = projection * viewMatrix;
-    }
+
+    } // hud ortho
 
     { // hud_perspective
 
@@ -214,13 +220,16 @@ void Scene::_updateMatrices()
         const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
         glm::mat4 projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
 
-        glm::vec3 eye = { 400.0f, 300.0f, 425.0f };
-        glm::vec3 center = { 400.0f, 300.0f, 0.0f };
+        const glm::vec2 halfViewportSize = camera.viewportSize * 0.5f;
+
+        glm::vec3 eye = { halfViewportSize.x, halfViewportSize.y, 425.0f };
+        glm::vec3 center = { halfViewportSize.x, halfViewportSize.y, 0.0f };
         glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
         glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
 
         matrices.hud_perspective = projection * viewMatrix;
-    }
+
+    } // hud_perspective
 }
 
 void Scene::_updateCircuitAnimation()
@@ -402,6 +411,27 @@ void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
     glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
 
     geometry.render();
+}
+
+void Scene::_renderFloor(const glm::mat4& sceneMatrix)
+{
+    const auto& graphic = Data::get().graphic;
+
+    const auto& shader = *graphic.shaders.simpleTexture;
+
+    shader.bind();
+
+    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
+    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+
+    graphic.textures.chessboard.bind();
+
+    // hide the floor if the camera is looking from beneath it
+    glEnable(GL_CULL_FACE);
+
+    graphic.geometries.ground.chessboard.render();
+
+    glDisable(GL_CULL_FACE);
 }
 
 void Scene::_renderCars(const glm::mat4& sceneMatrix)
@@ -843,12 +873,12 @@ void Scene::_renderHUD_ortho()
             //
             //
 
-            float widthStep = borderSize.x / cores.maxStateHistory;
+            float widthStep = borderSize.x / Data::Logic::Cores::maxStateHistory;
 
-            for (unsigned int ii = 0; ii + 1 < cores.maxStateHistory; ++ii)
+            for (unsigned int ii = 0; ii + 1 < Data::Logic::Cores::maxStateHistory; ++ii)
             {
-                unsigned int prevIndex = (ii + cores.currHistoryIndex) % cores.maxStateHistory;
-                unsigned int currIndex = (ii + 1 + cores.currHistoryIndex) % cores.maxStateHistory;
+                unsigned int prevIndex = (ii + cores.currHistoryIndex) % Data::Logic::Cores::maxStateHistory;
+                unsigned int currIndex = (ii + 1 + cores.currHistoryIndex) % Data::Logic::Cores::maxStateHistory;
 
                 const auto& prevState = stateHistory[prevIndex];
                 const auto& currState = stateHistory[currIndex];
@@ -1066,6 +1096,8 @@ void Scene::_renderHUD_thirdPerson()
     Scene::_renderLeadingCarSensors(matrices.thirdPerson.composed);
     Scene::_renderParticles(matrices.thirdPerson.composed);
 
+    Scene::_renderFloor(matrices.thirdPerson.composed);
+
     Scene::_renderCars(matrices.thirdPerson.composed);
     // Scene::_renderCars(matrices.thirdPerson);
 
@@ -1083,7 +1115,7 @@ void Scene::_renderHUD()
 
     { // render in framebuffer
 
-        graphic.frameBuffers.hud.bind();
+        graphic.hudComponents.frameBuffer.bind();
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // alpha must also be 0
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1107,7 +1139,7 @@ void Scene::_renderHUD()
 
         glDisable(GL_DEPTH_TEST);
 
-        graphic.textures.hud_color.bind();
+        graphic.hudComponents.colorTexture.bind();
 
         graphic.geometries.hudPerspective.geometry.render();
 

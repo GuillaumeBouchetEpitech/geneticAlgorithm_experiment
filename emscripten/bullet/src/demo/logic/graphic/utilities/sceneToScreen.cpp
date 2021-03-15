@@ -19,7 +19,6 @@ bool sceneToScreen(const glm::vec3& obj,
     projPos.z *= projPos.w;
 
     // window coordinates, Map x, y to range [0..1]
-
     screenCoord.x = (projPos.x * 0.5f + 0.5f) * viewportSize.x + viewportPos.x;
     screenCoord.y = (projPos.y * 0.5f + 0.5f) * viewportSize.y + viewportPos.y;
 

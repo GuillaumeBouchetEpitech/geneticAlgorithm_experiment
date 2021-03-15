@@ -1,6 +1,8 @@
 
 #include "GeometryBuilder.hpp"
 
+#include "ShaderProgram.hpp"
+
 GeometryBuilder::GeometryBuilder()
 {
     reset();
@@ -21,7 +23,7 @@ GeometryBuilder& GeometryBuilder::reset()
     return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setShader(Shader& shader)
+GeometryBuilder& GeometryBuilder::setShader(ShaderProgram& shader)
 {
     _shader = &shader;
 

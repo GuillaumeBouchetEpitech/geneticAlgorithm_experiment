@@ -109,17 +109,20 @@ void SDLWindowWrapper::run()
 
 #else
 
+    // const int maxMsDelay = 16; // 16ms, duration of one frame at 60FPS
+    const int maxMsDelay = 33; // 33ms, duration of one frame at 30FPS
+
     while (_running)
     {
-        const unsigned int currentTime = SDL_GetTicks(); // in millisecond
-        const unsigned int delta = currentTime - _startTime;
+        const unsigned int currentMsTime = SDL_GetTicks(); // in millisecond
 
-        process(delta);
+        // ensure delta isn't greater than maxMsDelay
+        const int deltaMs = std::min<int>(currentMsTime - _startTime, maxMsDelay);
 
-        _startTime = currentTime;
-        // const int maxDelay = 16; // 16ms, duration of one frame at 60FPS
-        const int maxDelay = 33; // 33ms, duration of one frame at 30FPS
-        const int mustWait = maxDelay - (int)delta;
+        process(deltaMs);
+
+        _startTime = currentMsTime;
+        const int mustWait = maxMsDelay - deltaMs;
         if (mustWait > 0)
             SDL_Delay(mustWait);
     }

@@ -3,11 +3,13 @@
 
 #include "Geometry.hpp"
 
+class ShaderProgram;
+
 class GeometryBuilder
 {
 private:
     Geometry::Definition _def;
-    Shader* _shader = nullptr;
+    ShaderProgram* _shader = nullptr;
 
 public:
     GeometryBuilder();
@@ -15,7 +17,7 @@ public:
 
 public:
     GeometryBuilder& reset();
-    GeometryBuilder& setShader(Shader& shader);
+    GeometryBuilder& setShader(ShaderProgram& shader);
     GeometryBuilder& setPrimitiveType(GLint primitiveType);
     GeometryBuilder& addVbo();
     GeometryBuilder& setVboAsInstanced();

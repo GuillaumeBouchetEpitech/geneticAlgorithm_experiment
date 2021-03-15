@@ -46,7 +46,7 @@ void WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     }
 }
 
-void WorkerConsumer::_send()
+void WorkerConsumer::_sendBackToProducer()
 {
     emscripten_worker_respond(const_cast<char*>(_messageToSend.getData()), _messageToSend.getSize());
 }
@@ -75,9 +75,9 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
         {
             CircuitBuilder::Knot knot;
 
-            receivedMsg >> knot.left >> knot.right >> knot.minDistance >> knot.color;
+            receivedMsg >> knot.left >> knot.right >> knot.size >> knot.color;
 
-            circuitKnots.push_back(knot);
+            circuitKnots.emplace_back(knot);
         }
 
         //
@@ -89,7 +89,7 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
         receivedMsg >> isUsingBias;
         receivedMsg >> layerInput;
 
-        unsigned int    totalHidden = 0;
+        unsigned int totalHidden = 0;
         receivedMsg >> totalHidden;
 
         layerHidden.reserve(totalHidden);
@@ -98,7 +98,7 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
             unsigned int layerValue = 0;
             receivedMsg >> layerValue;
 
-            layerHidden.push_back(layerValue);
+            layerHidden.emplace_back(layerValue);
         }
         receivedMsg >> layerOutput;
 
@@ -142,9 +142,9 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
         _cars.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _cars.push_back(Car(_physicWorld,
-                                _startTransform.position,
-                                _startTransform.quaternion));
+            _cars.emplace_back(Car(_physicWorld,
+                                   _startTransform.position,
+                                   _startTransform.quaternion));
 
     } // generate cars
 
@@ -154,14 +154,14 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
         _neuralNetworks.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
+            _neuralNetworks.emplace_back(NeuralNetwork(_neuralNetworkTopology));
 
     } // generate neural networks
 
     _messageToSend.clear();
     _messageToSend << char(Messages::Server::WebWorkerLoaded);
 
-    _send();
+    _sendBackToProducer();
 }
 
 void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
@@ -179,13 +179,11 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
     {
         receivedMsg.read(newWeightsRaw, byteWeightsSize);
 
-        memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
+        std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
         _neuralNetworks[ii].setWeights(weightsBuffer);
 
         _cars[ii].reset(_startTransform.position, _startTransform.quaternion);
     }
-
-    // m_contacts.clear();
 }
 
 void WorkerConsumer::_processSimulation()
@@ -265,5 +263,5 @@ void WorkerConsumer::_processSimulation()
         _messageToSend << output.steer << output.speed;
     }
 
-    _send();
+    _sendBackToProducer();
 }

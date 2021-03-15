@@ -1,7 +1,7 @@
 
 #include "Data.hpp"
 
-#include "graphic/wrappers/Shader.hpp"
+#include "graphic/wrappers/ShaderProgram.hpp"
 #include "graphic/wrappers/GeometryBuilder.hpp"
 
 #include "demo/defines.hpp"
@@ -225,6 +225,10 @@ void Data::initialiseGeometries()
         graphic.geometries.particles.firework.updateBuffer(0, particlesVertices);
         graphic.geometries.particles.firework.setPrimitiveCount(particlesVertices.size());
 
+        geometryBuilder.build(graphic.geometries.particles.boids);
+        graphic.geometries.particles.boids.updateBuffer(0, particlesVertices);
+        graphic.geometries.particles.boids.setPrimitiveCount(particlesVertices.size());
+
     } // particles geometries
 
     { // stack renderer geometry
@@ -240,7 +244,6 @@ void Data::initialiseGeometries()
                 .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3);
 
             geometryBuilder.build(graphic.geometries.stackRenderer.lines);
-
             graphic.geometries.stackRenderer.lines.setPrimitiveCount(0);
 
         } // lines
@@ -381,6 +384,47 @@ void Data::initialiseGeometries()
         graphic.geometries.hudPerspective.geometry.setPrimitiveCount(vertices.size());
 
     } // hud geometry perpective
+
+    { // chessboard ground
+
+        geometryBuilder
+            .reset()
+            .setShader(*graphic.shaders.simpleTexture)
+            .setPrimitiveType(GL_TRIANGLES)
+            .addVbo()
+            .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+            .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
+
+        geometryBuilder.build(graphic.geometries.ground.chessboard);
+
+        struct Vertex
+        {
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+
+        constexpr float boardSize = 10000;
+        constexpr float boardHeight = -0.1f;
+        constexpr float texCoordSize = 100;
+
+        std::array<Vertex, 4> quadVertices{{
+            { { +boardSize, -boardSize, boardHeight }, { +texCoordSize, -texCoordSize } },
+            { { -boardSize, -boardSize, boardHeight }, { -texCoordSize, -texCoordSize } },
+            { { +boardSize, +boardSize, boardHeight }, { +texCoordSize, +texCoordSize } },
+            { { -boardSize, +boardSize, boardHeight }, { -texCoordSize, +texCoordSize } },
+        }};
+
+        std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
+
+        std::vector<Vertex> vertices;
+        vertices.reserve(indices.size()); // pre-allocate
+        for (int index : indices)
+            vertices.push_back(quadVertices[index]);
+
+        graphic.geometries.ground.chessboard.updateBuffer(0, vertices);
+        graphic.geometries.ground.chessboard.setPrimitiveCount(vertices.size());
+
+    } // chessboard ground
 
     { // model geometry
 

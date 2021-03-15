@@ -3,10 +3,26 @@
 
 #include "WebWorkersSimulation.hpp"
 
+#include "demo/utilities/ErrorHandler.hpp"
 #include "demo/utilities/TraceLogger.hpp"
 
 void WebWorkersSimulation::initialise(const Definition& def)
 {
+    if (def.genomesPerCore == 0)
+        D_THROW(std::invalid_argument,
+                "received invalid number of genomes per core"
+                << ", input=" << def.genomesPerCore);
+
+    if (def.totalCores == 0)
+        D_THROW(std::invalid_argument,
+                "received invalid number of cores"
+                << ", input=" << def.totalCores);
+
+
+    if (!def.neuralNetworkTopology.isValid())
+        D_THROW(std::invalid_argument,
+                "received invalid neural network topology");
+
     CircuitBuilder circuit;
     circuit.load(def.filename);
 
@@ -39,7 +55,7 @@ void WebWorkersSimulation::initialise(const Definition& def)
 
     _workerProducers.reserve(_totalCores);
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _workerProducers.emplace_back(workerDef);
+        _workerProducers.emplace_back(new WorkerProducer(workerDef));
 
     _currentRequest = WorkerRequest::WorkersLoading;
 }
@@ -49,8 +65,8 @@ void WebWorkersSimulation::update()
     // do nothing if the worker(s) are:
     // => not initialised
     // => not finished working
-    for (auto& workerProducer : _workerProducers)
-        if (!workerProducer.isLoaded() || workerProducer.isProcessing())
+    for (auto* workerProducer : _workerProducers)
+        if (!workerProducer->isLoaded() || workerProducer->isProcessing())
             return;
 
     // if this line is reached it mean the worker(s) are now available
@@ -90,15 +106,13 @@ void WebWorkersSimulation::update()
         {
             const auto& carResult = getCarResult(ii);
 
-            _carLiveStatus.resize(_totalGenomes, true);
+            if (carResult.isAlive == _carLiveStatus[ii])
+                continue;
 
-            if (!carResult.isAlive && _carLiveStatus[ii])
-            {
-                _carLiveStatus[ii] = false;
+            _carLiveStatus[ii] = false;
 
-                if (_callbacks.onGenomeDie)
-                    _callbacks.onGenomeDie(ii);
-            }
+            if (_callbacks.onGenomeDie)
+                _callbacks.onGenomeDie(ii);
         }
 
         if (_callbacks.onGenerationStep)
@@ -116,9 +130,10 @@ void WebWorkersSimulation::update()
     {
         const auto& carData = getCarResult(ii);
 
-        float extraFitness = float(carData.totalUpdates) / 1000;
+        // this penalty reward fast cars (reaching farther in less updates)
+        const float fitnessPenalty = float(carData.totalUpdates) / 10000;
 
-        _geneticAlgorithm.rateGenome(ii, carData.fitness - extraFitness);
+        _geneticAlgorithm.rateGenome(ii, carData.fitness - fitnessPenalty);
     }
 
     bool isSmarter = _geneticAlgorithm.breedPopulation();
@@ -135,8 +150,8 @@ void WebWorkersSimulation::update()
 
 void WebWorkersSimulation::_processSimulation()
 {
-    for (auto& workerProducer : _workerProducers)
-        workerProducer.processSimulation();
+    for (auto* workerProducer : _workerProducers)
+        workerProducer->processSimulation();
 
     _currentRequest = WorkerRequest::Process;
 }
@@ -147,9 +162,9 @@ void WebWorkersSimulation::_resetAndProcessSimulation()
 
     for (unsigned int ii = 0; ii < _workerProducers.size(); ++ii)
     {
-        const auto& neuralNetworks = NNetworks.data() + ii * _genomesPerCore;
+        const auto* neuralNetworks = NNetworks.data() + ii * _genomesPerCore;
 
-        _workerProducers[ii].resetAndProcessSimulation(neuralNetworks);
+        _workerProducers[ii]->resetAndProcessSimulation(neuralNetworks);
     }
 
     _currentRequest = WorkerRequest::ResetAndProcess;
@@ -162,7 +177,7 @@ unsigned int WebWorkersSimulation::getTotalCores() const
 
 const AbstactSimulation::CoreState& WebWorkersSimulation::getCoreState(unsigned int index) const
 {
-    return _workerProducers[index].getCoreState();
+    return _workerProducers.at(index)->getCoreState();
 }
 
 const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const
@@ -170,7 +185,7 @@ const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const
     const unsigned int workerIndex = index / _genomesPerCore;
     const unsigned int carDataIndex = index % _genomesPerCore;
 
-    return _workerProducers[workerIndex].getCarsData().at(carDataIndex);
+    return _workerProducers.at(workerIndex)->getCarsData().at(carDataIndex);
 }
 
 unsigned int WebWorkersSimulation::getTotalCars() const

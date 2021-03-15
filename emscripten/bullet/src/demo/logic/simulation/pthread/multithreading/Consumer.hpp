@@ -4,6 +4,8 @@
 #include "IProducer.hpp"
 #include "ThreadSynchroniser.hpp"
 
+#include "demo/utilities/NonCopyable.hpp"
+
 #include <functional>
 
 #include <thread>
@@ -11,6 +13,7 @@
 namespace multithreading
 {
     class Consumer
+        : public NonCopyable
     {
     private:
         std::thread _thread;

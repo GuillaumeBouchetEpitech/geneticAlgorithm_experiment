@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "./demo/utilities/NonCopyable.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 class btCollisionShape;
@@ -16,6 +18,7 @@ class btDiscreteDynamicsWorld;
 class PhysicWorld;
 
 class PhysicVehicle
+    : public NonCopyable
 {
 private:
     friend PhysicWorld;

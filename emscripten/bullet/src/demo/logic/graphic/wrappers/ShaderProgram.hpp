@@ -9,7 +9,7 @@
 
 class UniformBufferObject;
 
-class Shader
+class ShaderProgram
 {
 private:
     friend UniformBufferObject;
@@ -34,8 +34,8 @@ private:
     std::unordered_map<std::string, GLint>  _uniformsMap;
 
 public:
-    Shader(const Definition& def);
-    ~Shader();
+    ShaderProgram(const Definition& def);
+    ~ShaderProgram();
 
 public:
     void    bind() const;

@@ -4,12 +4,11 @@
 #include "demo/defines.hpp"
 
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
-
 #include "demo/logic/simulation/logic/Car.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
-
 #include "demo/logic/simulation/webworker/common.hpp"
+#include "demo/utilities/NonCopyable.hpp"
 
 #include "../message/MessageBuffer.hpp"
 #include "../message/MessageView.hpp"
@@ -19,6 +18,7 @@
 #include <vector>
 
 class WorkerConsumer
+    : public NonCopyable
 {
 private:
     unsigned int _genomesPerCore = 0;
@@ -41,7 +41,7 @@ public:
     void processMessage(const char *dataPointer, int dataSize);
 
 private:
-    void _send();
+    void _sendBackToProducer();
 
 private:
     void _initialiseSimulation(MessageView &receivedMsg);

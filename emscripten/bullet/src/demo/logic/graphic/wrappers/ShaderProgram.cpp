@@ -1,5 +1,5 @@
 
-#include "Shader.hpp"
+#include "ShaderProgram.hpp"
 
 #include "demo/utilities/TraceLogger.hpp"
 #include "demo/utilities/ErrorHandler.hpp"
@@ -93,7 +93,7 @@ namespace utilities
 
 //
 
-Shader::Shader(const Definition& def)
+ShaderProgram::ShaderProgram(const Definition& def)
 {
     std::string    vertexSourceCode;
     std::string    fragmentSourceCode;
@@ -177,7 +177,7 @@ Shader::Shader(const Definition& def)
     }
 }
 
-Shader::~Shader()
+ShaderProgram::~ShaderProgram()
 {
     if (_programId)
         glDeleteProgram(_programId);
@@ -185,7 +185,7 @@ Shader::~Shader()
 
 //
 
-void Shader::bind() const
+void ShaderProgram::bind() const
 {
     if (!_programId)
         D_THROW(std::runtime_error, "shader not initialised");
@@ -193,14 +193,14 @@ void Shader::bind() const
     glUseProgram(_programId);
 }
 
-void Shader::unbind()
+void ShaderProgram::unbind()
 {
     glUseProgram(0);
 }
 
 //
 
-GLint Shader::getAttribute(const std::string& name) const
+GLint ShaderProgram::getAttribute(const std::string& name) const
 {
     auto it = _attributesMap.find(name);
 
@@ -210,7 +210,7 @@ GLint Shader::getAttribute(const std::string& name) const
     return it->second;
 }
 
-GLint Shader::getUniform(const std::string& name) const
+GLint ShaderProgram::getUniform(const std::string& name) const
 {
     auto it = _uniformsMap.find(name);
 
@@ -220,12 +220,12 @@ GLint Shader::getUniform(const std::string& name) const
     return it->second;
 }
 
-bool Shader::hasAttribute(const std::string& name) const
+bool ShaderProgram::hasAttribute(const std::string& name) const
 {
     return (_attributesMap.find(name) != _attributesMap.end());
 }
 
-bool Shader::hasUniform(const std::string& name) const
+bool ShaderProgram::hasUniform(const std::string& name) const
 {
     return (_uniformsMap.find(name) != _uniformsMap.end());
 }

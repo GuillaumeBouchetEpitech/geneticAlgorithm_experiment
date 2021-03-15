@@ -30,7 +30,7 @@ private:
 
     glm::vec3 _startPosition;
 
-    std::vector<WorkerProducer> _workerProducers;
+    std::vector<WorkerProducer*> _workerProducers;
 
     unsigned int _totalCores = 0;
     unsigned int _genomesPerCore = 0;

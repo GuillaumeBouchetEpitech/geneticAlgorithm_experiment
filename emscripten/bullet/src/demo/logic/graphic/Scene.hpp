@@ -21,6 +21,8 @@ private:
     static void _renderLeadingCarSensors(const glm::mat4& sceneMatrix);
     static void _renderParticles(const glm::mat4& sceneMatrix);
 
+    static void _renderFloor(const glm::mat4& sceneMatrix);
+
     static void _renderCars(const glm::mat4& sceneMatrix);
     // static void _renderCars(const Data::t_graphic::t_cameraData::t_matricesData::t_matrices& matrices);
 

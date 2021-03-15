@@ -2,7 +2,6 @@
 #include "TextRenderer.hpp"
 
 #include "demo/logic/Data.hpp"
-#include "demo/logic/graphic/wrappers/Shader.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 

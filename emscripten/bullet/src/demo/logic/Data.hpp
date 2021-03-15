@@ -8,10 +8,11 @@
 #include "graphic/utilities/TextRenderer.hpp"
 #include "graphic/utilities/ParticleManager.hpp"
 #include "graphic/utilities/FrustumCulling.hpp"
+#include "graphic/utilities/FlockingManager.hpp"
 
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
-#include "graphic/wrappers/Shader.hpp"
+#include "graphic/wrappers/ShaderProgram.hpp"
 #include "graphic/wrappers/FrameBuffer.hpp"
 #include "graphic/wrappers/RenderBuffer.hpp"
 
@@ -108,40 +109,38 @@ public:
 
         struct Shaders
         {
-            std::unique_ptr<Shader> stackRenderer;
-            std::unique_ptr<Shader> wireframes;
-            std::unique_ptr<Shader> animatedCircuit;
-            std::unique_ptr<Shader> hudText;
-            std::unique_ptr<Shader> particles;
-            std::unique_ptr<Shader> model;
-            std::unique_ptr<Shader> simpleTexture;
+            std::unique_ptr<ShaderProgram> stackRenderer = nullptr;
+            std::unique_ptr<ShaderProgram> wireframes = nullptr;
+            std::unique_ptr<ShaderProgram> animatedCircuit = nullptr;
+            std::unique_ptr<ShaderProgram> hudText = nullptr;
+            std::unique_ptr<ShaderProgram> particles = nullptr;
+            std::unique_ptr<ShaderProgram> model = nullptr;
+            std::unique_ptr<ShaderProgram> simpleTexture = nullptr;
+            std::unique_ptr<ShaderProgram> stackRendererNeuron = nullptr;
         }
         shaders;
 
         struct Textures
         {
             Texture textFont;
-            Texture hud_color;
+            Texture chessboard;
         }
         textures;
 
-        struct RenderBuffers
+        struct HudComponents
         {
-            RenderBuffer hud_depth;
+            Texture colorTexture;
+            RenderBuffer depthRenderBuffer;
+            FrameBuffer frameBuffer;
         }
-        renderBuffers;
-
-        struct FrameBuffers
-        {
-            FrameBuffer hud;
-        }
-        frameBuffers;
+        hudComponents;
 
         struct Geometries
         {
             struct Particles
             {
                 Geometry firework;
+                Geometry boids;
             }
             particles;
 
@@ -192,12 +191,19 @@ public:
                 Geometry wheel;
             }
             model;
+
+            struct Ground
+            {
+                Geometry chessboard;
+            }
+            ground;
         }
         geometries;
 
         StackRenderer stackRenderer;
 
         ParticleManager particleManager;
+        FlockingManager flockingManager;
 
         struct HudText
         {
@@ -237,7 +243,7 @@ public:
             using StatesData = std::vector<AbstactSimulation::CoreState> ;
             using StatesHistory = std::vector<StatesData>;
 
-            const unsigned int maxStateHistory = 60;
+            static constexpr unsigned int maxStateHistory = 60;
             unsigned int currHistoryIndex = 0;
             StatesData statesData;
             StatesHistory statesHistory;

@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "./demo/utilities/NonCopyable.hpp"
+
 #include "thirdparty/GLMath.hpp"
 
 #include <vector>
@@ -14,6 +16,7 @@ class btRigidBody;
 class PhysicWorld;
 
 class PhysicTrimesh
+    : public NonCopyable
 {
 private:
     friend PhysicWorld;

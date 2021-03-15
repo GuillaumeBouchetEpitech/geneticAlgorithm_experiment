@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "demo/utilities/NonCopyable.hpp"
+
 #include <mutex>
 #include <condition_variable>
 
@@ -9,6 +11,7 @@ namespace multithreading
 
     // this class handle all locking and conditional variable interactions
     class ThreadSynchroniser
+        : public NonCopyable
     {
     private:
         std::mutex              _mutex;
@@ -19,6 +22,7 @@ namespace multithreading
         // this class act like a scoped lock but notify before unlocking
         class ScopedLockedNotifier
         {
+            // friendship since we need access to the _mutex
             friend ThreadSynchroniser;
 
         private:

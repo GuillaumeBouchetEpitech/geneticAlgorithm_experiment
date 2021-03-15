@@ -33,21 +33,24 @@ namespace multithreading
     {
         _notified = false;
 
+        // no need to wait for a timeout
         if (seconds <= 0.0f)
         {
             while (!_notified) // loop to avoid spurious wakeups
                 _condVar.wait(lock);
-        }
-        else
-        {
-            long int timeToWait = seconds * 1000;
-            auto timeout = std::chrono::system_clock::now();
-            timeout += std::chrono::milliseconds(timeToWait);
 
-            while (!_notified) // loop to avoid spurious wakeups
-                if (_condVar.wait_until(lock, timeout) == std::cv_status::timeout)
-                    return false; // we did time out
+            return true;
         }
+
+        // we need to wait for a timeout
+        const long long millisecondsToWait = seconds * 1000.0f;
+        auto timeoutPoint = std::chrono::system_clock::now();
+        timeoutPoint += std::chrono::milliseconds(millisecondsToWait);
+
+        while (!_notified) // loop to avoid spurious wakeups
+            if (_condVar.wait_until(lock, timeoutPoint) == std::cv_status::timeout)
+                return false; // we did time out
+
         return true; // we did not time out
     }
 

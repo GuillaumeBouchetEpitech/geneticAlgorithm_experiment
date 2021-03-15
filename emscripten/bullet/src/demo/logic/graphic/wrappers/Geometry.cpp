@@ -1,13 +1,13 @@
 
 #include "Geometry.hpp"
 
-#include "Shader.hpp"
+#include "ShaderProgram.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 
 //
 
-void Geometry::initialise(Shader& shader, const Definition& def)
+void Geometry::initialise(ShaderProgram& shader, const Definition& def)
 {
     if (_vao.isAllocated() || _vbo.isAllocated())
         D_THROW(std::runtime_error, "vao/vbo already allocated");

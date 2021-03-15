@@ -18,6 +18,10 @@ void PthreadSimulation::initialise(const Definition& def)
                 "received invalid number of cores"
                 << ", input=" << def.totalCores);
 
+    if (!def.neuralNetworkTopology.isValid())
+        D_THROW(std::invalid_argument,
+                "received invalid neural network topology");
+
     _totalCores = def.totalCores;
     _genomesPerCore = def.genomesPerCore;
     unsigned int totalGenomes = _genomesPerCore * _totalCores;
@@ -31,6 +35,9 @@ void PthreadSimulation::initialise(const Definition& def)
     _multithreadProducer = new multithreading::Producer(_totalCores);
 
     _physicWorlds.resize(_totalCores);
+    for (unsigned int ii = 0; ii < _totalCores; ++ii)
+        _physicWorlds[ii] = new PhysicWorld();
+
     _coreStates.resize(_totalCores);
 
     { // generate circuit
@@ -45,7 +52,7 @@ void PthreadSimulation::initialise(const Definition& def)
             static_cast<void>(normals); // <= unused
 
             for (auto& physicWorld : _physicWorlds)
-                physicWorld.createGround(vertices, indices, groundIndex);
+                physicWorld->createGround(vertices, indices, groundIndex);
             groundIndex++;
 
             if (def.onNewGroundPatch)
@@ -61,7 +68,7 @@ void PthreadSimulation::initialise(const Definition& def)
             static_cast<void>(normals); // <= unused
 
             for (auto& physicWorld : _physicWorlds)
-                physicWorld.createWall(vertices, indices);
+                physicWorld->createWall(vertices, indices);
 
             if (def.onNewWallPatch)
                 def.onNewWallPatch(vertices, colors, normals, indices);
@@ -81,7 +88,7 @@ void PthreadSimulation::initialise(const Definition& def)
         _cars.reserve(totalGenomes); // pre-allocate
         for (auto& physicWorld : _physicWorlds)
             for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-                _cars.push_back(Car(physicWorld,
+                _cars.push_back(Car(*physicWorld,
                                     _startTransform.position,
                                     _startTransform.quaternion));
 
@@ -106,7 +113,7 @@ void PthreadSimulation::update()
 
             // update physical world
 
-            _physicWorlds[threadIndex].step();
+            _physicWorlds[threadIndex]->step();
 
             // update cars
 

@@ -1,8 +1,6 @@
 
 #include "Data.hpp"
 
-#include "graphic/wrappers/Shader.hpp"
-
 #include "demo/utilities/TraceLogger.hpp"
 #include "demo/utilities/ErrorHandler.hpp"
 
@@ -38,18 +36,20 @@ void Data::initialise(int width, int height)
     //
     // initialise hud frame buffer
 
-    graphic.frameBuffers.hud.initialise();
-    graphic.frameBuffers.hud.bind();
+    auto& hud = graphic.hudComponents;
 
-    graphic.textures.hud_color.allocateBlank({ width, height }, false, false);
-    graphic.textures.hud_color.bind();
-    graphic.frameBuffers.hud.attachColorTexture(graphic.textures.hud_color);
+    hud.frameBuffer.initialise();
+    hud.frameBuffer.bind();
 
-    graphic.renderBuffers.hud_depth.allocateDepth({ width, height });
-    graphic.renderBuffers.hud_depth.bind();
-    graphic.frameBuffers.hud.attachDepthRenderBuffer(graphic.renderBuffers.hud_depth);
+    hud.colorTexture.allocateBlank({ width, height }, false, false);
+    hud.colorTexture.bind();
+    hud.frameBuffer.attachColorTexture(hud.colorTexture);
 
-    graphic.frameBuffers.hud.executeCheck();
+    hud.depthRenderBuffer.allocateDepth({ width, height });
+    hud.depthRenderBuffer.bind();
+    hud.frameBuffer.attachDepthRenderBuffer(hud.depthRenderBuffer);
+
+    hud.frameBuffer.executeCheck();
     FrameBuffer::unbind();
 
     //
@@ -136,6 +136,8 @@ void Data::initialise(int width, int height)
 #endif
 
     graphic.hudText.renderer.initialise();
+
+    graphic.flockingManager.initialise();
 }
 
 //

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-class Shader;
+class ShaderProgram;
 
 class Geometry
 {
@@ -73,7 +73,7 @@ public:
     Geometry() = default;
 
 public:
-    void initialise(Shader& shader, const Definition& def);
+    void initialise(ShaderProgram& shader, const Definition& def);
 
 public:
     void updateBuffer(int index, const void* data, int dataSize, bool dynamic = false) const;

@@ -153,6 +153,7 @@ void State_AbstractSimulation::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
+        graphic.flockingManager.update(elapsedTime);
     }
 }
 

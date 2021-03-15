@@ -7,30 +7,30 @@ void Data::initialiseShaders()
 
         { // create the stackRenderer shader
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
             def.filenames.vertex = "assets/shaders/stackRenderer.vert.glsl";
             def.filenames.fragment = "assets/shaders/stackRenderer.frag.glsl";
             def.attributes = { "a_position", "a_color" };
             def.uniforms = { "u_composedMatrix" };
 
-            graphic.shaders.stackRenderer = std::make_unique<Shader>(def);
+            graphic.shaders.stackRenderer = std::make_unique<ShaderProgram>(def);
         }
 
         { // create the wireframes shader
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
 
             def.filenames.vertex = "assets/shaders/wireframes.vert.glsl";
             def.filenames.fragment = "assets/shaders/wireframes.frag.glsl";
             def.attributes = { "a_position" };
             def.uniforms = { "u_composedMatrix", "u_color" };
 
-            graphic.shaders.wireframes = std::make_unique<Shader>(def);
+            graphic.shaders.wireframes = std::make_unique<ShaderProgram>(def);
         }
 
         { // create the animated circuit shader
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
 
             def.filenames.vertex = "assets/shaders/animatedCircuit.vert.glsl";
             def.filenames.fragment = "assets/shaders/animatedCircuit.frag.glsl";
@@ -39,12 +39,12 @@ void Data::initialiseShaders()
                 "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit"
             };
 
-            graphic.shaders.animatedCircuit = std::make_unique<Shader>(def);
+            graphic.shaders.animatedCircuit = std::make_unique<ShaderProgram>(def);
         }
 
         { // create the hud text shader
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
 
             def.filenames.vertex = "assets/shaders/hudText.vert.glsl";
             def.filenames.fragment = "assets/shaders/hudText.frag.glsl";
@@ -54,12 +54,12 @@ void Data::initialiseShaders()
             };
             def.uniforms = { "u_composedMatrix", "u_texture" };
 
-            graphic.shaders.hudText = std::make_unique<Shader>(def);
+            graphic.shaders.hudText = std::make_unique<ShaderProgram>(def);
         }
 
         { // particles
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
             def.filenames.vertex = "assets/shaders/particles.vert.glsl";
             def.filenames.fragment = "assets/shaders/particles.frag.glsl";
             def.attributes = {
@@ -68,12 +68,12 @@ void Data::initialiseShaders()
             };
             def.uniforms = { "u_composedMatrix" };
 
-            graphic.shaders.particles = std::make_unique<Shader>(def);
+            graphic.shaders.particles = std::make_unique<ShaderProgram>(def);
         }
 
         { // model (chassis + wheels)
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
             def.filenames.vertex = "assets/shaders/model.vert.glsl";
             def.filenames.fragment = "assets/shaders/model.frag.glsl";
             def.attributes = {
@@ -84,27 +84,36 @@ void Data::initialiseShaders()
                 "u_composedMatrix"
             };
 
-            graphic.shaders.model = std::make_unique<Shader>(def);
+            graphic.shaders.model = std::make_unique<ShaderProgram>(def);
         }
 
         { // create the simple texture shader
 
-            Shader::Definition def;
+            ShaderProgram::Definition def;
 
             def.filenames.vertex = "assets/shaders/simpleTexture.vert.glsl";
             def.filenames.fragment = "assets/shaders/simpleTexture.frag.glsl";
             def.attributes = { "a_position", "a_texCoord" };
             def.uniforms = { "u_composedMatrix", "u_texture" };
 
-            graphic.shaders.simpleTexture = std::make_unique<Shader>(def);
+            graphic.shaders.simpleTexture = std::make_unique<ShaderProgram>(def);
         }
 
     } // shaders
 
     { // textures
 
-        bool pixelated = true;
-        graphic.textures.textFont.load("assets/textures/ascii_font.png", pixelated);
+        {
+            bool pixelated = true;
+            bool repeat = false;
+            graphic.textures.textFont.load("assets/textures/ascii_font.png", pixelated, repeat);
+        }
+
+        {
+            bool pixelated = false;
+            bool repeat = true;
+            graphic.textures.chessboard.load("assets/textures/chessboard.png", pixelated, repeat);
+        }
 
     } // textures
 }

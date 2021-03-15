@@ -108,7 +108,8 @@ void Data::initialiseSimulationCallbacks()
             }
 
             // move to next core state history index
-            cores.currHistoryIndex = (cores.currHistoryIndex + 1) % cores.maxStateHistory;
+            cores.currHistoryIndex = (cores.currHistoryIndex + 1) % Data::Logic::Cores::maxStateHistory;
+
 
         } // handle the core data
     });

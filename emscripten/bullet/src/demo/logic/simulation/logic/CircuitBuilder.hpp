@@ -23,7 +23,7 @@ public:
     {
         glm::vec3 left;
         glm::vec3 right;
-        float minDistance;
+        float size;
         glm::vec3 color;
 
         Knot() = default;
@@ -31,12 +31,12 @@ public:
         Knot(
             const glm::vec3& left,
             const glm::vec3& right,
-            float minDistance,
+            float size,
             const glm::vec3& color
         )
             : left(left)
             , right(right)
-            , minDistance(minDistance)
+            , size(size)
             , color(color)
         {}
     };

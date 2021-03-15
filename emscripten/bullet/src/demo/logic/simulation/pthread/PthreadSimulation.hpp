@@ -27,7 +27,7 @@ private:
      * need multiple physic worlds so that we can divide the
      * physical raycasting among the different threads
      */
-    std::vector<PhysicWorld> _physicWorlds;
+    std::vector<PhysicWorld*> _physicWorlds;
 
     std::vector<AbstactSimulation::CoreState> _coreStates;
 

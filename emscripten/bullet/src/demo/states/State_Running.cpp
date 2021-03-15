@@ -36,7 +36,7 @@ void State_Running::update(int deltaTime)
     { // camera tracking
 
         // done to avoid a spurious change of camera
-        // -> true changing states: Running -> EndGeneration
+        // -> true when changing states: Running -> EndGeneration
         if (StateManager::get()->getState() == StateManager::States::Running)
         {
             glm::vec3   cameraNextCenter = logic.circuitAnimation.boundaries.center;
