@@ -1,6 +1,8 @@
 
 #include "Producer.hpp"
 
+#include "demo/utilities/ErrorHandler.hpp"
+
 #include <algorithm>
 #include <chrono>
 
@@ -11,16 +13,25 @@ namespace multithreading
         : work(work)
     {}
 
-    Producer::Producer(unsigned int totalCores)
+    Producer::~Producer()
+    {
+        quit();
+    }
+
+    //
+    //
+
+    void Producer::initialise(unsigned int totalCores)
     {
         // clamp [1..8]
         const int totalConsumers = std::min(std::max(int(totalCores), 1), 8);
 
+        //
         // launch consumers
 
         for (int ii = 0; ii < totalConsumers; ++ii)
         {
-            Consumer * newConsumer = new Consumer(*this);
+            auto newConsumer = std::make_shared<Consumer>(*this);
 
             _consumers.push_back(newConsumer);
             _freeConsumers.push_back(newConsumer);
@@ -28,6 +39,7 @@ namespace multithreading
 
         _running = false; // the producer's thread will set it to true
 
+        //
         // launch producer thread
 
         _thread = std::thread(&Producer::_threadedMethod, this);
@@ -37,16 +49,11 @@ namespace multithreading
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
-    Producer::~Producer()
-    {
-        quit();
-    }
-
-    //
-    //
-
     void Producer::push(const WorkCallback& work)
     {
+        if (!_running)
+            D_THROW(std::runtime_error, "producer not running");
+
         auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
 
         // this part is locked and will notify at the end of the scope
@@ -72,46 +79,37 @@ namespace multithreading
         if (_thread.joinable())
             _thread.join();
 
-        for (auto* consumer : _consumers)
-        {
-            if (consumer->isRunning())
-                consumer->quit();
-
-            delete consumer;
-        }
-
         _freeConsumers.clear();
         _busyConsumers.clear();
+        _consumers.clear();
+
+        // no more shared_ptr references are held
+        //
+        // the consumers destructor:
+        // => should have been called
+        // => will terminate their thread
     }
 
     void Producer::waitUntilAllCompleted()
     {
-    #if defined D_WEB_BUILD
-
-        /**
-         * Sad hack to make the pthread simulation works without warnings :(.
-         *
-         * Done because of this:
-         * => https://emscripten.org/docs/porting/pthreads.html#blocking-on-the-main-browser-thread
-         */
-
-        while (!_plannedTasks.empty() || !_runningTasks.empty())
-            emscripten_sleep(1); // this will yield
-
-    #else
+        if (!_running)
+            D_THROW(std::runtime_error, "producer not running");
 
         auto lock = _waitAllTask.makeScopedLock();
 
         // this part is locked
 
         // make the (main) thread wait for all tasks to be completed
-        while (!_plannedTasks.empty() || !_runningTasks.empty())
+        while (!allCompleted())
         {
             // wait -> release the lock for other thread(s)
             _waitAllTask.waitUntilNotified(lock);
         }
+    }
 
-    #endif
+    bool Producer::allCompleted() const
+    {
+        return (_plannedTasks.empty() && _runningTasks.empty());
     }
 
     //
@@ -124,14 +122,14 @@ namespace multithreading
         // this part is locked and will notify at the end of the scope
 
         // find the task per consumer in the "running" list
-        auto comparison = [consumer](const Task& task) { return task.consumer == consumer; };
+        auto comparison = [consumer](const Task& task) { return task.consumer.get() == consumer; };
         auto itTask = std::find_if(_runningTasks.begin(), _runningTasks.end(), comparison);
 
         if (itTask == _runningTasks.end())
             return; // <= this should never fail
 
         // move consumer from free to busy
-        Consumer* currConsumer = itTask->consumer;
+        auto currConsumer = itTask->consumer;
         _freeConsumers.push_back(currConsumer);
         auto itConsumer = std::find(_busyConsumers.begin(), _busyConsumers.end(), currConsumer);
         if (itConsumer != _busyConsumers.end()) // <= this should never fail
@@ -168,7 +166,7 @@ namespace multithreading
                     break; // no consumer available, wait again
 
                 // move consumer from free to busy
-                Consumer* currConsumer = _freeConsumers.front();
+                auto currConsumer = _freeConsumers.front();
                 _busyConsumers.push_back(currConsumer);
                 _freeConsumers.pop_front();
 

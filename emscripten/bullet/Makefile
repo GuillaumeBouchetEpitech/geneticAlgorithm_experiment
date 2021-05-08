@@ -119,6 +119,7 @@ SRC_NATIVE=		$(wildcard \
 					$(DIR_SRC)/demo/logic/simulation/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/pthread/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/pthread/multithreading/*.cpp \
+					$(DIR_SRC)/demo/logic/simulation/pthread/multithreading/internals/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/logic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/logic/physic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/machineLearning/*.cpp)
@@ -145,18 +146,17 @@ SRC_WEB_MAIN=	$(wildcard \
 					$(DIR_SRC)/demo/logic/simulation/logic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/machineLearning/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/webworker/*.cpp \
-					$(DIR_SRC)/demo/logic/simulation/webworker/message/*.cpp \
+					$(DIR_SRC)/demo/logic/simulation/webworker/messaging/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/webworker/producer/*.cpp)
 
 SRC_WEB_WORKER=	$(wildcard \
 					$(DIR_SRC)/demo/utilities/*.cpp \
 					$(DIR_SRC)/demo/utilities/math/*.cpp \
-					$(DIR_SRC)/demo/utilities/message/*.cpp \
 					$(DIR_SRC)/demo/utilities/string/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/logic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/logic/physic/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/machineLearning/*.cpp \
-					$(DIR_SRC)/demo/logic/simulation/webworker/message/*.cpp \
+					$(DIR_SRC)/demo/logic/simulation/webworker/messaging/*.cpp \
 					$(DIR_SRC)/demo/logic/simulation/webworker/consumer/*.cpp)
 
 endif
@@ -247,11 +247,12 @@ ifeq ($(build_platform),native_pthread)
 						-lSDL2 \
 						-lGLESv2 \
 						-pthread \
-						-lopenal \
 						\
 						$(NAME_BULLET_DYNAMICS) \
 						$(NAME_BULLET_COLLISION) \
 						$(NAME_BULLET_LINEARMATH)
+
+						# -lopenal \
 
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
@@ -270,7 +271,7 @@ else ifeq ($(build_platform),web_wasm_pthread)
 					-s ASYNCIFY
 
 	COMMON_FLAGS+=	-s USE_PTHREADS=1 \
-					-s PTHREAD_POOL_SIZE=4
+					-s PTHREAD_POOL_SIZE=17
 
 	CXXFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
 							-std=c++17 \
@@ -341,10 +342,7 @@ else ifeq ($(build_platform),web_wasm_webworker)
 						-I$(DIR_SRC)
 
 	FLAGS_WEB_MAIN=		-s USE_SDL=2 \
-						-s GL_PREINITIALIZED_CONTEXT=1 \
-						\
-						-DD_WORKER_SCRIPT_URL='"wasm/webworker/worker.js"' \
-						-DD_WORKER_MAIN='"onMessage"'
+						-s GL_PREINITIALIZED_CONTEXT=1
 
 	FLAGS_WEB_WORKER=	-s BUILD_AS_WORKER=1 \
 						\

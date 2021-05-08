@@ -1,19 +1,19 @@
 
 #pragma once
 
-#include "demo/defines.hpp"
-
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/AbstactSimulation.hpp"
+
+#include "demo/logic/simulation/webworker/messaging/MessageBuffer.hpp"
+#include "demo/logic/simulation/webworker/messaging/MessageView.hpp"
+
 #include "demo/utilities/NonCopyable.hpp"
-
-#include "../message/MessageBuffer.hpp"
-#include "../message/MessageView.hpp"
-
 #include "demo/utilities/types.hpp"
+
+#include "demo/defines.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -67,8 +67,8 @@ private:
     void _sendToConsumer();
 
 public:
-    void resetAndProcessSimulation(const NeuralNetwork* pNeuralNetworks);
-    void processSimulation();
+    void resetAndProcessSimulation(unsigned int totalSteps, const NeuralNetwork* pNeuralNetworks);
+    void processSimulation(unsigned int totalSteps);
 
 public:
     bool isLoaded() const;

@@ -1,11 +1,9 @@
 
 #pragma once
 
-#include "demo/defines.hpp"
-
 namespace Messages
 {
-    enum class Client : int
+    enum class FromProducer : int
     {
         LoadWorker = 0,
         ResetAndProcessSimulation,
@@ -13,7 +11,7 @@ namespace Messages
         Unknown,
     };
 
-    enum class Server : int
+    enum class FromConsumer : int
     {
         WebWorkerLoaded = 0,
         SimulationResult,

@@ -46,8 +46,13 @@ void FlockingManager::update(float delta)
     // avoid car
     // avoid circuit
 
-    auto& graphic = Data::get().graphic;
+    auto& data = Data::get();
+    auto& graphic = data.graphic;
     auto& geometry = graphic.geometries.particles.boids;
+    const auto& logic = data.logic;
+    const auto& boundaries = logic.circuitAnimation.boundaries;
+    const auto& simulation = *logic.simulation;
+
 
     struct t_attributes
     {
@@ -63,11 +68,6 @@ void FlockingManager::update(float delta)
     };
 
     std::vector<t_attributes> particlesInstances;
-
-    const auto& data = Data::get();
-    const auto& logic = data.logic;
-    const auto& boundaries = logic.circuitAnimation.boundaries;
-    const auto& simulation = *logic.simulation;
 
     for (int ii = 0; ii < totalBoids; ++ii)
     {
@@ -178,10 +178,8 @@ void FlockingManager::update(float delta)
                 if (!carData.isAlive)
                     continue;
 
-                const glm::vec3 carPos = carData.transform * glm::vec4(0, 0, 0, 1);
-
-                glm::vec3 diff = currBoid.pos - carPos;
-
+                const glm::vec3 carPos = carData.transforms.chassis * glm::vec4(0, 0, 0, 1);
+                const glm::vec3 diff = currBoid.pos - carPos;
                 const float distance = glm::length(diff);
 
                 if (distance > maxRange)
@@ -198,22 +196,22 @@ void FlockingManager::update(float delta)
 
         } // separation from cars
 
-        constexpr float maxAcc = 0.025f;
-        constexpr float maxVel = 0.25f;
+        constexpr float maxAcc = 0.025f * 60.0f;
+        constexpr float maxVel = 0.25f * 60.0f;
 
         // limitate acceleration
-        float accMagnitude = glm::length(acc);
+        const float accMagnitude = glm::length(acc);
         if (accMagnitude > 0.0f)
         {
             acc = (acc / accMagnitude) * maxAcc;
 
-            currBoid.vel += acc;
+            currBoid.vel += acc * delta;
 
             // limitate velocity
-            float velMagnitude = glm::length(currBoid.vel);
-            if (velMagnitude > 0.0f || velMagnitude > maxVel)
+            const float velMagnitude = glm::length(currBoid.vel);
+            if (velMagnitude > 0.0f)
             {
-                currBoid.vel = (currBoid.vel / velMagnitude) * maxVel;
+                currBoid.vel = (currBoid.vel / velMagnitude) * maxVel * delta;
             }
         }
 
@@ -241,8 +239,6 @@ void FlockingManager::update(float delta)
     geometry.setInstancedCount(particlesInstances.size());
 }
 
-// void FlockingManager::render(const Data::Graphic::CameraData::MatricesData::Matrices& matrices) const
-// void FlockingManager::render(const glm::mat4& projection, const glm::mat4& modelview) const
 void FlockingManager::render(const glm::mat4& sceneMatrix) const
 {
     auto& graphic = Data::get().graphic;
@@ -255,9 +251,7 @@ void FlockingManager::render(const glm::mat4& sceneMatrix) const
         const auto& geometry = graphic.geometries.particles.boids;
 
         shader.bind();
-
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+        shader.setUniform("u_composedMatrix", sceneMatrix);
 
         //
         //
@@ -273,37 +267,33 @@ void FlockingManager::render(const glm::mat4& sceneMatrix) const
         const auto& shader = *graphic.shaders.stackRenderer;
 
         shader.bind();
-
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+        shader.setUniform("u_composedMatrix", sceneMatrix);
 
         //
         //
 
-        const glm::vec3 lowColor{0.05f, 0.05f, 0.5f};
-        const glm::vec3 highColor{0.25f, 0.25f, 0.9f};
+        const glm::vec3 lowColor{0.5f, 0.5f, 0.5f};
+        const glm::vec3 highColor{0.0f, 0.0f, 1.0f};
         constexpr float maxRange = 75.0f;
-
 
         for (int ii = 0; ii < totalBoids; ++ii)
         {
-            auto& currBoid = _boids[ii];
+            const auto& currBoid = _boids[ii];
 
             for (int jj = ii + 1; jj < totalBoids; ++jj)
             {
-                auto& otherBoid = _boids[jj];
+                const auto& otherBoid = _boids[jj];
 
                 const float distance = glm::distance(currBoid.pos, otherBoid.pos);
 
                 if (distance > maxRange)
                     continue;
 
-                // stackRenderer.pushLine(currBoid.pos, otherBoid.pos, {1, 1, 1});
-
                 const float coef = distance / maxRange;
 
                 // lerp
-                glm::vec3 color = lowColor + (highColor - lowColor) * coef;
+                // glm::vec3 color = lowColor + (highColor - lowColor) * coef;
+                glm::vec3 color = glm::mix(lowColor, highColor, coef);
 
                 stackRenderer.pushLine(currBoid.pos, otherBoid.pos, color);
             }

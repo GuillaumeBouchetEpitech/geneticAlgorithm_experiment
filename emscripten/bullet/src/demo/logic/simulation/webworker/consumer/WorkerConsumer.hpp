@@ -1,17 +1,18 @@
 
 #pragma once
 
-#include "demo/defines.hpp"
-
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/logic/Car.hpp"
+#include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
+#include "demo/logic/simulation/webworker/messaging/MessageBuffer.hpp"
+#include "demo/logic/simulation/webworker/messaging/MessageView.hpp"
+
 #include "demo/utilities/NonCopyable.hpp"
 
-#include "../message/MessageBuffer.hpp"
-#include "../message/MessageView.hpp"
+#include "demo/defines.hpp"
 
 #include "thirdparty/GLMath.hpp"
 
@@ -26,6 +27,8 @@ private:
     PhysicWorld _physicWorld;
 
     std::vector<Car> _cars;
+
+    std::vector<std::vector<CarData::Transforms>> _latestTransformsHistory;
 
     NeuralNetworkTopology _neuralNetworkTopology;
     std::vector<NeuralNetwork> _neuralNetworks;
@@ -46,5 +49,5 @@ private:
 private:
     void _initialiseSimulation(MessageView &receivedMsg);
     void _resetSimulation(MessageView &receivedMsg);
-    void _processSimulation();
+    void _processSimulation(unsigned int totalSteps);
 };

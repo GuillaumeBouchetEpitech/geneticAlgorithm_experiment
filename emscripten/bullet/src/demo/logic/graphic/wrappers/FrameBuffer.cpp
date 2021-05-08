@@ -18,7 +18,7 @@ void FrameBuffer::initialise()
 
 void FrameBuffer::attachColorTexture(Texture& texture)
 {
-    GLint level = 0;
+    constexpr GLint level = 0;
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture._textureId, level);
 }
 
@@ -31,7 +31,7 @@ void FrameBuffer::attachDepthRenderBuffer(RenderBuffer& buffer)
 
 void FrameBuffer::executeCheck() const
 {
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
     if (status == GL_FRAMEBUFFER_UNDEFINED)
         D_THROW(std::runtime_error, "incomplete frame buffer GL_FRAMEBUFFER_UNDEFINED");

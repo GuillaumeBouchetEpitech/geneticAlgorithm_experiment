@@ -11,14 +11,10 @@
 
 #include <chrono>
 
-#ifdef __EMSCRIPTEN__
-#    include <emscripten.h>
-#endif
-
-Demo::Demo(int width, int height)
-    : SDLWindowWrapper(width, height)
+Demo::Demo(const Definition& def)
+    : SDLWindowWrapper(def.width, def.height)
 {
-    Data::create(width, height);
+    Data::create(def.width, def.height, def.totalCores, def.genomesPerCore);
 
     StateManager::create();
 

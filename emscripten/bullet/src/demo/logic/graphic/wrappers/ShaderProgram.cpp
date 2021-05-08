@@ -200,7 +200,7 @@ void ShaderProgram::unbind()
 
 //
 
-GLint ShaderProgram::getAttribute(const std::string& name) const
+GLint ShaderProgram::getAttribute(const char* name) const
 {
     auto it = _attributesMap.find(name);
 
@@ -210,7 +210,7 @@ GLint ShaderProgram::getAttribute(const std::string& name) const
     return it->second;
 }
 
-GLint ShaderProgram::getUniform(const std::string& name) const
+GLint ShaderProgram::getUniform(const char* name) const
 {
     auto it = _uniformsMap.find(name);
 
@@ -220,12 +220,56 @@ GLint ShaderProgram::getUniform(const std::string& name) const
     return it->second;
 }
 
-bool ShaderProgram::hasAttribute(const std::string& name) const
+bool ShaderProgram::hasAttribute(const char* name) const
 {
     return (_attributesMap.find(name) != _attributesMap.end());
 }
 
-bool ShaderProgram::hasUniform(const std::string& name) const
+bool ShaderProgram::hasUniform(const char* name) const
 {
     return (_uniformsMap.find(name) != _uniformsMap.end());
+}
+
+//
+
+void ShaderProgram::setUniform(const char* name, float value) const
+{
+    setUniform(getUniform(name), value);
+}
+
+void ShaderProgram::setUniform(const char* name, float x, float y, float z, float w) const
+{
+    setUniform(getUniform(name), x, y, z, w);
+}
+
+void ShaderProgram::setUniform(const char* name, const glm::vec4& vec4) const
+{
+    setUniform(getUniform(name), vec4.x, vec4.y, vec4.z, vec4.w);
+}
+
+void ShaderProgram::setUniform(const char* name, const glm::mat4& mat4) const
+{
+    setUniform(getUniform(name), mat4);
+}
+
+//
+
+void ShaderProgram::setUniform(GLint location, float value) const
+{
+    glUniform1f(location, value);
+}
+
+void ShaderProgram::setUniform(GLint location, float x, float y, float z, float w) const
+{
+    glUniform4f(location, x, y, z, w);
+}
+
+void ShaderProgram::setUniform(GLint location, const glm::vec4& vec4) const
+{
+    setUniform(location, vec4.x, vec4.y, vec4.z, vec4.w);
+}
+
+void ShaderProgram::setUniform(GLint location, const glm::mat4& mat4) const
+{
+    glUniformMatrix4fv(location, 1, false, glm::value_ptr(mat4));
 }

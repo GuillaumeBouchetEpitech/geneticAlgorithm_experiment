@@ -34,7 +34,7 @@ public:
     //
 
 public:
-    enum class States: int
+    enum class States : int
     {
 #if defined D_WEB_WEBWORKER_BUILD
         WorkersLoading = 0,

@@ -25,7 +25,6 @@ private: // attributs
 
     NeuralNetworkTopology _neuralNetworkTopology;
 
-    using NeuralNetworks = std::vector<NeuralNetwork>;
     NeuralNetworks _neuralNetworks;
 
 public: // ctor/dtor

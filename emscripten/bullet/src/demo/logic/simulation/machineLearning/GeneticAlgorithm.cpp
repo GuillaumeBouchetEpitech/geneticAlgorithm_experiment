@@ -238,7 +238,7 @@ void GeneticAlgorithm::_mutate(Genome& genome) const
 
 //
 
-const GeneticAlgorithm::NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() const
+const NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() const
 {
     return _neuralNetworks;
 }

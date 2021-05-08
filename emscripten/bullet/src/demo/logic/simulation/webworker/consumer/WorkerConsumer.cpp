@@ -1,12 +1,12 @@
 
-#include "demo/defines.hpp"
 
 #include "WorkerConsumer.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
-// #include "demo/utilities/TraceLogger.hpp"
 
-#include <memory> // std::unique_ptr
+#include "demo/defines.hpp"
+
+#include <memory> // std::make_unique
 #include <chrono>
 
 #include <emscripten/emscripten.h> // <= emscripten_worker_respond()
@@ -18,24 +18,30 @@ void WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
     char messageType = 0;
     receivedMsg >> messageType;
 
-    switch (Messages::Client(messageType))
+    switch (Messages::FromProducer(messageType))
     {
-        case Messages::Client::LoadWorker:
+        case Messages::FromProducer::LoadWorker:
         {
             _initialiseSimulation(receivedMsg);
             break;
         }
 
-        case Messages::Client::ResetAndProcessSimulation:
+        case Messages::FromProducer::ResetAndProcessSimulation:
         {
+            unsigned int totalSteps;
+            receivedMsg >> totalSteps;
+
             _resetSimulation(receivedMsg);
-            _processSimulation();
+            _processSimulation(totalSteps);
             break;
         }
 
-        case Messages::Client::ProcessSimulation:
+        case Messages::FromProducer::ProcessSimulation:
         {
-            _processSimulation();
+            unsigned int totalSteps;
+            receivedMsg >> totalSteps;
+
+            _processSimulation(totalSteps);
             break;
         }
 
@@ -53,7 +59,6 @@ void WorkerConsumer::_sendBackToProducer()
 
 void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 {
-    CircuitBuilder::StartTransform startTransform;
     CircuitBuilder::Knots circuitKnots;
 
     bool                        isUsingBias = true;
@@ -63,8 +68,8 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
     { // read initialisation packet
 
-        receivedMsg >> startTransform.position;
-        receivedMsg >> startTransform.quaternion;
+        receivedMsg >> _startTransform.position;
+        receivedMsg >> _startTransform.quaternion;
 
         int knotsLength = 0;
         receivedMsg >> knotsLength;
@@ -131,10 +136,8 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
         };
 
         CircuitBuilder circuitBuilder;
-        circuitBuilder.load(startTransform, circuitKnots);
+        circuitBuilder.load(_startTransform, circuitKnots);
         circuitBuilder.generate(onNewGroundPatch, onNewWallPatch);
-
-        _startTransform = circuitBuilder.getStartTransform();
 
     } // generate circuit
 
@@ -145,6 +148,10 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
             _cars.emplace_back(Car(_physicWorld,
                                    _startTransform.position,
                                    _startTransform.quaternion));
+
+        _latestTransformsHistory.resize(_genomesPerCore);
+        for (auto& transforms : _latestTransformsHistory)
+            transforms.reserve(50); // TODO: hardcoded
 
     } // generate cars
 
@@ -159,7 +166,7 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
     } // generate neural networks
 
     _messageToSend.clear();
-    _messageToSend << char(Messages::Server::WebWorkerLoaded);
+    _messageToSend << char(Messages::FromConsumer::WebWorkerLoaded);
 
     _sendBackToProducer();
 }
@@ -172,7 +179,7 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
     auto newWeights = std::make_unique<float[]>(floatWeightsSize);
     float* newWeightsRaw = newWeights.get();
 
-    std::vector<float>  weightsBuffer(floatWeightsSize);
+    std::vector<float> weightsBuffer(floatWeightsSize);
     float* weightsBufferRaw = weightsBuffer.data();
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
@@ -186,7 +193,7 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
     }
 }
 
-void WorkerConsumer::_processSimulation()
+void WorkerConsumer::_processSimulation(unsigned int totalSteps)
 {
     // update the simulation
 
@@ -195,33 +202,55 @@ void WorkerConsumer::_processSimulation()
     //
     //
 
-    _physicWorld.step();
+    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+        _latestTransformsHistory[ii].clear();
+
+    for (unsigned int step = 0; step < totalSteps; ++step)
+    {
+        _physicWorld.step();
+
+        for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+        {
+            auto& car = _cars[ii];
+
+            if (!car.isAlive())
+                continue;
+
+            car.update(_neuralNetworks[ii]);
+
+            {
+                const auto& vehicle = car.getVehicle();
+
+                CarData::Transforms newData;
+
+                // transformation matrix of the car
+                vehicle.getOpenGLMatrix(newData.chassis);
+
+                // transformation matrix of the wheels
+                for (unsigned int jj = 0; jj < 4; ++jj)
+                    vehicle.getWheelOpenGLMatrix(jj, newData.wheels[jj]);
+
+                _latestTransformsHistory[ii].push_back(newData);
+            }
+        }
+    }
 
     unsigned int genomesAlive = 0;
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-    {
-        auto& car = _cars[ii];
-
-        if (!car.isAlive())
-            continue;
-
-        car.update(_neuralNetworks[ii]);
-
         if (_cars[ii].isAlive())
             ++genomesAlive;
-    }
 
     //
     //
 
     auto finish = std::chrono::high_resolution_clock::now();
     auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
-    unsigned int delta = milliseconds.count();
+    unsigned int delta = milliseconds.count() * 1000;
 
     // send back the result
 
     _messageToSend.clear();
-    _messageToSend << char(Messages::Server::SimulationResult);
+    _messageToSend << char(Messages::FromConsumer::SimulationResult);
 
     _messageToSend << delta << genomesAlive;
 
@@ -237,6 +266,25 @@ void WorkerConsumer::_processSimulation()
             << car.getFitness()
             << car.getTotalUpdates()
             << car.getGroundIndex();
+
+        //
+        //
+        //
+
+        auto& transformsHistory = _latestTransformsHistory[ii];
+
+        _messageToSend << int(transformsHistory.size());
+        for (const CarData::Transforms& tranforms : transformsHistory)
+        {
+            _messageToSend << tranforms.chassis;
+
+            for (const glm::mat4& wheel : tranforms.wheels)
+                _messageToSend << wheel;
+        }
+
+        //
+        //
+        //
 
         if (!car.isAlive())
             continue;

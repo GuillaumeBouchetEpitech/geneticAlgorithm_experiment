@@ -1,11 +1,7 @@
 
-#include "demo/defines.hpp"
-
 #include "WorkerConsumer.hpp"
 
-#include "../preprocessing.hpp"
-
-#include "demo/utilities/TraceLogger.hpp"
+#include "demo/logic/simulation/webworker/preprocessing.hpp"
 
 #include <emscripten/emscripten.h> // <= EMSCRIPTEN_KEEPALIVE
 
@@ -18,7 +14,7 @@ extern "C"
 {
 
 EMSCRIPTEN_KEEPALIVE
-void WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg)
+void D_WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg)
 {
     static_cast<void>(arg); // <= unused
 

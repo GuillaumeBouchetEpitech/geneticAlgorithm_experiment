@@ -15,16 +15,17 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
     SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
     const int posX = SDL_WINDOWPOS_UNDEFINED;
     const int posY = SDL_WINDOWPOS_UNDEFINED;
-    // const int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    const int flags = SDL_WINDOW_OPENGL;
+    const int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    // const int flags = SDL_WINDOW_OPENGL;
 
     _window = SDL_CreateWindow("AI", posX, posY, width, height, flags);
 
@@ -109,20 +110,25 @@ void SDLWindowWrapper::run()
 
 #else
 
-    // const int maxMsDelay = 16; // 16ms, duration of one frame at 60FPS
-    const int maxMsDelay = 33; // 33ms, duration of one frame at 30FPS
+    constexpr int maxDelay = 16; // 16ms, duration of one frame at 60FPS
+    constexpr int minDelay = 32; // 32ms, duration of one frame at 30FPS
 
     while (_running)
     {
-        const unsigned int currentMsTime = SDL_GetTicks(); // in millisecond
+        const unsigned int startFrameTime = SDL_GetTicks(); // in millisecond
 
         // ensure delta isn't greater than maxMsDelay
-        const int deltaMs = std::min<int>(currentMsTime - _startTime, maxMsDelay);
+        unsigned int delta = startFrameTime - _startTime;
+        if (delta < maxDelay) delta = maxDelay; // no lower than X fps
+        if (delta > minDelay) delta = minDelay; // no higher than X fps
 
-        process(deltaMs);
+        process(delta);
 
-        _startTime = currentMsTime;
-        const int mustWait = maxMsDelay - deltaMs;
+        _startTime = startFrameTime;
+
+        const unsigned int stopFrameTime = SDL_GetTicks(); // in millisecond
+        const int mustWait = maxDelay - (int(stopFrameTime) - int(startFrameTime));
+
         if (mustWait > 0)
             SDL_Delay(mustWait);
     }

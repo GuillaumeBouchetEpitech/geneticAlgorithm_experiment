@@ -19,18 +19,18 @@
 //
 // singleton
 
-Data *Data::_instance = nullptr;
+Data* Data::_instance = nullptr;
 
 Data::~Data()
 {
 }
 
-void Data::initialise(int width, int height)
+void Data::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
+    graphic.camera.viewportSize = { width, height };
+
     initialiseShaders();
     initialiseGeometries();
-
-    graphic.camera.viewportSize = { width, height };
 
     //
     //
@@ -67,7 +67,7 @@ void Data::initialise(int width, int height)
 #endif
 
     initialiseSimulationCallbacks();
-    initialiseCircuit();
+    initialiseSimulation(totalCores, genomesPerCore);
 
     logic.carsTrails.allWheelsTrails.resize(logic.simulation->getTotalCars());
     for (auto &trail : logic.carsTrails.allWheelsTrails)
@@ -82,14 +82,12 @@ void Data::initialise(int width, int height)
 
         std::string graphic;
         if (!glVersion)
+        {
             graphic = "unknown";
+        }
         else
         {
             graphic = reinterpret_cast<const char *>(glVersion);
-
-            const int messageMaxSize = 30;
-            if (graphic.size() > messageMaxSize)
-                graphic = graphic.substr(0, messageMaxSize) + "[...]";
         }
 
         sstr << "Graphic: " << graphic << std::endl;
@@ -118,23 +116,6 @@ void Data::initialise(int width, int height)
 
     } // compute the top left HUD text
 
-#if defined D_WEB_WEBWORKER_BUILD
-
-    { // compute the bottom right HUD text
-
-        std::stringstream sstr;
-
-        sstr
-            << "WebWorker as a fallback " << std::endl
-            << "=> for pthread support" << std::endl
-            << "=> consider Chrome Desktop";
-
-        logic.hudText.pthreadWarning = sstr.str();
-
-    } // compute the bottom right HUD text
-
-#endif
-
     graphic.hudText.renderer.initialise();
 
     graphic.flockingManager.initialise();
@@ -142,13 +123,13 @@ void Data::initialise(int width, int height)
 
 //
 
-void Data::create(int width, int height)
+void Data::create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
     if (_instance)
         D_THROW(std::runtime_error, "Data singleton already initialised");
 
     _instance = new Data();
-    _instance->initialise(width, height);
+    _instance->initialise(width, height, totalCores, genomesPerCore);
 }
 
 void Data::destroy()
@@ -159,7 +140,7 @@ void Data::destroy()
     delete _instance, _instance = nullptr;
 }
 
-Data &Data::get()
+Data& Data::get()
 {
     if (!_instance)
         D_THROW(std::runtime_error, "Data singleton not initialised");

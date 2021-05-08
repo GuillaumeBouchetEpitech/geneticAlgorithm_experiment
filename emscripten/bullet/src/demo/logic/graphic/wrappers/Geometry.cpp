@@ -23,7 +23,7 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def)
             D_THROW(std::runtime_error, "empty vbo attribute defintion");
 
         for (const auto& attr : attrs)
-            if (!shader.hasAttribute(attr.name))
+            if (!shader.hasAttribute(attr.name.c_str()))
                 D_THROW(std::runtime_error, "attribute not found, name=\"" << attr.name << "\"");
     }
 
@@ -90,15 +90,15 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def)
                     break;
             }
 
-            GLint attrLocation = shader.getAttribute(attr.name);
+            const GLint attrLocation = shader.getAttribute(attr.name.c_str());
 
             // TODO: check if the index is 0 on k>0 and assert/throw on it
 
             for (int kk = 0; kk < totalRows; ++kk)
             {
-                int     attrId = attrLocation + kk;
-                int     rowIndex = (attr.index + kk * rowSize) * sizeof(float);
-                void*   rowAddr = reinterpret_cast<void*>(rowIndex);
+                const int attrId = attrLocation + kk;
+                const int rowIndex = (attr.index + kk * rowSize) * sizeof(float);
+                const void* rowAddr = reinterpret_cast<void*>(rowIndex);
 
                 glEnableVertexAttribArray(attrId);
                 glVertexAttribPointer(attrId, rowSize, GL_FLOAT, GL_FALSE, stride, rowAddr);
@@ -123,7 +123,7 @@ void Geometry::updateBuffer(int index, const void* data, int dataSize, bool dyna
 
     _vbo.bind(index);
 
-    GLenum usage = (dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    const GLenum usage = (dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
     glBufferData(GL_ARRAY_BUFFER, dataSize, data, usage);
 

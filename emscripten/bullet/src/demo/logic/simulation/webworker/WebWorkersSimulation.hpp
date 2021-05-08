@@ -1,20 +1,18 @@
 
 #pragma once
 
-#include "demo/defines.hpp"
-
 #include "demo/logic/simulation/AbstactSimulation.hpp"
-
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
-
 #include "demo/logic/simulation/machineLearning/GeneticAlgorithm.hpp"
+#include "demo/logic/simulation/webworker/producer/WorkerProducer.hpp"
+#include "demo/logic/simulation/webworker/common.hpp"
 
-#include "producer/WorkerProducer.hpp"
-#include "common.hpp"
+#include "demo/defines.hpp"
 
 #include <list>
 #include <vector>
 #include <array>
+#include <memory>
 
 class WebWorkersSimulation
     : public AbstactSimulation
@@ -30,7 +28,7 @@ private:
 
     glm::vec3 _startPosition;
 
-    std::vector<WorkerProducer*> _workerProducers;
+    std::vector<std::shared_ptr<WorkerProducer>> _workerProducers;
 
     unsigned int _totalCores = 0;
     unsigned int _genomesPerCore = 0;
@@ -59,11 +57,11 @@ public:
     virtual void initialise(const Definition &def) override;
 
 public:
-    virtual void update() override;
+    virtual void update(unsigned int totalSteps) override;
 
 private:
-    void _processSimulation();
-    void _resetAndProcessSimulation();
+    void _processSimulation(unsigned int totalSteps);
+    void _resetAndProcessSimulation(unsigned int totalSteps);
 
 public:
     virtual unsigned int getTotalCores() const override;
@@ -83,4 +81,5 @@ public:
     virtual const Genome &getBestGenome() const override;
     virtual unsigned int getGenerationNumber() const override;
     virtual const glm::vec3 &getStartPosition() const override;
+    virtual const GeneticAlgorithm& getGeneticAlgorithm() const override;
 };

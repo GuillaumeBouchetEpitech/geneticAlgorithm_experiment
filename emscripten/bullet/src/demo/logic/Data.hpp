@@ -42,10 +42,10 @@ private:
     Data() = default;
     ~Data();
 private:
-    void initialise(int width, int height);
+    void initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
 
 public:
-    static void create(int width, int height);
+    static void create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
     static void destroy();
     static Data& get();
 
@@ -56,8 +56,7 @@ public:
 private:
     void initialiseShaders();
     void initialiseGeometries();
-    // void initialiseSounds();
-    void initialiseCircuit();
+    void initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore);
     void initialiseSimulationCallbacks();
 
 public:
@@ -68,7 +67,6 @@ public:
         {
             glm::vec2 viewportSize = { 800.0f, 600.0f };
 
-            // glm::vec2 rotations = { -2.5f, 0.5f };
             struct Rotations
             {
                 float theta = -2.5f;
@@ -299,7 +297,6 @@ public:
         struct HudText
         {
             std::string header;
-            std::string pthreadWarning;
         }
         hudText;
 

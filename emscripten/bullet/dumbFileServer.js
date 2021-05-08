@@ -4,6 +4,7 @@ const url   = require('url');
 const fs    = require('fs');
 const path  = require('path');
 const os    = require('os');
+const zlib  = require('zlib');
 const port  = parseInt(process.argv[2] || 9000, 10);
 
 // useful to test on local WiFi with a smartphone
@@ -118,16 +119,6 @@ const onFileRequest = async (req, res) => {
         contentType = "text/html"; // <= override the content type
     }
     else {
-
-        // if (pathname.indexOf("worker.wasm") !== -1) {
-
-        //     // simulate slow network
-
-        //     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-        //     await sleep(500);
-        // }
-
         // read file from file system
         data = fs.readFileSync(pathname);
     }
@@ -135,8 +126,26 @@ const onFileRequest = async (req, res) => {
     // if the file is found, set Content-type and send data
     res.setHeader('Content-type', formatsMap.get(ext) || contentType );
 
+    //
+    // gzip compression
+    res.setHeader('Content-Encoding', "gzip" );
+    data = zlib.gzipSync(data);
+    // gzip compression
+    //
+
     // attempt at preventing browser caching
     res.setHeader('Last-Modified', (new Date()).toString());
+
+
+    // // firefox mulithreading
+    // // firefox mulithreading
+    // // firefox mulithreading
+    // res.setHeader('Cross-Origin-Opener-Policy', "same-origin");
+    // res.setHeader('Cross-Origin-Embedder-Policy', "require-corp");
+    // // firefox mulithreading
+    // // firefox mulithreading
+    // // firefox mulithreading
+
 
     res.end(data);
 }

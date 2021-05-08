@@ -10,14 +10,14 @@
 
 namespace constants
 {
-    const float steeringMaxValue = M_PI / 8.0f;
-    const float speedMaxValue = 10.0f;
-    const int   healthMaxValue = 100;
+    constexpr float steeringMaxValue = M_PI / 8.0f;
+    constexpr float speedMaxValue = 10.0f;
+    constexpr int   healthMaxValue = 100;
 
-    const float eyeMaxRange = 50.0f;
-    const float eyeHeight = 1.0f;
-    const float eyeElevation = 6.0f;
-    const float eyeWidthStep = float(M_PI) / 8.0f;
+    constexpr float eyeMaxRange = 50.0f;
+    constexpr float eyeHeight = 1.0f;
+    constexpr float eyeElevation = 6.0f;
+    constexpr float eyeWidthStep = float(M_PI) / 8.0f;
 
     const std::array<float, 3> eyeElevations = {
         -eyeElevation,
@@ -33,8 +33,8 @@ namespace constants
         +eyeWidthStep * 2.0f
     };
 
-    const float groundMaxRange = 10.0f; // <= ground sensor
-    const float groundHeight = 1.0f;
+    constexpr float groundMaxRange = 10.0f; // <= ground sensor
+    constexpr float groundHeight = 1.0f;
 
 };
 

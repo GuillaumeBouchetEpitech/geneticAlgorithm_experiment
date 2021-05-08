@@ -2,6 +2,7 @@
 #pragma once
 
 #include "NeuralNetworkTopology.hpp"
+#include <vector>
 
 class NeuralNetwork
 {
@@ -40,3 +41,5 @@ public: // getter
     const NeuralNetworkTopology& getTopology() const;
 
 };
+
+using NeuralNetworks = std::vector<NeuralNetwork>;

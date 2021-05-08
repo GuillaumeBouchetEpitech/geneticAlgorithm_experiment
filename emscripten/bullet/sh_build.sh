@@ -150,18 +150,34 @@ esac
 #
 #
 
-echo ""
-echo "EMSDK ENV"
+enable_emscripten() {
 
-OLD_PWD=$PWD
-cd ./tools/emsdk
-. ./emsdk_env.sh
-cd $OLD_PWD
+    echo ""
+    echo "EMSDK ENV"
 
-echo ""
-echo "EM++"
+    OLD_PWD=$PWD
+    cd ./tools/emsdk
+    . ./emsdk_env.sh
+    cd $OLD_PWD
 
-em++ --version
+    echo ""
+    echo "EM++"
+
+    em++ --version
+}
+
+case $selected_platform in
+web_pthread)
+    enable_emscripten
+    ;;
+web_worker)
+    enable_emscripten
+    ;;
+esac
+
+#
+#
+#
 
 case $selected_project in
 bullet)
@@ -173,7 +189,7 @@ bullet)
         make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" bullet_fclean
         ;;
     esac
-    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" bullet -j7
+    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" bullet -j15
     ;;
 experiment)
     echo ""
@@ -184,8 +200,8 @@ experiment)
         make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" fclean
         ;;
     esac
-    # careful: the `-j7` option will mess with the sdl2 and sdl2_image wasm port
-    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j7
+    # careful: the `-j15` option will mess with the sdl2 and sdl2_image wasm port
+    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j15
 
     # # currently the build script must be used several times to get all the ports correctly...
     # make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all

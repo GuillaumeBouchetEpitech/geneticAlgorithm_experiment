@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "IProducer.hpp"
-#include "Consumer.hpp"
-#include "ThreadSynchroniser.hpp"
+#include "internals/IProducer.hpp"
+#include "internals/Consumer.hpp"
+#include "internals/ThreadSynchroniser.hpp"
 
 #include <list>
 #include <functional>
-
+#include <memory>
 #include <thread>
 
 namespace multithreading
@@ -20,7 +20,7 @@ namespace multithreading
         {
         public:
             WorkCallback work = nullptr;
-            Consumer* consumer = nullptr;
+            std::shared_ptr<Consumer> consumer = nullptr;
 
         public:
             Task(const WorkCallback& work);
@@ -33,24 +33,26 @@ namespace multithreading
 
         bool _running = false;
 
-        std::list<Consumer*> _consumers;
-        std::list<Consumer*> _freeConsumers;
-        std::list<Consumer*> _busyConsumers;
+        std::list<std::shared_ptr<Consumer>> _consumers;
+        std::list<std::shared_ptr<Consumer>> _freeConsumers;
+        std::list<std::shared_ptr<Consumer>> _busyConsumers;
 
         std::list<Task> _plannedTasks;
         std::list<Task> _runningTasks;
 
     public:
-        Producer(unsigned int totalCores);
+        Producer() = default;
         virtual ~Producer();
 
     public:
+        void initialise(unsigned int totalCores);
         void push(const WorkCallback& work);
         void quit();
         void waitUntilAllCompleted();
+        bool allCompleted() const;
 
     private:
-        virtual void _notifyWorkDone(Consumer* in_consumer) override;
+        virtual void _notifyWorkDone(Consumer* consumer) override;
         void _threadedMethod();
     };
 

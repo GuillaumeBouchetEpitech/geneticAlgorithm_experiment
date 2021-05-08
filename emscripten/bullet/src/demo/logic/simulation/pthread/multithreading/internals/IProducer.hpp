@@ -4,6 +4,7 @@
 #include "demo/utilities/NonCopyable.hpp"
 
 #include <functional>
+#include <memory>
 
 namespace multithreading
 {
@@ -21,7 +22,7 @@ namespace multithreading
         virtual ~IProducer() = default;
 
     protected:
-        virtual void _notifyWorkDone(Consumer* in_consumer) = 0;
+        virtual void _notifyWorkDone(Consumer* consumer) = 0;
     };
 
 };

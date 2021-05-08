@@ -15,6 +15,7 @@ const onGlobalPageLoad = async () => {
     window.addEventListener("error", onBasicGlobalPageError);
 
     const errorText = document.querySelector("#errorText");
+    const renderArea = document.querySelector("#renderArea");
     const canvas = document.querySelector("#emscriptenCanvas");
 
     const showErrorText = (htmlText) => {
@@ -41,14 +42,29 @@ const onGlobalPageLoad = async () => {
     };
 
     const vars = extractVarsFromUrl();
-    window.genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
+    const width = vars.width || 800;
+    const height = vars.height || 600;
+    const totalCores = vars.totalCores || 3;
+    const genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
+    // const initialMemory = vars.initialMemory || 128;
+
+
+
+    renderArea.style.width = `${width}px`;
+    renderArea.style.height = `${height}px`;
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+
+
 
     const buttons = {
         try_with_90_cars: document.querySelector("#try_with_90_cars"),
         try_with_270_cars: document.querySelector("#try_with_270_cars"),
     };
 
-    if (window.genomesPerCore != 30) {
+    if (genomesPerCore != 30) {
 
         buttons.try_with_90_cars.disabled = false;
         buttons.try_with_270_cars.disabled = true;
@@ -83,7 +99,7 @@ const onGlobalPageLoad = async () => {
         // handle events
         buttons.try_with_270_cars.addEventListener("click", () => {
             // simple reload
-            window.location.href = window.location.pathname + `?genomesPerCore=${90}`;
+            window.location.href = window.location.pathname + `?genomesPerCore=${genomesPerCore}`;
         });
     }
 
@@ -311,6 +327,13 @@ const onGlobalPageLoad = async () => {
         canvas: canvas,
         preinitializedWebGLContext: webglCtx,
         noExitRuntime: true,
+        arguments: [
+            `${width}`,
+            `${height}`,
+            `${totalCores}`,
+            `${genomesPerCore}`
+        ],
+        // INITIAL_MEMORY: initialMemory * 1024 * 1024
     };
 
     // this is needed by the wasm side

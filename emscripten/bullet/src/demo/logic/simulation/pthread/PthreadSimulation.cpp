@@ -32,11 +32,11 @@ void PthreadSimulation::initialise(const Definition& def)
 
     _geneticAlgorithm.initialise(genAlgoDef);
 
-    _multithreadProducer = new multithreading::Producer(_totalCores);
+    _multithreadProducer.initialise(_totalCores);
 
     _physicWorlds.resize(_totalCores);
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _physicWorlds[ii] = new PhysicWorld();
+        _physicWorlds[ii] = std::make_unique<PhysicWorld>();
 
     _coreStates.resize(_totalCores);
 
@@ -95,58 +95,21 @@ void PthreadSimulation::initialise(const Definition& def)
     } // generate cars
 
     _carsData.resize(totalGenomes);
+    for (auto& carData : _carsData)
+        carData.latestTransformsHistory.reserve(50); // TODO: hardcoded (o_o)
+
+    for (Car& car : _cars)
+        car.reset(_startTransform.position, _startTransform.quaternion);
 }
 
-void PthreadSimulation::update()
+void PthreadSimulation::update(unsigned int totalSteps)
 {
-    for (unsigned int threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
-    {
-        auto taskCallback = [this, threadIndex]() -> void
-        {
-            auto start = std::chrono::high_resolution_clock::now();
+    if (!_multithreadProducer.allCompleted())
+        return;
 
-            //
-            //
-
-            auto& coreState = _coreStates[threadIndex];
-            coreState.genomesAlive = 0;
-
-            // update physical world
-
-            _physicWorlds[threadIndex]->step();
-
-            // update cars
-
-            const auto& neuralNets = _geneticAlgorithm.getNeuralNetworks();
-
-            for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            {
-                unsigned int index = threadIndex * _genomesPerCore + ii;
-
-                auto& car = _cars[index];
-
-                if (!car.isAlive())
-                    continue;
-
-                car.update(neuralNets[index]);
-                coreState.genomesAlive++;
-            }
-
-            //
-            //
-
-            auto finish = std::chrono::high_resolution_clock::now();
-            auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
-            coreState.delta = microseconds.count();
-        };
-
-        _multithreadProducer->push(taskCallback);
-    }
-
-    _multithreadProducer->waitUntilAllCompleted();
-
-    // for (unsigned int ii = 0; ii < _coreStates.size(); ++ii)
-    //     D_MYLOG(" => [" << ii << "] = " << _coreStates[ii].delta << " (" << _coreStates[ii].genomesAlive << ")");
+    //
+    //
+    //
 
     bool generationCompleted = true;
 
@@ -172,30 +135,108 @@ void PthreadSimulation::update()
             _callbacks.onProcessStep();
     }
 
-    if (!generationCompleted)
-        return;
-
-    // rate genomes
-    for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+    if (generationCompleted)
     {
-        // this penalty reward fast cars (reaching farther in less updates)
-        const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
+        // rate genomes
+        for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+        {
+            // this penalty reward fast cars (reaching farther in less updates)
+            const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
 
-        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
+            _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
+        }
+
+        bool isSmarter = _geneticAlgorithm.breedPopulation();
+
+        if (_callbacks.onGenerationEnd)
+            _callbacks.onGenerationEnd(isSmarter);
+
+        //
+        //
+
+        for (Car& car : _cars)
+            car.reset(_startTransform.position, _startTransform.quaternion);
+
+        _isFirstGenerationFrame = true;
     }
 
-    bool isSmarter = _geneticAlgorithm.breedPopulation();
+    for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+        _carsData[ii].latestTransformsHistory.clear();
 
-    if (_callbacks.onGenerationEnd)
-        _callbacks.onGenerationEnd(isSmarter);
+    for (unsigned int threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
+    {
+        auto taskCallback = [this, threadIndex, totalSteps]() -> void
+        {
+            auto start = std::chrono::high_resolution_clock::now();
 
-    //
-    //
+            //
+            //
 
-    for (Car& car : _cars)
-        car.reset(_startTransform.position, _startTransform.quaternion);
+            const auto& neuralNets = _geneticAlgorithm.getNeuralNetworks();
 
-    _isFirstGenerationFrame = true;
+            for (unsigned int step = 0; step < totalSteps; ++step)
+            {
+                // update physical world
+
+                _physicWorlds[threadIndex]->step();
+
+                // update cars
+
+                for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+                {
+                    unsigned int index = threadIndex * _genomesPerCore + ii;
+
+                    auto& car = _cars[index];
+
+                    if (!car.isAlive())
+                        continue;
+
+                    car.update(neuralNets[index]);
+
+                    {
+                        const auto& vehicle = car.getVehicle();
+
+                        CarData::Transforms newData;
+
+                        // transformation matrix of the car
+                        vehicle.getOpenGLMatrix(newData.chassis);
+
+                        // transformation matrix of the wheels
+                        for (unsigned int jj = 0; jj < 4; ++jj)
+                            vehicle.getWheelOpenGLMatrix(jj, newData.wheels[jj]);
+
+                        _carsData[index].latestTransformsHistory.push_back(newData);
+                    }
+                }
+            }
+
+            auto& coreState = _coreStates[threadIndex];
+            coreState.genomesAlive = 0;
+
+            for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+            {
+                unsigned int index = threadIndex * _genomesPerCore + ii;
+
+                auto& car = _cars[index];
+
+                if (car.isAlive())
+                    coreState.genomesAlive++;
+            }
+
+            //
+            //
+
+            auto finish = std::chrono::high_resolution_clock::now();
+            auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+            coreState.delta = microseconds.count();
+        };
+
+        _multithreadProducer.push(taskCallback);
+    }
+
+// #if not defined D_NATIVE_PTHREAD_BUILD
+//     _multithreadProducer.waitUntilAllCompleted();
+// #endif
 }
 
 void PthreadSimulation::_updateCarResult()
@@ -224,11 +265,11 @@ void PthreadSimulation::_updateCarResult()
         const auto& vehicle = car.getVehicle();
 
         // transformation matrix of the car
-        vehicle.getOpenGLMatrix(carData.transform);
+        vehicle.getOpenGLMatrix(carData.transforms.chassis);
 
         // transformation matrix of the wheels
-        for (unsigned int jj = 0; jj < 4; ++jj)
-            vehicle.getWheelOpenGLMatrix(jj, carData.wheelsTransform[jj]);
+        for (std::size_t jj = 0; jj < carData.transforms.wheels.size(); ++jj)
+            vehicle.getWheelOpenGLMatrix(jj, carData.transforms.wheels[jj]);
 
         carData.velocity = vehicle.getVelocity();
 
@@ -309,4 +350,9 @@ unsigned int PthreadSimulation::getGenerationNumber() const
 const glm::vec3& PthreadSimulation::getStartPosition() const
 {
     return _startTransform.position;
+}
+
+const GeneticAlgorithm& PthreadSimulation::getGeneticAlgorithm() const
+{
+    return _geneticAlgorithm;
 }

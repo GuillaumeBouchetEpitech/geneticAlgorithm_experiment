@@ -35,7 +35,7 @@ namespace /*anonymous*/
 
 };
 
-void Data::initialiseCircuit()
+void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore)
 {
     std::vector<glm::vec3> skeletonVertices;
     AnimatedVertices groundVertices;
@@ -81,7 +81,7 @@ void Data::initialiseCircuit()
     float latestSize = 0;
     constexpr float maxDeformation = 0.5f;
 
-    auto onGroundPatch = [
+    auto onGroundPatchCallback = [
         this,
         &latestSize,
         &whiteColor,
@@ -139,7 +139,7 @@ void Data::initialiseCircuit()
         } // flockingManager
     };
 
-    auto onWallPatch = [
+    auto onWallPatchCallback = [
         &latestSize,
         &whiteColor,
         &greyColor,
@@ -178,13 +178,8 @@ void Data::initialiseCircuit()
 
     logic.annTopology.init({15, 5, 2}, /*useBiasNeuron =*/ true);
 
-#if defined D_WEB_BUILD
-    logic.cores.genomesPerCore = EM_ASM_INT(return window.genomesPerCore || 30);
-#else
-    logic.cores.genomesPerCore = 90;
-#endif
-
-    logic.cores.totalCores = 3;
+    logic.cores.genomesPerCore = genomesPerCore;
+    logic.cores.totalCores = totalCores;
     logic.cores.totalCars = logic.cores.totalCores * logic.cores.genomesPerCore;
 
     AbstactSimulation::Definition simulationDef;
@@ -193,8 +188,8 @@ void Data::initialiseCircuit()
     simulationDef.totalCores = logic.cores.totalCores;
     simulationDef.neuralNetworkTopology = logic.annTopology;
     simulationDef.onSkeletonPatch = onSkeletonPatch; // callback
-    simulationDef.onNewGroundPatch = onGroundPatch; // callback
-    simulationDef.onNewWallPatch = onWallPatch; // callback
+    simulationDef.onNewGroundPatch = onGroundPatchCallback; // callback
+    simulationDef.onNewWallPatch = onWallPatchCallback; // callback
 
     logic.simulation->initialise(simulationDef);
 

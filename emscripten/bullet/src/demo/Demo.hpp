@@ -7,7 +7,16 @@ class Demo
     : public SDLWindowWrapper
 {
 public:
-    Demo(int width, int height);
+    struct Definition
+    {
+        unsigned int totalCores;
+        unsigned int genomesPerCore;
+        unsigned int width;
+        unsigned int height;
+    };
+
+public:
+    Demo(const Definition& def);
     virtual ~Demo();
 
 protected:

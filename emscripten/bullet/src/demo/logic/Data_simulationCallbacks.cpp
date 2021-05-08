@@ -44,20 +44,23 @@ void Data::initialiseSimulationCallbacks()
                 // record the trail index with it's genome id in the lookup map
                 carsTrails.genomeIndexMap[genome.id] = ii;
 
-                auto& currentTrail = carsTrails.allWheelsTrails[ii];
+                auto& currentWheelsTrail = carsTrails.allWheelsTrails[ii];
 
                 // reset the old data
 
-                for (unsigned int ii = 0; ii < currentTrail.wheels.size(); ++ii)
-                    currentTrail.wheels[ii].clear();
+                for (unsigned int ii = 0; ii < currentWheelsTrail.wheels.size(); ++ii)
+                    currentWheelsTrail.wheels[ii].clear();
 
                 // initialise the new data
 
-                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    glm::vec4 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                    for (unsigned int ii = 0; ii < transforms.wheels.size(); ++ii)
+                    {
+                        glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    currentTrail.wheels[ii].emplace_back(wheelOrigin);
+                        currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
+                    }
                 }
             }
 
@@ -81,11 +84,14 @@ void Data::initialiseSimulationCallbacks()
 
                 auto& currentWheelsTrail = logic.carsTrails.allWheelsTrails[ii];
 
-                for (unsigned int ii = 0; ii < carData.wheelsTransform.size(); ++ii)
+                for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    glm::vec3 wheelOrigin = carData.wheelsTransform[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                    for (unsigned int ii = 0; ii < transforms.wheels.size(); ++ii)
+                    {
+                        glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                    currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
+                        currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
+                    }
                 }
             }
 
@@ -110,7 +116,6 @@ void Data::initialiseSimulationCallbacks()
             // move to next core state history index
             cores.currHistoryIndex = (cores.currHistoryIndex + 1) % Data::Logic::Cores::maxStateHistory;
 
-
         } // handle the core data
     });
 
@@ -121,7 +126,7 @@ void Data::initialiseSimulationCallbacks()
         const auto& carData = simulation.getCarResult(genomeIndex);
 
         const glm::vec3 extraHeight(0.0f, 0.0f, 1.0f);
-        glm::vec4 carPos = carData.transform * glm::vec4(extraHeight, 1.0f);
+        glm::vec4 carPos = carData.transforms.chassis * glm::vec4(extraHeight, 1.0f);
 
         graphic.particleManager.emitParticles(carPos, carData.velocity);
     });

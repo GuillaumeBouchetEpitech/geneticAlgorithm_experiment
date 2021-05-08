@@ -2,7 +2,6 @@
 #include "MessageBuffer.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
-// #include "demo/utilities/TraceLogger.hpp"
 
 #include <cstring> // <= std::memcpy
 
@@ -12,7 +11,7 @@ MessageBuffer::MessageBuffer()
      * grow the cached memory block
      * => it reallocate when needed, will only grow () (not on it's own anyway)
      * => it do so with a power of 2 value (1, 2, 4, 8, 16, etc.)
-     * => starting it at a "high" value (512) make that part faster
+     * => starting it at a "high" value (1024) make that part faster
      */
     _dataContainer.reserve(1024); // pre-allocate
 }

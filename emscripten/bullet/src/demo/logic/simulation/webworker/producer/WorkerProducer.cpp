@@ -1,12 +1,11 @@
 
-#include "demo/defines.hpp"
-
 #include "WorkerProducer.hpp"
 
-#include "../preprocessing.hpp"
+#include "demo/logic/simulation/webworker/preprocessing.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
-// #include "demo/utilities/TraceLogger.hpp"
+
+#include "demo/defines.hpp"
 
 WorkerProducer::WorkerProducer(const Definition& def)
 {
@@ -21,7 +20,7 @@ WorkerProducer::WorkerProducer(const Definition& def)
     { // send intiialisation message to worker consumer
 
         _message.clear();
-        _message << char(Messages::Client::LoadWorker);
+        _message << char(Messages::FromProducer::LoadWorker);
 
         _message << def.startTransform.position;
         _message << def.startTransform.quaternion;
@@ -64,16 +63,16 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
     char messageType = 0;
     receivedMsg >> messageType;
 
-    switch (Messages::Server(messageType))
+    switch (Messages::FromConsumer(messageType))
     {
-        case Messages::Server::WebWorkerLoaded:
+        case Messages::FromConsumer::WebWorkerLoaded:
         {
             D_MYLOG("web worker loaded");
             _flags[asValue(Status::WebWorkerLoaded)] = true;
             break;
         }
 
-        case Messages::Server::SimulationResult:
+        case Messages::FromConsumer::SimulationResult:
         {
             receivedMsg >> _coreState.delta >> _coreState.genomesAlive;
 
@@ -86,11 +85,35 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                     >> car.totalUpdates
                     >> car.groundIndex;
 
+                //
+                //
+                //
+
+                int totalHistory = 0;
+                receivedMsg >> totalHistory;
+
+                car.latestTransformsHistory.clear();
+                car.latestTransformsHistory.reserve(totalHistory);
+
+                CarData::Transforms newData;
+                for (int ii = 0; ii < totalHistory; ++ii)
+                {
+                    receivedMsg >> newData.chassis;
+                    for (std::size_t jj = 0; jj < newData.wheels.size(); ++jj)
+                        receivedMsg >> newData.wheels[jj];
+
+                    car.latestTransformsHistory.push_back(newData);
+                }
+
+                //
+                //
+                //
+
                 if (!car.isAlive)
                     continue;
 
-                receivedMsg >> car.transform;
-                for (auto& transform : car.wheelsTransform)
+                receivedMsg >> car.transforms.chassis;
+                for (auto& transform : car.transforms.wheels)
                     receivedMsg >> transform;
 
                 receivedMsg >> car.velocity;
@@ -125,13 +148,14 @@ void WorkerProducer::_sendToConsumer()
 
     em_worker_callback_func callback = WorkerProducer::_onMessageCallback;
 
-    emscripten_call_worker(_workerHandle, WORKER_MAIN_STR, dataPointer, dataSize, callback, (void*)this);
+    emscripten_call_worker(_workerHandle, D_WORKER_MAIN_STR, dataPointer, dataSize, callback, (void*)this);
 }
 
-void WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetworks)
+void WorkerProducer::resetAndProcessSimulation(unsigned int totalSteps, const NeuralNetwork* neuralNetworks)
 {
     _message.clear();
-    _message << char(Messages::Client::ResetAndProcessSimulation);
+    _message << char(Messages::FromProducer::ResetAndProcessSimulation);
+    _message << totalSteps;
 
     std::vector<float>  weights;
 
@@ -145,10 +169,11 @@ void WorkerProducer::resetAndProcessSimulation(const NeuralNetwork* neuralNetwor
     _sendToConsumer();
 }
 
-void WorkerProducer::processSimulation()
+void WorkerProducer::processSimulation(unsigned int totalSteps)
 {
     _message.clear();
-    _message << char(Messages::Client::ProcessSimulation);
+    _message << char(Messages::FromProducer::ProcessSimulation);
+    _message << totalSteps;
 
     _sendToConsumer();
 }

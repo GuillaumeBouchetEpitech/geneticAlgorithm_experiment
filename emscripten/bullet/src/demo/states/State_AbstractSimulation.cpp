@@ -141,12 +141,9 @@ void State_AbstractSimulation::update(int deltaTime)
             else if (rotateDown)
                 camera.rotations.phi += 1.0f * elapsedTime;
 
-#if not defined D_WEB_WEBWORKER_BUILD
-
             // only pthread builds support this
             data.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
-#endif
         } // keyboard event(s)
 
     } // events
@@ -167,14 +164,65 @@ void State_AbstractSimulation::render(const SDL_Window& window)
 
 void State_AbstractSimulation::resize(int width, int height)
 {
-    Data::get().graphic.camera.viewportSize = { width, height };
+    auto& data = Data::get();
+    auto& graphic = data.graphic;
+
+    graphic.camera.viewportSize = { width, height };
+
+    {
+        const auto& vSize = graphic.camera.viewportSize;
+
+        struct Vertex
+        {
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+
+        std::array<Vertex, 4> quadVertices{{
+            { { vSize.x * 1.0f, vSize.y * 0.0f, 0.0f }, { 1.0f, 0.0f } },
+            { { vSize.x * 0.0f, vSize.y * 0.0f, 0.0f }, { 0.0f, 0.0f } },
+            { { vSize.x * 1.0f, vSize.y * 1.0f, 0.0f }, { 1.0f, 1.0f } },
+            { { vSize.x * 0.0f, vSize.y * 1.0f, 0.0f }, { 0.0f, 1.0f } }
+        }};
+
+        std::array<int, 6> indices{{ 1,0,2,  1,3,2 }};
+
+        std::vector<Vertex> vertices;
+        vertices.reserve(indices.size()); // pre-allocate
+        for (int index : indices)
+            vertices.push_back(quadVertices[index]);
+
+        graphic.geometries.hudPerspective.geometry.updateBuffer(0, vertices);
+        graphic.geometries.hudPerspective.geometry.setPrimitiveCount(vertices.size());
+    }
+
+    {
+        auto& hud = graphic.hudComponents;
+
+        hud.frameBuffer.initialise();
+        hud.frameBuffer.bind();
+
+        hud.colorTexture.allocateBlank({ width, height }, false, false);
+        hud.colorTexture.bind();
+        hud.frameBuffer.attachColorTexture(hud.colorTexture);
+
+        hud.depthRenderBuffer.allocateDepth({ width, height });
+        hud.depthRenderBuffer.bind();
+        hud.frameBuffer.attachDepthRenderBuffer(hud.depthRenderBuffer);
+
+        hud.frameBuffer.executeCheck();
+        FrameBuffer::unbind();
+    }
 }
 
 void State_AbstractSimulation::visibility(bool visible)
 {
-    if (!visible)
+    auto* stateManager = StateManager::get();
+    StateManager::States currentState = stateManager->getState();
+
+    if (currentState != StateManager::States::Paused && !visible)
     {
-        Data::get().logic.state.previousState = StateManager::get()->getState();
-        StateManager::get()->changeState(StateManager::States::Paused);
+        Data::get().logic.state.previousState = currentState;
+        stateManager->changeState(StateManager::States::Paused);
     }
 }

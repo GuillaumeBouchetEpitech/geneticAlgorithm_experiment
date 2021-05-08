@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "demo/defines.hpp"
-
-#include "logic/CircuitBuilder.hpp"
-
-#include "machineLearning/GeneticAlgorithm.hpp"
-
+#include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
+
+#include "demo/logic/simulation/machineLearning/GeneticAlgorithm.hpp"
+
 #include "demo/utilities/NonCopyable.hpp"
+
+#include "demo/defines.hpp"
 
 #include <functional>
 
@@ -46,7 +46,7 @@ public:
     virtual void initialise(const Definition& def) = 0;
 
 public:
-    virtual void update() = 0;
+    virtual void update(unsigned int totalSteps) = 0;
 
 public:
     virtual unsigned int getTotalCores() const = 0;
@@ -55,10 +55,9 @@ public:
     virtual unsigned int getTotalCars() const = 0;
 
 public:
+
 #if defined D_WEB_WEBWORKER_BUILD
-
     virtual void setOnWorkersReadyCallback(SimpleCallback callback) = 0;
-
 #endif
 
     virtual void setOnGenerationResetCallback(SimpleCallback callback) = 0;
@@ -71,4 +70,5 @@ public:
     virtual const Genome& getBestGenome() const = 0;
     virtual unsigned int getGenerationNumber() const = 0;
     virtual const glm::vec3& getStartPosition() const = 0;
+    virtual const GeneticAlgorithm& getGeneticAlgorithm() const = 0;
 };

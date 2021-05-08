@@ -1,6 +1,15 @@
 
 precision mediump float;
 
+varying vec4 v_color;
+
+void main(void)
+{
+	gl_FragColor = v_color;
+}
+
+precision mediump float;
+
 uniform sampler2D u_texture;
 
 varying vec2 v_texCoord;
@@ -14,115 +23,16 @@ precision mediump float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec3  a_position;
-attribute vec3  a_offsetPosition;
-attribute float a_offsetScale;
-attribute vec3  a_offsetColor;
+attribute vec3 a_position;
+attribute vec4 a_color;
 
 varying vec4 v_color;
-
-void main(void)
-{
-	vec3 position = a_position * a_offsetScale + a_offsetPosition;
-
-	gl_Position = u_composedMatrix * vec4(position, 1.0);
-
-	v_color = vec4(a_offsetColor, 1.0);
-}
-
-precision mediump float;
-
-uniform mat4 u_composedMatrix;
-
-attribute vec3 a_position;
-attribute vec3 a_color;
-
-varying vec3 v_color;
 
 void main(void)
 {
 	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
 
 	v_color = a_color;
-}
-
-precision mediump float;
-
-uniform sampler2D u_texture;
-
-varying vec2 v_texCoord;
-
-void main(void)
-{
-    gl_FragColor = texture2D(u_texture, v_texCoord);
-}
-
-precision mediump float;
-
-varying vec3 v_color;
-
-void main(void)
-{
-	gl_FragColor = vec4(v_color, 1.0);
-}
-
-precision mediump float;
-
-varying vec4 v_color;
-
-void main(void)
-{
-    gl_FragColor = v_color;
-}
-
-precision mediump float;
-
-uniform mat4 u_composedMatrix;
-
-attribute vec2 a_position;
-attribute vec2 a_texCoord;
-attribute vec2 a_offsetPosition;
-attribute vec2 a_offsetTexCoord;
-attribute float a_offsetScale;
-
-varying vec2 v_texCoord;
-
-void main(void)
-{
-	vec2 position = a_position * a_offsetScale + a_offsetPosition;
-
-	gl_Position = u_composedMatrix * vec4(position, 0.0, 1.0);
-
-	v_texCoord = a_texCoord + a_offsetTexCoord;
-}
-
-precision mediump float;
-
-uniform vec4 u_color;
-
-void main(void)
-{
-	gl_FragColor = u_color;
-}
-
-precision mediump float;
-
-uniform mat4 u_composedMatrix;
-
-attribute vec3 a_position;
-
-void main(void)
-{
-	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
-}
-
-precision mediump float;
-
-varying vec3 v_color;
-
-void main(void)
-{
-	gl_FragColor = vec4(v_color, 1.0);
 }
 
 precision mediump float;
@@ -185,22 +95,6 @@ precision mediump float;
 uniform mat4 u_composedMatrix;
 
 attribute vec3 a_position;
-attribute vec2 a_texCoord;
-
-varying vec2 v_texCoord;
-
-void main(void)
-{
-	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
-
-	v_texCoord = a_texCoord;
-}
-
-precision mediump float;
-
-uniform mat4 u_composedMatrix;
-
-attribute vec3 a_position;
 attribute vec3 a_color;
 attribute mat4 a_offsetTransform;
 attribute vec3 a_offsetColor;
@@ -216,12 +110,148 @@ void main(void)
 
 precision mediump float;
 
+uniform mat4 u_composedMatrix;
+
+attribute vec3 a_position;
+attribute vec2 a_texCoord;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+
+	v_texCoord = a_texCoord;
+}
+
+precision mediump float;
+
 varying vec4 v_color;
 
 void main(void)
 {
 	gl_FragColor = v_color;
 }
+
+precision mediump float;
+
+varying vec4 v_color;
+
+void main(void)
+{
+    gl_FragColor = v_color;
+}
+
+precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec3 a_position;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+}
+
+precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec3  a_position;
+attribute vec3  a_offsetPosition;
+attribute float a_offsetScale;
+attribute vec3  a_offsetColor;
+
+varying vec4 v_color;
+
+void main(void)
+{
+	vec3 position = a_position * a_offsetScale + a_offsetPosition;
+
+	gl_Position = u_composedMatrix * vec4(position, 1.0);
+
+	v_color = vec4(a_offsetColor, 1.0);
+}
+
+precision mediump float;
+
+uniform sampler2D u_texture;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+    gl_FragColor = texture2D(u_texture, v_texCoord);
+}
+
+precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec2 a_position;
+attribute vec2 a_texCoord;
+attribute vec2 a_offsetPosition;
+attribute vec2 a_offsetTexCoord;
+attribute float a_offsetScale;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+	vec2 position = a_position * a_offsetScale + a_offsetPosition;
+
+	gl_Position = u_composedMatrix * vec4(position, 0.0, 1.0);
+
+	v_texCoord = a_texCoord + a_offsetTexCoord;
+}
+
+precision mediump float;
+
+varying vec3 v_color;
+
+void main(void)
+{
+	gl_FragColor = vec4(v_color, 1.0);
+}
+
+precision mediump float;
+
+uniform vec4 u_color;
+
+void main(void)
+{
+	gl_FragColor = u_color;
+}
+# Blender MTL File: 'None'
+# Material Count: 3
+
+newmtl Mat.033
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.150000 0.150000 0.150000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.048
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.150000 0.150000 0.150000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl None
+Ns 500
+Ka 1.0 1.0 1.0
+Kd 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+d 1
+illum 2
 # Blender v2.80 (sub 75) OBJ File: ''
 # www.blender.org
 mtllib CarWheel.mtl
@@ -535,34 +565,166 @@ f 147//43 148//43 150//43 149//43
 f 149//44 150//44 88//44 87//44
 f 87//45 89//45 91//45 93//45 95//45 97//45 99//45 101//45 103//45 105//45 107//45 109//45 111//45 113//45 115//45 117//45 119//45 121//45 123//45 125//45 127//45 129//45 131//45 133//45 135//45 137//45 139//45 141//45 143//45 145//45 147//45 149//45
 # Blender MTL File: 'None'
-# Material Count: 3
+# Material Count: 16
 
-newmtl Mat.033
+newmtl Mat.000
 Ns 99.999988
 Ka 1.000000 1.000000 1.000000
-Kd 0.150000 0.150000 0.150000
+Kd 0.580000 0.580000 0.580000
 Ks 1.000000 1.000000 1.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
 d 1.000000
 illum 3
 
-newmtl Mat.048
+newmtl Mat.014
 Ns 99.999988
 Ka 1.000000 1.000000 1.000000
-Kd 0.150000 0.150000 0.150000
+Kd 0.410000 0.410000 0.410000
 Ks 1.000000 1.000000 1.000000
 Ke 0.0 0.0 0.0
 Ni 1.000000
 d 1.000000
 illum 3
 
-newmtl None
-Ns 500
-Ka 1.0 1.0 1.0
+newmtl Mat.015
+Ns 99.999988
+Ka 0.533333 0.533333 0.533333
+Kd 0.800000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.020
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
 Kd 1.0 1.0 1.0
-Ks 1.0 1.0 1.0
-d 1
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.021
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 1.0 1.0 1.0
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.022
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 1.0 1.0 1.0
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.023
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.024
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.025
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.280000 0.280000 0.280000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.026
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.690000 0.690000 0.690000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.027
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.490000 0.490000 0.490000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.028
+Ns 99.999988
+Ka 0.333333 0.333333 0.333333
+Kd 0.800000 0.208000 0.208000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.029
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.368000 0.526400 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.030
+Ns 99.999988
+Ka 1.000000 1.000000 1.000000
+Kd 0.180000 0.180000 0.180000
+Ks 1.000000 1.000000 1.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 3
+
+newmtl Mat.031
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.0 1.0 1.0
+Ks 0.000000 0.000000 0.000000
+Ke 0.0 0.0 0.0
+Ni 1.000000
+d 1.000000
+illum 1
+
+newmtl default.001
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
 illum 2
 # Blender v2.80 (sub 75) OBJ File: ''
 # www.blender.org
@@ -25615,169 +25777,19 @@ f 4342/14542/511 4344/14543/511 4336/14544/511
 f 4331/14507/513 4333/14545/511 4343/14546/511
 f 4343/14540/511 4333/14547/511 4335/14548/511 4344/14541/511
 f 4344/14549/511 4335/14550/511 4336/14551/511
-# Blender MTL File: 'None'
-# Material Count: 16
-
-newmtl Mat.000
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.580000 0.580000 0.580000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.014
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.410000 0.410000 0.410000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.015
-Ns 99.999988
-Ka 0.533333 0.533333 0.533333
-Kd 0.800000 0.000000 0.000000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.020
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 1.0 1.0 1.0
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.021
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 1.0 1.0 1.0
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.022
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 1.0 1.0 1.0
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.023
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.000000 0.000000 0.000000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.024
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.025
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.280000 0.280000 0.280000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.026
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.690000 0.690000 0.690000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.027
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.490000 0.490000 0.490000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.028
-Ns 99.999988
-Ka 0.333333 0.333333 0.333333
-Kd 0.800000 0.208000 0.208000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.029
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.368000 0.526400 0.800000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.030
-Ns 99.999988
-Ka 1.000000 1.000000 1.000000
-Kd 0.180000 0.180000 0.180000
-Ks 1.000000 1.000000 1.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 3
-
-newmtl Mat.031
-Ns 0.000000
-Ka 1.000000 1.000000 1.000000
-Kd 1.0 1.0 1.0
-Ks 0.000000 0.000000 0.000000
-Ke 0.0 0.0 0.0
-Ni 1.000000
-d 1.000000
-illum 1
-
-newmtl default.001
-Ns 225.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
-Ks 0.500000 0.500000 0.500000
-Ke 0.0 0.0 0.0
-Ni 1.450000
-d 1.000000
-illum 2
-
+‰PNG
+
+   IHDR         \r¨f   bKGD ÿ ÿ ÿ ½§“   	pHYs     šœ   tIMEåVÎV‹   iTXtComment     Created with GIMPd.e  kIDATxÚíÖA 0±nÈ½Ì6•jCÈã”“äku·»&    @     @     @     @     @     @     @     @     @ @     @     @     @     @     @     @     @     @     @ @     @     @     @     @     @     @     @     @     @ @     @     @     @     `–SUÏ{%1‚    €      €      €      €      €      €      €      €      € € ˜   @     @     @     @     @     @     @     @     @      @     @     @     @     @     @     @     @     @      @     @     @     @   ¦ø/Û½n<^Ä    IEND®B`‚‰PNG
+
+   IHDR         \r¨f   bKGD ÿ ÿ ÿ ½§“   	pHYs  Ä  Ä•+   tIMEå
+”¬¸­  
+‹IDATxÚíİÙ’£8À¢ÂÿÿË3Oã`X´\mùÔÑİ6XH	„øù˜Å?_Rşşìó©õ=G†'ù´jÄŞ¶mSÌeeWZ~‘åŸ»?û¿ÿ.u¨M=Û¶mûm]W;{~÷şœÚ9ë…¤Vø¿J?²üöA’Ò÷ÿ¯´×UóJ{}o<É|öƒî*ÊÕÙ±eeY1kÎâÛ¶mßá™Wÿ7õ{H¯‡¿³íàİîQş¶ñ}6Û¾ÌÜø#ºÿQCˆ’À_ì¯ÁhümêÆ”=€£}uğ*ÚÙÙ½u%ºêU¤„Û¾òçîoä˜?¢¬Jzô;1|Íyaİ	È©À-.†>µåÿÊ eØ×ò$ÓË™e8>Øo`¥Êš²¯©9ªñ»IËÀI|ŸiÿşÜºñï{G=‘§—ûÕïÍ½>Ôû6âl'»”zøyBADİhUè¥Û<
+×0"Çìæ„ÌÛøõ nB£¦ûİ¢²÷<“E„@Iãß÷¼Îze34Y·ŸóùGÌìy õ~v«@Z%jÿÕ>éIÄ•»ÀE”œyroaUğ³nïûáûHù-5C–èp}[P”„® ˜8„f¨Ğ½ç!Œş½3\³(İ® ØkP0Ç°`ÄcÜÉÓ)Kv¬vúlÉ¶k?_sP"§‚}WÔö¯¾«öøGÖŸ75ş¨íå–òƒ+¥·uJşÿş3©Û®ı|iŠFW–ˆı½›+Ÿûï)û]ŞÖø[Õ×«zü‘*QŸII­’ï-ùü¨é·fÎıW¥zÔ|v†ãQß¿¿£j&`ôŠ.-»‡ÑpræÿküïóGÏ-]P%÷·ş>õ€ÔãWl€5‹–œE5ş±Ç3âäzõ›.ÇiggÂÜ‹X£ÇÃ5?ò"`ÄE¼óòKŸÆ›õyøÕ{`5ûu÷Ù©{ #/Â\-Mñ{z~G¯r4lY¯ı|fí
+G,J¹ÿ®ÖóèS®—çJÃ£ôÌt9¥N”Ş^ìyÖ‹w·ºĞ+¼?«&Wna§Ø’[g¹Û_­gX¼÷¸{–5#O‚E0ÓÃµ÷¡ß6†´/}C úwõ*³Ï
+õ
+øæÛ{5İñ‘e=²'ĞózèTàÚ«ØW‘£¦—~OË©Ì=ÆÛ/¹ó´ ›a{E Œ	èí˜X œéZC… öqÒ«‰zëNË5zLå½ú¨©´¿¿öqìˆ“Fî÷]Õ¹ÜÛÈ%ûİòqìÚöwö™&Ss^ÔqµƒG·Ü}ÏÑ;íS?¶ıÒ€Øvj~éÕÿÜßPu69ØÏš‡“r¿/úiÒ¨[p­Ë½$È›ÀQìU­®zFı†Ö;»ê;W¹Ô¼Ú-rê÷UııíQĞ=Càîl2Ó##>¯ñÛ~ëÏ^>ö{Ò?- ÿ/ÇÚnÖŒ_§ñGı†!Sg;€+ÈÚğ¾O
+şQ/T9[_#÷ó-Cà÷h<½¶VÜ¬±Ã#éouæéµ˜iT/jÄu›–ƒ­öš¯ÒCx D9ß~-aÔÅ¿·=Ïßº="LZ†Àk† KE[¯¼+_“©íµõ®~ì~]ÓÖh†Û­O­«”çÙ°ù¬şNu eöTîzê9Ÿ¿Û~îôËšû¸¥İÍ»ßß»w“sû²æØµ8Ã¯¢gåxT~  €ñzÜµÊ¾W_ó²Ä¯Æj½¨éÕ÷Œ~½y«çÍGì«:p·ıèµø¢ÚO«ënŸıFîâ]!íøşŠäÕóÜ5ÛOy?}ÊA>š<óæ	5#DM$+y«Pô¤­Ú»A‘á´÷Ûã ®t× 5wzt½gØvõ4º¬pÕ%\±â=5r'‘ô:#^n:Ó«ÜZî×çç%œ¹ÓËéÿì÷÷¬7%/]mÚ8š??ú5İ©…ôÏ76èÚ§K{F!2ªŞ½iJõãŠºÊOlãY¥ñ¿-º¼¸ö
+nÄ»×W\O`–^Cn™]İÍY¡ñÏ0xL ÕÂ ©C†7Ÿ}¿+oä½ü^õ%eí=‰à¬öº ñÄîsíÙ°öÅ3-ë>rEé§†€56†~ê<†Ñï©!ğ‰û]U°”B«-Ø”gáK_-–ò\{íóìQcèÙjÉ’æQ,rJmê5•bQ!`‘F/  àN[œáEŠ3\'õz²Û.ÿ«)ç>ŠÕ¥~ê5«©nÎXÈ‘ïŒ¯­ğ=—_òl°ÿ³¼EzH |ÿğ7Ï¨ƒ·ø(‚wœÙVŞo·Œ;@«·ßÔ<’úµÛoùú¨Ñ×"&ä”–Ä±¯)Ã×·j×4ŒxGnıë’¬9…_³°ä¬‹rF-ŠÙ²ìî|Iê}ğìÿ–îGîçÎ¶º#êŸgx´U§T/{`Æ‡3ÜÒÌÙÏ™‡×ø@u¿õİôª×øc`!˜Î= g‚qÛùf`!°&× ô<^U&‚qW6=Æ¾©·¡öÿ>ËmÀœÛh5Ûou1b*mäë½zÜÅ™iÿkÿ½æ.Îİ~;[¼`¨³ÊÅ°Õ÷_€©ÑªÃ‹È  @ç¡DÉÚµC—»‹Ş¥S“/²UM®Ğ¸sıÆ±0Híwä>ÃPûLCêş›™æĞ¥k^1wájiv ñ³xä<x$ÛÕ˜!w"Nô$šˆ®ON7®fÈÕ~~¹æß#‰Mıˆçá#ºÿQC€¨}‰ØÖÙ¿}ö?ò{)°³wÕµšÅ´ûœueJfbıı®»7ûô>hÄu#[ôjFgíªuùµ­e† oZ q¶†7"Í ìë³J…L© gOÃ½9Drïd)Viü‘gÛ‡ %wğ¨±[áx½Ğªi4³<ı·Bæ÷iç;ùS®‚æ|oÏuùÏz2¹]øıu»ïÉ¹…”ºÑkBÒisÀbq!PÒø¯ºğ©]Ù«» 9C‰³}Ğøû÷<ª ·Ûrww wÇKÇ¯µS2KáİçRîD5 ¯_\İJ®Ä¹'¤ŞË‚Ï|ü²ï?qÄ{ÇÀ¯ïq–vùKQEx_×Ó1Ÿ8 Œ¯à½<   €        @    €        @    €        @    €        @    €    E   €        @    €        @    €        @    €        @    €    @    €        @    €        @    €        @    €        @    €    @    €        @    €        @    €        @    €        @         @    €        `9ÿ_ÊB’¯òõ     IEND®B`‚
 # above the first straight of the crcuit
 START_TRANSFORM_POSITION    10.0 10.0 5.3
 
@@ -25951,18 +25963,3 @@ KNOTS_DUAL 30 0 0     30 0 0
 #
 #
 
-‰PNG
-
-   IHDR         óÿa   bKGD ÿ ÿ ÿ ½§“   	pHYs     šœ   tIMEá
-.ŠÖH   tEXtComment Created with GIMPW   -IDAT8Ëcd``øÏ@`a```øÿŸ<3˜(£Œ0j 4CQšì]B‘_„    IEND®B`‚‰PNG
-
-   IHDR         \r¨f   bKGD ÿ ÿ ÿ ½§“   	pHYs  Ä  Ä•+   tIMEãuâü­  
-ÍIDATxÚíİë®›8Ğä(ïÿÊg~¥“¦\|Ù¾ÁZÒHÕ´	ìló|<¿à–~fÛ¡ßßß?ÿ¥üÿ½Ï§şÿ£ïÙú3\É«U%~{>Ÿrá±+=~‘Ç?w"öÿû»”¡6åìù|Æ· ¶®Ü«˜÷>oı9µ²×
-I-ğïB?òø}IJEüşw¥­®šSÚê»ãEæuµtVP®-ËŠAXs>Ÿ…gjxıÛÔï!½Nwàì÷( ïm|^ÍŞ®m’Ï^q#»%-w|ßƒQùÛ”)[ ['úèäo´½«{ëBtÔªH	·ïÂŸ»¿‘}şˆcUÒ ß…áåĞì¬­'9¸ÅÍĞ«V¢ÜşÿÖ1Héöµ¼ä´rféÎ…w¾7°RaMÙ×Ô“Uù=¤e‹N`'>¯´ï?·®üß­Œ­–ÈÕûÑïÍ½?Ôû1âl»”røºÂˆz
-Ğê —ns+tzÜÃˆì³2oå×8	šæw‹ÂŞóJ%•ÿ»åµ×*›¡òÌºıœÏ_b$`Ï§ ©Ï³[Ò*!P[ùöIK"î¸kIÉ•'÷æVßkö÷~ş)¿¥¦Ë®wŠ’Ğ ‡Ğº÷8„Ñ¿w†{¥Û-±ù0nëÇ!€ûÒ€Iº#¦qÿÓ8{ÜU3°¥dÇs·]ûùš“9të»¢¶ô]µç?²üÜ©òGm/÷øÿ ©Sesë”üûïÏ¤n»öó¥)]X"ö÷l¬|îß§ìStù¹[åoU^ÊñODªD}&%µJ¾·äó£†ß9÷ÿq(]Ğ£æ³3œ‡ˆòşùU#£WtiÙ<Œ€“3ş_å¿wŸ?z¤hé‚*¹~®zBjûñ+VÀšEKö®¢*ÿØóqq=úM‡÷ ö®„¹7±F÷‡k*äMÀˆ›x=Æå—ÎÆ›u>üê-°šı:ûìÔ-€‘7a–&ø==¿£×qÔmY¯ş¼fm
-G,Jùı]­ÇÑ§Ü/íÏ•†Gé•ërJ™(}¼ØóªÙïnu Wx¿VM®ÜƒrbKånµã8Ãòä½ûİ³¬ay,
-€™&cÔ>‡¾[Ò¾ôèßÕë˜½V¨ü«À;?Ş«i<Ö#[=o ‡®½‹q9j(pé÷´ÊÜ£ï±ı’'0W°¶W À˜ˆŞ  Y nìÕ²
-Ì-y:pn¥dqÈ¨¡°-nà•üæÜï‰Jñûk§cG\4r¿ï¨Ìå>F.Ùï–Ó±këßŞgštr^Ôq´ƒ[“[Î¾gëö©ŸßÛ~i@|n¿äYrîçkõÕdc?k&'å~_ôlÒ¨Gp­{I7€­Øë ´º[õZOw6x®ãRój·È¡ßGå÷§ÇîgW“™¦xø¼Ê?nû­?{8íw§¾Zş ş=µ#Üz®¯òÏñ†í®x"kÃsdø^)øG½Peo}ÜÏ·ã  qğD´ÚZr³@Ä˜ÓßêÊÓk1Ó¨VÔˆû6-'ƒ­öš¯Ò–Cx Dõ9ï~/aÔÍ¿»ÍçoİŒ&-Cà6]€ˆ¥¢õ­×Ş•ïÉÔ¶ÚöZW?Nv¿¦ië4ÃãÖ«–‹Uç^·y¯üNõ eôTîzê9Ÿ?Û~îğËšç¸¥ÍÍ³ßß»u“óø²æÜµ¸Â¯¢{ÇqëømN6nÒ:zX nË8  Àlz<µÚ] ¶ÿßê&NË×såÕ<úüˆ×›·šo>bÿ[•³íG¯ÅUZİw{}oäì$¤­ÿ¾#y4Ÿ»fû)ï§O9É[ƒgî< f„¨d%oŠ´Uû4(2œºvjÇBÏPğjí+m‹¦÷Ûî±F—õ š„+¼«†@î ’^ç`ÄËMgz•[Ëız=nÂ•;ı8İ±òïışå¦ä¥«M[ [ãçG¿¦;õ }~v†9 +5gK×Æ‹nAŒ*wwR}¹Ç€Qwù‰­<«Tş»…@—·×ŞÁx÷úŠë	ÌÒjÈ=fGOsV¨ü3t.Óhµ0Hj—áÎWßÏÂù,¿WyIYû_K`¢ Ø+€½nh\±ù\{5¬}±ÅLËº\Qúª!`(ğÅúĞWÇ0ºâ]5^‘}¿£–rĞjlÊ\øÒW‹¥Ìk¯ÏÕ‡­¢–,iUÉ"‡Ô¦ŞX) šOÖ€y[FÍ©èpã 0/7áÆvoÎğ"Åº£^O6b»ÑÇ¿ÅjÊ¹SÑ£úÔWíÊNÕ˜ñ G¾3¾¶À÷\V|ÉşlÀşÏòé!ğùÃï<¢nÙàºW¶•÷Û“¤ÎĞêí75“BR¿£vû-_5úŞAÄ€œÒãqîkaû[µkF¼#·üuy˜sğk–œuQÎ¨E1[»³
-_RzßÜû·¥û‘û¹½m§îÇˆòç1 —¶êêeïÌxãp†Gš9û9Ó|x•_ Tğ»¾›ñçÀB0[ ®ã¶?òÍÀB`MîhyÜê˜Æ†-€³%¥ßƒ‹Îîâ­Ør>~íş·x¿}É£»Ò7ÓDT½ï¨yŠS»í^û?:KÊŸÙ€7èê¬r3lõı_²u$ ®«v,"# €Ü„3ˆÛu‡JÆÔ×ŒÃ/:½õÙÒ¡ÉGÿV °?Í:çîsëq[ÛÉ];â±åçç¾C ¨üL¨&' •ŸÅC gFàYüõ v Ní\ôˆ©¨5ÁR*ş*Ó‰s¦›ı}Ä”ØÔï‰˜_²ÏQ÷ ZíKÄ¶öşîõı#?—Û{W]‹¹ÌŸÛ?kÊ”Œ$;ÅWSè™£ùyŞ¢W3Ú«W­ß^İZ¦p§g«x#‚ĞÀ¾^«È”p4–ÿ®(wÜÖ•b•Êyµ]±Pâr7·*»×­šJ3Ëì¿Z0?W+8ŸÉ_ò<öè{{®Ë4+1§	ÿ}_çì{r!¥îCôštêä<°E\”Tş£&|jSöè)@NWboTşş-ª Èm¶œ=ÈİñÒşkíÌÒJX»À^ZñşÅÑ£äèBœ{Aê½,øÌçïŸÙ€ÑÏ\W"çş±F D¿rÔ‹5™«ééœO ¿:Xp[æ€        @    €        @    €        @    €        @    €       À!   @    €        @    €        @    €        @    €        @         @    €        @    €        @    €        @    €        @ €        @    €        @    €        @    €        @    €         €        @    €   °œÿ †<K}›`b—    IEND®B`‚‰PNG
-
-   IHDR         \r¨f   bKGD ÿ ÿ ÿ ½§“   	pHYs     šœ   tIMEåVÎV‹   iTXtComment     Created with GIMPd.e  kIDATxÚíÖA 0±nÈ½Ì6•jCÈã”“äku·»&    @     @     @     @     @     @     @     @     @ @     @     @     @     @     @     @     @     @     @ @     @     @     @     @     @     @     @     @     @ @     @     @     @     `–SUÏ{%1‚    €      €      €      €      €      €      €      €      € € ˜   @     @     @     @     @     @     @     @     @      @     @     @     @     @     @     @     @     @      @     @     @     @   ¦ø/Û½n<^Ä    IEND®B`‚

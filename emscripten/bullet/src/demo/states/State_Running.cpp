@@ -26,10 +26,9 @@ void State_Running::update(int deltaTime)
 
     { // simulation update
 
-        const int simualtionSteps = (logic.isAccelerated ? 50 : 1);
+        const unsigned int totalSteps = (logic.isAccelerated ? 50 : 1);
 
-        for (int ii = 0; ii < simualtionSteps; ++ii)
-            simulation.update();
+        simulation.update(totalSteps);
 
     } // simulation update
 
@@ -106,7 +105,7 @@ void State_Running::update(int deltaTime)
                     // this part elevate where the camera look along the up axis of the car
                     // => without it the camera look at the ground
                     // => mostly useful for a shoulder camera0
-                    glm::vec4 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
+                    glm::vec4 carOrigin = carResult.transforms.chassis * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
                     cameraNextCenter = carOrigin;
                 }

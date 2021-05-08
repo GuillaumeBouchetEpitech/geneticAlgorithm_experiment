@@ -24,12 +24,19 @@ std::string writeTime(unsigned int time)
     std::stringstream sstr;
     sstr << std::setw(5) << std::fixed << std::setprecision(1);
 
-    if (time < 1000)
-        sstr << time << "us";
-    else if (time < 1000000)
+    // if (time < 1000)
+    // {
+    //     sstr << time << "us";
+    // }
+    // else
+    if (time < 1000000)
+    {
         sstr << (float(time) / 1000) << "ms";
+    }
     else
+    {
         sstr << (float(time) / 1000000) << "s";
+    }
 
     return sstr.str();
 }
@@ -170,8 +177,8 @@ void Scene::_updateMatrices()
         {
             const auto& carResult = simulation.getCarResult(logic.leaderCar.index);
 
-            glm::vec3 carOrigin = carResult.transform * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
-            glm::vec3 carUpAxis = carResult.transform * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+            glm::vec3 carOrigin = carResult.transforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+            glm::vec3 carUpAxis = carResult.transforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 
             StateManager::States currentState = StateManager::get()->getState();
 
@@ -203,6 +210,7 @@ void Scene::_updateMatrices()
     { // hud ortho
 
         const auto& vSize = camera.viewportSize;
+
         glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
         glm::vec3 eye = { 0.0f, 0.0f, 0.5f };
@@ -216,14 +224,19 @@ void Scene::_updateMatrices()
 
     { // hud_perspective
 
-        const float fovy = glm::radians(70.0f);
-        const float aspectRatio = float(camera.viewportSize.x) / camera.viewportSize.y;
-        glm::mat4 projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+        const auto& vSize = camera.viewportSize;
 
-        const glm::vec2 halfViewportSize = camera.viewportSize * 0.5f;
+        // const float fovy = glm::radians(70.0f);
+        // const float aspectRatio = float(vSize.x) / vSize.y;
+        // glm::mat4 projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
+        // glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -100.0f, 100.0f);
+        glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
-        glm::vec3 eye = { halfViewportSize.x, halfViewportSize.y, 425.0f };
-        glm::vec3 center = { halfViewportSize.x, halfViewportSize.y, 0.0f };
+        // const glm::vec2 halfViewportSize = vSize * 0.5f;
+        // glm::vec3 eye = { halfViewportSize.x, halfViewportSize.y, 425.0f };
+        // glm::vec3 center = { halfViewportSize.x, halfViewportSize.y, 0.0f };
+        glm::vec3 eye = { 0.0f, 0.0f, 0.5f };
+        glm::vec3 center = { 0.0f, 0.0f, 0.0f };
         glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
         glm::mat4 viewMatrix = glm::lookAt(eye, center, upAxis);
 
@@ -364,9 +377,7 @@ void Scene::_renderLeadingCarSensors(const glm::mat4& sceneMatrix)
         return;
 
     shader.bind();
-
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+    shader.setUniform("u_composedMatrix", sceneMatrix);
 
     const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
     const glm::vec3 yellowColor(1.0f, 1.0f, 0.0f);
@@ -406,9 +417,7 @@ void Scene::_renderParticles(const glm::mat4 &sceneMatrix)
     const auto& geometry = graphic.geometries.particles.firework;
 
     shader.bind();
-
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+    shader.setUniform("u_composedMatrix", sceneMatrix);
 
     geometry.render();
 }
@@ -420,9 +429,7 @@ void Scene::_renderFloor(const glm::mat4& sceneMatrix)
     const auto& shader = *graphic.shaders.simpleTexture;
 
     shader.bind();
-
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+    shader.setUniform("u_composedMatrix", sceneMatrix);
 
     graphic.textures.chessboard.bind();
 
@@ -444,9 +451,7 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
     const auto& simulation = *logic.simulation;
 
     graphic.shaders.model->bind();
-
-    GLint composedMatrixLoc = graphic.shaders.model->getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+    graphic.shaders.model->setUniform("u_composedMatrix", sceneMatrix);
 
     unsigned int totalCars = simulation.getTotalCars();
 
@@ -486,7 +491,7 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
         //
         // 3d clipping
 
-        glm::mat4 chassisTransform = glm::translate(carData.transform, modelHeight);
+        glm::mat4 chassisTransform = glm::translate(carData.transforms.chassis, modelHeight);
         glm::vec4 carOrigin = chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         if (!graphic.camera.frustumCulling.sphereInFrustum(carOrigin, 5.0f))
@@ -503,7 +508,7 @@ void Scene::_renderCars(const glm::mat4& sceneMatrix)
         // transforms
 
         modelsChassisMatrices.emplace_back(chassisTransform, color);
-        for (const auto& wheelTransform : carData.wheelsTransform)
+        for (const auto& wheelTransform : carData.transforms.wheels)
             modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
     }
 
@@ -527,15 +532,13 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
     const auto& wireframes = graphic.geometries.wireframes;
 
     shader.bind();
-
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
+    shader.setUniform("u_composedMatrix", sceneMatrix);
 
     GLint colorLoc = shader.getUniform("u_color");
 
     { // circuit skeleton
 
-        glUniform4f(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
+        shader.setUniform(colorLoc, 0.6f, 0.6f, 0.6f, 1.0f);
 
         wireframes.circuitSkelton.render();
 
@@ -544,7 +547,7 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
     if (!trails)
         return;
 
-    glUniform4f(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+    shader.setUniform(colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
     { // best trails
 
@@ -563,7 +566,7 @@ void Scene::_renderWireframesGeometries(const glm::mat4& sceneMatrix, bool trail
             const auto& trailData = data.logic.carsTrails.allWheelsTrails[data.logic.leaderCar.index];
 
             // rely on only the 30 last positions recorded
-            const int maxSize = 30;
+            constexpr int maxSize = 30;
 
             for (const auto& currWheel : trailData.wheels)
             {
@@ -596,23 +599,18 @@ void Scene::_renderAnimatedCircuit(const glm::mat4& sceneMatrix)
     const auto& circuitAnimation = data.logic.circuitAnimation;
 
     shader.bind();
-
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(sceneMatrix));
-
-    GLint lowerLimitLoc = shader.getUniform("u_lowerLimit");
-    GLint upperLimitLoc = shader.getUniform("u_upperLimit");
-    glUniform1f(lowerLimitLoc, circuitAnimation.lowerValue);
-    glUniform1f(upperLimitLoc, circuitAnimation.upperValue);
+    shader.setUniform("u_composedMatrix", sceneMatrix);
+    shader.setUniform("u_lowerLimit", circuitAnimation.lowerValue);
+    shader.setUniform("u_upperLimit", circuitAnimation.upperValue);
 
     GLint alphaLoc = shader.getUniform("u_alpha");
-    glUniform1f(alphaLoc, 0.8f);
+    shader.setUniform(alphaLoc, 0.8f);
 
     animatedCircuit.ground.render();
 
     glDisable(GL_DEPTH_TEST); // <= prevent "blending artifact"
 
-    glUniform1f(alphaLoc, 0.2f);
+    shader.setUniform(alphaLoc, 0.2f);
 
     animatedCircuit.walls.render();
 
@@ -625,7 +623,7 @@ void Scene::_renderHUD_ortho()
     auto& graphic = data.graphic;
     auto& logic = data.logic;
 
-    glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
+    // glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
 
     { // texts
 
@@ -635,39 +633,31 @@ void Scene::_renderHUD_ortho()
         const auto& hudText = logic.hudText;
 
         shader.bind();
-
-        const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+        shader.setUniform("u_composedMatrix", graphic.camera.matrices.hud_ortho);
 
         graphic.textures.textFont.bind();
 
         textRenderer.clear();
 
+        const auto& vSize = graphic.camera.viewportSize;
+
         { // top-left header text
 
-            textRenderer.push({ 8, 600 - 16 - 8 }, hudText.header, 1.0f);
+            textRenderer.push({ 8, vSize.y - 16 - 8 }, hudText.header, 1.0f);
 
         } // top-left header text
-
-        { // bottom-right pthread warning
-
-            if (!hudText.pthreadWarning.empty())
-                textRenderer.push({ 800 - 26 * 16 - 8, 3 * 16 - 8 }, hudText.pthreadWarning, 1.0f);
-
-        } // bottom-right pthread warning
 
         { // top-left performance stats
 
             std::stringstream sstr;
 
             sstr
-                << "update: " << writeTime(logic.metrics.updateTime) << std::endl
-                << "render: " << writeTime(logic.metrics.renderTime);
+                << "Update: " << writeTime(logic.metrics.updateTime) << std::endl
+                << "Render: " << writeTime(logic.metrics.renderTime);
 
             std::string str = sstr.str();
 
-            textRenderer.push({ 8, 600 - 5 * 16 - 8 }, str, 1.0f);
+            textRenderer.push({ 8, vSize.y - 5 * 16 - 8 }, str, 1.0f);
 
         } // top-left performance stats
 
@@ -718,7 +708,7 @@ void Scene::_renderHUD_ortho()
                     // we don't advertise a dying leader
                     carData.groundSensor.value < 0.5f)
                 {
-                    const glm::vec3 carPos = carData.transform * glm::vec4(0, 0, 0, 1);
+                    const glm::vec3 carPos = carData.transforms.chassis * glm::vec4(0, 0, 0, 1);
 
                     glm::vec3 screenCoord;
 
@@ -753,37 +743,38 @@ void Scene::_renderHUD_ortho()
 
             std::stringstream sstr;
 
+            unsigned int globalDelta = 0;
+            unsigned int globalGenomesAlive = 0;
             for (unsigned int ii = 0; ii < logic.cores.statesData.size(); ++ii)
             {
                 const auto& coreState = logic.cores.statesData[ii];
 
+                globalDelta += coreState.delta;
+                globalGenomesAlive += coreState.genomesAlive;
+            }
+
+
+            {
+                // const auto& coreState = logic.cores.statesData[ii];
+
 #if defined D_WEB_WEBWORKER_BUILD
 
                 sstr
-                    << "WORKER_" << (ii + 1) << std::endl
-                    << "> " << writeTime(coreState.delta * 1000);
+                    << "WORKERS: " << logic.cores.statesData.size() << std::endl
+                    << "Processing Time: " << writeTime(globalDelta * 1000);
 
 #else
 
                 sstr
-                    << "THREAD_" << (ii + 1) << std::endl
-                    << "> " << writeTime(coreState.delta);
+                    << "THREADS: " << logic.cores.statesData.size() << std::endl
+                    << "Processing Time: " << writeTime(globalDelta);
 
 #endif
-
-                sstr
-                    << std::endl
-                    << "> " << std::setw(2) << coreState.genomesAlive
-                    << " car(s)" << std::endl
-                    << std::endl
-                    << std::endl
-                    << std::endl
-                    << std::endl;
             }
 
             std::string str = sstr.str();
 
-            textRenderer.push({ 8, 8 + 23 * 16 }, str, 1.0f);
+            textRenderer.push({ 8, 8 + 8 * 16 }, str, 1.0f);
 
         } // show cores status
 
@@ -802,7 +793,7 @@ void Scene::_renderHUD_ortho()
                     << "  LOADING  " << std::endl;
                 std::string message = sstr.str();
 
-                textRenderer.push({ 400 - 5 * 16 * scale, 300 - 8 * scale }, message, scale);
+                textRenderer.push({ vSize.x * 0.5f - 5 * 16 * scale, vSize.y * 0.5f - 8 * scale }, message, scale);
             }
 #endif
 
@@ -812,7 +803,7 @@ void Scene::_renderHUD_ortho()
 
                 std::string message = "PAUSED";
 
-                textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
+                textRenderer.push({ vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale, vSize.y * 0.5f - 8 * scale }, message, scale);
             }
 
             if (currentState == StateManager::States::StartGeneration)
@@ -823,7 +814,7 @@ void Scene::_renderHUD_ortho()
                 sstr << "Generation: " << simulation.getGenerationNumber();
                 std::string message = sstr.str();
 
-                textRenderer.push({ 400 - float(message.size()) / 2 * 16 * scale, 300 - 8 * scale }, message, scale);
+                textRenderer.push({ vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale, vSize.y * 0.5f - 8 * scale }, message, scale);
             }
 
         } // big titles
@@ -838,16 +829,12 @@ void Scene::_renderHUD_ortho()
         const auto& shader = *graphic.shaders.stackRenderer;
 
         shader.bind();
-
-        const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+        shader.setUniform("u_composedMatrix", graphic.camera.matrices.hud_ortho);
 
         const glm::vec3    whiteColor(1.0f, 1.0f, 1.0f);
 
-        const glm::vec2 borderPos(8, 18 * 16 + 7);
+        const glm::vec2 borderPos(8, 4 * 16 + 7);
         const glm::vec2 borderSize(150, 48);
-        const float     borderStep = 4 * 16.0f;
 
         const auto& cores = data.logic.cores;
 
@@ -856,6 +843,14 @@ void Scene::_renderHUD_ortho()
             for (auto& history : stateHistory)
                 commonMaxDelta = std::max(commonMaxDelta, history.delta);
 
+        constexpr float divider = 5000.0f; // 5ms
+        const float maxVal = (std::ceil(float(commonMaxDelta) / divider)) * divider;
+
+
+        stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
+        stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+
+
         for (unsigned core = 0; core < cores.statesHistory.size(); ++core)
         {
             const auto& stateHistory = cores.statesHistory[core];
@@ -863,12 +858,16 @@ void Scene::_renderHUD_ortho()
             //
             //
 
-            const glm::vec2 currPos(
-                borderPos.x,
-                borderPos.y - core * (borderSize.y + borderStep)
-            );
+            // maxVal
+            for (float ii = divider; ii < maxVal; ii += divider)
+            {
+                const float coef = ii / maxVal;
 
-            stackRenderer.pushRectangle(currPos, borderSize, whiteColor);
+                glm::vec2 coordA(0, borderSize.y * coef);
+                glm::vec2 coordB(borderSize.x, borderSize.y * coef);
+
+                stackRenderer.pushLine(borderPos + coordA, borderPos + coordB, whiteColor);
+            }
 
             //
             //
@@ -885,15 +884,17 @@ void Scene::_renderHUD_ortho()
 
                 //
 
-                float prevRatio = float(prevState.delta) / commonMaxDelta;
-                float currRatio = float(currState.delta) / commonMaxDelta;
+                // float prevRatio = float(prevState.delta) / commonMaxDelta;
+                // float currRatio = float(currState.delta) / commonMaxDelta;
+                float prevRatio = float(prevState.delta) / maxVal;
+                float currRatio = float(currState.delta) / maxVal;
 
                 glm::vec2 prevCoord(ii * widthStep, borderSize.y * prevRatio);
                 glm::vec2 currCoord((ii + 1) * widthStep, borderSize.y * currRatio);
                 // glm::vec3 color = glm::mix(greenColor, redColor, currRatio);
                 glm::vec3 color = whiteColor;
 
-                stackRenderer.pushLine(currPos + prevCoord, currPos + currCoord, color);
+                stackRenderer.pushLine(borderPos + prevCoord, borderPos + currCoord, color);
             }
         }
 
@@ -905,18 +906,16 @@ void Scene::_renderHUD_ortho()
     const auto& shader = *graphic.shaders.stackRenderer;
 
     shader.bind();
-
-    const auto& hudMatrix = graphic.camera.matrices.hud_ortho;
-    GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-    glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+    shader.setUniform("u_composedMatrix", graphic.camera.matrices.hud_ortho);
 
     { // progresses curve
 
         const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
-        const glm::vec2 borderPos(10, 400);
+        const glm::vec2 borderPos(8, 160);
         const glm::vec2 borderSize(150, 75);
 
+        stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
         stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
         const auto& allStats = logic.fitnessStats.allStats;
@@ -953,11 +952,14 @@ void Scene::_renderHUD_ortho()
 
         if (logic.leaderCar.index >= 0)
         {
-            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
-            const glm::vec3 greenColor(0.0f, 0.75f, 0.0f);
+            const auto& vSize = graphic.camera.viewportSize;
 
-            const glm::vec2 borderPos(640, 215);
-            const glm::vec2 borderSize(150, 150);
+            const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+            const glm::vec4 redColor(1.0f,0.0f,0.0f,0.85f);
+            const glm::vec4 blueColor(0.5f,0.5f,1.0f,0.85f);
+
+            const glm::vec2 borderSize(175, 150);
+            const glm::vec2 borderPos(vSize.x - borderSize.x - 10, 10);
 
             stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
@@ -966,6 +968,11 @@ void Scene::_renderHUD_ortho()
             for (const auto& hidden : logic.annTopology.getHiddens())
                 topologyArray.push_back(hidden);
             topologyArray.push_back(logic.annTopology.getOutput());
+
+            const NeuralNetworks& neuralNetworks = logic.simulation->getGeneticAlgorithm().getNeuralNetworks();
+
+            std::vector<float> connectionsWeights;
+            neuralNetworks[logic.leaderCar.index].getWeights(connectionsWeights);
 
             std::vector<std::vector<glm::vec2>> allNeuronPos;
             allNeuronPos.resize(topologyArray.size());
@@ -990,15 +997,38 @@ void Scene::_renderHUD_ortho()
             }
 
             // draw neurons
-            for (unsigned int ii = 0; ii < allNeuronPos.size(); ++ii)
-                for (unsigned int jj = 0; jj < allNeuronPos[ii].size(); ++jj)
-                    stackRenderer.pushRectangle(allNeuronPos[ii][jj] - neuronSize * 0.5f, neuronSize, whiteColor);
+            for (const auto& layer : allNeuronPos)
+                for (const auto& neuron : layer)
+                    stackRenderer.pushQuad(neuron, neuronSize, glm::vec4(whiteColor, 1));
 
             // draw connections
+
+            int connectionIndex = 0;
+
             for (unsigned int ii = 1; ii < allNeuronPos.size(); ++ii)
-                for (unsigned int jj = 0; jj < allNeuronPos[ii - 1].size(); ++jj)
-                    for (unsigned int kk = 0; kk < allNeuronPos[ii].size(); ++kk)
-                        stackRenderer.pushLine(allNeuronPos[ii - 1][jj], allNeuronPos[ii][kk], greenColor);
+            {
+                const std::vector<glm::vec2>& prevLayer = allNeuronPos[ii - 1];
+                const std::vector<glm::vec2>& currLayer = allNeuronPos[ii];
+
+                for (const auto& prevNeuron : prevLayer)
+                {
+                    for (const auto& currNeuron : currLayer)
+                    {
+                        const float weight = connectionsWeights[connectionIndex++];
+
+                        if (weight > 0.0f)
+                        {
+                            const float thickness = 1.0f + weight * +3.0f;
+                            stackRenderer.pushThickTriangleLine(prevNeuron, currNeuron, thickness, redColor);
+                        }
+                        else
+                        {
+                            const float thickness = 1.0f + weight * -3.0f;
+                            stackRenderer.pushThickTriangleLine(prevNeuron, currNeuron, thickness, blueColor);
+                        }
+                    }
+                }
+            }
         }
 
     } // topology
@@ -1007,14 +1037,16 @@ void Scene::_renderHUD_ortho()
 
         if (logic.leaderCar.index >= 0)
         {
+            const auto& vSize = graphic.camera.viewportSize;
+
             const auto& leader = logic.simulation->getCarResult(logic.leaderCar.index);
 
             const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
             const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
             const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-            const glm::vec2 borderPos(690, 370);
             const glm::vec2 borderSize(100, 60);
+            const glm::vec2 borderPos(vSize.x - borderSize.x - 10, 290);
 
             stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
@@ -1051,7 +1083,7 @@ void Scene::_renderHUD_ortho()
 
                 glm::vec3 color = glm::mix(redColor, greenColor, leader.eyeSensors[ii].value);
 
-                stackRenderer.pushQuad(position, eyeSize, color);
+                stackRenderer.pushQuad(position, eyeSize, glm::vec4(color, 1.0f));
             }
         }
 
@@ -1077,19 +1109,21 @@ void Scene::_renderHUD_thirdPerson()
 
     const auto& viewportSize = camera.viewportSize;
 
-    const float divider = 5.0f; // ratio of the viewport current size
-    const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
-    const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.05f), thirdPViewportSize.y * 0.75f };
-
-    glViewport(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+    // const float divider = 5.25f; // ratio of the viewport current size
+    // const glm::vec2 thirdPViewportSize = viewportSize * (1.0f / divider);
+    // const glm::vec2 thirdPViewportPos = { thirdPViewportSize.x * (divider - 1.05f), thirdPViewportSize.y * 0.85f };
+    const glm::vec2 thirdPViewportSize(150, 110);
+    // const glm::vec2 thirdPViewportPos = { viewportSize.x - thirdPViewportSize.x - 10, 100 };
+    const glm::vec2 thirdPViewportPos = { viewportSize.x - thirdPViewportSize.x - 10, 170 };
 
     glEnable(GL_SCISSOR_TEST);
     glScissor(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
 
+    glViewport(thirdPViewportPos.x, thirdPViewportPos.y, thirdPViewportSize.x, thirdPViewportSize.y);
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, matrices.thirdPerson.modelView);
     glm::mat4 modelView = matrices.thirdPerson.view * matrices.thirdPerson.model;
     camera.frustumCulling.calculateFrustum(matrices.thirdPerson.projection, modelView);
 
@@ -1099,7 +1133,6 @@ void Scene::_renderHUD_thirdPerson()
     Scene::_renderFloor(matrices.thirdPerson.composed);
 
     Scene::_renderCars(matrices.thirdPerson.composed);
-    // Scene::_renderCars(matrices.thirdPerson);
 
     Scene::_renderWireframesGeometries(matrices.thirdPerson.composed);
     Scene::_renderAnimatedCircuit(matrices.thirdPerson.composed);
@@ -1132,10 +1165,7 @@ void Scene::_renderHUD()
         const auto& shader = *graphic.shaders.simpleTexture;
 
         shader.bind();
-
-        const auto& hudMatrix = graphic.camera.matrices.hud_perspective;
-        GLint composedMatrixLoc = shader.getUniform("u_composedMatrix");
-        glUniformMatrix4fv(composedMatrixLoc, 1, false, glm::value_ptr(hudMatrix));
+        shader.setUniform("u_composedMatrix", graphic.camera.matrices.hud_perspective);
 
         glDisable(GL_DEPTH_TEST);
 

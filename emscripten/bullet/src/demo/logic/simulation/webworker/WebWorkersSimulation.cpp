@@ -1,10 +1,10 @@
 
-#include "demo/defines.hpp"
-
 #include "WebWorkersSimulation.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 #include "demo/utilities/TraceLogger.hpp"
+
+#include "demo/defines.hpp"
 
 void WebWorkersSimulation::initialise(const Definition& def)
 {
@@ -55,17 +55,17 @@ void WebWorkersSimulation::initialise(const Definition& def)
 
     _workerProducers.reserve(_totalCores);
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _workerProducers.emplace_back(new WorkerProducer(workerDef));
+        _workerProducers.emplace_back(std::make_shared<WorkerProducer>(workerDef));
 
     _currentRequest = WorkerRequest::WorkersLoading;
 }
 
-void WebWorkersSimulation::update()
+void WebWorkersSimulation::update(unsigned int totalSteps)
 {
     // do nothing if the worker(s) are:
     // => not initialised
     // => not finished working
-    for (auto* workerProducer : _workerProducers)
+    for (const auto& workerProducer : _workerProducers)
         if (!workerProducer->isLoaded() || workerProducer->isProcessing())
             return;
 
@@ -79,7 +79,7 @@ void WebWorkersSimulation::update()
         if (_callbacks.onWorkersReady)
             _callbacks.onWorkersReady();
 
-        _resetAndProcessSimulation();
+        _resetAndProcessSimulation(totalSteps);
         return;
     }
 
@@ -122,7 +122,7 @@ void WebWorkersSimulation::update()
     if (incompleteSimulation)
     {
         // ask the worker(s) to process/update the (physic) simulation
-        _processSimulation();
+        _processSimulation(totalSteps);
         return;
     }
 
@@ -145,18 +145,18 @@ void WebWorkersSimulation::update()
     _carLiveStatus.assign(_totalGenomes, true);
 
     // ask the worker(s) to reset the (physic) simulation
-    _resetAndProcessSimulation();
+    _resetAndProcessSimulation(totalSteps);
 }
 
-void WebWorkersSimulation::_processSimulation()
+void WebWorkersSimulation::_processSimulation(unsigned int totalSteps)
 {
-    for (auto* workerProducer : _workerProducers)
-        workerProducer->processSimulation();
+    for (auto workerProducer : _workerProducers)
+        workerProducer->processSimulation(totalSteps);
 
     _currentRequest = WorkerRequest::Process;
 }
 
-void WebWorkersSimulation::_resetAndProcessSimulation()
+void WebWorkersSimulation::_resetAndProcessSimulation(unsigned int totalSteps)
 {
     const auto& NNetworks = _geneticAlgorithm.getNeuralNetworks();
 
@@ -164,7 +164,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation()
     {
         const auto* neuralNetworks = NNetworks.data() + ii * _genomesPerCore;
 
-        _workerProducers[ii]->resetAndProcessSimulation(neuralNetworks);
+        _workerProducers[ii]->resetAndProcessSimulation(totalSteps, neuralNetworks);
     }
 
     _currentRequest = WorkerRequest::ResetAndProcess;
@@ -236,4 +236,9 @@ unsigned int WebWorkersSimulation::getGenerationNumber() const
 const glm::vec3& WebWorkersSimulation::getStartPosition() const
 {
     return _startPosition;
+}
+
+const GeneticAlgorithm& WebWorkersSimulation::getGeneticAlgorithm() const
+{
+    return _geneticAlgorithm;
 }
