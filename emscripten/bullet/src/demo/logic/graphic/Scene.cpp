@@ -761,13 +761,13 @@ void Scene::_renderHUD_ortho()
 
                 sstr
                     << "WORKERS: " << logic.cores.statesData.size() << std::endl
-                    << "Processing Time: " << writeTime(globalDelta * 1000);
+                    << "Total: " << writeTime(globalDelta * 1000);
 
 #else
 
                 sstr
                     << "THREADS: " << logic.cores.statesData.size() << std::endl
-                    << "Processing Time: " << writeTime(globalDelta);
+                    << "Total: " << writeTime(globalDelta);
 
 #endif
             }
@@ -1018,12 +1018,12 @@ void Scene::_renderHUD_ortho()
 
                         if (weight > 0.0f)
                         {
-                            const float thickness = 1.0f + weight * +3.0f;
+                            const float thickness = 1.0f + weight * +2.0f;
                             stackRenderer.pushThickTriangleLine(prevNeuron, currNeuron, thickness, redColor);
                         }
                         else
                         {
-                            const float thickness = 1.0f + weight * -3.0f;
+                            const float thickness = 1.0f + weight * -2.0f;
                             stackRenderer.pushThickTriangleLine(prevNeuron, currNeuron, thickness, blueColor);
                         }
                     }
