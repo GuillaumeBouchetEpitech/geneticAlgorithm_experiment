@@ -99,7 +99,7 @@ const onGlobalPageLoad = async () => {
         // handle events
         buttons.try_with_270_cars.addEventListener("click", () => {
             // simple reload
-            window.location.href = window.location.pathname + `?genomesPerCore=${genomesPerCore}`;
+            window.location.href = window.location.pathname + `?genomesPerCore=${90}`;
         });
     }
 
