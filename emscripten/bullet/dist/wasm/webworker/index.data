@@ -5,7 +5,16 @@ varying vec4 v_color;
 
 void main(void)
 {
-	gl_FragColor = v_color;
+    gl_FragColor = v_color;
+}
+
+precision mediump float;
+
+uniform vec4 u_color;
+
+void main(void)
+{
+	gl_FragColor = u_color;
 }
 
 precision mediump float;
@@ -22,22 +31,6 @@ void main(void)
 precision mediump float;
 
 uniform mat4 u_composedMatrix;
-
-attribute vec3 a_position;
-attribute vec4 a_color;
-
-varying vec4 v_color;
-
-void main(void)
-{
-	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
-
-	v_color = a_color;
-}
-
-precision mediump float;
-
-uniform mat4 u_composedMatrix;
 uniform float u_alpha;
 uniform float u_lowerLimit;
 uniform float u_upperLimit;
@@ -49,7 +42,7 @@ attribute float a_index;
 
 varying vec4 v_color;
 
-const vec4 k_white = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 k_white = vec4(1.0);
 
 void main(void)
 {
@@ -92,20 +85,11 @@ void main(void)
 
 precision mediump float;
 
-uniform mat4 u_composedMatrix;
-
-attribute vec3 a_position;
-attribute vec3 a_color;
-attribute mat4 a_offsetTransform;
-attribute vec3 a_offsetColor;
-
-varying vec3 v_color;
+varying vec4 v_color;
 
 void main(void)
 {
-	gl_Position = u_composedMatrix * a_offsetTransform * vec4(a_position, 1.0);
-
-	v_color = a_color * a_offsetColor;
+	gl_FragColor = v_color;
 }
 
 precision mediump float;
@@ -135,11 +119,11 @@ void main(void)
 
 precision mediump float;
 
-varying vec4 v_color;
+varying vec3 v_color;
 
 void main(void)
 {
-    gl_FragColor = v_color;
+	gl_FragColor = vec4(v_color, 1.0);
 }
 
 precision mediump float;
@@ -151,6 +135,27 @@ attribute vec3 a_position;
 void main(void)
 {
 	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+}
+
+precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec2 a_position;
+attribute vec2 a_texCoord;
+attribute vec2 a_offsetPosition;
+attribute vec2 a_offsetTexCoord;
+attribute float a_offsetScale;
+
+varying vec2 v_texCoord;
+
+void main(void)
+{
+	vec2 position = a_position * a_offsetScale + a_offsetPosition;
+
+	gl_Position = u_composedMatrix * vec4(position, 0.0, 1.0);
+
+	v_texCoord = a_texCoord + a_offsetTexCoord;
 }
 
 precision mediump float;
@@ -188,39 +193,34 @@ precision mediump float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec2 a_position;
-attribute vec2 a_texCoord;
-attribute vec2 a_offsetPosition;
-attribute vec2 a_offsetTexCoord;
-attribute float a_offsetScale;
+attribute vec3 a_position;
+attribute vec4 a_color;
 
-varying vec2 v_texCoord;
+varying vec4 v_color;
 
 void main(void)
 {
-	vec2 position = a_position * a_offsetScale + a_offsetPosition;
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
 
-	gl_Position = u_composedMatrix * vec4(position, 0.0, 1.0);
-
-	v_texCoord = a_texCoord + a_offsetTexCoord;
+	v_color = a_color;
 }
 
 precision mediump float;
+
+uniform mat4 u_composedMatrix;
+
+attribute vec3 a_position;
+attribute vec3 a_color;
+attribute mat4 a_offsetTransform;
+attribute vec3 a_offsetColor;
 
 varying vec3 v_color;
 
 void main(void)
 {
-	gl_FragColor = vec4(v_color, 1.0);
-}
+	gl_Position = u_composedMatrix * a_offsetTransform * vec4(a_position, 1.0);
 
-precision mediump float;
-
-uniform vec4 u_color;
-
-void main(void)
-{
-	gl_FragColor = u_color;
+	v_color = a_color * a_offsetColor;
 }
 # Blender MTL File: 'None'
 # Material Count: 3

@@ -4,7 +4,7 @@
 #include "PhysicTrimesh.hpp"
 #include "PhysicVehicle.hpp"
 
-#include "thirdparty/BulletPhysics.hpp"
+#include "demo/helpers/BulletPhysics.hpp"
 
 #include <algorithm>
 
@@ -44,23 +44,17 @@ PhysicWorld::PhysicWorld()
 
 PhysicWorld::~PhysicWorld()
 {
-    std::vector<PhysicVehicle*> oldLiveVehicles;
-    for (auto* vehicle : _liveVehicles)
-        oldLiveVehicles.push_back(vehicle);
-    _liveVehicles.clear();
-
-    for (auto* vehicle : oldLiveVehicles)
+    for (auto* vehicle : _vehicles)
     {
-        auto* bbHandle = vehicle->_bullet.carChassis->getBroadphaseHandle();
-        _bullet.broadphase
-                    ->getOverlappingPairCache()
-                    ->cleanProxyFromPairs(bbHandle, _bullet.dispatcher);
+        if (_liveVehicles.count(vehicle) > 0)
+            _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
 
         _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
-        _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
 
         delete vehicle;
     }
+    _liveVehicles.clear();
+    _vehicles.clear();
 
     for (auto* trimesh : _wallsTrimesh)
     {
@@ -85,12 +79,12 @@ PhysicWorld::~PhysicWorld()
     delete _bullet.dispatcher;
 }
 
-void PhysicWorld::step()
+void PhysicWorld::step(float elapsedTime)
 {
     const int maxSubSteps = 0; // <= so it's "deterministic"
     const float fixedTimeStep = 1.0f / 30.0f;
 
-    _bullet.dynamicsWorld->stepSimulation(fixedTimeStep, maxSubSteps, fixedTimeStep);
+    _bullet.dynamicsWorld->stepSimulation(elapsedTime, maxSubSteps, fixedTimeStep);
 }
 
 //
@@ -178,8 +172,8 @@ void PhysicWorld::removeVehicle(PhysicVehicle& vehicle)
     if (_liveVehicles.count(&vehicle) == 0)
         return;
 
-    _bullet.dynamicsWorld->removeRigidBody(vehicle._bullet.carChassis);
     _bullet.dynamicsWorld->removeVehicle(vehicle._bullet.vehicle);
+    _bullet.dynamicsWorld->removeRigidBody(vehicle._bullet.carChassis);
 
     _liveVehicles.erase(&vehicle);
 }
@@ -219,7 +213,7 @@ bool PhysicWorld::raycastGroundsAndWalls(PhysicWorld::RaycastParamsGroundsAndWal
     return true;
 }
 
-bool PhysicWorld::raycastGrounds(PhysicWorld::RaycastParamsGrounds& params)
+bool PhysicWorld::raycastGrounds(PhysicWorld::RaycastParamsGroundsOnly& params)
 {
     btVector3 rayFrom(params.from.x, params.from.y, params.from.z);
     btVector3 rayTo(params.to.x, params.to.y, params.to.z);

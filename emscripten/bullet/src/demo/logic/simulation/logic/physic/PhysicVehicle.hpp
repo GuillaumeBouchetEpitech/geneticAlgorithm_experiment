@@ -3,7 +3,7 @@
 
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 class btCollisionShape;
 class btCompoundShape;

@@ -10,7 +10,7 @@
 
 #include "./utilities/sceneToScreen.hpp"
 
-#include <memory> // <= make_unique
+// #include <memory> // <= make_unique
 #include <cstring> // <= std::memcpy
 
 #include <iomanip>
@@ -58,8 +58,6 @@ void Scene::initialise()
 
 void Scene::renderSimple()
 {
-    Scene::_updateMatrices();
-
     Scene::_clear();
 
     { // scene
@@ -81,9 +79,6 @@ void Scene::renderSimple()
 
 void Scene::renderAll()
 {
-    Scene::_updateMatrices();
-    Scene::_updateCircuitAnimation();
-
     Scene::_clear();
 
     { // scene
@@ -120,7 +115,7 @@ void Scene::renderAll()
     ShaderProgram::unbind();
 }
 
-void Scene::_updateMatrices()
+void Scene::updateMatrices(float elapsedTime)
 {
     auto& data = Data::get();
     const auto& logic = data.logic;
@@ -163,18 +158,10 @@ void Scene::_updateMatrices()
 
     { // third person
 
-        matrices.thirdPerson.projection = matrices.scene.projection;
-
-        if (logic.leaderCar.index < 0)
+        if (logic.leaderCar.index >= 0)
         {
-            camera.thirdPersonCenter = camera.center;
+            matrices.thirdPerson.projection = matrices.scene.projection;
 
-            matrices.thirdPerson.model = matrices.scene.model;
-            matrices.thirdPerson.view = matrices.scene.view;
-            matrices.thirdPerson.composed = matrices.scene.composed;
-        }
-        else
-        {
             const auto& carResult = simulation.getCarResult(logic.leaderCar.index);
 
             glm::vec3 carOrigin = carResult.transforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
@@ -186,21 +173,20 @@ void Scene::_updateMatrices()
                 (currentState == StateManager::States::Running ||
                  currentState == StateManager::States::StartGeneration) &&
                 // do not update the third person camera if too close from the target
-                glm::distance(carOrigin, camera.thirdPersonCenter) > 0.25f)
+                glm::distance(carOrigin, camera.thirdPersonEye) > 0.25f)
             {
                 // simple lerp to setup the third person camera
-                const float lerpRatio = 0.1f;
-                camera.thirdPersonCenter += (carOrigin - camera.thirdPersonCenter) * lerpRatio;
+                const float lerpRatio = 0.1f * 60.0f * elapsedTime;
+                camera.thirdPersonEye += (carOrigin - camera.thirdPersonEye) * lerpRatio;
                 camera.thirdPersonUpAxis += (carUpAxis - camera.thirdPersonUpAxis) * lerpRatio;
             }
 
-            glm::vec3 eye = camera.thirdPersonCenter;
-            glm::vec3 center = carOrigin;
-            glm::vec3 upAxis = camera.thirdPersonUpAxis;
-
+            const glm::vec3 eye = camera.thirdPersonEye;
+            const glm::vec3 target = carOrigin;
+            const glm::vec3 upAxis = camera.thirdPersonUpAxis;
 
             matrices.thirdPerson.model = glm::identity<glm::mat4>();
-            matrices.thirdPerson.view = glm::lookAt(eye, center, upAxis);
+            matrices.thirdPerson.view = glm::lookAt(eye, target, upAxis);
 
             matrices.thirdPerson.composed = matrices.thirdPerson.projection * matrices.thirdPerson.model * matrices.thirdPerson.view;
         }
@@ -229,7 +215,6 @@ void Scene::_updateMatrices()
         // const float fovy = glm::radians(70.0f);
         // const float aspectRatio = float(vSize.x) / vSize.y;
         // glm::mat4 projection = glm::perspective(fovy, aspectRatio, 1.0f, 1000.f);
-        // glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -100.0f, 100.0f);
         glm::mat4 projection = glm::ortho(0.0f, vSize.x, 0.0f, vSize.y, -1.0f, 1.0f);
 
         // const glm::vec2 halfViewportSize = vSize * 0.5f;
@@ -245,7 +230,7 @@ void Scene::_updateMatrices()
     } // hud_perspective
 }
 
-void Scene::_updateCircuitAnimation()
+void Scene::updateCircuitAnimation(float elapsedTime)
 {
     // do not run if not currently in one of those states
     auto currentState = StateManager::get()->getState();
@@ -290,21 +275,21 @@ void Scene::_updateCircuitAnimation()
         if (animation.lowerValue > animation.targetValue + 10.0f)
         {
             // fall really quickly
-            animation.lowerValue -= 1.0f;
+            animation.lowerValue -= 60.0f * elapsedTime;
             if (animation.lowerValue < animation.targetValue)
                 animation.lowerValue = animation.targetValue;
         }
         else if (animation.lowerValue > animation.targetValue)
         {
             // fall quickly
-            animation.lowerValue -= 0.3f;
+            animation.lowerValue -= 18.0f * elapsedTime;
             if (animation.lowerValue < animation.targetValue)
                 animation.lowerValue = animation.targetValue;
         }
         else
         {
             // rise slowly
-            animation.lowerValue += 0.2f;
+            animation.lowerValue += 12.0f * elapsedTime;
             if (animation.lowerValue > animation.targetValue)
                 animation.lowerValue = animation.targetValue;
         }
@@ -314,21 +299,21 @@ void Scene::_updateCircuitAnimation()
         if (animation.upperValue > animation.targetValue + 10.0f)
         {
             // fall really quickly
-            animation.upperValue -= 0.6f;
+            animation.upperValue -= 36.0f * elapsedTime;
             if (animation.upperValue < animation.targetValue)
                 animation.upperValue = animation.targetValue;
         }
         else if (animation.upperValue > animation.targetValue)
         {
             // fall slowly
-            animation.upperValue -= 0.1f;
+            animation.upperValue -= 6.0f * elapsedTime;
             if (animation.upperValue < animation.targetValue)
                 animation.upperValue = animation.targetValue;
         }
         else
         {
             // rise really quickly
-            animation.upperValue += 1.0f;
+            animation.upperValue += 60.0f * elapsedTime;
             if (animation.upperValue > animation.targetValue)
                 animation.upperValue = animation.targetValue;
         }
@@ -374,6 +359,10 @@ void Scene::_renderLeadingCarSensors(const glm::mat4& sceneMatrix)
 
     // leading car alive?
     if (!carData.isAlive)
+        return;
+
+    // do not show the sensor until far enough
+    if (carData.groundIndex < 1)
         return;
 
     shader.bind();
@@ -847,18 +836,21 @@ void Scene::_renderHUD_ortho()
         const float maxVal = (std::ceil(float(commonMaxDelta) / divider)) * divider;
 
 
-        stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
-        stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
+        { // background
 
-        for (unsigned core = 0; core < cores.statesHistory.size(); ++core)
-        {
-            const auto& stateHistory = cores.statesHistory[core];
+            glm::vec4 bgColor = commonMaxDelta > 16000 ? glm::vec4(1,0,0, 1.00f) : glm::vec4(0,0,0, 0.75f);
 
-            //
-            //
+            stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, bgColor);
+            stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
-            // maxVal
+        } // background
+
+        //
+        //
+
+        { // dividers
+
             for (float ii = divider; ii < maxVal; ii += divider)
             {
                 const float coef = ii / maxVal;
@@ -869,8 +861,14 @@ void Scene::_renderHUD_ortho()
                 stackRenderer.pushLine(borderPos + coordA, borderPos + coordB, whiteColor);
             }
 
-            //
-            //
+        } // dividers
+
+        //
+        //
+
+        for (unsigned core = 0; core < cores.statesHistory.size(); ++core)
+        {
+            const auto& stateHistory = cores.statesHistory[core];
 
             float widthStep = borderSize.x / Data::Logic::Cores::maxStateHistory;
 
@@ -972,7 +970,7 @@ void Scene::_renderHUD_ortho()
             const NeuralNetworks& neuralNetworks = logic.simulation->getGeneticAlgorithm().getNeuralNetworks();
 
             std::vector<float> connectionsWeights;
-            neuralNetworks[logic.leaderCar.index].getWeights(connectionsWeights);
+            neuralNetworks[logic.leaderCar.index]->getWeights(connectionsWeights);
 
             std::vector<std::vector<glm::vec2>> allNeuronPos;
             allNeuronPos.resize(topologyArray.size());
@@ -992,7 +990,7 @@ void Scene::_renderHUD_ortho()
                 {
                     currPos.x += borderSize.x / (actualSize + 1);
 
-                    allNeuronPos[ii].push_back(currPos);
+                    allNeuronPos[ii].emplace_back(currPos);
                 }
             }
 

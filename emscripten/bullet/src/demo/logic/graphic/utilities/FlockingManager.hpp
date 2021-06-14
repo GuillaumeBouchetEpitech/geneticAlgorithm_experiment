@@ -6,7 +6,7 @@
 #include <vector>
 #include <unordered_set>
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 class FlockingManager
 {

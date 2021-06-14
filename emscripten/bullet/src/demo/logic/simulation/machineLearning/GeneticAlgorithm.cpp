@@ -25,6 +25,12 @@ void GeneticAlgorithm::initialise(const Definition& def)
     // set the genomes and their neural network
 
     _genomes.resize(def.totalGenomes);
+
+    unsigned int totalElites = def.totalGenomes * 0.1f; // 10%
+    if (totalElites < 5)
+        totalElites = 5;
+    _bestGenomes.resize(totalElites);
+
     _neuralNetworks.reserve(def.totalGenomes); // pre-allocate
 
     RNG::ensureRandomSeed();
@@ -36,8 +42,9 @@ void GeneticAlgorithm::initialise(const Definition& def)
         for (float& weight : genome.weights)
             weight = RNG::getRangedValue(-1.0f, 1.0f);
 
-        _neuralNetworks.push_back(NeuralNetwork(_neuralNetworkTopology));
-        _neuralNetworks.back().setWeights(genome.weights);
+        auto newNeuralNet = std::make_shared<NeuralNetwork>(_neuralNetworkTopology);
+        newNeuralNet->setWeights(genome.weights);
+        _neuralNetworks.push_back(newNeuralNet);
     }
 }
 
@@ -142,11 +149,11 @@ bool GeneticAlgorithm::breedPopulation()
     { // diversity: add random genomes
 
         // if there is any space left: add some random genome.
-        int remainingOffsprings = int(_genomes.size() - offsprings.size());
+        std::size_t remainingOffsprings = _genomes.size() - offsprings.size();
 
         const unsigned int totalWeights = _neuralNetworkTopology.getTotalWeights();
 
-        for (int ii = 0; ii < remainingOffsprings; ++ii)
+        for (std::size_t ii = 0; ii < remainingOffsprings; ++ii)
         {
             Genome newGenome;
 
@@ -163,7 +170,7 @@ bool GeneticAlgorithm::breedPopulation()
     _genomes = std::move(offsprings); // move, no realloc of the vector content
 
     for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
-        _neuralNetworks[ii].setWeights(_genomes[ii].weights);
+        _neuralNetworks[ii]->setWeights(_genomes[ii].weights);
 
     ++_currentGeneration;
 
@@ -201,14 +208,14 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
                                   const Genome& parentB,
                                   Genome& offspring) const
 {
-    // 50/50 chances for both parents
-    int chancesForParentA = 50;
+    // default of 50/50 chances for both parents
+    int chancesForParentA = 50; // 50%
 
     // 70/30 chances for the fittest parent
     if (parentA.fitness > parentB.fitness)
-        chancesForParentA = 70;
+        chancesForParentA = 70; // 70%
     else if (parentA.fitness < parentB.fitness)
-        chancesForParentA = 30;
+        chancesForParentA = 30; // 30%
 
     // crossover
 
@@ -228,8 +235,8 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
 
 void GeneticAlgorithm::_mutate(Genome& genome) const
 {
-    const int mutationMaxChance = 10;
-    const float mutationMaxEffect = 0.2f;
+    constexpr int mutationMaxChance = 10; // 10%
+    constexpr float mutationMaxEffect = 0.2f;
 
     for (float& weight : genome.weights)
         if (RNG::getRangedValue(0, 100) < mutationMaxChance)

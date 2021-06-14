@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="551px" preserveAspectRatio="none" style="width:937px;height:551px;background:#EEEEEE;" version="1.1" viewBox="0 0 937 551" width="937px" zoomAndPan="magnify"><defs><filter height="300%" id="f1qnoyaquwgioc" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="267" x="334" y="26.708">diagram-activity-threading.txt</text><ellipse cx="115" cy="69.6514" fill="#000000" filter="url(#f1qnoyaquwgioc)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><rect fill="#DDDDDD" filter="url(#f1qnoyaquwgioc)" height="33.9688" style="stroke: #A80036; stroke-width: 1.5;" width="171" x="29.5" y="99.6514"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="34.5" x2="34.5" y1="99.6514" y2="133.6201"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="195.5" x2="195.5" y1="99.6514" y2="133.6201"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="151" x="39.5" y="120.79">update simulation: start</text><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="61.9063" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="190" x="20" y="153.6201"/><ellipse cx="35.5" cy="170.0889" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="147" x="41" y="174.7588">push tasks to producer</text><ellipse cx="35.5" cy="184.0576" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="159" x="41" y="188.7275">wake up producer thread</text><ellipse cx="35.5" cy="198.0264" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="157" x="41" y="202.6963">wait for tasks completion</text><rect fill="#DDDDDD" filter="url(#f1qnoyaquwgioc)" height="33.9688" style="stroke: #A80036; stroke-width: 1.5;" width="169" x="30.5" y="505.3076"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="35.5" x2="35.5" y1="505.3076" y2="539.2764"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="194.5" x2="194.5" y1="505.3076" y2="539.2764"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="149" x="40.5" y="526.4463">update simulation: stop</text><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="61.9063" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="202" x="233" y="235.5264"/><ellipse cx="248.5" cy="251.9951" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="98" x="254" y="256.665">list tasks to run</text><ellipse cx="248.5" cy="265.9639" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="169" x="254" y="270.6338">assign tasks to consumers</text><ellipse cx="248.5" cy="279.9326" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="171" x="254" y="284.6025">wake up consumers thread</text><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="47.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="228" x="220" y="437.3701"/><ellipse cx="235.5" cy="453.8389" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="197" x="241" y="458.5088">confirm all tasks are completed</text><ellipse cx="235.5" cy="467.8076" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="127" x="241" y="472.4775">resume main thread</text><rect fill="#000000" filter="url(#f1qnoyaquwgioc)" height="6" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 1.0;" width="458" x="458" y="317.4326"/><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="47.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="126" x="470" y="343.4326"/><ellipse cx="485.5" cy="359.9014" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="491" y="364.5713">run task</text><ellipse cx="485.5" cy="373.8701" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="95" x="491" y="378.54">notify producer</text><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="47.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="126" x="624" y="343.4326"/><ellipse cx="639.5" cy="359.9014" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="645" y="364.5713">run task</text><ellipse cx="639.5" cy="373.8701" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="95" x="645" y="378.54">notify producer</text><rect fill="#FEFECE" filter="url(#f1qnoyaquwgioc)" height="47.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="126" x="778" y="343.4326"/><ellipse cx="793.5" cy="359.9014" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="799" y="364.5713">run task</text><ellipse cx="793.5" cy="373.8701" fill="#000000" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 0.0;"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="95" x="799" y="378.54">notify producer</text><rect fill="#000000" filter="url(#f1qnoyaquwgioc)" height="6" rx="2.5" ry="2.5" style="stroke: #000000; stroke-width: 1.0;" width="458" x="458" y="411.3701"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="115" x2="115" y1="79.6514" y2="99.6514"/><polygon fill="#A80036" points="111,89.6514,115,99.6514,119,89.6514,115,93.6514" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="115" x2="115" y1="133.6201" y2="153.6201"/><polygon fill="#A80036" points="111,143.6201,115,153.6201,119,143.6201,115,147.6201" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="533" x2="533" y1="323.4326" y2="343.4326"/><polygon fill="#A80036" points="529,333.4326,533,343.4326,537,333.4326,533,337.4326" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="687" x2="687" y1="323.4326" y2="343.4326"/><polygon fill="#A80036" points="683,333.4326,687,343.4326,691,333.4326,687,337.4326" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="841" x2="841" y1="323.4326" y2="343.4326"/><polygon fill="#A80036" points="837,333.4326,841,343.4326,845,333.4326,841,337.4326" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="533" x2="533" y1="391.3701" y2="411.3701"/><polygon fill="#A80036" points="529,401.3701,533,411.3701,537,401.3701,533,405.3701" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="687" x2="687" y1="391.3701" y2="411.3701"/><polygon fill="#A80036" points="683,401.3701,687,411.3701,691,401.3701,687,405.3701" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="841" x2="841" y1="391.3701" y2="411.3701"/><polygon fill="#A80036" points="837,401.3701,841,411.3701,845,401.3701,841,405.3701" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="115" x2="115" y1="215.5264" y2="220.5264"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="115" x2="334" y1="220.5264" y2="220.5264"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="334" y1="220.5264" y2="235.5264"/><polygon fill="#A80036" points="330,225.5264,334,235.5264,338,225.5264,334,229.5264" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="334" y1="297.4326" y2="302.4326"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="687" y1="302.4326" y2="302.4326"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="687" x2="687" y1="302.4326" y2="317.4326"/><polygon fill="#A80036" points="683,307.4326,687,317.4326,691,307.4326,687,311.4326" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="687" x2="687" y1="417.3701" y2="422.3701"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="687" x2="334" y1="422.3701" y2="422.3701"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="334" y1="422.3701" y2="437.3701"/><polygon fill="#A80036" points="330,427.3701,334,437.3701,338,427.3701,334,431.3701" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="334" y1="485.3076" y2="490.3076"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="334" x2="115" y1="490.3076" y2="490.3076"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="115" x2="115" y1="490.3076" y2="505.3076"/><polygon fill="#A80036" points="111,495.3076,115,505.3076,119,495.3076,115,499.3076" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="131" x="49" y="50.4063">MAIN-THREAD</text><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="186" x="240.5" y="50.4063">PRODUCER-THREAD</text><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="200" x="586.5" y="50.4063">CONSUMER-THREADS</text><line style="stroke: #000000; stroke-width: 2.0;" x1="10" x2="10" y1="33.6982" y2="539.2764"/><line style="stroke: #000000; stroke-width: 2.0;" x1="215" x2="215" y1="33.6982" y2="539.2764"/><line style="stroke: #000000; stroke-width: 2.0;" x1="453" x2="453" y1="33.6982" y2="539.2764"/><line style="stroke: #000000; stroke-width: 2.0;" x1="925" x2="925" y1="33.6982" y2="539.2764"/><!--MD5=[4c58817a89ad6d9b626d811733090f94]
+@startuml
+
+skinparam backgroundColor #EEEEEE
+
+title diagram-activity-threading.txt
+
+|MAIN-THREAD|
+|PRODUCER-THREAD|
+|CONSUMER-THREADS|
+
+|MAIN-THREAD|
+
+start
+
+#DDDDDD:update simulation: start|
+
+:* push tasks to producer
+* wake up producer thread
+* wait for tasks completion;
+
+|PRODUCER-THREAD|
+
+:* list tasks to run
+* assign tasks to consumers
+* wake up consumers thread;
+
+|CONSUMER-THREADS|
+
+fork
+
+    :* run task
+    * notify producer;
+
+fork again
+
+    :* run task
+    * notify producer;
+
+fork again
+
+    :* run task
+    * notify producer;
+
+end fork
+
+|PRODUCER-THREAD|
+
+:* confirm all tasks are completed
+* resume main thread;
+
+|MAIN-THREAD|
+
+#DDDDDD:update simulation: stop|
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.11+9-Ubuntu-0ubuntu2.20.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

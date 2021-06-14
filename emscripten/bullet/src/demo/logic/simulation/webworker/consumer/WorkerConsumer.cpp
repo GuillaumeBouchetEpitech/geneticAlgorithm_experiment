@@ -28,20 +28,22 @@ void WorkerConsumer::processMessage(const char* dataPointer, int dataSize)
 
         case Messages::FromProducer::ResetAndProcessSimulation:
         {
+            float elapsedTime;
             unsigned int totalSteps;
-            receivedMsg >> totalSteps;
+            receivedMsg >> elapsedTime >> totalSteps;
 
             _resetSimulation(receivedMsg);
-            _processSimulation(totalSteps);
+            _processSimulation(elapsedTime, totalSteps);
             break;
         }
 
         case Messages::FromProducer::ProcessSimulation:
         {
+            float elapsedTime;
             unsigned int totalSteps;
-            receivedMsg >> totalSteps;
+            receivedMsg >> elapsedTime >> totalSteps;
 
-            _processSimulation(totalSteps);
+            _processSimulation(elapsedTime, totalSteps);
             break;
         }
 
@@ -161,7 +163,7 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
         _neuralNetworks.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _neuralNetworks.emplace_back(NeuralNetwork(_neuralNetworkTopology));
+            _neuralNetworks.emplace_back(std::make_shared<NeuralNetwork>(_neuralNetworkTopology));
 
     } // generate neural networks
 
@@ -187,17 +189,17 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
         receivedMsg.read(newWeightsRaw, byteWeightsSize);
 
         std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
-        _neuralNetworks[ii].setWeights(weightsBuffer);
+        _neuralNetworks[ii]->setWeights(weightsBuffer);
 
         _cars[ii].reset(_startTransform.position, _startTransform.quaternion);
     }
 }
 
-void WorkerConsumer::_processSimulation(unsigned int totalSteps)
+void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSteps)
 {
     // update the simulation
 
-    auto start = std::chrono::high_resolution_clock::now();
+    const auto startTime = std::chrono::high_resolution_clock::now();
 
     //
     //
@@ -207,7 +209,7 @@ void WorkerConsumer::_processSimulation(unsigned int totalSteps)
 
     for (unsigned int step = 0; step < totalSteps; ++step)
     {
-        _physicWorld.step();
+        _physicWorld.step(elapsedTime);
 
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
         {
@@ -216,7 +218,7 @@ void WorkerConsumer::_processSimulation(unsigned int totalSteps)
             if (!car.isAlive())
                 continue;
 
-            car.update(_neuralNetworks[ii]);
+            car.update(elapsedTime, _neuralNetworks[ii]);
 
             {
                 const auto& vehicle = car.getVehicle();
@@ -243,9 +245,9 @@ void WorkerConsumer::_processSimulation(unsigned int totalSteps)
     //
     //
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
-    unsigned int delta = milliseconds.count() * 1000;
+    const auto finishTime = std::chrono::high_resolution_clock::now();
+    const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finishTime - startTime);
+    const unsigned int delta = milliseconds.count() * 1000;
 
     // send back the result
 
@@ -254,7 +256,7 @@ void WorkerConsumer::_processSimulation(unsigned int totalSteps)
 
     _messageToSend << delta << genomesAlive;
 
-    glm::mat4   transform;
+    glm::mat4 transform;
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {

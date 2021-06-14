@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "thirdparty/OpenGLES.hpp" // SDL_Event + SDL_Window
+#include "demo/helpers/OpenGLES.hpp" // SDL_Event + SDL_Window
 
 #include "demo/utilities/NonCopyable.hpp"
 

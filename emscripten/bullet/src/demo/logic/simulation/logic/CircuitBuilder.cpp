@@ -53,16 +53,11 @@ void CircuitBuilder::load(const std::string& filename)
 
     //
     //
-    // build command handler
-
-    const char* cmd_start_transform_pos     = "START_TRANSFORM_POSITION";
-    const char* cmd_start_transform_quat    = "START_TRANSFORM_QUATERNION";
-    const char* cmd_knots_color             = "KNOTS_COLOR";
-    const char* cmd_knots_size              = "KNOTS_SIZE";
-    const char* cmd_knots_dual              = "KNOTS_DUAL";
+    // build command handler (parser)
 
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> commandsMap;
 
+    const std::string cmd_start_transform_pos = "START_TRANSFORM_POSITION";
     commandsMap[cmd_start_transform_pos] = [&](std::istringstream& isstr)
     {
         auto& value = _startTransform.position;
@@ -73,6 +68,7 @@ void CircuitBuilder::load(const std::string& filename)
             validateFloat(value[ii], cmd_start_transform_pos);
     };
 
+    const std::string cmd_start_transform_quat = "START_TRANSFORM_QUATERNION";
     commandsMap[cmd_start_transform_quat] = [&](std::istringstream& isstr)
     {
         auto& value = _startTransform.quaternion;
@@ -83,6 +79,7 @@ void CircuitBuilder::load(const std::string& filename)
             validateFloat(value[ii], cmd_start_transform_quat);
     };
 
+    const std::string cmd_knots_color = "KNOTS_COLOR";
     commandsMap[cmd_knots_color] = [&](std::istringstream& isstr)
     {
         glm::vec3 color;
@@ -96,6 +93,7 @@ void CircuitBuilder::load(const std::string& filename)
         currentColor = color;
     };
 
+    const std::string cmd_knots_size = "KNOTS_SIZE";
     commandsMap[cmd_knots_size] = [&](std::istringstream& isstr)
     {
         float knotsSize;
@@ -108,6 +106,7 @@ void CircuitBuilder::load(const std::string& filename)
         currentKnotsSize = knotsSize;
     };
 
+    const std::string cmd_knots_dual = "KNOTS_DUAL";
     commandsMap[cmd_knots_dual] = [&](std::istringstream& isstr)
     {
         glm::vec3 left;
@@ -141,14 +140,17 @@ void CircuitBuilder::load(const std::string& filename)
 
         std::istringstream isstr(textLine);
 
+        // extract command type
         std::string cmdType;
         if (!(isstr >> cmdType))
             D_THROW(std::runtime_error, "failure to extract the line type");
 
+        // retrieve command from type
         auto itCmd = commandsMap.find(cmdType);
         if (itCmd == commandsMap.end())
             D_THROW(std::runtime_error, "unknown line type, type=" << cmdType);
 
+        // run command (parse)
         itCmd->second(isstr);
     }
 
@@ -164,7 +166,9 @@ void CircuitBuilder::load(const std::string& filename)
         {
             const auto& prevKnot = _knots[ii - 1];
 
-            // concatenate the knot
+            // concatenate the knot with the previous one
+            // => this is so the next knots can have relative coordinates
+            // => it make the circuit text file easier to write
             knot.left += prevKnot.left;
             knot.right += prevKnot.right;
         }
@@ -283,30 +287,29 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             count,
         };
 
-        const unsigned int  dimension = asValue(SplineType::count);
+        constexpr unsigned int  dimension = asValue(SplineType::count);
+        const float*            knotsData = &_knots.front().left.x;
+        const std::size_t       knotsLength = _knots.size() * dimension;
+        constexpr unsigned int  splineDegree = 3;
 
-        const unsigned int  degree = 3;
-        const float*        knotsData = &_knots.front().left.x;
-        const std::size_t   knotsLength = _knots.size() * dimension;
-
-        BSpline smoother;
-        smoother.initialise({ knotsData, knotsLength, dimension, degree });
+        BSpline bsplineSmoother;
+        bsplineSmoother.initialise({ knotsData, knotsLength, dimension, splineDegree });
 
         CircuitBuilder::CircuitVertex vertex;
 
-        const unsigned int maxIterations = 1000;
-        const float step = 1.0f / maxIterations; // tiny steps
+        constexpr unsigned int maxIterations = 1000;
+        constexpr float step = 1.0f / maxIterations; // tiny steps
 
         for (float coef = 0.0f; coef <= 1.0f; coef += step)
         {
-            vertex.left.x = smoother.calcAt(coef, asValue(SplineType::leftX));
-            vertex.left.y = smoother.calcAt(coef, asValue(SplineType::leftY));
-            vertex.left.z = smoother.calcAt(coef, asValue(SplineType::leftZ));
-            vertex.right.x = smoother.calcAt(coef, asValue(SplineType::rightX));
-            vertex.right.y = smoother.calcAt(coef, asValue(SplineType::rightY));
-            vertex.right.z = smoother.calcAt(coef, asValue(SplineType::rightZ));
+            vertex.left.x = bsplineSmoother.calcAt(coef, asValue(SplineType::leftX));
+            vertex.left.y = bsplineSmoother.calcAt(coef, asValue(SplineType::leftY));
+            vertex.left.z = bsplineSmoother.calcAt(coef, asValue(SplineType::leftZ));
+            vertex.right.x = bsplineSmoother.calcAt(coef, asValue(SplineType::rightX));
+            vertex.right.y = bsplineSmoother.calcAt(coef, asValue(SplineType::rightY));
+            vertex.right.z = bsplineSmoother.calcAt(coef, asValue(SplineType::rightZ));
 
-            const float knotSize = smoother.calcAt(coef, asValue(SplineType::size));
+            const float knotSize = bsplineSmoother.calcAt(coef, asValue(SplineType::size));
 
             if (!smoothedVertices.empty())
             {
@@ -324,9 +327,9 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
                 glm::length(vertex.right) < minLength)
                 continue; // TODO: fix it
 
-            vertex.color.r = smoother.calcAt(coef, asValue(SplineType::colorR));
-            vertex.color.g = smoother.calcAt(coef, asValue(SplineType::colorG));
-            vertex.color.b = smoother.calcAt(coef, asValue(SplineType::colorB));
+            vertex.color.r = bsplineSmoother.calcAt(coef, asValue(SplineType::colorR));
+            vertex.color.g = bsplineSmoother.calcAt(coef, asValue(SplineType::colorG));
+            vertex.color.b = bsplineSmoother.calcAt(coef, asValue(SplineType::colorB));
 
             smoothedVertices.push_back(vertex);
         }

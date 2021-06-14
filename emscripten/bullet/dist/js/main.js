@@ -42,20 +42,22 @@ const onGlobalPageLoad = async () => {
     };
 
     const vars = extractVarsFromUrl();
-    const width = vars.width || 800;
-    const height = vars.height || 600;
-    const totalCores = vars.totalCores || 3;
-    const genomesPerCore = vars.genomesPerCore || 30; // <= default to 3 * 30 => 90 cars
-    // const initialMemory = vars.initialMemory || 128;
+    const config = {
+        width: vars.width || 800,
+        height: vars.height || 600,
+        totalCores: vars.totalCores || 3,
+        genomesPerCore: vars.genomesPerCore || 30, // <= default to 3 * 30 => 90 cars
+        // const initialMemory = vars.initialMemory || 128;
+    };
 
 
 
-    renderArea.style.width = `${width}px`;
-    renderArea.style.height = `${height}px`;
-    canvas.width = width;
-    canvas.height = height;
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
+    renderArea.style.width = `${config.width}px`;
+    renderArea.style.height = `${config.height}px`;
+    canvas.width = config.width;
+    canvas.height = config.height;
+    canvas.style.width = `${config.width}px`;
+    canvas.style.height = `${config.height}px`;
 
 
 
@@ -64,7 +66,7 @@ const onGlobalPageLoad = async () => {
         try_with_270_cars: document.querySelector("#try_with_270_cars"),
     };
 
-    if (genomesPerCore != 30) {
+    if (config.genomesPerCore != 30) {
 
         buttons.try_with_90_cars.disabled = false;
         buttons.try_with_270_cars.disabled = true;
@@ -306,15 +308,15 @@ const onGlobalPageLoad = async () => {
                 return;
 
             // is the current message a "Downloading data..." one?
-            const cap = Module.downloadingDataRegExp.exec(text);
-            if (cap) {
+            const capture = Module.downloadingDataRegExp.exec(text);
+            if (capture) {
 
                 // is the latest log a "Downloading data..." one?
                 if (Module.downloadingDataRegExp.test(logger.peekLast()))
-                    logger.popLast();
+                    logger.popLast(); // yes, replace it
 
-                const current = cap[1];
-                const total = cap[2];
+                const current = capture[1];
+                const total = capture[2];
                 const percent = ((current / total) * 100).toFixed(0);
 
                 logger.log(`[JS] ${text} [${percent}%]`);
@@ -328,10 +330,10 @@ const onGlobalPageLoad = async () => {
         preinitializedWebGLContext: webglCtx,
         noExitRuntime: true,
         arguments: [
-            `${width}`,
-            `${height}`,
-            `${totalCores}`,
-            `${genomesPerCore}`
+            `${config.width}`,
+            `${config.height}`,
+            `${config.totalCores}`,
+            `${config.genomesPerCore}`
         ],
         // INITIAL_MEMORY: initialMemory * 1024 * 1024
     };

@@ -46,7 +46,7 @@ public:
     virtual void initialise(const Definition& def) = 0;
 
 public:
-    virtual void update(unsigned int totalSteps) = 0;
+    virtual void update(float elapsedTime, unsigned int totalSteps) = 0;
 
 public:
     virtual unsigned int getTotalCores() const = 0;

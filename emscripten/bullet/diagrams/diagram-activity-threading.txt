@@ -1,55 +1,82 @@
 
 @startuml
 
+skinparam backgroundColor #EEEEEE
+
 title diagram-activity-threading.txt
 
-|MAIN-THREAD|
-|PRODUCER-THREAD|
-|CONSUMER-THREADS|
+partition "main thread" {
 
-|MAIN-THREAD|
+    (*) --> "start frame"
 
-start
+    if "all task\ncompleted?" then
 
-#DDDDDD:update simulation: start|
+        -->[no] "render" as do_render
 
-:* push tasks to producer
-* wake up producer thread
-* wait for tasks completion;
+        --> "end frame"
+        --> (*)
 
-|PRODUCER-THREAD|
+    else
 
-:* list tasks to run
-* assign tasks to consumers
-* wake up consumers thread;
+        -->[yes] "
+            update latest data to render
+            ----
+            schedule an update
+            ----
+            push tasks to <b>PRODUCER</b>" as do_schedule
 
-|CONSUMER-THREADS|
+        -left-> do_render
 
-fork
+    endif
+}
 
-    :* run task
-    * notify producer;
+partition "mutilthreaded" {
 
-fork again
+    do_schedule --> "
+        wake up <b>PRODUCER</b> thread
+        ----
+        assign tasks and wake up <b>CONSUMER</b>s"
 
-    :* run task
-    * notify producer;
+    --> ===TEST===
 
-fork again
+    --> "
+        <b>CONSUMER</b> run task
+        ----
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        ----
+        <b>CONSUMER</b> can
+        be reassigned" as task_1
 
-    :* run task
-    * notify producer;
+    task_1 --> ===TEST2===
 
-end fork
+    ===TEST=== --> "
+        <b>CONSUMER</b> run task
+        ----
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        ----
+        <b>CONSUMER</b> can
+        be reassigned" as task_2
 
-|PRODUCER-THREAD|
+    task_2 --> ===TEST2===
 
-:* confirm all tasks are completed
-* resume main thread;
+    ===TEST=== --> "
+        <b>CONSUMER</b> run task
+        ----
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        ----
+        <b>CONSUMER</b> can
+        be reassigned" as task_3
 
-|MAIN-THREAD|
+    task_3 --> ===TEST2===
 
-#DDDDDD:update simulation: stop|
+    --> "all tasks completed"
 
+}
 
 @enduml

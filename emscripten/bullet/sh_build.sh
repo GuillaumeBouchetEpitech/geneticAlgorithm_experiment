@@ -1,28 +1,6 @@
 #!/bin/bash
 
 echo ""
-echo "SHELL      => \""$SHELL"\""
-echo "PWD        => \""$PWD"\""
-echo "EMSDK      => \""$EMSDK"\""
-echo "EMSCRIPTEN => \""$EMSCRIPTEN"\""
-echo ""
-
-
-
-# make build_platform="native_pthread" build_mode="debug"
-# exit
-
-
-
-# MY_ARGS="LOL "
-# MY_ARGS="${MY_ARGS}build_platform=native_pthread"
-# echo $MY_ARGS
-# exit
-
-
-
-
-echo ""
 echo "Build what?"
 echo "=> C++ Experiment: 1 (default)"
 echo "=> C++ Bullet:     2"

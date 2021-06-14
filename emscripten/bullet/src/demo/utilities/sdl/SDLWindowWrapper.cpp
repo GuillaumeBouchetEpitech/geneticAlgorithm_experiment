@@ -14,13 +14,13 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
-    SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
+    // SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
     const int posX = SDL_WINDOWPOS_UNDEFINED;
     const int posY = SDL_WINDOWPOS_UNDEFINED;
@@ -104,7 +104,7 @@ void SDLWindowWrapper::run()
 
 #if defined __EMSCRIPTEN__
 
-    emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 0, true);
+    emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 60, true);
 
     // unreachable <= "emscripten_set_main_loop_arg" does that
 

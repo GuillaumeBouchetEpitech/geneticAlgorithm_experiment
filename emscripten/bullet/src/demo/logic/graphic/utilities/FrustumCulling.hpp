@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "thirdparty/GLMath.hpp"
-
 #include "demo/utilities/types.hpp"
+
+#include "demo/helpers/GLMath.hpp"
 
 #include <array>
 

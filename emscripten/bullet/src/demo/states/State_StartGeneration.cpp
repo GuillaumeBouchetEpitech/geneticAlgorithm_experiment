@@ -4,8 +4,9 @@
 #include "StateManager.hpp"
 
 #include "demo/logic/Data.hpp"
+#include "demo/logic/graphic/Scene.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 void State_StartGeneration::enter()
 {
@@ -18,11 +19,21 @@ void State_StartGeneration::update(int deltaTime)
 
     auto& data = Data::get();
     auto& logic = data.logic;
-    auto& simulation = *logic.simulation;
     auto& graphic = data.graphic;
-    auto& camera = graphic.camera;
+
+    float elapsedTime = float(deltaTime) / 1000.0f;
+
+    Scene::updateMatrices(elapsedTime);
+
+    {
+        graphic.particleManager.update(elapsedTime);
+        graphic.flockingManager.update(elapsedTime);
+    }
 
     { // camera tracking
+
+        auto& simulation = *logic.simulation;
+        auto& camera = graphic.camera;
 
         glm::vec3   cameraNextCenter = camera.center;
         float       cameraNextDistance = 200.0f;

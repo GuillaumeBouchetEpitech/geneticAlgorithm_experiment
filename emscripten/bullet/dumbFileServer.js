@@ -20,8 +20,12 @@ const list_WiFi_IpAddresses = () => {
 
         ifaces[ifname].forEach((iface) => {
 
-            // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-            if (iface.family.toLowerCase() !== 'ipv4' || iface.internal !== false)
+            // skip over internal (i.e. 127.0.0.1)
+            if (iface.internal !== false)
+                return;
+
+            // skip over non-ipv4 addresses
+            if (iface.family.toLowerCase() !== 'ipv4')
                 return;
 
             if (alias >= 1) {

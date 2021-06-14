@@ -6,6 +6,12 @@
 
 #include <chrono>
 
+PthreadSimulation::~PthreadSimulation()
+{
+    // the threads must be stopped before anything else is destroyed
+    _multithreadProducer.quit();
+}
+
 void PthreadSimulation::initialise(const Definition& def)
 {
     if (def.genomesPerCore == 0)
@@ -102,7 +108,7 @@ void PthreadSimulation::initialise(const Definition& def)
         car.reset(_startTransform.position, _startTransform.quaternion);
 }
 
-void PthreadSimulation::update(unsigned int totalSteps)
+void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 {
     if (!_multithreadProducer.allCompleted())
         return;
@@ -165,7 +171,7 @@ void PthreadSimulation::update(unsigned int totalSteps)
 
     for (unsigned int threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
     {
-        auto taskCallback = [this, threadIndex, totalSteps]() -> void
+        auto taskCallback = [this, threadIndex, elapsedTime, totalSteps]() -> void
         {
             auto start = std::chrono::high_resolution_clock::now();
 
@@ -178,7 +184,7 @@ void PthreadSimulation::update(unsigned int totalSteps)
             {
                 // update physical world
 
-                _physicWorlds[threadIndex]->step();
+                _physicWorlds[threadIndex]->step(elapsedTime);
 
                 // update cars
 
@@ -191,7 +197,7 @@ void PthreadSimulation::update(unsigned int totalSteps)
                     if (!car.isAlive())
                         continue;
 
-                    car.update(neuralNets[index]);
+                    car.update(elapsedTime, neuralNets[index]);
 
                     {
                         const auto& vehicle = car.getVehicle();

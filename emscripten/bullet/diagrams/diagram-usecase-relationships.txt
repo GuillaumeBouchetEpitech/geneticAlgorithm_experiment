@@ -1,6 +1,8 @@
 
 @startuml
 
+skinparam backgroundColor #EEEEEE
+
 
 title diagram-usecase-relationships.txt
 

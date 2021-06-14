@@ -1,0 +1,57 @@
+
+@startuml
+
+skinparam backgroundColor #EEEEEE
+
+title diagram-activity-threading.txt
+
+|MAIN-THREAD|
+|PRODUCER-THREAD|
+|CONSUMER-THREADS|
+
+|MAIN-THREAD|
+
+start
+
+#DDDDDD:update simulation: start|
+
+:* push tasks to producer
+* wake up producer thread
+* wait for tasks completion;
+
+|PRODUCER-THREAD|
+
+:* list tasks to run
+* assign tasks to consumers
+* wake up consumers thread;
+
+|CONSUMER-THREADS|
+
+fork
+
+    :* run task
+    * notify producer;
+
+fork again
+
+    :* run task
+    * notify producer;
+
+fork again
+
+    :* run task
+    * notify producer;
+
+end fork
+
+|PRODUCER-THREAD|
+
+:* confirm all tasks are completed
+* resume main thread;
+
+|MAIN-THREAD|
+
+#DDDDDD:update simulation: stop|
+
+
+@enduml

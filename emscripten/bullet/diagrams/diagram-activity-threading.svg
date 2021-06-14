@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="895px" preserveAspectRatio="none" style="width:924px;height:895px;background:#EEEEEE;" version="1.1" viewBox="0 0 924 895" width="924px" zoomAndPan="magnify"><defs><filter height="300%" id="f1o80u3era1vwh" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="267" x="334.5" y="16.708">diagram-activity-threading.txt</text><!--MD5=[1b762de904cc3b49afe94a2663e8b368]
+cluster main thread--><polygon fill="#EEEEEE" filter="url(#f1o80u3era1vwh)" points="22,44.9531,122,44.9531,129,67.25,338,67.25,338,582.9531,22,582.9531,22,44.9531" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="22" x2="129" y1="67.25" y2="67.25"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="94" x="26" y="59.9482">main thread</text><!--MD5=[c0b197b465f7f33207cbf241877afabf]
+cluster mutilthreaded--><polygon fill="#EEEEEE" filter="url(#f1o80u3era1vwh)" points="362,412.9531,478,412.9531,485,435.25,902,435.25,902,883.9531,362,883.9531,362,412.9531" style="stroke: #000000; stroke-width: 1.5;"/><line style="stroke: #000000; stroke-width: 1.5;" x1="362" x2="485" y1="435.25" y2="435.25"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="110" x="366" y="427.9482">mutilthreaded</text><ellipse cx="131" cy="89.9531" fill="#000000" filter="url(#f1o80u3era1vwh)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="90" x="86" y="140.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="70" x="96" y="162.0918">start frame</text><polygon fill="#FEFECE" filter="url(#f1o80u3era1vwh)" points="131,215.9531,143,227.9531,131,239.9531,119,227.9531,131,215.9531" style="stroke: #A80036; stroke-width: 1.5;"/><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="62" x="38" y="317.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="42" x="48" y="339.0918">render</text><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="84" x="38" y="459.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="48" y="481.0918">end frame</text><ellipse cx="80" cy="556.9531" fill="none" filter="url(#f1o80u3era1vwh)" rx="10" ry="10" style="stroke: #000000; stroke-width: 1.0;"/><ellipse cx="80.5" cy="557.4531" fill="#000000" rx="6" ry="6" style="stroke: none; stroke-width: 1.0;"/><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="81.9063" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="201" x="120.5" y="293.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="181" x="130.5" y="315.0918">update latest data to render</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="130.5" x2="311.5" y1="322.9219" y2="322.9219"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="126" x="158" y="339.0605">schedule an update</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="130.5" x2="311.5" y1="346.8906" y2="346.8906"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="86" x="138.5" y="363.0293">push tasks to</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="228.5" y="363.0293">PRODUCER</text><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="57.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="272" x="437" y="447.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="484.5" y="469.0918">wake up</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="540.5" y="469.0918">PRODUCER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="42" x="619.5" y="469.0918">thread</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="447" x2="699" y1="476.9219" y2="476.9219"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="163" x="447" y="493.0605">assign tasks and wake up</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="614" y="493.0605">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="7" x="692" y="493.0605">s</text><rect fill="#000000" filter="url(#f1o80u3era1vwh)" height="8" style="stroke: none; stroke-width: 1.0;" width="80" x="569" y="552.9531"/><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="123.8125" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="156" x="378" y="619.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="389" y="641.0918">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="471" y="641.0918">run task</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="388" x2="524" y1="648.9219" y2="648.9219"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="398" y="665.0605">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="34" x="480" y="665.0605">notify</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="403.5" y="679.0293">PRODUCER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="26" x="482.5" y="679.0293">that</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="136" x="388" y="692.998">the task is completed</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="388" x2="524" y1="700.8281" y2="700.8281"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="403.5" y="716.9668">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="23" x="485.5" y="716.9668">can</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="90" x="411" y="730.9355">be reassigned</text><rect fill="#000000" filter="url(#f1o80u3era1vwh)" height="8" style="stroke: none; stroke-width: 1.0;" width="80" x="592" y="784.9531"/><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="123.8125" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="156" x="554" y="619.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="565" y="641.0918">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="647" y="641.0918">run task</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="564" x2="700" y1="648.9219" y2="648.9219"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="574" y="665.0605">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="34" x="656" y="665.0605">notify</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="579.5" y="679.0293">PRODUCER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="26" x="658.5" y="679.0293">that</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="136" x="564" y="692.998">the task is completed</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="564" x2="700" y1="700.8281" y2="700.8281"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="579.5" y="716.9668">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="23" x="661.5" y="716.9668">can</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="90" x="587" y="730.9355">be reassigned</text><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="123.8125" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="156" x="730" y="619.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="741" y="641.0918">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="823" y="641.0918">run task</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="740" x2="876" y1="648.9219" y2="648.9219"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="750" y="665.0605">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="34" x="832" y="665.0605">notify</text><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="755.5" y="679.0293">PRODUCER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="26" x="834.5" y="679.0293">that</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="136" x="740" y="692.998">the task is completed</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="740" x2="876" y1="700.8281" y2="700.8281"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="755.5" y="716.9668">CONSUMER</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="23" x="837.5" y="716.9668">can</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="90" x="763" y="730.9355">be reassigned</text><rect fill="#FEFECE" filter="url(#f1o80u3era1vwh)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="142" x="561" y="833.9531"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="122" x="571" y="855.0918">all tasks completed</text><!--MD5=[6fec8ecc33877a85e818415f838ccd36]
+link start to start frame--><path d="M131,100.1331 C131,109.2231 131,123.4831 131,135.4431 " fill="none" id="start-&gt;start frame" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="131,140.7431,135,131.7431,131,135.7431,127,131.7431,131,140.7431" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[a0d21776bdee38edb5b72523d489c9ea]
+link start frame to #7--><path d="M131,175.0731 C131,185.8731 131,200.0331 131,210.8331 " fill="none" id="start frame-&gt;#7" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="131,215.8431,135,206.8431,131,210.8431,127,206.8431,131,215.8431" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="41" x="66.8281" y="192.6986">all task</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="65" x="54.8281" y="205.5033">completed?</text><!--MD5=[1bd6fd706942b0b8bc88f2eb15689ce2]
+link #7 to do_render--><path d="M126.74,236.1731 C117.5,251.8031 95.36,289.3131 81.33,313.0731 " fill="none" id="#7-&gt;do_render" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="78.64,317.6231,86.6642,311.9124,81.1851,313.3193,79.7781,307.8403,78.64,317.6231" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="14" x="113" y="271.1636">no</text><!--MD5=[a033c396a7b411b7e680e13dc6c12dd2]
+link do_render to end frame--><path d="M70.26,352.0131 C72.25,377.3031 76.11,426.4231 78.32,454.6331 " fill="none" id="do_render-&gt;end frame" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="78.72,459.6531,81.9874,450.3621,78.3201,454.6691,74.0131,451.0018,78.72,459.6531" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[2aca36cd4726d275a67d12f31760ae8b]
+link end frame to end--><path d="M80,494.1131 C80,508.0131 80,527.8931 80,541.3231 " fill="none" id="end frame-&gt;end" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="80,546.6531,84,537.6531,80,541.6531,76,537.6531,80,546.6531" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[c4836a1ab2f2631a893bdf729225c745]
+link #7 to do_schedule--><path d="M136.1,234.9031 C145.2,245.5131 165,268.6231 183.19,289.8431 " fill="none" id="#7-&gt;do_schedule" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="186.57,293.7831,183.7528,284.3458,183.3172,289.9858,177.6772,289.5502,186.57,293.7831" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="20" x="168" y="271.1636">yes</text><!--MD5=[70fe5dd195326cfb5afa0c116ad089c2]
+reverse link do_render to do_schedule--><path d="M105.25,334.9531 C110.32,334.9531 115.39,334.9531 120.47,334.9531 " fill="none" id="do_render&lt;-do_schedule" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="100.17,334.9531,109.17,338.9531,105.17,334.9531,109.17,330.9531,100.17,334.9531" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[9ffc126725cb92441775ee4144fa408f]
+link do_schedule to wake up <b>PRODUCER</b> thread\n- - - -\nassign tasks and wake up <b>CONSUMER</b>s--><path d="M321.87,376.0731 C377.86,398.3431 446.34,425.5731 497.64,445.9831 " fill="none" id="do_schedule-&gt;wake up &lt;b&gt;PRODUCER&lt;/b&gt; thread\n----\nassign tasks and wake up &lt;b&gt;CONSUMER&lt;/b&gt;s" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="502.55,447.9331,495.6606,440.895,497.9027,446.0885,492.7092,448.3306,502.55,447.9331" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[aac2feb89188c89f9ad83ba7e098902b]
+link wake up <b>PRODUCER</b> thread\n- - - -\nassign tasks and wake up <b>CONSUMER</b>s to TEST--><path d="M586,506.1131 C592.93,521.1331 600.94,538.4831 605.44,548.2431 " fill="none" id="wake up &lt;b&gt;PRODUCER&lt;/b&gt; thread\n----\nassign tasks and wake up &lt;b&gt;CONSUMER&lt;/b&gt;s-&gt;TEST" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="607.56,552.8231,607.44,542.975,605.4738,548.2792,600.1696,546.313,607.56,552.8231" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[b1d81012a00d77b66133e46ebca8d3d6]
+link TEST to task_1--><path d="M605.22,560.9931 C595.04,569.1731 565.84,592.6531 535.93,616.6931 " fill="none" id="TEST-&gt;task_1" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="531.9,619.9331,541.4232,617.4216,535.8002,616.8044,536.4173,611.1813,531.9,619.9331" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[0ca5aa390e075847dd86ec5e81d029e4]
+link task_1 to TEST2--><path d="M534.32,738.0631 C537.57,740.0831 540.8,742.0531 544,743.9531 C570.37,759.5731 603.01,774.9131 620.17,782.6931 " fill="none" id="task_1-&gt;TEST2" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="624.98,784.8531,618.3951,777.5293,620.4151,782.8132,615.1312,784.8332,624.98,784.8531" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[7ecf3f018204c0cf3672fa6799c13e1f]
+link TEST to task_2--><path d="M609.57,560.9931 C611.06,568.9731 615.28,591.5131 619.65,614.9331 " fill="none" id="TEST-&gt;task_2" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="620.59,619.9331,622.8763,610.3533,619.6755,615.0175,615.0113,611.8166,620.59,619.9331" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[76685c0d4664ba79975a417090b4a0cd]
+link task_2 to TEST2--><path d="M632,744.0331 C632,758.1231 632,771.3731 632,779.5531 " fill="none" id="task_2-&gt;TEST2" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="632,784.7631,636,775.7631,632,779.7631,628,775.7631,632,784.7631" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[a5fa63353c9f897dfdf9db93b88cebab]
+link TEST to task_3--><path d="M615.14,561.1131 C632.11,569.9131 681.05,595.6531 720,619.9531 C721.68,621.0031 723.36,622.0631 725.06,623.1431 " fill="none" id="TEST-&gt;task_3" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="729.57,626.0331,724.1426,617.8147,725.3576,623.3395,719.8328,624.5545,729.57,626.0331" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[7c61118e02e97b95787a8d872c9ca868]
+link task_3 to TEST2--><path d="M729.68,738.0631 C726.43,740.0831 723.2,742.0531 720,743.9531 C693.63,759.5731 660.99,774.9131 643.83,782.6931 " fill="none" id="task_3-&gt;TEST2" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="639.02,784.8531,648.8688,784.8332,643.5849,782.8132,645.6049,777.5293,639.02,784.8531" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[80dba574238dfe2bb8b16771bfeeacec]
+link TEST2 to all tasks completed--><path d="M632,793.1831 C632,799.8431 632,815.6031 632,828.8331 " fill="none" id="TEST2-&gt;all tasks completed" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="632,833.9431,636,824.9431,632,828.9431,628,824.9431,632,833.9431" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[8583b88c13f4ca4d39608c29ceda33c2]
+@startuml
+
+skinparam backgroundColor #EEEEEE
+
+title diagram-activity-threading.txt
+
+partition "main thread" {
+
+    (*) - -> "start frame"
+
+    if "all task\ncompleted?" then
+
+        - ->[no] "render" as do_render
+
+        - -> "end frame"
+        - -> (*)
+
+    else
+
+        - ->[yes] "
+            update latest data to render
+            - - - -
+            schedule an update
+            - - - -
+            push tasks to <b>PRODUCER</b>" as do_schedule
+
+        -left-> do_render
+
+    endif
+}
+
+partition "mutilthreaded" {
+
+    do_schedule - -> "
+        wake up <b>PRODUCER</b> thread
+        - - - -
+        assign tasks and wake up <b>CONSUMER</b>s"
+
+    - -> ===TEST===
+
+    - -> "
+        <b>CONSUMER</b> run task
+        - - - -
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        - - - -
+        <b>CONSUMER</b> can
+        be reassigned" as task_1
+
+    task_1 - -> ===TEST2===
+
+    ===TEST=== - -> "
+        <b>CONSUMER</b> run task
+        - - - -
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        - - - -
+        <b>CONSUMER</b> can
+        be reassigned" as task_2
+
+    task_2 - -> ===TEST2===
+
+    ===TEST=== - -> "
+        <b>CONSUMER</b> run task
+        - - - -
+        <b>CONSUMER</b> notify
+        <b>PRODUCER</b> that
+        the task is completed
+        - - - -
+        <b>CONSUMER</b> can
+        be reassigned" as task_3
+
+    task_3 - -> ===TEST2===
+
+    - -> "all tasks completed"
+
+}
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.11+9-Ubuntu-0ubuntu2.20.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

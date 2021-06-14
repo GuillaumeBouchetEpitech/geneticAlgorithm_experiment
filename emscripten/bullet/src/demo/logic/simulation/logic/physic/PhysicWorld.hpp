@@ -4,7 +4,7 @@
 #include "./demo/utilities/types.hpp"
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <vector>
 #include <unordered_set>
@@ -78,7 +78,7 @@ public:
     // world
 
 public:
-    void    step();
+    void step(float elapsedTime);
 
     //
     //
@@ -88,23 +88,23 @@ private:
     std::vector<PhysicTrimesh*> _groundsTrimesh;
     std::vector<PhysicTrimesh*> _wallsTrimesh;
 public:
-    void    createGround(const Vertices& vertices, const Indices& indices, int groundIndex);
-    void    createWall(const Vertices& vertices, const Indices& indices);
+    void createGround(const Vertices& vertices, const Indices& indices, int groundIndex);
+    void createWall(const Vertices& vertices, const Indices& indices);
 
     //
     //
     // vehicle
 
 private:
-    std::vector<PhysicVehicle*>         _vehicles;
-    std::unordered_set<PhysicVehicle*>  _liveVehicles;
+    std::vector<PhysicVehicle*> _vehicles;
+    std::unordered_set<PhysicVehicle*> _liveVehicles;
 public:
-    PhysicVehicle*  createVehicle();
-    void            destroyVehicle(PhysicVehicle* vehicle);
-    void            addVehicle(PhysicVehicle& vehicle);
-    void            removeVehicle(PhysicVehicle& vehicle);
+    PhysicVehicle* createVehicle();
+    void destroyVehicle(PhysicVehicle* vehicle);
+    void addVehicle(PhysicVehicle& vehicle);
+    void removeVehicle(PhysicVehicle& vehicle);
 
-    const std::vector<PhysicVehicle*>&  getVehicles() const;
+    const std::vector<PhysicVehicle*>& getVehicles() const;
 
     //
     //
@@ -130,7 +130,7 @@ public:
         {}
     };
 
-    struct RaycastParamsGrounds
+    struct RaycastParamsGroundsOnly
         : public RaycastParamsGroundsAndWalls
     {
         struct Result
@@ -140,13 +140,13 @@ public:
         }
         result;
 
-        RaycastParamsGrounds(const glm::vec3& rayFrom, const glm::vec3& rayTo)
+        RaycastParamsGroundsOnly(const glm::vec3& rayFrom, const glm::vec3& rayTo)
             : RaycastParamsGroundsAndWalls(rayFrom, rayTo)
         {}
     };
 
 public:
-    bool    raycastGroundsAndWalls(RaycastParamsGroundsAndWalls& params);
-    bool    raycastGrounds(RaycastParamsGrounds& params);
+    bool raycastGroundsAndWalls(RaycastParamsGroundsAndWalls& params);
+    bool raycastGrounds(RaycastParamsGroundsOnly& params);
 
 };

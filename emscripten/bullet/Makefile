@@ -252,8 +252,6 @@ ifeq ($(build_platform),native_pthread)
 						$(NAME_BULLET_COLLISION) \
 						$(NAME_BULLET_LINEARMATH)
 
-						# -lopenal \
-
 	CXXFLAGS_BULLET=	$(BUILD_FLAG) \
 						-std=c++17 \
 						-I$(DIR_BULLET) \
@@ -279,13 +277,9 @@ else ifeq ($(build_platform),web_wasm_pthread)
 							-I$(DIR_SRC) \
 							-I$(DIR_BULLET)
 
-	LDFLAGS_WEB_PTHREAD=	$(COMMON_FLAGS) \
-							\
-							$(NAME_BULLET_DYNAMICS) \
+	LDFLAGS_WEB_PTHREAD=	$(NAME_BULLET_DYNAMICS) \
 							$(NAME_BULLET_COLLISION) \
-							$(NAME_BULLET_LINEARMATH) \
-							\
-							-lopenal
+							$(NAME_BULLET_LINEARMATH)
 
 	# value must be a power of 2 (16, 32, 64. 128, etc.).
 	# suffixes must be one of those: KB, MB, GB, TB.
@@ -357,9 +351,7 @@ else ifeq ($(build_platform),web_wasm_webworker)
 							-I$(DIR_BULLET)
 
 	LDFLAGS_WEB_MAIN=	$(COMMON_LDFLAGS) \
-						$(FLAGS_WEB_MAIN) \
-						\
-						-lopenal
+						$(FLAGS_WEB_MAIN)
 
 	# assets loading
 	LDFLAGS_WEB_MAIN+=	--use-preload-plugins --preload-file ./assets/

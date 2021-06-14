@@ -1,7 +1,7 @@
 
 #include "Texture.hpp"
 
-#include "thirdparty/STBImage.hpp"
+#include "demo/helpers/STBImage.hpp"
 
 #include "demo/utilities/ErrorHandler.hpp"
 
@@ -46,6 +46,10 @@ void Texture::allocateBlank(const glm::ivec2& size, bool pixelated /*= false*/,
 
     glBindTexture(GL_TEXTURE_2D, _textureId);
 
+    GLint level = 0;
+    GLint border = 0;
+    glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, _size.x, _size.y, border, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
     const int filterValue = (pixelated ? GL_NEAREST : GL_LINEAR);
     const int wrapValue = (repeat ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 
@@ -55,9 +59,8 @@ void Texture::allocateBlank(const glm::ivec2& size, bool pixelated /*= false*/,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapValue);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapValue);
 
-    GLint level = 0;
-    GLint border = 0;
-    glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, _size.x, _size.y, border, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    if (!pixelated)
+        glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }

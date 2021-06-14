@@ -57,11 +57,11 @@ public:
     virtual void initialise(const Definition &def) override;
 
 public:
-    virtual void update(unsigned int totalSteps) override;
+    virtual void update(float elapsedTime, unsigned int totalSteps) override;
 
 private:
-    void _processSimulation(unsigned int totalSteps);
-    void _resetAndProcessSimulation(unsigned int totalSteps);
+    void _processSimulation(float elapsedTime, unsigned int totalSteps);
+    void _resetAndProcessSimulation(float elapsedTime, unsigned int totalSteps);
 
 public:
     virtual unsigned int getTotalCores() const override;

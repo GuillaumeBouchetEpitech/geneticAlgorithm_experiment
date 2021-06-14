@@ -7,7 +7,9 @@
 
 #include "demo/logic/Data.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/logic/graphic/Scene.hpp"
+
+#include "demo/helpers/GLMath.hpp"
 
 #include <limits> // std::numeric_limits<T>::max();
 #include <cmath> // std::ceil
@@ -26,11 +28,17 @@ void State_Running::update(int deltaTime)
 
     { // simulation update
 
+        constexpr float fakeElapsedTime = 1.0f / 30.0f; // TODO: hardcoded
         const unsigned int totalSteps = (logic.isAccelerated ? 50 : 1);
 
-        simulation.update(totalSteps);
+        simulation.update(fakeElapsedTime, totalSteps);
 
     } // simulation update
+
+
+    Scene::updateMatrices(elapsedTime);
+    Scene::updateCircuitAnimation(elapsedTime);
+
 
     { // camera tracking
 
@@ -115,7 +123,7 @@ void State_Running::update(int deltaTime)
             //
 
             {
-                const float lerpRatio = 0.1f;
+                const float lerpRatio = 6.0f * elapsedTime;
 
                 camera.center += (cameraNextCenter - camera.center) * lerpRatio;
                 camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
@@ -124,4 +132,9 @@ void State_Running::update(int deltaTime)
 
     } // camera tracking
 
+
+    {
+        graphic.particleManager.update(elapsedTime);
+        graphic.flockingManager.update(elapsedTime);
+    }
 }

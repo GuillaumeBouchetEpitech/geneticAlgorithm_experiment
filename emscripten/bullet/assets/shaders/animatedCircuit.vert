@@ -13,7 +13,7 @@ attribute float a_index;
 
 varying vec4 v_color;
 
-const vec4 k_white = vec4(1.0, 1.0, 1.0, 1.0);
+const vec4 k_white = vec4(1.0);
 
 void main(void)
 {

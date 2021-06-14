@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 bool sceneToScreen(const glm::vec3& obj,
                    const glm::mat4& modelview, const glm::mat4& projection,

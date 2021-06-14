@@ -14,7 +14,7 @@ Genome::Genome(const Genome& other)
 {
     id = other.id;
     fitness = other.fitness;
-    weights = other.weights;
+    weights = other.weights; // reallocation
 }
 
 // move ctor
@@ -23,7 +23,7 @@ Genome::Genome(Genome&& other)
     std::swap(id, other.id);
     std::swap(fitness, other.fitness);
 
-    weights = std::move(other.weights);
+    weights = std::move(other.weights); // no reallocation
 }
 
 // copy operator
@@ -31,7 +31,7 @@ Genome& Genome::operator=(const Genome& other)
 {
     id = other.id;
     fitness = other.fitness;
-    weights = other.weights;
+    weights = other.weights; // reallocation
 
     return *this;
 }
@@ -44,7 +44,7 @@ Genome& Genome::operator=(Genome&& other)
         std::swap(id, other.id);
         std::swap(fitness, other.fitness);
 
-        weights = std::move(other.weights);
+        weights = std::move(other.weights); // no reallocation
     }
 
     return *this;

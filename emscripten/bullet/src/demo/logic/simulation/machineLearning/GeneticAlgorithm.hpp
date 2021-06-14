@@ -5,9 +5,12 @@
 
 #include "Genome.hpp"
 
+#include "demo/utilities/NonCopyable.hpp"
+
 #include <array>
 
 class GeneticAlgorithm
+    : public NonCopyable
 {
 public:
     struct Definition
@@ -18,10 +21,9 @@ public:
 
 private: // attributs
     Genomes _genomes;
+    Genomes _bestGenomes; // keep X elites
 
     unsigned int _currentGeneration = 1; // generation number
-
-    std::array<Genome, 3> _bestGenomes; // keep 3 elites
 
     NeuralNetworkTopology _neuralNetworkTopology;
 

@@ -79,7 +79,7 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
     }
 }
 
-void NeuralNetwork::process(const std::vector<float>& input,
+void NeuralNetwork::compute(const std::vector<float>& input,
                             std::vector<float>& output) const
 {
     unsigned int requiredInputs = _topology.getInput();

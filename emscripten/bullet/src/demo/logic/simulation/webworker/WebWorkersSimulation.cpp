@@ -60,7 +60,7 @@ void WebWorkersSimulation::initialise(const Definition& def)
     _currentRequest = WorkerRequest::WorkersLoading;
 }
 
-void WebWorkersSimulation::update(unsigned int totalSteps)
+void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps)
 {
     // do nothing if the worker(s) are:
     // => not initialised
@@ -79,7 +79,7 @@ void WebWorkersSimulation::update(unsigned int totalSteps)
         if (_callbacks.onWorkersReady)
             _callbacks.onWorkersReady();
 
-        _resetAndProcessSimulation(totalSteps);
+        _resetAndProcessSimulation(elapsedTime, totalSteps);
         return;
     }
 
@@ -122,7 +122,7 @@ void WebWorkersSimulation::update(unsigned int totalSteps)
     if (incompleteSimulation)
     {
         // ask the worker(s) to process/update the (physic) simulation
-        _processSimulation(totalSteps);
+        _processSimulation(elapsedTime, totalSteps);
         return;
     }
 
@@ -145,26 +145,28 @@ void WebWorkersSimulation::update(unsigned int totalSteps)
     _carLiveStatus.assign(_totalGenomes, true);
 
     // ask the worker(s) to reset the (physic) simulation
-    _resetAndProcessSimulation(totalSteps);
+    _resetAndProcessSimulation(elapsedTime, totalSteps);
 }
 
-void WebWorkersSimulation::_processSimulation(unsigned int totalSteps)
+void WebWorkersSimulation::_processSimulation(float elapsedTime, unsigned int totalSteps)
 {
     for (auto workerProducer : _workerProducers)
-        workerProducer->processSimulation(totalSteps);
+        workerProducer->processSimulation(elapsedTime, totalSteps);
 
     _currentRequest = WorkerRequest::Process;
 }
 
-void WebWorkersSimulation::_resetAndProcessSimulation(unsigned int totalSteps)
+void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime, unsigned int totalSteps)
 {
     const auto& NNetworks = _geneticAlgorithm.getNeuralNetworks();
 
     for (unsigned int ii = 0; ii < _workerProducers.size(); ++ii)
     {
-        const auto* neuralNetworks = NNetworks.data() + ii * _genomesPerCore;
+        auto first = NNetworks.begin() + (ii + 0) * _genomesPerCore;
+        auto last = NNetworks.begin() + (ii + 1) * _genomesPerCore;
+        const NeuralNetworks subNetwork(first, last);
 
-        _workerProducers[ii]->resetAndProcessSimulation(totalSteps, neuralNetworks);
+        _workerProducers[ii]->resetAndProcessSimulation(elapsedTime, totalSteps, subNetwork);
     }
 
     _currentRequest = WorkerRequest::ResetAndProcess;

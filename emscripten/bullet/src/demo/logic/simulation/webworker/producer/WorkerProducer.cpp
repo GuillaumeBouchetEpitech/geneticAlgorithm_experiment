@@ -151,17 +151,18 @@ void WorkerProducer::_sendToConsumer()
     emscripten_call_worker(_workerHandle, D_WORKER_MAIN_STR, dataPointer, dataSize, callback, (void*)this);
 }
 
-void WorkerProducer::resetAndProcessSimulation(unsigned int totalSteps, const NeuralNetwork* neuralNetworks)
+void WorkerProducer::resetAndProcessSimulation(float elapsedTime, unsigned int totalSteps, const NeuralNetworks& neuralNetworks)
 {
     _message.clear();
     _message << char(Messages::FromProducer::ResetAndProcessSimulation);
+    _message << elapsedTime;
     _message << totalSteps;
 
-    std::vector<float>  weights;
+    std::vector<float> weights;
 
     for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
     {
-        neuralNetworks[ii].getWeights(weights);
+        neuralNetworks[ii]->getWeights(weights);
 
         _message.append(weights.data(), weights.size() * sizeof(float));
     }
@@ -169,10 +170,11 @@ void WorkerProducer::resetAndProcessSimulation(unsigned int totalSteps, const Ne
     _sendToConsumer();
 }
 
-void WorkerProducer::processSimulation(unsigned int totalSteps)
+void WorkerProducer::processSimulation(float elapsedTime, unsigned int totalSteps)
 {
     _message.clear();
     _message << char(Messages::FromProducer::ProcessSimulation);
+    _message << elapsedTime;
     _message << totalSteps;
 
     _sendToConsumer();

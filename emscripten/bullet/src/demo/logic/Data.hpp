@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "thirdparty/OpenGLES.hpp"
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/OpenGLES.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include "graphic/utilities/StackRenderer.hpp"
 #include "graphic/utilities/TextRenderer.hpp"
@@ -80,7 +80,7 @@ public:
             glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
             glm::vec3 front = { 1.0f, 0.0f, 0.0f };
 
-            glm::vec3 thirdPersonCenter = { 0.0f, 0.0f, 0.0f };
+            glm::vec3 thirdPersonEye = { 0.0f, 0.0f, 0.0f };
             glm::vec3 thirdPersonUpAxis = { 0.0f, 0.0f, 1.0f };
 
             struct MatricesData
@@ -238,7 +238,7 @@ public:
 
         struct Cores
         {
-            using StatesData = std::vector<AbstactSimulation::CoreState> ;
+            using StatesData = std::vector<AbstactSimulation::CoreState>;
             using StatesHistory = std::vector<StatesData>;
 
             static constexpr unsigned int maxStateHistory = 60;
@@ -253,6 +253,7 @@ public:
         cores;
 
         bool isAccelerated = false;
+        float timeSinceLastFrame = 0.0f;
 
         struct LeaderCarData
         {
@@ -278,9 +279,9 @@ public:
 
         struct CircuitAnimation
         {
-            float targetValue = 0.0f;
-            float lowerValue = 0.0f;
-            float upperValue = 0.0f;
+            float targetValue = 10.0f;
+            float lowerValue = 10.0f;
+            float upperValue = 10.0f;
             float maxUpperValue = 0.0f;
             int maxPrimitiveCount = 0;
 

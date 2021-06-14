@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="856px" preserveAspectRatio="none" style="width:829px;height:856px;background:#EEEEEE;" version="1.1" viewBox="0 0 829 856" width="829px" zoomAndPan="magnify"><defs><filter height="300%" id="f3h86o4pw2cq0" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="296" x="270" y="16.708">diagram-usecase-relationships.txt</text><!--MD5=[fee662a292a0353a69bd162820bae93b]
+entity User--><ellipse cx="161.5" cy="38.4531" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="8" ry="8" style="stroke: #A80036; stroke-width: 1.5;"/><path d="M161.5,46.4531 L161.5,73.4531 M148.5,54.4531 L174.5,54.4531 M161.5,73.4531 L148.5,88.4531 M161.5,73.4531 L174.5,88.4531 " fill="none" filter="url(#f3h86o4pw2cq0)" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="32" x="145.5" y="106.9482">User</text><ellipse cx="161.3338" cy="221.6549" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="155.3338" ry="46.7018" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="81" x="120.8338" y="194.1855">Simulation</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="29.4162" x2="293.2514" y1="197.4873" y2="197.4873"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="25.614" x2="297.0535" y1="199.4873" y2="199.4873"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="271" x="25.8338" y="214.4824">Update the simuation (update the cars)</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="7.0006" x2="315.6669" y1="221.7842" y2="221.7842"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="223" x="49.8338" y="238.7793">provide the current status of the</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="163" x="79.8338" y="255.0761">simulation for rendering</text><ellipse cx="579.7358" cy="221.5579" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="172.7358" ry="50.6048" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="140" x="509.7358" y="191.0018">Genetic algorithm</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="435.1923" x2="724.2794" y1="194.3035" y2="194.3035"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="431.0477" x2="728.424" y1="196.3035" y2="196.3035"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="297" x="431.2358" y="211.2986">Manage the neural networks and genomes</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="408.2952" x2="751.1764" y1="218.6004" y2="218.6004"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="306" x="426.7358" y="235.5955">Retrieve and cross breed the best genomes</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="424.1091" x2="735.3626" y1="242.8973" y2="242.8973"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="162" x="498.7358" y="259.8924">Handle the generations</text><ellipse cx="417.376" cy="403.8374" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="121.376" ry="46.8842" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="123" x="355.876" y="379.1373">Neural Network</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="310.3792" x2="524.3728" y1="382.439" y2="382.439"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="307.8764" x2="526.8755" y1="384.439" y2="384.439"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="207" x="313.876" y="399.4342">Is a black box: input -&gt; output</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="297.2322" x2="537.5198" y1="406.7359" y2="406.7359"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="163" x="335.876" y="423.731">the connection weights</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="101" x="366.876" y="440.0279">can be get/set</text><ellipse cx="708.6471" cy="403.9353" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="109.6471" ry="54.9821" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="66" x="675.6471" y="371.8815">Genome</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="616.1868" x2="801.1075" y1="375.1833" y2="375.1833"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="613.8541" x2="803.4402" y1="377.1833" y2="377.1833"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="188" x="614.6471" y="392.1784">Store a copy of the weights</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="149" x="634.1471" y="408.4753">of the Neural Network</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="602.5733" x2="814.721" y1="415.7771" y2="415.7771"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="167" x="625.1471" y="432.7722">Store the score (fitness)</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="65" x="676.1471" y="449.069">of the car</text><ellipse cx="347.649" cy="608.7586" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="107.649" ry="72.8055" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="27" x="334.149" y="553.6095">Car</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="273.0748" x2="422.2232" y1="556.9113" y2="556.9113"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="270.1881" x2="425.1099" y1="558.9113" y2="558.9113"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="132" x="281.649" y="573.9064">Rely on 15 physical</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="187" x="254.149" y="590.2033">raycasts to "see" the circuit</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="242.2938" x2="453.0042" y1="597.505" y2="597.505"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="195" x="250.149" y="614.5002">Can move forward/backward</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="128" x="283.649" y="630.797">Can steer left/right</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="250.1284" x2="445.1696" y1="638.0988" y2="638.0988"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="136" x="279.649" y="655.0939">Collect checkpoints</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="67" x="314.149" y="671.3908">as reward</text><ellipse cx="146.394" cy="802.1316" fill="#FEFECE" filter="url(#f3h86o4pw2cq0)" rx="113.894" ry="43.1785" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="51" x="120.894" y="775.8267">Circuit</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="51.0084" x2="241.7797" y1="779.1284" y2="779.1284"/><line style="stroke: #A80036; stroke-width: 1.0;" x1="47.8824" x2="244.9056" y1="781.1284" y2="781.1284"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="190" x="51.394" y="796.1236">Build the circuit ground and</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="186" x="53.394" y="812.4204">walls by interpolating knots</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="147" x="72.894" y="828.7173">from a loaded text file</text><!--MD5=[96462f372778e47edd56a18b40231814]
+link User to SIMULATION--><path d="M161.5,110.2531 C161.5,128.4231 161.5,150.1531 161.5,169.5031 " fill="none" id="User-&gt;SIMULATION" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="161.5,174.8831,165.5,165.8831,161.5,169.8831,157.5,165.8831,161.5,174.8831" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[65ff6317054f7088465f161b4ef5dcf1]
+link SIMULATION to GENETIC_ALGORITHM--><path d="M317.15,221.4531 C344.68,221.4531 373.54,221.4531 401.63,221.4531 " fill="none" id="SIMULATION-&gt;GENETIC_ALGORITHM" style="stroke: #FF0000; stroke-width: 1.0;"/><polygon fill="#FF0000" points="406.86,221.4531,397.86,217.4531,401.86,221.4531,397.86,225.4531,406.86,221.4531" style="stroke: #FF0000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="53" x="335.5" y="214.52">manage</text><!--MD5=[44345c531ffb3638038592a35fcc197f]
+link SIMULATION to CAR--><path d="M167.43,268.1531 C175.16,317.4031 191.65,397.0531 223.5,458.9531 C239.21,489.4931 262.1,519.3531 283.95,544.2331 " fill="none" id="SIMULATION-&gt;CAR" style="stroke: #FF0000; stroke-width: 1.0;"/><polygon fill="#FF0000" points="287.44,548.1831,284.4682,538.7933,284.1253,544.4398,278.4788,544.0969,287.44,548.1831" style="stroke: #FF0000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="53" x="224.5" y="408.52">manage</text><!--MD5=[987310ee525f356812b93707c2ca6f04]
+link SIMULATION to CIRCUIT--><path d="M160.31,268.3331 C157.52,376.0531 150.56,644.3031 147.73,753.5431 " fill="none" id="SIMULATION-&gt;CIRCUIT" style="stroke: #FF0000; stroke-width: 1.0;"/><polygon fill="#FF0000" points="147.6,758.6231,151.83,749.7289,147.7285,753.6248,143.8327,749.5233,147.6,758.6231" style="stroke: #FF0000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="53" x="156.5" y="502.02">manage</text><!--MD5=[cc530592ecc6dc00ee048bcde8d618bc]
+link GENETIC_ALGORITHM to NEURAL_NETWORK--><path d="M536.09,270.8231 C512.5,297.1031 483.46,329.4631 460.02,355.5831 " fill="none" id="GENETIC_ALGORITHM-&gt;NEURAL_NETWORK" style="stroke: #FF0000; stroke-width: 1.0;"/><polygon fill="#FF0000" points="456.6,359.3931,465.5853,355.3602,459.9369,355.6695,459.6276,350.0212,456.6,359.3931" style="stroke: #FF0000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="53" x="503.5" y="315.02">manage</text><!--MD5=[5c26a5a9aeae08698899d49bdfb2969a]
+link GENETIC_ALGORITHM to GENOME--><path d="M614.41,271.3031 C631.27,294.8831 651.57,323.2931 668.99,347.6731 " fill="none" id="GENETIC_ALGORITHM-&gt;GENOME" style="stroke: #FF0000; stroke-width: 1.0;"/><polygon fill="#FF0000" points="671.99,351.8631,670.0042,342.2165,669.0798,347.7974,663.499,346.8729,671.99,351.8631" style="stroke: #FF0000; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="53" x="648.5" y="315.02">manage</text><!--MD5=[679f442ca1b5bfab89bccb12325d3500]
+reverse link NEURAL_NETWORK to GENOME--><path d="M544.34,403.9531 C562.5,403.9531 581.06,403.9531 598.85,403.9531 " fill="none" id="NEURAL_NETWORK&lt;-GENOME" style="stroke: #0000FF; stroke-width: 1.0;"/><polygon fill="#0000FF" points="539.22,403.9531,548.22,407.9531,544.22,403.9531,548.22,399.9531,539.22,403.9531" style="stroke: #0000FF; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23" x="557.5" y="397.02">use</text><!--MD5=[1b12f948d7b7e99cd284671e7cbd0c4a]
+link GENOME to CAR--><path d="M636.31,445.5431 C578.04,478.3131 495.87,524.5231 434.07,559.2731 " fill="none" id="GENOME-&gt;CAR" style="stroke: #0000FF; stroke-width: 1.0;"/><polygon fill="#0000FF" points="429.65,561.7531,439.4542,560.8164,434.0052,559.2971,435.5245,553.8481,429.65,561.7531" style="stroke: #0000FF; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23" x="550.5" y="502.02">use</text><!--MD5=[1c13bfaee8b296883e64137dd7e068b8]
+link CAR to NEURAL_NETWORK--><path d="M371.76,537.6031 C381.06,510.6331 391.48,480.4131 400.02,455.6431 " fill="none" id="CAR-&gt;NEURAL_NETWORK" style="stroke: #0000FF; stroke-width: 1.0;"/><polygon fill="#0000FF" points="401.7,450.7631,394.9873,457.97,400.0718,455.4906,402.5512,460.5751,401.7,450.7631" style="stroke: #0000FF; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23" x="387.5" y="502.02">use</text><!--MD5=[a3ac2b531f26365367bc9199fe8711f6]
+link CAR to CIRCUIT--><path d="M285.55,668.8131 C255.2,697.6631 219.31,731.7731 191.59,758.1031 " fill="none" id="CAR-&gt;CIRCUIT" style="stroke: #0000FF; stroke-width: 1.0;"/><polygon fill="#0000FF" points="187.91,761.6031,197.1855,758.2919,191.5303,758.1545,191.6677,752.4993,187.91,761.6031" style="stroke: #0000FF; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="23" x="236.5" y="725.02">use</text><!--MD5=[f18606ba4f3686f3e15596731e0d05b3]
+@startuml
+
+skinparam backgroundColor #EEEEEE
+
+
+title diagram-usecase-relationships.txt
+
+
+actor User
+
+
+usecase SIMULATION as "<b>Simulation
+====
+Update the simuation (update the cars)
+- -
+provide the current status of the
+simulation for rendering"
+
+
+
+usecase GENETIC_ALGORITHM as "<b>Genetic algorithm
+====
+Manage the neural networks and genomes
+- -
+Retrieve and cross breed the best genomes
+- -
+Handle the generations"
+
+
+
+usecase NEURAL_NETWORK as "<b>Neural Network
+====
+Is a black box: input -> output
+- -
+the connection weights
+can be get/set"
+
+
+
+usecase GENOME as "<b>Genome
+====
+Store a copy of the weights
+of the Neural Network
+- -
+Store the score (fitness)
+of the car"
+
+
+
+usecase CAR as "<b>Car
+====
+Rely on 15 physical
+raycasts to "see" the circuit
+- -
+Can move forward/backward
+Can steer left/right
+- -
+Collect checkpoints
+as reward"
+
+
+
+usecase CIRCUIT as "<b>Circuit
+====
+Build the circuit ground and
+walls by interpolating knots
+from a loaded text file"
+
+
+User - -> SIMULATION
+SIMULATION -[#red]right-> GENETIC_ALGORITHM : manage
+SIMULATION -[#red]-> CAR : manage
+SIMULATION -[#red]-> CIRCUIT : manage
+GENETIC_ALGORITHM -[#red]down-> NEURAL_NETWORK : manage
+GENETIC_ALGORITHM -[#red]down-> GENOME : manage
+GENOME -[#blue]left-> NEURAL_NETWORK : use
+GENOME -[#blue]-> CAR : use
+CAR -[#blue]-> NEURAL_NETWORK : use
+CAR -[#blue]-> CIRCUIT : use
+
+
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.11+9-Ubuntu-0ubuntu2.20.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

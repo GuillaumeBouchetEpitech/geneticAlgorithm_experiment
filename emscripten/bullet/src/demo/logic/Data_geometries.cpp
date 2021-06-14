@@ -6,7 +6,7 @@
 
 #include "demo/defines.hpp"
 
-#include "thirdparty/TinyObjLoader.hpp"
+#include "demo/helpers/TinyObjLoader.hpp"
 
 namespace /*anonymous*/
 {

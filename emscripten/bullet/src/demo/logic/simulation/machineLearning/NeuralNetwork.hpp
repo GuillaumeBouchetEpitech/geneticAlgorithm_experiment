@@ -2,9 +2,14 @@
 #pragma once
 
 #include "NeuralNetworkTopology.hpp"
+
+#include "demo/utilities/NonCopyable.hpp"
+
 #include <vector>
+#include <memory>
 
 class NeuralNetwork
+    : public NonCopyable
 {
 private: // internal structures
     struct Neuron
@@ -25,7 +30,7 @@ public: // ctor/dtor
     NeuralNetwork(const NeuralNetworkTopology& topology);
 
 public: // methods
-    void process(const std::vector<float>& input,
+    void compute(const std::vector<float>& input,
                  std::vector<float>& output) const;
 
 private:
@@ -42,4 +47,4 @@ public: // getter
 
 };
 
-using NeuralNetworks = std::vector<NeuralNetwork>;
+using NeuralNetworks = std::vector<std::shared_ptr<NeuralNetwork>>;

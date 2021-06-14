@@ -14,7 +14,7 @@
 
 #include "demo/defines.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <vector>
 
@@ -26,12 +26,12 @@ private:
 
     PhysicWorld _physicWorld;
 
-    std::vector<Car> _cars;
+    Cars _cars;
 
     std::vector<std::vector<CarData::Transforms>> _latestTransformsHistory;
 
     NeuralNetworkTopology _neuralNetworkTopology;
-    std::vector<NeuralNetwork> _neuralNetworks;
+    std::vector<std::shared_ptr<NeuralNetwork>> _neuralNetworks;
 
     CircuitBuilder::StartTransform _startTransform;
 
@@ -49,5 +49,5 @@ private:
 private:
     void _initialiseSimulation(MessageView &receivedMsg);
     void _resetSimulation(MessageView &receivedMsg);
-    void _processSimulation(unsigned int totalSteps);
+    void _processSimulation(float elapsedTime, unsigned int totalSteps);
 };

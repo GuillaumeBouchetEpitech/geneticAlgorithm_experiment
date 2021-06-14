@@ -6,8 +6,8 @@
 
 #include "demo/utilities/ErrorHandler.hpp"
 
-#include "thirdparty/OpenGLES.hpp"
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/OpenGLES.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <string>
 #include <vector>

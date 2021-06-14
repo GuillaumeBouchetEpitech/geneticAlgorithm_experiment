@@ -31,7 +31,7 @@ private:
 
     unsigned int _genomesPerCore = 0;
 
-    std::vector<Car> _cars;
+    Cars _cars;
     CarDatas _carsData;
 
     CircuitBuilder::StartTransform _startTransform;
@@ -52,13 +52,13 @@ private:
 
 public:
     PthreadSimulation() = default;
-    virtual ~PthreadSimulation() = default;
+    virtual ~PthreadSimulation();
 
 public:
     virtual void initialise(const Definition& def) override;
 
 public:
-    virtual void update(unsigned int totalSteps) override;
+    virtual void update(float elapsedTime, unsigned int totalSteps) override;
 
 private:
     void _updateCarResult();

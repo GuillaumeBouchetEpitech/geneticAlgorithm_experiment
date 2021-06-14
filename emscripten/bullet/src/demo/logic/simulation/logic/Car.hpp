@@ -6,9 +6,10 @@
 
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <array>
+#include <vector>
 
 class PhysicWorld;
 class PhysicVehicle;
@@ -30,12 +31,12 @@ public: // external structures
     };
 
 private: // attributs
-    PhysicWorld &_physicWorld;
-    PhysicVehicle &_physicVehicle;
+    PhysicWorld& _physicWorld;
+    PhysicVehicle& _physicVehicle;
 
     float _fitness;
     bool _isAlive;
-    int _health;
+    float _health;
     unsigned int _totalUpdateNumber;
 
     // TODO : use enumeration
@@ -47,27 +48,29 @@ private: // attributs
     NeuralNetworkOutput _output;
 
 public: // ctor/dtor
-    Car(PhysicWorld &physicWorld,
-        const glm::vec3 &position,
-        const glm::vec4 &quaternion);
+    Car(PhysicWorld& physicWorld,
+        const glm::vec3& position,
+        const glm::vec4& quaternion);
 
 public: // methods
-    void update(const NeuralNetwork &nn);
-    void reset(const glm::vec3 &position, const glm::vec4 &quaternion);
+    void update(float elapsedTime, const std::shared_ptr<NeuralNetwork> nn);
+    void reset(const glm::vec3& position, const glm::vec4& quaternion);
 
 private: // methods
     void _updateSensors();
     void _collideEyeSensors();
-    void _collideGroundSensor();
+    bool _collideGroundSensor();
 
 public: // setter/getter
-    const Sensors &getEyeSensors() const;
-    const Sensor &getGroundSensor() const;
+    const Sensors& getEyeSensors() const;
+    const Sensor& getGroundSensor() const;
     float getFitness() const;
     bool isAlive() const;
     int getGroundIndex() const;
-    const NeuralNetworkOutput &getNeuralNetworkOutput() const;
-    const PhysicVehicle &getVehicle() const;
+    const NeuralNetworkOutput& getNeuralNetworkOutput() const;
+    const PhysicVehicle& getVehicle() const;
     float getLife() const;
     unsigned int getTotalUpdates() const;
 };
+
+using Cars = std::vector<Car>;

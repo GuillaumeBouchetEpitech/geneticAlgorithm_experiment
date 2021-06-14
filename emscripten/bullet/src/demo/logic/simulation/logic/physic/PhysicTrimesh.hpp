@@ -3,7 +3,7 @@
 
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <vector>
 #include <memory>
@@ -22,9 +22,9 @@ private:
     friend PhysicWorld;
 
 private:
-    std::unique_ptr<float>  _vertices;
-    std::unique_ptr<int>    _indices;
-    int                     _index = -1;
+    std::unique_ptr<float[]> _verticesData;
+    std::unique_ptr<int[]> _indicesData;
+    int _index = -1;
 
     struct bullet
     {
@@ -42,6 +42,6 @@ private:
     ~PhysicTrimesh();
 
 public:
-    int    getIndex() const;
+    int getIndex() const;
 
 };

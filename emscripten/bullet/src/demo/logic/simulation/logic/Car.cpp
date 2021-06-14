@@ -12,7 +12,7 @@ namespace constants
 {
     constexpr float steeringMaxValue = M_PI / 8.0f;
     constexpr float speedMaxValue = 10.0f;
-    constexpr int   healthMaxValue = 100;
+    constexpr float healthMaxValue = 3.2f;
 
     constexpr float eyeMaxRange = 50.0f;
     constexpr float eyeHeight = 1.0f;
@@ -49,14 +49,20 @@ Car::Car(PhysicWorld& physicWorld,
     reset(position, quaternion);
 }
 
-void Car::update(const NeuralNetwork& neuralNetwork)
+void Car::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralNetwork)
 {
     if (!_isAlive)
         return;
 
     _updateSensors();
     _collideEyeSensors();
-    _collideGroundSensor();
+
+    bool hasHitGround = _collideGroundSensor();
+
+    // reduce the health over time
+    // => reduce more if the car does not touch the ground
+    // => faster discard of a most probably dying genome
+    _health -= (hasHitGround ? 1 : 2) * elapsedTime;
 
     if (_health <= 0)
     {
@@ -75,7 +81,7 @@ void Car::update(const NeuralNetwork& neuralNetwork)
 
     std::vector<float> output;
 
-    neuralNetwork.process(input, output);
+    neuralNetwork->compute(input, output);
 
     // ensure output range is [0..1]
     output[0] = glm::clamp(output[0], 0.0f, 1.0f);
@@ -96,19 +102,19 @@ void Car::update(const NeuralNetwork& neuralNetwork)
 
 void Car::_updateSensors()
 {
-    glm::mat4 transform;
-    _physicVehicle.getOpenGLMatrix(transform);
+    glm::mat4 vehicleTransform;
+    _physicVehicle.getOpenGLMatrix(vehicleTransform);
 
     { // eye sensor
 
-        glm::vec4 newNearValue = transform * glm::vec4(0, 0, constants::eyeHeight, 1);
+        glm::vec4 newNearValue = vehicleTransform * glm::vec4(0, 0, constants::eyeHeight, 1);
 
         int sensorIndex = 0;
 
         for (const auto& eyeElevation : constants::eyeElevations)
             for (const auto& eyeAngle : constants::eyeAngles)
             {
-                auto& eyeSensor = _eyeSensors[sensorIndex++];
+                Car::Sensor& eyeSensor = _eyeSensors[sensorIndex++];
 
                 glm::vec4 newFarValue(
                     constants::eyeMaxRange * std::sin(eyeAngle),
@@ -118,15 +124,17 @@ void Car::_updateSensors()
                 );
 
                 eyeSensor.near = newNearValue;
-                eyeSensor.far = transform * newFarValue;
+                eyeSensor.far = vehicleTransform * newFarValue;
             }
-    }
+
+    } // eye sensor
 
     { // ground sensor
 
-        _groundSensor.near = transform * glm::vec4(0, 0, constants::groundHeight, 1);
-        _groundSensor.far = transform * glm::vec4(0, 0, constants::groundHeight - constants::groundMaxRange, 1);
-    }
+        _groundSensor.near = vehicleTransform * glm::vec4(0, 0, constants::groundHeight, 1);
+        _groundSensor.far = vehicleTransform * glm::vec4(0, 0, constants::groundHeight - constants::groundMaxRange, 1);
+
+    } // ground sensor
 }
 
 
@@ -150,12 +158,12 @@ void Car::_collideEyeSensors()
     }
 }
 
-void Car::_collideGroundSensor()
+bool Car::_collideGroundSensor()
 {
     // raycast the ground to get the checkpoints validation
 
     // ground sensor collide only ground
-    PhysicWorld::RaycastParamsGrounds params(_groundSensor.near, _groundSensor.far);
+    PhysicWorld::RaycastParamsGroundsOnly params(_groundSensor.near, _groundSensor.far);
 
     bool hasHitGround = _physicWorld.raycastGrounds(params);
 
@@ -185,10 +193,7 @@ void Car::_collideGroundSensor()
         // }
     }
 
-    // reduce the health over time
-    // => reduce more if the car does not touch the ground
-    // => faster discard of a most probably dying genome
-    _health -= hasHitGround ? 1 : 2;
+    return hasHitGround;
 }
 
 void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)

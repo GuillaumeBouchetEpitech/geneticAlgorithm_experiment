@@ -1,4 +1,0 @@
-
-== Thirdparty
-
-  https://plantuml.com/download

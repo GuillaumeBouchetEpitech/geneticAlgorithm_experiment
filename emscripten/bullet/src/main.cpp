@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 
     { // read command line arguments
 
+        // arra of pointers toward the demo definition arguments
         std::array<unsigned int*, 4> arguments{{
             &def.width,
             &def.height,
@@ -25,11 +26,12 @@ int main(int argc, char** argv)
             &def.genomesPerCore,
         }};
 
+        // start at index 1
         for (int ii = 1; ii < argc && ii - 1 < int(arguments.size()); ++ii)
         {
             std::stringstream sstr;
-            sstr << argv[ii];
-            sstr >> *arguments[ii - 1];
+            sstr << argv[ii]; // range [1..argc]
+            sstr >> *arguments[ii - 1]; // range [0..arguments.size()]
         }
 
     } // read command line arguments

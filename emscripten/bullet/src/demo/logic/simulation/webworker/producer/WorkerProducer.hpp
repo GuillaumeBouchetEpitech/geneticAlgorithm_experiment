@@ -15,7 +15,7 @@
 
 #include "demo/defines.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <bitset>
 
@@ -67,8 +67,8 @@ private:
     void _sendToConsumer();
 
 public:
-    void resetAndProcessSimulation(unsigned int totalSteps, const NeuralNetwork* pNeuralNetworks);
-    void processSimulation(unsigned int totalSteps);
+    void resetAndProcessSimulation(float elapsedTime, unsigned int totalSteps, const NeuralNetworks& neuralNetworks);
+    void processSimulation(float elapsedTime, unsigned int totalSteps);
 
 public:
     bool isLoaded() const;

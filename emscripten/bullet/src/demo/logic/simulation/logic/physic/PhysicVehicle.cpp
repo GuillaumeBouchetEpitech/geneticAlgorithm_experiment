@@ -3,7 +3,7 @@
 
 #include "PhysicWorld.hpp"
 
-#include "thirdparty/BulletPhysics.hpp"
+#include "demo/helpers/BulletPhysics.hpp"
 
 #include "demo/utilities/types.hpp"
 
@@ -21,7 +21,8 @@ namespace /*anonymous*/
     {
     private:
 
-        // need to keep it as btDefaultVehicleRaycaster::m_dynamicsWorld is private
+        // must keep it as btDefaultVehicleRaycaster::m_dynamicsWorld is private
+        // => that a design flaw from bullet3, kind of sad
         btDynamicsWorld& _dynamicsWorld;
 
         short _group;

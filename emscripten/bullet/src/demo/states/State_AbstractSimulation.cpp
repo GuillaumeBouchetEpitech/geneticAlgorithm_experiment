@@ -8,7 +8,7 @@
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <limits> // std::numeric_limits<T>::max();
 #include <cmath> // std::ceil
@@ -147,11 +147,6 @@ void State_AbstractSimulation::update(int deltaTime)
         } // keyboard event(s)
 
     } // events
-
-    {
-        graphic.particleManager.update(elapsedTime);
-        graphic.flockingManager.update(elapsedTime);
-    }
 }
 
 

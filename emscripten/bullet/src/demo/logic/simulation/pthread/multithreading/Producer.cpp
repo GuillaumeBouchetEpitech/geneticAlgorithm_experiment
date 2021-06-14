@@ -73,6 +73,17 @@ namespace multithreading
             // this part is locked and will notify at the end of the scope
 
             _plannedTasks.clear();
+        }
+
+        waitUntilAllCompleted();
+
+        // clear the planned task(s) and wake up the running thread
+        {
+            auto lockNotifier = _waitOneTask.makeScopedLockNotifier();
+
+            // this part is locked and will notify at the end of the scope
+
+            // _plannedTasks.clear();
             _running = false;
         }
 

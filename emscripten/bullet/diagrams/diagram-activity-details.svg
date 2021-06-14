@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="911px" preserveAspectRatio="none" style="width:335px;height:911px;background:#EEEEEE;" version="1.1" viewBox="0 0 335 911" width="335px" zoomAndPan="magnify"><defs><filter height="300%" id="fav5apvt1yqey" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><text fill="#000000" font-family="sans-serif" font-size="18" lengthAdjust="spacingAndGlyphs" textLength="239" x="47" y="26.708">diagram-activity-details.txt</text><rect fill="#FFFFFF" filter="url(#fav5apvt1yqey)" height="89.2344" style="stroke: #000000; stroke-width: 2.0;" width="239" x="34" y="31.7549"/><path d="M98,32.7549 L98,41.0518 L88,51.0518 L34,51.0518 " fill="none" style="stroke: #000000; stroke-width: 2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="54" x="37" y="45.75">Initialize</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="47.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="219" x="44" y="61.0518"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="178" x="54" y="82.1904">create a random generation</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="199" x="54" y="96.1592">(ex: generation of 90 genomes)</text><rect fill="#FFFFFF" filter="url(#fav5apvt1yqey)" height="301.2114" style="stroke: #000000; stroke-width: 2.0;" width="238" x="34.5" y="175.791"/><path d="M103.5,176.791 L103.5,185.0879 L93.5,195.0879 L34.5,195.0879 " fill="none" style="stroke: #000000; stroke-width: 2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="59" x="37.5" y="189.7861">Simulate</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="218" x="44.5" y="212.0879"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="198" x="54.5" y="233.2266">(re-)set the genomes (vehicles)</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="141" x="83" y="310.0566"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="121" x="93" y="331.1953">try all the genomes</text><polygon fill="#FEFECE" filter="url(#fav5apvt1yqey)" points="153.5,266.0566,165.5,278.0566,153.5,290.0566,141.5,278.0566,153.5,266.0566" style="stroke: #A80036; stroke-width: 1.5;"/><polygon fill="#FEFECE" filter="url(#fav5apvt1yqey)" points="124,364.0254,183,364.0254,195,376.8301,183,389.6348,124,389.6348,112,376.8301,124,364.0254" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="59" x="124" y="374.2358">simulation</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="58" x="124" y="387.0405">complete?</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="14" x="195" y="374.2358">no</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="33.9688" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="151" x="78" y="431.0337"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="131" x="88" y="452.1724">rate all the genomes</text><rect fill="#FFFFFF" filter="url(#fav5apvt1yqey)" height="367.9844" style="stroke: #000000; stroke-width: 2.0;" width="287" x="10" y="487.8042"/><path d="M64,488.8042 L64,497.1011 L54,507.1011 L10,507.1011 " fill="none" style="stroke: #000000; stroke-width: 2.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="44" x="13" y="501.7993">Evolve</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="57.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="178" x="64.5" y="524.1011"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="123" x="74.5" y="545.2397">Natural Selection</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="64.5" x2="242.5" y1="553.0698" y2="553.0698"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="158" x="74.5" y="569.2085">Select the best genomes</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="57.9375" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="267" x="20" y="602.0386"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="247" x="30" y="623.1772">Elitism (10% or at least 5 genomes)</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="20" x2="287" y1="631.0073" y2="631.0073"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="143" x="30" y="647.146">keep the best genome</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="71.9063" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="256" x="25.5" y="679.9761"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="236" x="35.5" y="701.1147">Reproduction and Mutation (80%)</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="25.5" x2="281.5" y1="708.9448" y2="708.9448"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="169" x="35.5" y="725.0835">cross breed best genomes</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="203" x="35.5" y="739.0522">mutate the newly bred genomes</text><rect fill="#FEFECE" filter="url(#fav5apvt1yqey)" height="71.9063" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="173" x="67" y="771.8823"/><text fill="#000000" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="114" x="77" y="793.021">Diversity (~20%)</text><line style="stroke: #A80036; stroke-width: 1.0;" x1="67" x2="240" y1="800.8511" y2="800.8511"/><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="153" x="77" y="816.9897">fill the "remaining seats"</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="147" x="77" y="830.9585">with randome genomes</text><polygon fill="#FEFECE" filter="url(#fav5apvt1yqey)" points="153.5,140.9893,165.5,152.9893,153.5,164.9893,141.5,152.9893,153.5,140.9893" style="stroke: #A80036; stroke-width: 1.5;"/><polygon fill="#FEFECE" filter="url(#fav5apvt1yqey)" points="135,875.7886,172,875.7886,184,887.7886,172,899.7886,135,899.7886,123,887.7886,135,875.7886" style="stroke: #A80036; stroke-width: 1.5;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="37" x="135" y="891.5967">repeat</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="290.0566" y2="310.0566"/><polygon fill="#A80036" points="149.5,300.0566,153.5,310.0566,157.5,300.0566,153.5,304.0566" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="195" x2="236" y1="376.8301" y2="376.8301"/><polygon fill="#A80036" points="232,337.4434,236,327.4434,240,337.4434,236,333.4434" style="stroke: #A80036; stroke-width: 1.5;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="236" x2="236" y1="278.0566" y2="376.8301"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="236" x2="165.5" y1="278.0566" y2="278.0566"/><polygon fill="#A80036" points="175.5,274.0566,165.5,278.0566,175.5,282.0566,171.5,278.0566" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="344.0254" y2="364.0254"/><polygon fill="#A80036" points="149.5,354.0254,153.5,364.0254,157.5,354.0254,153.5,358.0254" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="246.0566" y2="266.0566"/><polygon fill="#A80036" points="149.5,256.0566,153.5,266.0566,157.5,256.0566,153.5,260.0566" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="389.6348" y2="431.0337"/><polygon fill="#A80036" points="149.5,421.0337,153.5,431.0337,157.5,421.0337,153.5,425.0337" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="20" x="157.5" y="410.9395">yes</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="582.0386" y2="602.0386"/><polygon fill="#A80036" points="149.5,592.0386,153.5,602.0386,157.5,592.0386,153.5,596.0386" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="659.9761" y2="679.9761"/><polygon fill="#A80036" points="149.5,669.9761,153.5,679.9761,157.5,669.9761,153.5,673.9761" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="751.8823" y2="771.8823"/><polygon fill="#A80036" points="149.5,761.8823,153.5,771.8823,157.5,761.8823,153.5,765.8823" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="465.0024" y2="524.1011"/><polygon fill="#A80036" points="149.5,514.1011,153.5,524.1011,157.5,514.1011,153.5,518.1011" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="164.9893" y2="212.0879"/><polygon fill="#A80036" points="149.5,202.0879,153.5,212.0879,157.5,202.0879,153.5,206.0879" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="184" x2="309" y1="887.7886" y2="887.7886"/><polygon fill="#A80036" points="305,497.4878,309,487.4878,313,497.4878,309,493.4878" style="stroke: #A80036; stroke-width: 1.5;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="309" x2="309" y1="152.9893" y2="887.7886"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="309" x2="165.5" y1="152.9893" y2="152.9893"/><polygon fill="#A80036" points="175.5,148.9893,165.5,152.9893,175.5,156.9893,171.5,152.9893" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="843.7886" y2="875.7886"/><polygon fill="#A80036" points="149.5,865.7886,153.5,875.7886,157.5,865.7886,153.5,869.7886" style="stroke: #A80036; stroke-width: 1.0;"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="153.5" x2="153.5" y1="108.9893" y2="140.9893"/><polygon fill="#A80036" points="149.5,130.9893,153.5,140.9893,157.5,130.9893,153.5,134.9893" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[1a1515be93e7a310c38d69238b2e13aa]
+@startuml
+
+skinparam backgroundColor #EEEEEE
+
+title diagram-activity-details.txt
+
+partition Initialize {
+
+    :create a random generation
+    (ex: generation of 90 genomes);
+}
+
+repeat
+
+partition Simulate {
+
+    :(re-)set the genomes (vehicles);
+
+    repeat
+
+        :try all the genomes;
+
+    repeat while (simulation\ncomplete?) is (no)
+    ->yes;
+
+    :rate all the genomes;
+}
+
+partition Evolve {
+
+    :<b>Natural Selection
+    - - - -
+    Select the best genomes;
+
+    :<b>Elitism (10% or at least 5 genomes)
+    - - - -
+    keep the best genome;
+
+    :<b>Reproduction and Mutation (80%)
+    - - - -
+    cross breed best genomes
+    mutate the newly bred genomes;
+
+    :<b>Diversity (~20%)
+    - - - -
+    fill the "remaining seats"
+    with randome genomes;
+}
+
+repeat while (repeat)
+
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.11+9-Ubuntu-0ubuntu2.20.04
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

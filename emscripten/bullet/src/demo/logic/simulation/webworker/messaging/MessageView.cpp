@@ -88,13 +88,15 @@ MessageView& MessageView::operator >>(double& data)
 
 MessageView& MessageView::operator >>(std::string& data)
 {
-    unsigned int length = 0;
-    read(&length, sizeof(length));
+    // read string length
+    unsigned int stringLength = 0;
+    read(&stringLength, sizeof(stringLength));
 
-    auto buffer = std::make_unique<char[]>(length + 1);
-    char* rawBuffer = buffer.get();
-    std::memset(rawBuffer, 0, length + 1);
-    read(rawBuffer, length * sizeof(char));
+    // read string characters
+    auto bufferPtr = std::make_unique<char[]>(stringLength + 1);
+    char* rawBuffer = bufferPtr.get();
+    std::memset(rawBuffer, 0, stringLength + 1);
+    read(rawBuffer, stringLength * sizeof(char));
 
     data = rawBuffer;
 

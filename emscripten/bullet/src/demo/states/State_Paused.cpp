@@ -5,7 +5,7 @@
 
 #include "demo/logic/Data.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 void State_Paused::handleEvent(const SDL_Event& event)
 {

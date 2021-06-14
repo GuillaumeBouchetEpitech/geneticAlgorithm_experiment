@@ -1,6 +1,8 @@
 
 @startuml
 
+skinparam backgroundColor #EEEEEE
+
 title diagram-activity-details.txt
 
 partition Initialize {
@@ -31,7 +33,7 @@ partition Evolve {
     ----
     Select the best genomes;
 
-    :<b>Elitism (just 1 genome)
+    :<b>Elitism (10% or at least 5 genomes)
     ----
     keep the best genome;
 

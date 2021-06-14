@@ -27,7 +27,7 @@ void State_WebWorkersLoading::update(int deltaTime)
     if (logic.state.countdown == 0)
     {
         // only update to load the webworkers
-        logic.simulation->update(1);
+        logic.simulation->update(0.0f, 1);
     }
     else
     {

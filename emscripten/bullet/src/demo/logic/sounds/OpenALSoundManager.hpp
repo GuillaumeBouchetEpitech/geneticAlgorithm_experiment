@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <unordered_map>
 #include <vector>

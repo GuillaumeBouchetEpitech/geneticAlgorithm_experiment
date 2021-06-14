@@ -1,9 +1,7 @@
 
 #pragma once
 
-// #include "demo/logic/Data.hpp"
-
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 class Scene
 {
@@ -12,10 +10,10 @@ public:
     static void renderSimple();
     static void renderAll();
 
-private:
-    static void _updateMatrices();
-    static void _updateCircuitAnimation();
+    static void updateMatrices(float elapsedTime);
+    static void updateCircuitAnimation(float elapsedTime);
 
+private:
     static void _clear();
 
     static void _renderLeadingCarSensors(const glm::mat4& sceneMatrix);

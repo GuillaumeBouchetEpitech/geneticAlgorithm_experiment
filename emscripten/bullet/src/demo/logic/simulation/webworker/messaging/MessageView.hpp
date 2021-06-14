@@ -3,7 +3,7 @@
 
 #include "AbstractMessage.hpp"
 
-#include "thirdparty/GLMath.hpp"
+#include "demo/helpers/GLMath.hpp"
 
 #include <string>
 
