@@ -137,7 +137,7 @@ const onFileRequest = async (req, res) => {
     // gzip compression
     //
 
-    // attempt at preventing browser caching
+    // attempt at preventing browser caching (for debug)
     res.setHeader('Last-Modified', (new Date()).toString());
 
 

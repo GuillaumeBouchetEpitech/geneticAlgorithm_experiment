@@ -30,11 +30,11 @@ public:
     bool isValid() const;
 
 public:
-    unsigned int        getInput() const;
-    unsigned int        getOutput() const;
+    unsigned int getInput() const;
+    unsigned int getOutput() const;
     const HiddenLayers& getHiddens() const;
 
-    bool                isUsingBias() const;
+    bool isUsingBias() const;
 
-    unsigned int        getTotalWeights() const;
+    unsigned int getTotalWeights() const;
 };

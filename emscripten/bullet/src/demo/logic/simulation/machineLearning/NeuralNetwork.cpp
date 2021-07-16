@@ -11,36 +11,44 @@
 
 #include <cmath>
 
+// #define D_USE_SIGMOID
+
 namespace activations
 {
 
-// /**
-//  * it's a steeper sigmoid
-//  * => input:  [-x..x]
-//  * => output: [0..1]
-//  *
-//  * Notes:
-//  * => use "desmos.com" to visualise the curve
-//  * => link: https://www.desmos.com/calculator
-//  */
-// float steeperSigmoid(float x)
-// {
-//     return 1.0f / ( 1.0f + expf( -4.9f * x ) );
-// }
+#ifdef D_USE_SIGMOID
 
-/**
- * it's a simple RELU function
- * => input:  [-x, x]
- * => output: [0, x]
- *
- * Notes:
- * => faster learning curve than the sigmoid
- * => link: https://stats.stackexchange.com/questions/126238/what-are-the-advantages-of-relu-over-sigmoid-function-in-deep-neural-networks
- */
-float rectifiedLinearUnit(float x)
-{
-    return std::max(0.0f, x);
-}
+    /**
+     * it's a steeper sigmoid
+     * => input:  [-x..x]
+     * => output: [0..1]
+     *
+     * Notes:
+     * => use "desmos.com" to visualise the curve
+     * => link: https://www.desmos.com/calculator
+     */
+    float steeperSigmoid(float x)
+    {
+        return 1.0f / ( 1.0f + expf( -4.9f * x ) );
+    }
+
+#else
+
+    /**
+     * it's a simple RELU function
+     * => input:  [-x, x]
+     * => output: [0, x]
+     *
+     * Notes:
+     * => faster learning curve than the sigmoid
+     * => link: https://stats.stackexchange.com/questions/126238/what-are-the-advantages-of-relu-over-sigmoid-function-in-deep-neural-networks
+     */
+    float rectifiedLinearUnit(float x)
+    {
+        return std::max(0.0f, x);
+    }
+
+#endif
 
 };
 
@@ -79,21 +87,23 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
     }
 }
 
-void NeuralNetwork::compute(const std::vector<float>& input,
-                            std::vector<float>& output) const
+void NeuralNetwork::compute(const std::vector<float>& inputValues,
+                            std::vector<float>& outputValues) const
 {
     unsigned int requiredInputs = _topology.getInput();
 
-    if (input.size() != requiredInputs)
+    if (inputValues.size() != requiredInputs)
         D_THROW(std::invalid_argument,
                 "invalid number of input"
-                << ", input=" << input.size()
+                << ", input=" << inputValues.size()
                 << ", weights=" << requiredInputs);
 
+    //
+    //
     // process hidden layer
 
-    std::vector<float>  hiddenInput = input; // raw copy
-    std::vector<float>  hiddenOutput;
+    std::vector<float> hiddenInput = inputValues; // raw copy
+    std::vector<float> hiddenOutput;
 
     // Cycle over all the neurons and sum their weights against the inputs.
     for (const Layer& currentLayer : _layerHidden)
@@ -103,32 +113,39 @@ void NeuralNetwork::compute(const std::vector<float>& input,
         hiddenInput = std::move(hiddenOutput); // move
     }
 
+    //
+    //
     // process output layer
 
-    _processLayer(_layerOutput, hiddenInput, output);
+    _processLayer(_layerOutput, hiddenInput, outputValues);
 }
 
 void NeuralNetwork::_processLayer(const Layer& layer,
-                                  const std::vector<float>& input,
-                                  std::vector<float>& output) const
+                                  const std::vector<float>& inputValues,
+                                  std::vector<float>& outputValues) const
 {
-    output.clear();
-    output.reserve(layer.size()); // pre-allocate
+    outputValues.clear();
+    outputValues.reserve(layer.size()); // pre-allocate
 
     // Cycle over all the neurons and sum their weights against the inputs.
-    for (const auto& neuron : layer)
+    for (auto& neuron : layer)
     {
         // Sum the weights to the activation value.
         float sumValues = 0.0f;
-        for (unsigned int ii = 0; ii < input.size(); ++ii)
-            sumValues += input[ii] * neuron.weights[ii];
+        for (unsigned int ii = 0; ii < inputValues.size(); ++ii)
+            sumValues += inputValues[ii] * neuron.weights[ii];
 
         // Add the bias, it will act as a threshold value
         if (_topology.isUsingBias())
             sumValues += 1.0f;
 
-        // output.push_back(activations::steeperSigmoid(sumValues)); // slow
-        output.push_back(activations::rectifiedLinearUnit(sumValues)); // fast
+#ifdef D_USE_SIGMOID
+        float outputValue = activations::steeperSigmoid(sumValues); // slow
+#else
+        float outputValue = activations::rectifiedLinearUnit(sumValues); // fast
+#endif
+
+        outputValues.push_back(outputValue);
     }
 }
 
@@ -162,14 +179,57 @@ void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
     for (const Layer& layer : _layerHidden)
         for (const Neuron& neuron : layer)
             for (const float weight : neuron.weights)
-                outputWeights.push_back( weight );
+                outputWeights.push_back(weight);
 
     for (const Neuron& neuron : _layerOutput)
         for (const float weight : neuron.weights)
-            outputWeights.push_back( weight );
+            outputWeights.push_back(weight);
 }
 
 const NeuralNetworkTopology& NeuralNetwork::getTopology() const
 {
     return _topology;
+}
+
+void NeuralNetwork::getNeuronsOutput(const std::vector<float>& inputValues,
+                                     std::vector<float>& neuronsOutput) const
+{
+    unsigned int requiredInputs = _topology.getInput();
+
+    if (inputValues.size() != requiredInputs)
+        D_THROW(std::invalid_argument,
+                "invalid number of input"
+                << ", input=" << inputValues.size()
+                << ", weights=" << requiredInputs);
+
+    neuronsOutput.clear();
+    for (float value : inputValues)
+        neuronsOutput.push_back(value);
+
+    //
+    //
+    // process hidden layer
+
+    std::vector<float> hiddenInput = inputValues; // raw copy
+    std::vector<float> hiddenOutput;
+
+    // Cycle over all the neurons and sum their weights against the inputs.
+    for (const Layer& currentLayer : _layerHidden)
+    {
+        _processLayer(currentLayer, hiddenInput, hiddenOutput);
+
+        for (float value : hiddenOutput)
+            neuronsOutput.push_back(value);
+
+        hiddenInput = std::move(hiddenOutput); // move
+    }
+
+    //
+    //
+    // process output layer
+
+    _processLayer(_layerOutput, hiddenInput, hiddenOutput);
+
+    for (float value : hiddenOutput)
+        neuronsOutput.push_back(value);
 }

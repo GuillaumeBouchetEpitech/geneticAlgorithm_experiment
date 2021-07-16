@@ -122,6 +122,7 @@ public:
         {
             Texture textFont;
             Texture chessboard;
+            std::array<Texture, 4> cylinders;
         }
         textures;
 
@@ -193,6 +194,7 @@ public:
             struct Ground
             {
                 Geometry chessboard;
+                std::array<Geometry, 4> cylinders;
             }
             ground;
         }
@@ -211,6 +213,8 @@ public:
             TextRenderer renderer;
         }
         hudText;
+
+        float cylinderAnimationTime = 0.0f;
     }
     graphic;
 
@@ -303,8 +307,7 @@ public:
 
         struct FitnessStats
         {
-            constexpr static unsigned int maxStats = 10;
-            std::vector<float> allStats;
+            std::array<float, 10> allStats;
         }
         fitnessStats;
     }

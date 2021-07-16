@@ -418,32 +418,8 @@ void Data::initialiseGeometries()
 
         geometryBuilder.build(graphic.geometries.ground.chessboard);
 
-        struct Vertex
-        {
-            glm::vec3 position;
-            glm::vec2 texCoord;
-        };
-
-        constexpr float boardSize = 10000;
-        constexpr float boardHeight = -0.1f;
-        constexpr float texCoordSize = 100;
-
-        std::array<Vertex, 4> quadVertices{{
-            { { +boardSize, -boardSize, boardHeight }, { +texCoordSize, -texCoordSize } },
-            { { -boardSize, -boardSize, boardHeight }, { -texCoordSize, -texCoordSize } },
-            { { +boardSize, +boardSize, boardHeight }, { +texCoordSize, +texCoordSize } },
-            { { -boardSize, +boardSize, boardHeight }, { -texCoordSize, +texCoordSize } },
-        }};
-
-        std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
-
-        std::vector<Vertex> vertices;
-        vertices.reserve(indices.size()); // pre-allocate
-        for (int index : indices)
-            vertices.push_back(quadVertices[index]);
-
-        graphic.geometries.ground.chessboard.updateBuffer(0, vertices);
-        graphic.geometries.ground.chessboard.setPrimitiveCount(vertices.size());
+        for (auto& cylinder : graphic.geometries.ground.cylinders)
+            geometryBuilder.build(cylinder);
 
     } // chessboard ground
 

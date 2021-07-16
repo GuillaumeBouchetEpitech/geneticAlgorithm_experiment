@@ -228,4 +228,85 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         logic.circuitAnimation.maxPrimitiveCount = groundVertices.size();
 
     } // compute circuit ground and walls geometries
+
+    { // compute chessboard ground
+
+        struct Vertex
+        {
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+
+        glm::vec3 boardHSize = glm::ceil((boundaries.max - boundaries.min) * 0.55f / 100.55f) * 100.0f;
+        glm::vec3 boardPos = boundaries.center;
+        glm::vec3 texCoordSize = boardHSize / 100.0f;
+        constexpr float boardHeight = -0.1f;
+
+        std::array<Vertex, 4> quadVertices{{
+            { { boardPos.x + boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, { +texCoordSize.x, -texCoordSize.y } },
+            { { boardPos.x - boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, { -texCoordSize.x, -texCoordSize.y } },
+            { { boardPos.x + boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, { +texCoordSize.x, +texCoordSize.y } },
+            { { boardPos.x - boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, { -texCoordSize.x, +texCoordSize.y } },
+        }};
+
+        std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
+
+        std::vector<Vertex> vertices;
+        vertices.reserve(indices.size()); // pre-allocate
+        for (int index : indices)
+            vertices.push_back(quadVertices[index]);
+
+        graphic.geometries.ground.chessboard.updateBuffer(0, vertices);
+        graphic.geometries.ground.chessboard.setPrimitiveCount(vertices.size());
+
+    } // compute chessboard ground
+
+    { // cylinder
+
+        struct Vertex
+        {
+            glm::vec3 position;
+            glm::vec2 texCoord;
+        };
+
+        glm::vec3 boardHSize = (boundaries.max - boundaries.min) * 0.65f;
+
+        const float radius = boardHSize.x * 0.5f;
+
+        std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
+
+        std::vector<Vertex> vertices;
+        vertices.reserve(2048); // pre-allocate
+
+        constexpr float pi2 = M_PI * 2.0f;
+
+        const int cylinderQuality = 128;
+        for (int ii = 0; ii < cylinderQuality; ++ii)
+        {
+            const float currCoef = float(ii + 0) / cylinderQuality;
+            const float nextCoef = float(ii + 1) / cylinderQuality;
+
+            const float currCos = std::cos(currCoef * pi2);
+            const float nextCos = std::cos(nextCoef * pi2);
+            const float currSin = std::sin(currCoef * pi2);
+            const float nextSin = std::sin(nextCoef * pi2);
+
+            std::array<Vertex, 4> patchVertices{{
+                { { +boardHSize.x * 2.0f, radius * currCos, radius * currSin }, { 12.0f, currCoef * 8.0f } },
+                { { -boardHSize.x * 2.0f, radius * currCos, radius * currSin }, {  0.0f, currCoef * 8.0f } },
+                { { +boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, { 12.0f, nextCoef * 8.0f } },
+                { { -boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, {  0.0f, nextCoef * 8.0f } },
+            }};
+
+            for (int index : indices)
+                vertices.push_back(patchVertices[index]);
+        }
+
+        for (auto& cylinder : graphic.geometries.ground.cylinders)
+        {
+            cylinder.updateBuffer(0, vertices);
+            cylinder.setPrimitiveCount(vertices.size());
+        }
+
+    } // cylinder
 }

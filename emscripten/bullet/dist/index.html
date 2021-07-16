@@ -24,13 +24,20 @@
 
       h1 {
         font-size: 30px;
-        border: 10px 0px 0px 0px;
-        margin: 10px 0px 0px 0px;
-        padding: 10px 0px 0px 0px;
+        border: 0px 0px 0px 0px;
+        margin: 0px 0px 0px 0px;
+        padding: 0px 0px 0px 0px;
       }
 
       h2 {
         font-size: 20px;
+        border: 0px 0px 0px 0px;
+        margin: 0px 0px 0px 0px;
+        padding: 0px 0px 0px 0px;
+      }
+
+      h3 {
+        font-size: 16px;
         border: 7px 0px 0px 0px;
         margin: 7px 0px 0px 0px;
         padding: 7px 0px 0px 0px;
@@ -38,11 +45,19 @@
 
       #renderArea {
         border: 0px none;
-        margin: 0px auto;
+        margin: 0px auto; /* center */
         padding: 0px none;
         background-color: black;
         width: 800px;
         height: 600px;
+      }
+
+      #title-description {
+        text-align: center;
+      }
+
+      #text-description {
+        text-align: center;
       }
 
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
@@ -107,60 +122,60 @@
         background-color: #888888;
       }
     </style>
+
+    <script type="module" src="js/main.js"></script>
   </head>
   <body>
 
-    <table>
+    <div id="title-description">
+      <h1>Machine Learning / Artificial Intelligence</h1>
+      <h2>Self Learning 3D Cars Using A Genetic Algorithm
+        (Source Code:
+        <a href="https://github.com/GuillaumeBouchetEpitech/geneticAlgorithm_experiment/tree/master/emscripten/bullet">GitHub</a>)</h2>
+    </div>
 
-      <tr>
-        <td>
-          <div id="renderArea">
-            <canvas id="emscriptenCanvas" width="800" height="600"></canvas>
-            <p id="errorText">Loading</p>
-          </div>
-        </td>
-
-        <td>
-          <h1>Machine Learning / Artificial Intelligence</h1>
-          <h2>Self Learning 3D Cars Using A Genetic Algorithm</h2>
-
-          <h2>Source Code</h2>
-          <p><a href="https://github.com/GuillaumeBouchetEpitech/geneticAlgorithm_experiment/tree/master/emscripten/bullet">GitHub Link</a></p>
-
-          <h2>Change the total amount of cars:</h2>
-          <p>
-            <button id="try_with_90_cars" class="button grayButton">try with 90 cars</button>
-            <button id="try_with_270_cars" class="button grayButton">try with 270 cars</button>
-          </p>
-
-          <h2>FAQs:</h2>
-          <ul>
-            <li><u>Camera controls?</u> <i>You can use the arrows or WASD or ZQSD or your mouse or your touch screen</i></li>
-            <li><u>What are the white strips on the circuit?</u> <i>The checkpoints used to reward the cars, +1 point per checkpoint.</i></li>
-            <li><u>What are the green lines on the leading car?</u> <i>The car's sensors, the "eye" of the car, it hit the ground and the "walls".</i></li>
-            <li><u>What is the white line on the leading car?</u> <i>The car's "ground sensor", it help reward the car when passing checkpoints.</i></li>
-            <li><u>What are the white/grey lines alongside the circuit?</u> <i>The skelton used to build the circuit, interpolated with a BSpline.</i></li>
-          </ul>
-
-          <h2>Technologies</h2>
-          <ul>
-            <li>it is develloped in C++ (emscripten compiler to WebAssembly).</li>
-            <li>it uses Bullet Physics for the physic.</li>
-            <li>it uses OpenGL-ES2/WebGL1 for the rendering.</li>
-            <li>it was created on a Linux OS (BUT Windows is doable).</li>
-          </ul>
-
-          <h2>Note</h2>
-          <p>The 'success' of the AI is quite random, which mean that sometime <b>you might want to reload this page</b> and hope for a smarter AI.</p>
-        </td>
-      </tr>
-
-    </table>
-
+    <div id="renderArea">
+      <canvas id="emscriptenCanvas" width="800" height="600"></canvas>
+      <p id="errorText">Loading</p>
+    </div>
 
     <textarea id="loggerOutput" rows="10" readonly></textarea>
 
-    <script type="module" src="js/main.js"></script>
+    <div id="text-description">
 
+      <h2>Change the total amount of cars:</h2>
+      <p>
+        <button id="try_with_90_cars" class="button grayButton">try with 90 cars</button>
+        <button id="try_with_270_cars" class="button grayButton">try with 270 cars</button>
+      </p>
+
+      <br/>
+      <h2>FAQs:</h2>
+      <h3>Camera controls?</h3>
+      <p><i>You can use the arrows or WASD or ZQSD or your mouse or your touch screen</i></p>
+      <h3>What are the white strips on the circuit?</h3>
+      <p><i>The checkpoints used to reward the cars, +1 point per checkpoint.</i></p>
+      <h3>What are the green lines on the leading car?</h3>
+      <p><i>The car's sensors, the "eye" of the car, it hit the ground and the "walls".</i></p>
+      <h3>What is the white line on the leading car?</h3>
+      <p><i>The car's "ground sensor", it help reward the car when passing checkpoints.</i></p>
+      <h3>What are the white/grey lines alongside the circuit?</h3>
+      <p><i>The skelton used to build the circuit, interpolated with a BSpline.</i></p>
+
+      <br/>
+      <h2>Technologies</h2>
+      <ul>
+        <li>it is develloped in C++ (using the emscripten compiler to target WebAssembly).</li>
+        <li>it uses Bullet Physics for the physic.</li>
+        <li>it uses OpenGL-ES2/WebGL1 for the rendering.</li>
+        <li>it was created on a Linux OS (BUT Windows is doable).</li>
+      </ul>
+
+      <br/>
+      <h2>Note</h2>
+      <p>The 'success' of this simulation is quite random, which mean that sometime <b>you might want to reload this page</b> and hope for a better result.</p>
+
+      <h2>Thank you for watching!</h2>
+    </div>
   </body>
 </html>

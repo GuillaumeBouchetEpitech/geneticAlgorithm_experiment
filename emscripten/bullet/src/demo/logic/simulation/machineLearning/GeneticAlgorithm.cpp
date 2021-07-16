@@ -183,8 +183,8 @@ void GeneticAlgorithm::_getBestGenomes(Genomes& output) const
 
     struct SortPair
     {
-        float           fitness;
-        unsigned int    index;
+        float fitness;
+        unsigned int index;
     };
     std::vector<SortPair> sortedGenomes;
 
@@ -192,9 +192,10 @@ void GeneticAlgorithm::_getBestGenomes(Genomes& output) const
     for (unsigned int ii = 0; ii < _genomes.size(); ++ii)
         sortedGenomes.push_back({ _genomes[ii].fitness, ii });
 
-    // sort by fitness, the higher the better
+    // sort by fitness
     auto cmpFunc = [](const SortPair& a, const SortPair& b)
     {
+        // the higher the better
         return a.fitness > b.fitness;
     };
     std::sort(sortedGenomes.begin(), sortedGenomes.end(), cmpFunc);
@@ -236,11 +237,11 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
 void GeneticAlgorithm::_mutate(Genome& genome) const
 {
     constexpr int mutationMaxChance = 10; // 10%
-    constexpr float mutationMaxEffect = 0.2f;
+    constexpr float mutationMaxEffect = 0.2f; // 20% x 2 = 40%
 
     for (float& weight : genome.weights)
         if (RNG::getRangedValue(0, 100) < mutationMaxChance)
-            weight += RNG::getRangedValue(-mutationMaxEffect, mutationMaxEffect);
+            weight += RNG::getRangedValue(-mutationMaxEffect, +mutationMaxEffect);
 }
 
 //

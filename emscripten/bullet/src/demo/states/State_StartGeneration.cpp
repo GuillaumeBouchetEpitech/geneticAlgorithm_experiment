@@ -28,6 +28,8 @@ void State_StartGeneration::update(int deltaTime)
     {
         graphic.particleManager.update(elapsedTime);
         graphic.flockingManager.update(elapsedTime);
+
+        graphic.cylinderAnimationTime += elapsedTime;
     }
 
     { // camera tracking

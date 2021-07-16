@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "demo/logic/Data.hpp"
+
 #include "demo/helpers/GLMath.hpp"
 
 class Scene
@@ -19,7 +21,7 @@ private:
     static void _renderLeadingCarSensors(const glm::mat4& sceneMatrix);
     static void _renderParticles(const glm::mat4& sceneMatrix);
 
-    static void _renderFloor(const glm::mat4& sceneMatrix);
+    static void _renderFloor(const Data::Graphic::CameraData::MatricesData::Matrices& matrices);
 
     static void _renderCars(const glm::mat4& sceneMatrix);
     // static void _renderCars(const Data::t_graphic::t_cameraData::t_matricesData::t_matrices& matrices);

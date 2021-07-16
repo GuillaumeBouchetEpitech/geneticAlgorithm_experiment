@@ -45,4 +45,12 @@ void State_WebWorkersLoading::render(const SDL_Window& window)
     Scene::renderSimple();
 }
 
+
+void State_WebWorkersLoading::visibility(bool visible)
+{
+    static_cast<void>(visible); // <= unused
+
+    // do nothing, we do not want the parent's class logic
+}
+
 #endif

@@ -1,9 +1,7 @@
 
 #include "Car.hpp"
 
-#include "./demo/utilities/types.hpp"
-
-#include "./physic/PhysicTrimesh.hpp"
+#include "demo/utilities/types.hpp"
 
 #include <cmath> // <= M_PI
 #include <iostream>
@@ -20,9 +18,9 @@ namespace constants
     constexpr float eyeWidthStep = float(M_PI) / 8.0f;
 
     const std::array<float, 3> eyeElevations = {
-        -eyeElevation,
-        0.0f,
         +eyeElevation,
+        0.0f,
+        -eyeElevation,
     };
 
     const std::array<float, 5> eyeAngles = {

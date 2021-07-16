@@ -10,7 +10,8 @@
 
 void Data::initialiseSimulationCallbacks()
 {
-    logic.fitnessStats.allStats.resize(logic.fitnessStats.maxStats, 0.0f);
+    auto& allStats = logic.fitnessStats.allStats;
+    std::memset(&allStats[0], 0, allStats.size() * sizeof(allStats[0]));
 
 #if defined D_WEB_WEBWORKER_BUILD
 
@@ -151,15 +152,14 @@ void Data::initialiseSimulationCallbacks()
 
             if (currLastOne > prevLastOne)
             {
-                // last one is smarter -> erase first, push latest
-                allStats.erase(allStats.begin());
-                allStats.emplace_back(bestGenome.fitness);
+                // last one is smarter -> erase first, add last
+                std::memmove(&allStats[0], &allStats[1], 9 * sizeof(allStats[0]));
+                allStats.back() = bestGenome.fitness;
             }
             else
             {
                 // last one is not smarter -> replace last
-                allStats.pop_back();
-                allStats.emplace_back(bestGenome.fitness);
+                allStats.back() = bestGenome.fitness;
             }
 
         } // handle the stats

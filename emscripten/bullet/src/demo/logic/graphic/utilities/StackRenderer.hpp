@@ -39,11 +39,18 @@ public:
     void pushCross(const glm::vec3& pos, const glm::vec3& color, float halfExtent);
 
     void pushTriangle(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& posC, const glm::vec4& color);
+    void pushTriangle(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& posC,
+                      const glm::vec3& colorA, const glm::vec3& colorB, const glm::vec3& colorC);
+
     void pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color);
     void pushQuad(const glm::vec3& center, const glm::vec2& size, const glm::vec4& color);
 
     void pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thickness, const glm::vec4& color);
+    void pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thicknessA, float thicknessB, const glm::vec4& color);
     void pushThickTriangleLine(const glm::vec3& posA, const glm::vec3& posB, float thickness, const glm::vec4& color);
+    void pushThickTriangle3DLine(const glm::vec3& posA, const glm::vec3& posB,
+                                 float thicknessA, float thicknessB,
+                                 const glm::vec3& colorA, const glm::vec3& colorB);
 
     // 2d
     void pushLine(const glm::vec2& posA, const glm::vec2& posB, const glm::vec3& color);

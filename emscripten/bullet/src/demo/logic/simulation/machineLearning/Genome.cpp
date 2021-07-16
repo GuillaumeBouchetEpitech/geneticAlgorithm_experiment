@@ -39,13 +39,13 @@ Genome& Genome::operator=(const Genome& other)
 // move operator
 Genome& Genome::operator=(Genome&& other)
 {
-    if (this != &other)
-    {
-        std::swap(id, other.id);
-        std::swap(fitness, other.fitness);
+    if (this == &other)
+        return *this;
 
-        weights = std::move(other.weights); // no reallocation
-    }
+    std::swap(id, other.id);
+    std::swap(fitness, other.fitness);
+
+    weights = std::move(other.weights); // no reallocation
 
     return *this;
 }

@@ -115,5 +115,14 @@ void Data::initialiseShaders()
             graphic.textures.chessboard.load("assets/textures/chessboard.png", pixelated, repeat);
         }
 
+        {
+            bool pixelated = true;
+            bool repeat = true;
+            graphic.textures.cylinders[0].load("assets/textures/cylinder1.png", pixelated, repeat);
+            graphic.textures.cylinders[1].load("assets/textures/cylinder2.png", pixelated, repeat);
+            graphic.textures.cylinders[2].load("assets/textures/cylinder3.png", pixelated, repeat);
+            graphic.textures.cylinders[3].load("assets/textures/cylinder4.png", pixelated, repeat);
+        }
+
     } // textures
 }

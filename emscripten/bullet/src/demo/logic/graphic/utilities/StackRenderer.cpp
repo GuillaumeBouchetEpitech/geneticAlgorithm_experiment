@@ -64,6 +64,17 @@ void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB,
     _triangleVertices.emplace_back(posC, color);
 }
 
+void StackRenderer::pushTriangle(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& posC,
+                                 const glm::vec3& colorA, const glm::vec3& colorB, const glm::vec3& colorC)
+{
+    if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
+        flush();
+
+    _triangleVertices.emplace_back(posA, glm::vec4(colorA, 1.0f));
+    _triangleVertices.emplace_back(posB, glm::vec4(colorB, 1.0f));
+    _triangleVertices.emplace_back(posC, glm::vec4(colorC, 1.0f));
+}
+
 void StackRenderer::pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color)
 {
     pushQuad(glm::vec3(center, 0.0f), size, color);
@@ -103,6 +114,26 @@ void StackRenderer::pushThickTriangleLine(const glm::vec2& posA, const glm::vec2
     pushTriangle(vertices[0], vertices[1], vertices[3], color);
 }
 
+void StackRenderer::pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thicknessA, float thicknessB, const glm::vec4& color)
+{
+    const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + M_PI * 0.5f;
+
+    const float stepAX = std::cos(angle) * thicknessA * 0.5f;
+    const float stepAY = std::sin(angle) * thicknessA * 0.5f;
+    const float stepBX = std::cos(angle) * thicknessB * 0.5f;
+    const float stepBY = std::sin(angle) * thicknessB * 0.5f;
+
+    std::array<glm::vec3, 4> vertices{{
+        { posA.x - stepAX, posA.y - stepAY, 0.0f },
+        { posA.x + stepAX, posA.y + stepAY, 0.0f },
+        { posB.x - stepBX, posB.y - stepBY, 0.0f },
+        { posB.x + stepBX, posB.y + stepBY, 0.0f },
+    }};
+
+    pushTriangle(vertices[0], vertices[3], vertices[2], color);
+    pushTriangle(vertices[0], vertices[1], vertices[3], color);
+}
+
 void StackRenderer::pushThickTriangleLine(const glm::vec3& posA, const glm::vec3& posB, float thickness, const glm::vec4& color)
 {
     const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + M_PI * 0.5f;
@@ -119,6 +150,63 @@ void StackRenderer::pushThickTriangleLine(const glm::vec3& posA, const glm::vec3
 
     pushTriangle(vertices[0], vertices[3], vertices[2], color);
     pushTriangle(vertices[0], vertices[1], vertices[3], color);
+}
+
+void StackRenderer::pushThickTriangle3DLine(const glm::vec3& posA, const glm::vec3& posB,
+                                            float thicknessA, float thicknessB,
+                                            const glm::vec3& colorA, const glm::vec3& colorB)
+{
+    const glm::vec3 diff = posB - posA;
+    const float horizontalAngle = std::atan2(diff.y, diff.x);
+    const float verticalAngle = std::atan2(diff.z, glm::length(glm::vec2(diff)));
+
+    const float verticalUpAngleRad = verticalAngle - float(M_PI) * 0.5f;
+    const float verticalForwardAngleRad = verticalAngle;
+    const float horizontalAngleRad = horizontalAngle;
+
+    glm::vec3 upAxis;
+    glm::vec3 forwardAxis;
+    glm::vec3 leftAxis;
+
+    const float upRadius = std::cos(verticalUpAngleRad);
+    upAxis.z = std::sin(verticalUpAngleRad);
+    upAxis.x = upRadius * std::cos(horizontalAngleRad);
+    upAxis.y = upRadius * std::sin(horizontalAngleRad);
+
+    const float forwardRadius = std::cos(verticalForwardAngleRad);
+    forwardAxis.z = std::sin(verticalForwardAngleRad);
+    forwardAxis.x = forwardRadius * std::cos(horizontalAngleRad);
+    forwardAxis.y = forwardRadius * std::sin(horizontalAngleRad);
+
+    leftAxis.x = upAxis.y * forwardAxis.z - upAxis.z * forwardAxis.y;
+    leftAxis.y = upAxis.z * forwardAxis.x - upAxis.x * forwardAxis.z;
+    leftAxis.z = upAxis.x * forwardAxis.y - upAxis.y * forwardAxis.x;
+
+    glm::vec3 posA_bottomLeft = posA - leftAxis * thicknessA - upAxis * thicknessA;
+    glm::vec3 posA_bottomRight = posA + leftAxis * thicknessA - upAxis * thicknessA;
+    glm::vec3 posA_topCenter = posA + upAxis * thicknessA;
+
+    glm::vec3 posB_bottomLeft = posB - leftAxis * thicknessB - upAxis * thicknessB;
+    glm::vec3 posB_bottomRight = posB + leftAxis * thicknessB - upAxis * thicknessB;
+    glm::vec3 posB_topCenter = posB + upAxis * thicknessB;
+
+    struct Vertex
+    {
+        glm::vec3 position;
+        glm::vec3 color;
+    };
+
+    std::array<std::array<Vertex, 4>, 3> allQuads{{
+        {{ { posA_bottomLeft, colorA }, { posA_bottomRight, colorA }, { posB_bottomLeft, colorB }, { posB_bottomRight, colorB } }},
+        {{ { posA_bottomLeft, colorA }, { posA_topCenter, colorA }, { posB_bottomLeft, colorB }, { posB_topCenter, colorB } }},
+        {{ { posA_bottomRight, colorA }, { posA_topCenter, colorA }, { posB_bottomRight, colorB }, { posB_topCenter, colorB } }},
+    }};
+
+    for (auto& quad : allQuads)
+    {
+        pushTriangle(quad[0].position, quad[3].position, quad[2].position, quad[0].color, quad[3].color, quad[2].color);
+        pushTriangle(quad[0].position, quad[1].position, quad[3].position, quad[0].color, quad[3].color, quad[2].color);
+    }
 }
 
 void StackRenderer::pushLine(const glm::vec2& posA,

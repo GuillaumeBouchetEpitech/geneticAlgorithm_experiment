@@ -18,6 +18,8 @@ public:
     virtual void handleEvent(const SDL_Event&) override;
     virtual void update(int) override;
     virtual void render(const SDL_Window&) override;
+
+    virtual void visibility(bool visible) override;
 };
 
 #endif

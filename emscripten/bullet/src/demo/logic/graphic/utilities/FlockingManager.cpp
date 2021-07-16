@@ -6,11 +6,14 @@
 #include "demo/utilities/math/RandomNumberGenerator.hpp"
 
 constexpr int totalBoids = 128;
+constexpr float maxLinkRange = 75.0f;
 
 FlockingManager::FlockingManager()
 {
     _circuitKnots.reserve(256);
     _boids.reserve(totalBoids);
+
+    _particlesInstances.reserve(1024);
 }
 
 void FlockingManager::initialise()
@@ -40,7 +43,7 @@ void FlockingManager::addKnot(const glm::vec3& knot)
     _circuitKnots.push_back(knot);
 }
 
-void FlockingManager::update(float delta)
+void FlockingManager::update(float elapsedTime)
 {
     // stay within the circuit
     // avoid car
@@ -53,21 +56,86 @@ void FlockingManager::update(float delta)
     const auto& boundaries = logic.circuitAnimation.boundaries;
     const auto& simulation = *logic.simulation;
 
+    { // activation animation
 
-    struct t_attributes
-    {
-        glm::vec3   position;
-        float       scale;
-        glm::vec3   color;
+        bool noneActivated = true;
+        bool allActivated = true;
 
-        t_attributes(const glm::vec3& position, float scale, const glm::vec3& color)
-            : position(position)
-            , scale(scale)
-            , color(color)
-        {}
-    };
+        for (auto& boid : _boids)
+        {
+            if (boid.activated)
+            {
+                noneActivated = false;
 
-    std::vector<t_attributes> particlesInstances;
+                if (boid.activationTime > 0.0f)
+                    allActivated = false;
+            }
+            else
+            {
+                allActivated = false;
+            }
+        }
+
+        if (allActivated)
+        {
+            // reset
+            for (auto& boid : _boids)
+            {
+                boid.activated = false;
+                boid.parent = nullptr;
+            }
+
+            noneActivated = true;
+        }
+
+        if (noneActivated)
+        {
+            const int boidIndex = RNG::getRangedValue(0, totalBoids);
+
+            auto& boid = _boids[boidIndex];
+
+            boid.activated = true;
+            boid.activationTime = 1.0f;
+        }
+
+        // update
+        for (unsigned int ii = 0; ii < _boids.size(); ++ii)
+        {
+            if (!_boids[ii].activated)
+                continue;
+
+            if (_boids[ii].activationTime > 0.0f)
+                _boids[ii].activationTime -= elapsedTime;
+
+            if (_boids[ii].activationTime < 0.5f)
+            {
+                // spread it
+                for (unsigned int jj = 0; jj < _boids.size(); ++jj)
+                {
+                    if (ii == jj)
+                        continue;
+
+                    if (_boids[jj].activated)
+                        continue;
+
+                    const float distance = glm::distance(_boids[ii].pos, _boids[jj].pos);
+
+                    if (distance > maxLinkRange)
+                        continue;
+
+                    _boids[jj].activated = true;
+                    _boids[jj].activationTime = 1.0f;
+                    _boids[jj].parent = &_boids[ii];
+                }
+            }
+
+            if (_boids[ii].activationTime < 0.0f)
+                _boids[ii].activationTime = 0.0f;
+        }
+
+    } // activation animation
+
+    _particlesInstances.clear();
 
     for (int ii = 0; ii < totalBoids; ++ii)
     {
@@ -100,17 +168,14 @@ void FlockingManager::update(float delta)
                 if (magnitude == 0.0f || magnitude > maxRange)
                     continue;
 
-                // normalise
-                diff = diff / magnitude;
-                // diff = diff;
-                // diff = diff / maxRange;
+                diff = diff / magnitude; // normalise
 
                 if (magnitude > 10.0f)
                 {
                     // cohesion
                     sum -= diff * 1.0f;
                 }
-                else
+                else if (magnitude < 5.0f)
                 {
                     // separate
                     sum += diff * 2.0f;
@@ -205,13 +270,13 @@ void FlockingManager::update(float delta)
         {
             acc = (acc / accMagnitude) * maxAcc;
 
-            currBoid.vel += acc * delta;
+            currBoid.vel += acc * elapsedTime;
 
             // limitate velocity
             const float velMagnitude = glm::length(currBoid.vel);
             if (velMagnitude > 0.0f)
             {
-                currBoid.vel = (currBoid.vel / velMagnitude) * maxVel * delta;
+                currBoid.vel = (currBoid.vel / velMagnitude) * maxVel * elapsedTime;
             }
         }
 
@@ -232,18 +297,39 @@ void FlockingManager::update(float delta)
         if (currBoid.pos.y < boundaries.min.y)
             currBoid.pos.y = boundaries.min.y;
 
-        particlesInstances.emplace_back(currBoid.pos, 1, glm::vec3(1, 1, 1));
+        if (currBoid.activated && currBoid.activationTime > 0.0f)
+        {
+            float scale = 1.0f;
+
+            if (currBoid.activationTime > 0.5f)
+                scale += (1.0f - (currBoid.activationTime - 0.5f) * 2.0f) * 4.0f;
+            else
+                scale += (currBoid.activationTime * 2.0f) * 4.0f;
+
+            _particlesInstances.emplace_back(currBoid.pos, scale, glm::vec3(1, 0, 0));
+        }
+        else
+        {
+            _particlesInstances.emplace_back(currBoid.pos, 1, glm::vec3(0.5f, 0.5f, 1.0f));
+        }
+
+        if (currBoid.activated && currBoid.activationTime > 0.5f && currBoid.parent)
+        {
+            const float coef = (1.0f - (currBoid.activationTime - 0.5f) * 2.0f) * 1.0f;
+
+            glm::vec3 pos = currBoid.parent->pos + (currBoid.pos - currBoid.parent->pos) * coef;
+
+            _particlesInstances.emplace_back(pos, 3.0f, glm::vec3(1, 1, 1));
+        }
     }
 
-    geometry.updateBuffer(1, particlesInstances);
-    geometry.setInstancedCount(particlesInstances.size());
+    geometry.updateBuffer(1, _particlesInstances);
+    geometry.setInstancedCount(_particlesInstances.size());
 }
 
 void FlockingManager::render(const glm::mat4& sceneMatrix) const
 {
     auto& graphic = Data::get().graphic;
-
-
 
     { // boids here
 
@@ -272,13 +358,21 @@ void FlockingManager::render(const glm::mat4& sceneMatrix) const
         //
         //
 
-        const glm::vec3 lowColor{0.5f, 0.5f, 0.5f};
-        const glm::vec3 highColor{0.0f, 0.0f, 1.0f};
-        constexpr float maxRange = 75.0f;
+        const glm::vec3 lowColor{0.0f, 0.0f, 1.0f};
+        const glm::vec3 highColor{1.0f, 0.0f, 0.0f};
 
         for (int ii = 0; ii < totalBoids; ++ii)
         {
             const auto& currBoid = _boids[ii];
+
+            float coefA = 0.0f;
+            if (currBoid.activated)
+            {
+                if (currBoid.activationTime > 0.5f)
+                    coefA = (1.0f - (currBoid.activationTime - 0.5f) * 2.0f);
+                else
+                    coefA = (currBoid.activationTime * 2.0f);
+            }
 
             for (int jj = ii + 1; jj < totalBoids; ++jj)
             {
@@ -286,16 +380,24 @@ void FlockingManager::render(const glm::mat4& sceneMatrix) const
 
                 const float distance = glm::distance(currBoid.pos, otherBoid.pos);
 
-                if (distance > maxRange)
+                if (distance > maxLinkRange)
                     continue;
 
-                const float coef = distance / maxRange;
+                float coefB = 0.0f;
+                if (otherBoid.activated)
+                {
+                    if (otherBoid.activationTime > 0.5f)
+                        coefB = (1.0f - (otherBoid.activationTime - 0.5f) * 2.0f);
+                    else
+                        coefB = (otherBoid.activationTime * 2.0f);
+                }
 
-                // lerp
-                // glm::vec3 color = lowColor + (highColor - lowColor) * coef;
-                glm::vec3 color = glm::mix(lowColor, highColor, coef);
-
-                stackRenderer.pushLine(currBoid.pos, otherBoid.pos, color);
+                glm::vec3 colorA = glm::mix(lowColor, highColor, coefA);
+                glm::vec3 colorB = glm::mix(lowColor, highColor, coefB);
+                stackRenderer.pushThickTriangle3DLine(
+                    currBoid.pos, otherBoid.pos,
+                    0.1f + coefA * 0.3f, 0.1f + coefB * 0.3f,
+                    colorA, colorB);
             }
         }
 
