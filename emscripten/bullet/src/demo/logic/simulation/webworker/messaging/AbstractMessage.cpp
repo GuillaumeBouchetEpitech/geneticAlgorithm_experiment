@@ -6,7 +6,6 @@ AbstractMessage::AbstractMessage(const char* dataPointer, unsigned int dataSize)
     , _dataSize(dataSize)
 {}
 
-
 void AbstractMessage::clear()
 {
     _dataPointer = nullptr;

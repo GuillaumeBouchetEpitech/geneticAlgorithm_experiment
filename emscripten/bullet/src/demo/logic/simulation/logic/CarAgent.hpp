@@ -6,7 +6,7 @@
 
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <array>
 #include <vector>
@@ -14,7 +14,7 @@
 class PhysicWorld;
 class PhysicVehicle;
 
-class Car
+class CarAgent
 {
 public: // external structures
     struct Sensor
@@ -30,7 +30,7 @@ public: // external structures
         float speed = 0.0f;
     };
 
-private: // attributs
+private: // attributes
     PhysicWorld& _physicWorld;
     PhysicVehicle& _physicVehicle;
 
@@ -48,7 +48,8 @@ private: // attributs
     NeuralNetworkOutput _output;
 
 public: // ctor/dtor
-    Car(PhysicWorld& physicWorld,
+    CarAgent(
+        PhysicWorld& physicWorld,
         const glm::vec3& position,
         const glm::vec4& quaternion);
 
@@ -73,4 +74,4 @@ public: // setter/getter
     unsigned int getTotalUpdates() const;
 };
 
-using Cars = std::vector<Car>;
+using CarAgents = std::vector<CarAgent>;

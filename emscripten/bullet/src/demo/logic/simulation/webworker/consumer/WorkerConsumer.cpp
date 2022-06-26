@@ -145,11 +145,9 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
     { // generate cars
 
-        _cars.reserve(_genomesPerCore); // pre-allocate
+        _carAgents.reserve(_genomesPerCore); // pre-allocate
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _cars.emplace_back(Car(_physicWorld,
-                                   _startTransform.position,
-                                   _startTransform.quaternion));
+            _carAgents.emplace_back(CarAgent(_physicWorld, _startTransform.position, _startTransform.quaternion));
 
         _latestTransformsHistory.resize(_genomesPerCore);
         for (auto& transforms : _latestTransformsHistory)
@@ -191,7 +189,7 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
         std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
         _neuralNetworks[ii]->setWeights(weightsBuffer);
 
-        _cars[ii].reset(_startTransform.position, _startTransform.quaternion);
+        _carAgents[ii].reset(_startTransform.position, _startTransform.quaternion);
     }
 }
 
@@ -213,7 +211,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
         {
-            auto& car = _cars[ii];
+            CarAgent& car = _carAgents[ii];
 
             if (!car.isAlive())
                 continue;
@@ -229,7 +227,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
                 vehicle.getOpenGLMatrix(newData.chassis);
 
                 // transformation matrix of the wheels
-                for (unsigned int jj = 0; jj < 4; ++jj)
+                for (unsigned int jj = 0; jj < 4U; ++jj)
                     vehicle.getWheelOpenGLMatrix(jj, newData.wheels[jj]);
 
                 _latestTransformsHistory[ii].push_back(newData);
@@ -239,7 +237,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
     unsigned int genomesAlive = 0;
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-        if (_cars[ii].isAlive())
+        if (_carAgents[ii].isAlive())
             ++genomesAlive;
 
     //
@@ -260,7 +258,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
-        const auto& car = _cars[ii];
+        const CarAgent& car = _carAgents[ii];
 
         _messageToSend
             << car.isAlive()

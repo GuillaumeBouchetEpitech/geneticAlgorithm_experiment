@@ -25,7 +25,6 @@ void State_EndGeneration::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-        graphic.flockingManager.update(elapsedTime);
 
         graphic.cylinderAnimationTime += elapsedTime;
     }

@@ -26,12 +26,11 @@ int main(int argc, char** argv)
             &def.genomesPerCore,
         }};
 
-        // start at index 1
-        for (int ii = 1; ii < argc && ii - 1 < int(arguments.size()); ++ii)
+        for (int ii = 0; ii < argc && ii < int(arguments.size()); ++ii)
         {
             std::stringstream sstr;
-            sstr << argv[ii]; // range [1..argc]
-            sstr >> *arguments[ii - 1]; // range [0..arguments.size()]
+            sstr << argv[ii + 1]; // range [1..argc]
+            sstr >> *arguments[ii]; // range [0..arguments.size()]
         }
 
     } // read command line arguments

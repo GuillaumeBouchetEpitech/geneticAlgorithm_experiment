@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 #include <unordered_map>
@@ -13,20 +13,16 @@ struct TextRenderer
 public:
     struct LetterOffset
     {
-        glm::vec2    position;
+        glm::vec3    position;
         glm::vec2    texCoord;
+        glm::vec3    color;
         float        scale;
-
-        LetterOffset(const glm::vec2& position, const glm::vec2& texCoord, float scale)
-            : position(position)
-            , texCoord(texCoord)
-            , scale(scale)
-        {}
     };
     using LettersOffsets = std::vector<LetterOffset>;
 
 public:
-    LettersOffsets _lettersOffset;
+    LettersOffsets _lettersOffsetColored;
+    LettersOffsets _lettersOffsetBackground;
     std::unordered_map<char, glm::vec2> _lettersTexCoordMap;
 
 public:
@@ -38,6 +34,7 @@ public:
 public:
     void push(const glm::vec2& position,
               const std::string& message,
+              const glm::vec3& color,
               float scale = 1.0f);
 
     void clear();

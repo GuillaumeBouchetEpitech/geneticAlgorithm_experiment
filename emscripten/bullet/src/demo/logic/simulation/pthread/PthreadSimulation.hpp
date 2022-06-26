@@ -4,7 +4,7 @@
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 #include "demo/logic/simulation/pthread/multithreading/Producer.hpp"
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
-#include "demo/logic/simulation/logic/Car.hpp"
+#include "demo/logic/simulation/logic/CarAgent.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
 
@@ -31,7 +31,7 @@ private:
 
     unsigned int _genomesPerCore = 0;
 
-    Cars _cars;
+    CarAgents _carAgents;
     CarDatas _carsData;
 
     CircuitBuilder::StartTransform _startTransform;

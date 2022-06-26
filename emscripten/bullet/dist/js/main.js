@@ -35,7 +35,7 @@ const onGlobalPageLoad = async () => {
     const extractVarsFromUrl = () => {
         const varsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
         const vars = {};
-        window.location.href.replace(varsRegexp, function (m, key, value) {
+        window.location.href.replace(varsRegexp, (m, key, value) => {
             vars[key] = value;
         });
         return vars;
@@ -382,7 +382,7 @@ const onGlobalPageLoad = async () => {
             });
         };
 
-        await scriptLoadingUtility(`./${scriptFolder}/index.js`)
+        await scriptLoadingUtility(`./${scriptFolder}/index.js`);
 
         logger.log("[JS] wasm script: loading successful");
 

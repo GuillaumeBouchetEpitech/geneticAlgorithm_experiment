@@ -14,15 +14,15 @@ class NeuralNetwork
 private: // internal structures
     struct Neuron
     {
-        std::vector<float> weights;
+        std::vector<float> connectionsWeights;
+        float value;
     };
 
     using Layer = std::vector<Neuron>;
     using Layers = std::vector<Layer>;
 
-private: // attributs
-    Layers _layerHidden;
-    Layer _layerOutput;
+private: // attributes
+    Layers _layers;
 
     const NeuralNetworkTopology& _topology;
 
@@ -31,12 +31,7 @@ public: // ctor/dtor
 
 public: // methods
     void compute(const std::vector<float>& inputValues,
-                 std::vector<float>& outputValues) const;
-
-private:
-    void _processLayer(const Layer& layer,
-                       const std::vector<float>& inputValues,
-                       std::vector<float>& outputValues) const;
+                 std::vector<float>& outputValues);
 
 public: // setter
     void setWeights(const std::vector<float>& inputWeights);
@@ -45,8 +40,7 @@ public: // getter
     void getWeights(std::vector<float>& outputWeights) const;
     const NeuralNetworkTopology& getTopology() const;
 
-    void getNeuronsOutput(const std::vector<float>& inputValues,
-                          std::vector<float>& neuronsOutput) const;
+    void getNeuronsValues(std::vector<float>& neuronsOutput);
 
 };
 

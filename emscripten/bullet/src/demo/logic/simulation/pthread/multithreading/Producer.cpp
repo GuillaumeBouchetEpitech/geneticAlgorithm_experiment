@@ -24,12 +24,12 @@ namespace multithreading
     void Producer::initialise(unsigned int totalCores)
     {
         // clamp [1..8]
-        const int totalConsumers = std::min(std::max(int(totalCores), 1), 8);
+        const unsigned int totalConsumers = std::min(std::max(totalCores, 1U), 8U);
 
         //
         // launch consumers
 
-        for (int ii = 0; ii < totalConsumers; ++ii)
+        for (unsigned int ii = 0; ii < totalConsumers; ++ii)
         {
             auto newConsumer = std::make_shared<Consumer>(*this);
 

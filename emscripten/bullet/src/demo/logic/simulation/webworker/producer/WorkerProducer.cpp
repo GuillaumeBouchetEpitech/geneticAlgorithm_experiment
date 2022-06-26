@@ -112,8 +112,8 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                 if (!car.isAlive)
                     continue;
 
-                receivedMsg >> car.transforms.chassis;
-                for (auto& transform : car.transforms.wheels)
+                receivedMsg >> car.liveTransforms.chassis;
+                for (auto& transform : car.liveTransforms.wheels)
                     receivedMsg >> transform;
 
                 receivedMsg >> car.velocity;
@@ -160,7 +160,7 @@ void WorkerProducer::resetAndProcessSimulation(float elapsedTime, unsigned int t
 
     std::vector<float> weights;
 
-    for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+    for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
     {
         neuralNetworks[ii]->getWeights(weights);
 

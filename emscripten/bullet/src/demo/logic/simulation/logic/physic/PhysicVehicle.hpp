@@ -3,7 +3,7 @@
 
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 class btCollisionShape;
 class btCompoundShape;
@@ -48,6 +48,10 @@ private:
     PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask);
     ~PhysicVehicle();
 
+private:
+    void _initialise(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask);
+    void _dispose();
+
 public:
     void applyEngineForce(float engineForce);
     void setSteeringValue(float vehicleSteering);
@@ -67,5 +71,7 @@ public:
     const glm::mat4&    getWheelOpenGLMatrix(int index, glm::mat4& mat4x4) const;
 
     glm::vec3           getVelocity() const;
+
+	float getCurrentSpeedKmHour() const;
 
 };

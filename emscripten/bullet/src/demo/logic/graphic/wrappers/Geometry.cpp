@@ -36,7 +36,7 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def)
 
     _vbo.allocate(_def.vbos.size());
 
-    for (unsigned int ii = 0; ii < _def.vbos.size(); ++ii)
+    for (std::size_t ii = 0; ii < _def.vbos.size(); ++ii)
     {
         const auto& vbo = _def.vbos[ii];
         const auto& attrs = vbo.attrs;

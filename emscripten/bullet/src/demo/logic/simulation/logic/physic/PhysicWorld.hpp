@@ -4,7 +4,7 @@
 #include "./demo/utilities/types.hpp"
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 #include <unordered_set>
@@ -15,6 +15,7 @@ class btDefaultCollisionConfiguration;
 class btCollisionDispatcher;
 class btSequentialImpulseConstraintSolver;
 class btDiscreteDynamicsWorld;
+class btDiscreteDynamicsWorldMt;
 class btCollisionShape;
 class btRigidBody;
 // class btIDebugDraw;
@@ -57,6 +58,7 @@ private:
         btCollisionDispatcher*                  dispatcher = nullptr;
         btSequentialImpulseConstraintSolver*    solver = nullptr;
         btDiscreteDynamicsWorld*                dynamicsWorld = nullptr;
+        // btDiscreteDynamicsWorldMt*              dynamicsWorld = nullptr;
 
         struct Ground
         {
@@ -73,12 +75,17 @@ public:
     PhysicWorld();
     ~PhysicWorld();
 
+private:
+    void _initialise();
+    void _dispose(bool emptyAllContainers = true);
+
     //
     //
     // world
 
 public:
     void step(float elapsedTime);
+    void reset();
 
     //
     //
@@ -93,7 +100,7 @@ public:
 
     //
     //
-    // vehicle
+    // vehicles
 
 private:
     std::vector<PhysicVehicle*> _vehicles;

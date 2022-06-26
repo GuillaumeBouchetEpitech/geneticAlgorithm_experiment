@@ -9,7 +9,7 @@
 
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <limits> // std::numeric_limits<T>::max();
 #include <cmath> // std::ceil
@@ -29,6 +29,7 @@ void State_Running::update(int deltaTime)
     { // simulation update
 
         constexpr float fakeElapsedTime = 1.0f / 30.0f; // TODO: hardcoded
+        // constexpr float fakeElapsedTime = 0.0f;
         const unsigned int totalSteps = (logic.isAccelerated ? 50 : 1);
 
         simulation.update(fakeElapsedTime, totalSteps);
@@ -113,7 +114,7 @@ void State_Running::update(int deltaTime)
                     // this part elevate where the camera look along the up axis of the car
                     // => without it the camera look at the ground
                     // => mostly useful for a shoulder camera0
-                    glm::vec4 carOrigin = carResult.transforms.chassis * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
+                    glm::vec4 carOrigin = carResult.liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
 
                     cameraNextCenter = carOrigin;
                 }
@@ -125,8 +126,8 @@ void State_Running::update(int deltaTime)
             {
                 const float lerpRatio = 6.0f * elapsedTime;
 
-                camera.center += (cameraNextCenter - camera.center) * lerpRatio;
-                camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
+                camera.scene.center += (cameraNextCenter - camera.scene.center) * lerpRatio;
+                camera.scene.distance += (cameraNextDistance - camera.scene.distance) * lerpRatio;
             }
         }
 
@@ -135,7 +136,6 @@ void State_Running::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-        graphic.flockingManager.update(elapsedTime);
 
         graphic.cylinderAnimationTime += elapsedTime;
     }

@@ -1,128 +1,87 @@
 
 #include "Data.hpp"
 
+#include "graphic/wrappers/ShaderProgramBuilder.hpp"
+
 void Data::initialiseShaders()
 {
-    { // shaders
+    ShaderProgramBuilder shaderProgramBuilder;
 
-        { // create the stackRenderer shader
+    graphic.shaders.stackRenderer = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/stackRenderer.vert")
+        .setFragmentFilename("assets/shaders/stackRenderer.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_color")
+        .addUniform("u_composedMatrix")
+        .build();
 
-            ShaderProgram::Definition def;
-            def.filenames.vertex = "assets/shaders/stackRenderer.vert";
-            def.filenames.fragment = "assets/shaders/stackRenderer.frag";
-            def.attributes = { "a_position", "a_color" };
-            def.uniforms = { "u_composedMatrix" };
+    graphic.shaders.wireframes = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/wireframes.vert")
+        .setFragmentFilename("assets/shaders/wireframes.frag")
+        .addAttribute("a_position")
+        .addUniform("u_composedMatrix")
+        .addUniform("u_color")
+        .build();
 
-            graphic.shaders.stackRenderer = std::make_unique<ShaderProgram>(def);
-        }
+    graphic.shaders.animatedCircuit = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/animatedCircuit.vert")
+        .setFragmentFilename("assets/shaders/animatedCircuit.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_color")
+        .addAttribute("a_normal")
+        .addAttribute("a_index")
+        .addUniform("u_composedMatrix")
+        .addUniform("u_alpha")
+        .addUniform("u_lowerLimit")
+        .addUniform("u_upperLimit")
+        .build();
 
-        { // create the wireframes shader
+    graphic.shaders.hudText = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/hudText.vert")
+        .setFragmentFilename("assets/shaders/hudText.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_texCoord")
+        .addAttribute("a_offsetPosition")
+        .addAttribute("a_offsetTexCoord")
+        .addAttribute("a_offsetColor")
+        .addAttribute("a_offsetScale")
+        .addUniform("u_composedMatrix")
+        .addUniform("u_texture")
+        .build();
 
-            ShaderProgram::Definition def;
+    graphic.shaders.particles = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/particles.vert")
+        .setFragmentFilename("assets/shaders/particles.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_offsetPosition")
+        .addAttribute("a_offsetScale")
+        .addAttribute("a_offsetColor")
+        .addUniform("u_composedMatrix")
+        .build();
 
-            def.filenames.vertex = "assets/shaders/wireframes.vert";
-            def.filenames.fragment = "assets/shaders/wireframes.frag";
-            def.attributes = { "a_position" };
-            def.uniforms = { "u_composedMatrix", "u_color" };
+    graphic.shaders.model = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/model.vert")
+        .setFragmentFilename("assets/shaders/model.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_color")
+        .addAttribute("a_offsetTransform")
+        .addAttribute("a_offsetColor")
+        .addUniform("u_composedMatrix")
+        .build();
 
-            graphic.shaders.wireframes = std::make_unique<ShaderProgram>(def);
-        }
-
-        { // create the animated circuit shader
-
-            ShaderProgram::Definition def;
-
-            def.filenames.vertex = "assets/shaders/animatedCircuit.vert";
-            def.filenames.fragment = "assets/shaders/animatedCircuit.frag";
-            def.attributes = { "a_position", "a_color", "a_normal", "a_index" };
-            def.uniforms = {
-                "u_composedMatrix", "u_alpha", "u_lowerLimit", "u_upperLimit"
-            };
-
-            graphic.shaders.animatedCircuit = std::make_unique<ShaderProgram>(def);
-        }
-
-        { // create the hud text shader
-
-            ShaderProgram::Definition def;
-
-            def.filenames.vertex = "assets/shaders/hudText.vert";
-            def.filenames.fragment = "assets/shaders/hudText.frag";
-            def.attributes = {
-                "a_position", "a_texCoord",
-                "a_offsetPosition", "a_offsetTexCoord", "a_offsetScale"
-            };
-            def.uniforms = { "u_composedMatrix", "u_texture" };
-
-            graphic.shaders.hudText = std::make_unique<ShaderProgram>(def);
-        }
-
-        { // particles
-
-            ShaderProgram::Definition def;
-            def.filenames.vertex = "assets/shaders/particles.vert";
-            def.filenames.fragment = "assets/shaders/particles.frag";
-            def.attributes = {
-                "a_position",
-                "a_offsetPosition", "a_offsetScale", "a_offsetColor"
-            };
-            def.uniforms = { "u_composedMatrix" };
-
-            graphic.shaders.particles = std::make_unique<ShaderProgram>(def);
-        }
-
-        { // model (chassis + wheels)
-
-            ShaderProgram::Definition def;
-            def.filenames.vertex = "assets/shaders/model.vert";
-            def.filenames.fragment = "assets/shaders/model.frag";
-            def.attributes = {
-                "a_position", "a_color",
-                "a_offsetTransform", "a_offsetColor"
-            };
-            def.uniforms = {
-                "u_composedMatrix"
-            };
-
-            graphic.shaders.model = std::make_unique<ShaderProgram>(def);
-        }
-
-        { // create the simple texture shader
-
-            ShaderProgram::Definition def;
-
-            def.filenames.vertex = "assets/shaders/simpleTexture.vert";
-            def.filenames.fragment = "assets/shaders/simpleTexture.frag";
-            def.attributes = { "a_position", "a_texCoord" };
-            def.uniforms = { "u_composedMatrix", "u_texture" };
-
-            graphic.shaders.simpleTexture = std::make_unique<ShaderProgram>(def);
-        }
-
-    } // shaders
-
-    { // textures
-
-        {
-            bool pixelated = true;
-            bool repeat = false;
-            graphic.textures.textFont.load("assets/textures/ascii_font.png", pixelated, repeat);
-        }
-
-        {
-            bool pixelated = false;
-            bool repeat = true;
-            graphic.textures.chessboard.load("assets/textures/chessboard.png", pixelated, repeat);
-        }
-
-        {
-            bool pixelated = true;
-            bool repeat = true;
-            graphic.textures.cylinders[0].load("assets/textures/cylinder1.png", pixelated, repeat);
-            graphic.textures.cylinders[1].load("assets/textures/cylinder2.png", pixelated, repeat);
-            graphic.textures.cylinders[2].load("assets/textures/cylinder3.png", pixelated, repeat);
-            graphic.textures.cylinders[3].load("assets/textures/cylinder4.png", pixelated, repeat);
-        }
-
-    } // textures
+    graphic.shaders.simpleTexture = shaderProgramBuilder
+        .reset()
+        .setVertexFilename("assets/shaders/simpleTexture.vert")
+        .setFragmentFilename("assets/shaders/simpleTexture.frag")
+        .addAttribute("a_position")
+        .addAttribute("a_texCoord")
+        .addUniform("u_composedMatrix")
+        .addUniform("u_texture")
+        .build();
 }

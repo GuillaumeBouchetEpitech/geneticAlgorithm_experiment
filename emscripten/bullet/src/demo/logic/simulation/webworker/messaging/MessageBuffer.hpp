@@ -15,7 +15,7 @@ public:
     MessageBuffer();
 
 public:
-    MessageBuffer& append(const void* pData, unsigned int size);
+    MessageBuffer& append(const void* dataPointer, unsigned int size);
 
 public:
     virtual void clear() override;

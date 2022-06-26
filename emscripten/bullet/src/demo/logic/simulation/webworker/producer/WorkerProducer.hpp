@@ -15,7 +15,7 @@
 
 #include "demo/defines.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <bitset>
 

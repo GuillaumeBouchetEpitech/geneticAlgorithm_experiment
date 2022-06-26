@@ -30,7 +30,7 @@ void Data::initialiseSimulationCallbacks()
             auto& carsTrails = logic.carsTrails;
             const auto& simulation = *logic.simulation;
             const auto& genomes = simulation.getGenomes();
-            unsigned int totalCars = simulation.getTotalCars();
+            const unsigned int totalCars = simulation.getTotalCars();
 
             // reset trail map
             carsTrails.genomeIndexMap.clear();
@@ -49,14 +49,14 @@ void Data::initialiseSimulationCallbacks()
 
                 // reset the old data
 
-                for (unsigned int ii = 0; ii < currentWheelsTrail.wheels.size(); ++ii)
+                for (std::size_t ii = 0; ii < currentWheelsTrail.wheels.size(); ++ii)
                     currentWheelsTrail.wheels[ii].clear();
 
                 // initialise the new data
 
                 for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    for (unsigned int ii = 0; ii < transforms.wheels.size(); ++ii)
+                    for (std::size_t ii = 0; ii < transforms.wheels.size(); ++ii)
                     {
                         glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -74,7 +74,7 @@ void Data::initialiseSimulationCallbacks()
 
         { // handle the car trails
 
-            unsigned int totalCars = simulation.getTotalCars();
+            const unsigned int totalCars = simulation.getTotalCars();
 
             for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
@@ -87,7 +87,7 @@ void Data::initialiseSimulationCallbacks()
 
                 for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    for (unsigned int ii = 0; ii < transforms.wheels.size(); ++ii)
+                    for (std::size_t ii = 0; ii < transforms.wheels.size(); ++ii)
                     {
                         glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -127,7 +127,7 @@ void Data::initialiseSimulationCallbacks()
         const auto& carData = simulation.getCarResult(genomeIndex);
 
         const glm::vec3 extraHeight(0.0f, 0.0f, 1.0f);
-        glm::vec4 carPos = carData.transforms.chassis * glm::vec4(extraHeight, 1.0f);
+        glm::vec4 carPos = carData.liveTransforms.chassis * glm::vec4(extraHeight, 1.0f);
 
         graphic.particleManager.emitParticles(carPos, carData.velocity);
     });
@@ -181,7 +181,7 @@ void Data::initialiseSimulationCallbacks()
                     auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
                     auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
 
-                    for (unsigned int ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+                    for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
                     {
                         currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
                         currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());

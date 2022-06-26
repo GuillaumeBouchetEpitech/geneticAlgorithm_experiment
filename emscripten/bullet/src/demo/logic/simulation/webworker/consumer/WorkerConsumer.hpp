@@ -2,7 +2,7 @@
 #pragma once
 
 #include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
-#include "demo/logic/simulation/logic/Car.hpp"
+#include "demo/logic/simulation/logic/CarAgent.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
@@ -14,7 +14,7 @@
 
 #include "demo/defines.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 
@@ -26,7 +26,7 @@ private:
 
     PhysicWorld _physicWorld;
 
-    Cars _cars;
+    CarAgents _carAgents;
 
     std::vector<std::vector<CarData::Transforms>> _latestTransformsHistory;
 

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 
@@ -44,13 +44,23 @@ public:
 
     void pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color);
     void pushQuad(const glm::vec3& center, const glm::vec2& size, const glm::vec4& color);
+    void pushCircle(const glm::vec2& center, float radius, const glm::vec4& color);
+    void pushCircle(const glm::vec3& center, float radius, const glm::vec4& color);
 
     void pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thickness, const glm::vec4& color);
+    // void pushThickTriangleLine(const glm::vec3& posA, const glm::vec3& posB, float thickness, const glm::vec4& color);
     void pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thicknessA, float thicknessB, const glm::vec4& color);
-    void pushThickTriangleLine(const glm::vec3& posA, const glm::vec3& posB, float thickness, const glm::vec4& color);
-    void pushThickTriangle3DLine(const glm::vec3& posA, const glm::vec3& posB,
-                                 float thicknessA, float thicknessB,
-                                 const glm::vec3& colorA, const glm::vec3& colorB);
+    void pushThickTriangleLine(
+        const glm::vec2& posA,
+        const glm::vec2& posB,
+        float thicknessA,
+        float thicknessB,
+        const glm::vec4& color,
+        float z);
+
+    // void pushThickTriangle3DLine(const glm::vec3& posA, const glm::vec3& posB,
+    //                              float thicknessA, float thicknessB,
+    //                              const glm::vec3& colorA, const glm::vec3& colorB);
 
     // 2d
     void pushLine(const glm::vec2& posA, const glm::vec2& posB, const glm::vec3& color);

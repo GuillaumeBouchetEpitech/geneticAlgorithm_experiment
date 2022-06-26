@@ -91,12 +91,14 @@ void PthreadSimulation::initialise(const Definition& def)
 
     { // generate cars
 
-        _cars.reserve(totalGenomes); // pre-allocate
+        _carAgents.reserve(totalGenomes); // pre-allocate
         for (auto& physicWorld : _physicWorlds)
+        {
             for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-                _cars.push_back(Car(*physicWorld,
-                                    _startTransform.position,
-                                    _startTransform.quaternion));
+            {
+                _carAgents.push_back(CarAgent(*physicWorld, _startTransform.position, _startTransform.quaternion));
+            }
+        }
 
     } // generate cars
 
@@ -104,7 +106,7 @@ void PthreadSimulation::initialise(const Definition& def)
     for (auto& carData : _carsData)
         carData.latestTransformsHistory.reserve(50); // TODO: hardcoded (o_o)
 
-    for (Car& car : _cars)
+    for (CarAgent& car : _carAgents)
         car.reset(_startTransform.position, _startTransform.quaternion);
 }
 
@@ -119,7 +121,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 
     bool generationCompleted = true;
 
-    for (const auto& car : _cars)
+    for (const auto& car : _carAgents)
         if (car.isAlive())
         {
             generationCompleted = false;
@@ -144,7 +146,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
     if (generationCompleted)
     {
         // rate genomes
-        for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+        for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
         {
             // this penalty reward fast cars (reaching farther in less updates)
             const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
@@ -160,16 +162,19 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
         //
         //
 
-        for (Car& car : _cars)
+        for (std::size_t threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
+            _physicWorlds[threadIndex]->reset();
+
+        for (CarAgent& car : _carAgents)
             car.reset(_startTransform.position, _startTransform.quaternion);
 
         _isFirstGenerationFrame = true;
     }
 
-    for (unsigned int ii = 0; ii < _carsData.size(); ++ii)
+    for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
         _carsData[ii].latestTransformsHistory.clear();
 
-    for (unsigned int threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
+    for (std::size_t threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
     {
         auto taskCallback = [this, threadIndex, elapsedTime, totalSteps]() -> void
         {
@@ -192,7 +197,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
                 {
                     unsigned int index = threadIndex * _genomesPerCore + ii;
 
-                    auto& car = _cars[index];
+                    auto& car = _carAgents[index];
 
                     if (!car.isAlive())
                         continue;
@@ -223,7 +228,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
             {
                 unsigned int index = threadIndex * _genomesPerCore + ii;
 
-                auto& car = _cars[index];
+                auto& car = _carAgents[index];
 
                 if (car.isAlive())
                     coreState.genomesAlive++;
@@ -247,17 +252,17 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 
 void PthreadSimulation::_updateCarResult()
 {
-    for (unsigned int ii = 0; ii < _cars.size(); ++ii)
+    for (std::size_t ii = 0; ii < _carAgents.size(); ++ii)
     {
-        const auto& car = _cars[ii];
+        const auto& carAgent = _carAgents[ii];
         auto& carData = _carsData[ii];
 
         bool carWasAlive = carData.isAlive;
-        carData.isAlive = car.isAlive();
-        carData.life = car.getLife();
-        carData.fitness = car.getFitness();
-        carData.totalUpdates = car.getTotalUpdates();
-        carData.groundIndex = car.getGroundIndex();
+        carData.isAlive = carAgent.isAlive();
+        carData.life = carAgent.getLife();
+        carData.fitness = carAgent.getFitness();
+        carData.totalUpdates = carAgent.getTotalUpdates();
+        carData.groundIndex = carAgent.getGroundIndex();
 
         if (carWasAlive && !carData.isAlive)
         {
@@ -268,31 +273,31 @@ void PthreadSimulation::_updateCarResult()
         if (!carData.isAlive)
             continue;
 
-        const auto& vehicle = car.getVehicle();
+        const auto& vehicle = carAgent.getVehicle();
 
         // transformation matrix of the car
-        vehicle.getOpenGLMatrix(carData.transforms.chassis);
+        vehicle.getOpenGLMatrix(carData.liveTransforms.chassis);
 
         // transformation matrix of the wheels
-        for (std::size_t jj = 0; jj < carData.transforms.wheels.size(); ++jj)
-            vehicle.getWheelOpenGLMatrix(jj, carData.transforms.wheels[jj]);
+        for (std::size_t jj = 0; jj < carData.liveTransforms.wheels.size(); ++jj)
+            vehicle.getWheelOpenGLMatrix(jj, carData.liveTransforms.wheels[jj]);
 
         carData.velocity = vehicle.getVelocity();
 
-        const auto& eyeSensors = car.getEyeSensors();
-        for (unsigned int jj = 0; jj < eyeSensors.size(); ++jj)
+        const auto& eyeSensors = carAgent.getEyeSensors();
+        for (std::size_t jj = 0; jj < eyeSensors.size(); ++jj)
         {
             carData.eyeSensors[jj].near = eyeSensors[jj].near;
             carData.eyeSensors[jj].far = eyeSensors[jj].far;
             carData.eyeSensors[jj].value = eyeSensors[jj].value;
         }
 
-        const auto& gSensor = car.getGroundSensor();
+        const auto& gSensor = carAgent.getGroundSensor();
         carData.groundSensor.near = gSensor.near;
         carData.groundSensor.far = gSensor.far;
         carData.groundSensor.value = gSensor.value;
 
-        const auto& output = car.getNeuralNetworkOutput();
+        const auto& output = carAgent.getNeuralNetworkOutput();
         carData.neuralNetworkOutput.speed = output.speed;
         carData.neuralNetworkOutput.steer = output.steer;
     }

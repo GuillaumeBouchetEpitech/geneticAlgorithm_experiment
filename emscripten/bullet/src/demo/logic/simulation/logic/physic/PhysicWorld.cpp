@@ -4,17 +4,28 @@
 #include "PhysicTrimesh.hpp"
 #include "PhysicVehicle.hpp"
 
-#include "demo/helpers/BulletPhysics.hpp"
+#include "helpers/BulletPhysics.hpp"
 
 #include <algorithm>
 
 PhysicWorld::PhysicWorld()
+{
+    _initialise();
+}
+
+PhysicWorld::~PhysicWorld()
+{
+    _dispose();
+}
+
+void PhysicWorld::_initialise()
 {
     _bullet.broadphase = new btDbvtBroadphase();
     _bullet.collisionConfiguration = new btDefaultCollisionConfiguration();
     _bullet.dispatcher = new btCollisionDispatcher(_bullet.collisionConfiguration);
     _bullet.solver = new btSequentialImpulseConstraintSolver;
     _bullet.dynamicsWorld = new btDiscreteDynamicsWorld(
+    // _bullet.dynamicsWorld = new btDiscreteDynamicsWorldMt(
         _bullet.dispatcher,
         _bullet.broadphase,
         _bullet.solver,
@@ -42,30 +53,33 @@ PhysicWorld::PhysicWorld()
     } // ground plane
 }
 
-PhysicWorld::~PhysicWorld()
+void PhysicWorld::_dispose(bool emptyAllContainers /* = true */)
 {
-    for (auto* vehicle : _vehicles)
+    if (emptyAllContainers)
     {
-        if (_liveVehicles.count(vehicle) > 0)
-            _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+        for (auto* vehicle : _vehicles)
+        {
+            if (_liveVehicles.count(vehicle) > 0)
+                _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
 
-        _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+            _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
 
-        delete vehicle;
-    }
-    _liveVehicles.clear();
-    _vehicles.clear();
+            delete vehicle;
+        }
+        _liveVehicles.clear();
+        _vehicles.clear();
 
-    for (auto* trimesh : _wallsTrimesh)
-    {
-        _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
-        delete trimesh;
-    }
+        for (auto* trimesh : _wallsTrimesh)
+        {
+            _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+            delete trimesh;
+        }
 
-    for (auto* trimesh : _groundsTrimesh)
-    {
-        _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
-        delete trimesh;
+        for (auto* trimesh : _groundsTrimesh)
+        {
+            _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+            delete trimesh;
+        }
     }
 
     _bullet.dynamicsWorld->removeRigidBody(_bullet.ground.body);
@@ -85,6 +99,62 @@ void PhysicWorld::step(float elapsedTime)
     const float fixedTimeStep = 1.0f / 30.0f;
 
     _bullet.dynamicsWorld->stepSimulation(elapsedTime, maxSubSteps, fixedTimeStep);
+}
+
+void PhysicWorld::reset()
+{
+    { // remove
+
+        for (PhysicVehicle* vehicle : _vehicles)
+        {
+            removeVehicle(*vehicle);
+            vehicle->_dispose();
+        }
+
+        for (PhysicTrimesh* trimesh : _wallsTrimesh)
+            _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+        for (PhysicTrimesh* trimesh : _groundsTrimesh)
+            _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
+
+        // dispose only the physic world
+        // => we want to keep the vehicles container full
+        _dispose(false);
+
+    } // remove
+
+    { // rebuild
+
+        _initialise();
+
+        for (PhysicTrimesh* trimesh : _groundsTrimesh)
+        {
+            short group = asValue(PhysicWorld::Groups::ground);
+            short mask = asValue(PhysicWorld::Masks::ground);
+
+            _bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, group, mask);
+        }
+
+        for (PhysicTrimesh* trimesh : _wallsTrimesh)
+        {
+            short group = asValue(PhysicWorld::Groups::wall);
+            short mask = asValue(PhysicWorld::Masks::wall);
+
+            _bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, group, mask);
+        }
+
+        for (PhysicVehicle* vehicle : _vehicles)
+        {
+            short group = asValue(PhysicWorld::Groups::vehicle);
+            short mask = asValue(PhysicWorld::Masks::vehicle);
+
+            vehicle->_initialise(*_bullet.dynamicsWorld, group, mask);
+
+            addVehicle(*vehicle);
+
+            vehicle->reset();
+        }
+
+    } // rebuild
 }
 
 //
@@ -143,8 +213,8 @@ void PhysicWorld::destroyVehicle(PhysicVehicle* vehicle)
 
     removeVehicle(*vehicle);
 
-    _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
-    _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
+    // _bullet.dynamicsWorld->removeVehicle(vehicle->_bullet.vehicle);
+    // _bullet.dynamicsWorld->removeRigidBody(vehicle->_bullet.carChassis);
 
     _vehicles.erase(it);
 

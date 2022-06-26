@@ -3,7 +3,7 @@
 
 #include "AbstractMessage.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <string>
 
@@ -12,10 +12,10 @@ class MessageView
 {
 public:
     MessageView() = default;
-    MessageView(const char* pData, unsigned int size);
+    MessageView(const char* dataPointer, unsigned int size);
 
 public:
-    MessageView& read(void* pData, unsigned int size);
+    MessageView& read(void* dataPointer, unsigned int size);
 
 public:
     MessageView& operator >>(bool& data);

@@ -4,8 +4,8 @@
 #include "Texture.hpp"
 #include "RenderBuffer.hpp"
 
-#include "demo/helpers/OpenGLES.hpp"
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/OpenGLES.hpp"
+#include "helpers/GLMath.hpp"
 
 class FrameBuffer
 {

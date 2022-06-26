@@ -8,7 +8,7 @@
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <limits> // std::numeric_limits<T>::max();
 #include <cmath> // std::ceil
@@ -49,13 +49,11 @@ void State_AbstractSimulation::handleEvent(const SDL_Event& event)
             mouse.position = { event.motion.x, event.motion.y };
             mouse.delta = { 0, 0 };
             mouse.tracking = true;
-            mouse.wasTracking = false;
             break;
         }
         case SDL_MOUSEBUTTONUP:
         {
             mouse.tracking = false;
-            mouse.wasTracking = true;
             break;
         }
         case SDL_MOUSEMOTION:
@@ -65,13 +63,13 @@ void State_AbstractSimulation::handleEvent(const SDL_Event& event)
                 // mouse/touch events are 4 times more sentitive in web build
                 // this bit ensure the mouse/touch are even in native/web build
 #if defined D_WEB_BUILD
-                int coef = 1;
+                constexpr float coef = 1;
 #else
-                int coef = 4;
+                constexpr float coef = 4;
 #endif
 
-                glm::ivec2 newPosition(event.motion.x, event.motion.y);
-                mouse.delta = (newPosition - mouse.position) * coef;
+                glm::vec2 newPosition(event.motion.x, event.motion.y);
+                mouse.delta = (newPosition - glm::vec2(mouse.position)) * coef;
                 mouse.position = newPosition;
             }
             break;
@@ -98,8 +96,8 @@ void State_AbstractSimulation::update(int deltaTime)
 
             if (mouse.tracking)
             {
-                camera.rotations.theta -= float(mouse.delta.x) * 0.5f * elapsedTime;
-                camera.rotations.phi += float(mouse.delta.y) * 0.5f * elapsedTime;
+                camera.scene.rotations.theta -= float(mouse.delta.x) * 1.0f * elapsedTime;
+                camera.scene.rotations.phi += float(mouse.delta.y) * 1.0f * elapsedTime;
                 mouse.delta = { 0, 0 };
             }
 
@@ -132,14 +130,14 @@ void State_AbstractSimulation::update(int deltaTime)
             );
 
             if (rotateLeft)
-                camera.rotations.theta += 2.0f * elapsedTime;
+                camera.scene.rotations.theta += 2.0f * elapsedTime;
             else if (rotateRight)
-                camera.rotations.theta -= 2.0f * elapsedTime;
+                camera.scene.rotations.theta -= 2.0f * elapsedTime;
 
             if (rotateUp)
-                camera.rotations.phi -= 1.0f * elapsedTime;
+                camera.scene.rotations.phi -= 1.0f * elapsedTime;
             else if (rotateDown)
-                camera.rotations.phi += 1.0f * elapsedTime;
+                camera.scene.rotations.phi += 1.0f * elapsedTime;
 
             // only pthread builds support this
             data.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar

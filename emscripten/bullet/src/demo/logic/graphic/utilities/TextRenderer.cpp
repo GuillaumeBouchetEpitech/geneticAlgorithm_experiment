@@ -11,7 +11,8 @@ void TextRenderer::initialise()
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
     const glm::vec2 texCoord = letterSize / hudText.textureSize;
 
-    _lettersOffset.reserve(1024); // <= pre-allocate
+    _lettersOffsetColored.reserve(1024); // <= pre-allocate
+    _lettersOffsetBackground.reserve(1024); // <= pre-allocate
 
     _lettersTexCoordMap = {
 
@@ -123,7 +124,8 @@ void TextRenderer::initialise()
 
 void TextRenderer::push(const glm::vec2& position,
                         const std::string& message,
-                        float scale /*= 1.0f*/)
+                        const glm::vec3& color,
+                        float scale /* = 1.0f */)
 {
     const auto& hudText = Data::get().graphic.hudText;
     const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
@@ -147,7 +149,19 @@ void TextRenderer::push(const glm::vec2& position,
 
         const auto& texCoord = it->second;
 
-        _lettersOffset.emplace_back(currPos, texCoord, scale);
+        _lettersOffsetColored.push_back({ glm::vec3(currPos.x, currPos.y, 0.1f), texCoord, color, scale });
+
+        constexpr int range = 1;
+        for (int yy2 = -range; yy2 <= +range; yy2 += range)
+        for (int xx2 = -range; xx2 <= +range; xx2 += range)
+        {
+            if (xx2 == 0 && yy2 == 0)
+                continue;
+
+            const glm::vec3 pos0 = glm::vec3(currPos.x + scale * xx2, currPos.y + scale * yy2, 0.0f);
+
+            _lettersOffsetBackground.push_back({ pos0, texCoord, glm::vec3(0), scale });
+        }
 
         currPos.x += letterSize.x * scale;
     }
@@ -155,18 +169,24 @@ void TextRenderer::push(const glm::vec2& position,
 
 void TextRenderer::clear()
 {
-    _lettersOffset.clear();
+    _lettersOffsetColored.clear();
+    _lettersOffsetBackground.clear();
 }
 
 void TextRenderer::render()
 {
-    if (_lettersOffset.empty())
+    if (_lettersOffsetColored.empty())
         return;
 
     auto& geometry = Data::get().graphic.geometries.hudText.letters;
 
-    geometry.updateBuffer(1, _lettersOffset);
-    geometry.setInstancedCount(_lettersOffset.size());
+    geometry.updateBuffer(1, _lettersOffsetBackground);
+    geometry.setInstancedCount(_lettersOffsetBackground.size());
+
+    geometry.render();
+
+    geometry.updateBuffer(1, _lettersOffsetColored);
+    geometry.setInstancedCount(_lettersOffsetColored.size());
 
     geometry.render();
 }

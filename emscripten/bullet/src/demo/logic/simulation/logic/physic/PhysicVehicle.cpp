@@ -3,7 +3,7 @@
 
 #include "PhysicWorld.hpp"
 
-#include "demo/helpers/BulletPhysics.hpp"
+#include "helpers/BulletPhysics.hpp"
 
 #include "demo/utilities/types.hpp"
 
@@ -66,6 +66,16 @@ namespace /*anonymous*/
 }; // namespace /*anonymous*/
 
 PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask)
+{
+    _initialise(dynamicsWorld, group, mask);
+}
+
+PhysicVehicle::~PhysicVehicle()
+{
+    _dispose();
+}
+
+void PhysicVehicle::_initialise(btDiscreteDynamicsWorld& dynamicsWorld, short group, short mask)
 {
     //
     //
@@ -207,7 +217,7 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, short group
     }
 }
 
-PhysicVehicle::~PhysicVehicle()
+void PhysicVehicle::_dispose()
 {
     delete _bullet.vehicle;
     delete _bullet.vehicleRayCaster;
@@ -256,13 +266,13 @@ void PhysicVehicle::reset()
 
 // void PhysicVehicle::disableContactResponse()
 // {
-//     int newFlags = _bullet.carChassis->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE;
+//     const int newFlags = _bullet.carChassis->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE;
 //     _bullet.carChassis->setCollisionFlags(newFlags);
 // }
 
 // void PhysicVehicle::enableContactResponse()
 // {
-//     int newFlags = _bullet.carChassis->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+//     const int newFlags = _bullet.carChassis->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
 //     _bullet.carChassis->setCollisionFlags(newFlags);
 // }
 
@@ -312,4 +322,9 @@ glm::vec3 PhysicVehicle::getVelocity() const
     const auto& vel = _bullet.carChassis->getLinearVelocity();
 
     return glm::vec3(vel[0], vel[1], vel[2]);
+}
+
+float PhysicVehicle::getCurrentSpeedKmHour() const
+{
+    return _bullet.vehicle->getCurrentSpeedKmHour();
 }

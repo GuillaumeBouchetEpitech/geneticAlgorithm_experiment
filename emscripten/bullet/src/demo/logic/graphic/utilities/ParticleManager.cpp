@@ -4,6 +4,17 @@
 #include "demo/logic/Data.hpp"
 #include "demo/utilities/math/RandomNumberGenerator.hpp"
 
+namespace /*anonymous*/
+{
+
+    std::array<const glm::vec3, 3> k_particleColors{{
+        { 1.0f, 0.0f, 0.0f }, // red
+        { 1.0f, 1.0f, 0.0f }, // yellow
+        { 1.0f, 0.5f, 0.0f }, // orange
+    }};
+
+};
+
 ParticleManager::Particle::Particle(const glm::vec3& position,
                                         const glm::vec3& linearVelocity,
                                         const glm::vec3& color,
@@ -30,7 +41,7 @@ ParticleManager::ParticleManager()
 void ParticleManager::update(float delta)
 {
     // update particle's life and handle removal of dead particles
-    for (unsigned int ii = 0; ii < _particles.size();)
+    for (std::size_t ii = 0; ii < _particles.size();)
     {
         _particles[ii].life -= delta;
         if (_particles[ii].life > 0.0f)
@@ -51,7 +62,7 @@ void ParticleManager::update(float delta)
     for (auto& particle : _particles)
     {
         // make a trail by reusing the previous positions N times
-        for (unsigned int ii = particle.trail.size() - 1; ii > 0; --ii)
+        for (std::size_t ii = particle.trail.size() - 1; ii > 0; --ii)
             particle.trail[ii] = particle.trail[ii - 1];
         particle.trail[0] = particle.position;
 
@@ -85,11 +96,6 @@ void ParticleManager::update(float delta)
     firework.setInstancedCount(_particlesInstances.size());
 }
 
-void ParticleManager::emitParticles(const glm::vec3& position)
-{
-    emitParticles(position, glm::vec3(0));
-}
-
 void ParticleManager::emitParticles(const glm::vec3& position, const glm::vec3& velocity)
 {
     const unsigned int totalParticles = RNG::getRangedValue(10, 15);
@@ -116,11 +122,8 @@ void ParticleManager::emitParticles(const glm::vec3& position, const glm::vec3& 
         };
         const glm::vec3 particleVel = glm::normalize(normalizedVel + velPertubation) * maxVelocity;
 
-        const glm::vec3 color = {
-            RNG::getRangedValue(0.5f, 1.0f),
-            RNG::getRangedValue(0.5f, 1.0f),
-            RNG::getRangedValue(0.5f, 1.0f),
-        };
+        const int colorIndex = RNG::getRangedValue(0, 3);
+        const glm::vec3 color = k_particleColors.at(colorIndex);
 
         const float scale = RNG::getRangedValue(0.5f, 1.5f);
 

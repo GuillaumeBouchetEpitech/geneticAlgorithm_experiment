@@ -1,7 +1,7 @@
 
 #include "PhysicTrimesh.hpp"
 
-#include "demo/helpers/BulletPhysics.hpp"
+#include "helpers/BulletPhysics.hpp"
 
 PhysicTrimesh::PhysicTrimesh(const std::vector<glm::vec3>& vertices,
                              const std::vector<int>& indices,

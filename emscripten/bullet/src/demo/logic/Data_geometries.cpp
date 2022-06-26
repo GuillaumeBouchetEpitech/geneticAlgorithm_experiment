@@ -6,7 +6,7 @@
 
 #include "demo/defines.hpp"
 
-#include "demo/helpers/TinyObjLoader.hpp"
+#include "helpers/TinyObjLoader.hpp"
 
 namespace /*anonymous*/
 {
@@ -15,12 +15,7 @@ struct ModelVertex
 {
     glm::vec3 position;
     glm::vec3 color;
-    // glm::vec3 normal;
-
-    ModelVertex(glm::vec3& position, glm::vec3& color)
-        : position(position)
-        , color(color)
-    {}
+    glm::vec3 normal;
 };
 
 void loadModel(const std::string& filename, std::vector<ModelVertex>& vertices); // declaration
@@ -67,7 +62,7 @@ void loadModel(const std::string& filename, std::vector<ModelVertex>& vertices) 
         std::size_t indexOffset = 0;
         for (std::size_t face = 0; face < faceVertices.size(); ++face)
         {
-            std::size_t faceVerex = faceVertices[face];
+            std::size_t faceVertex = faceVertices[face];
 
             // per-face material
             int materialId = materialIds[face];
@@ -75,25 +70,44 @@ void loadModel(const std::string& filename, std::vector<ModelVertex>& vertices) 
             const auto& diffuse = materials[materialId].diffuse;
             glm::vec3 color = { diffuse[0], diffuse[1], diffuse[2] };
             glm::vec3 position;
-            // glm::vec3 normal;
+            glm::vec3 normal;
+
+            // std::size_t prevIndex = vertices.size();
 
             // Loop over vertices in the face.
-            for (std::size_t vertex = 0; vertex < faceVerex; ++vertex)
+            for (std::size_t vertex = 0; vertex < faceVertex; ++vertex)
             {
                 // access to vertex
                 tinyobj::index_t index = indices[indexOffset + vertex];
                 position.x = attrib.vertices[3 * index.vertex_index + 0];
                 position.y = attrib.vertices[3 * index.vertex_index + 1];
                 position.z = attrib.vertices[3 * index.vertex_index + 2];
-                // normal.x = attrib.normals[3*index.normal_index+0];
-                // normal.y = attrib.normals[3*index.normal_index+1];
-                // normal.z = attrib.normals[3*index.normal_index+2];
+                normal.x = attrib.normals[3 * index.normal_index + 0];
+                normal.y = attrib.normals[3 * index.normal_index + 1];
+                normal.z = attrib.normals[3 * index.normal_index + 2];
+
+                // D_MYLOG("normal=" << normal.x << "/" << normal.y << "/" << normal.z);
+
                 // tinyobj::real_t tx = attrib.texcoords[2*index.texcoord_index+0];
                 // tinyobj::real_t ty = attrib.texcoords[2*index.texcoord_index+1];
 
-                vertices.emplace_back(position, color);
+                vertices.push_back({ position, color, normal });
             }
-            indexOffset += faceVerex;
+
+            // if (vertices.size() - prevIndex >= 3)
+            // {
+            //     glm::vec3 vertex1 = vertices[prevIndex + 0].position;
+            //     glm::vec3 vertex2 = vertices[prevIndex + 1].position;
+            //     glm::vec3 vertex3 = vertices[prevIndex + 2].position;
+
+            //     glm::vec3 newNormal = glm::normalize(glm::cross(vertex2 - vertex3, vertex3 - vertex1));
+            //     // glm::vec3 newNormal = glm::normalize(glm::cross(vertex2 - vertex1, vertex3 - vertex1));
+
+            //     for (std::size_t ii = prevIndex; ii < vertices.size(); ++ii)
+            //         vertices[ii].normal = newNormal;
+            // }
+
+            indexOffset += faceVertex;
         }
     }
 }
@@ -174,13 +188,15 @@ void generateSphereVerticesFilled(float radius,
     const float Z = 0.850650808352039932f * radius;
     const float N = 0.0f;
 
-    static const std::array<glm::vec3, 12> positions{{
-        { -X, N, Z }, {  X, N, Z }, { -X, N,-Z }, {  X, N,-Z },
-        {  N, Z, X }, {  N, Z,-X }, {  N,-Z, X }, {  N,-Z,-X },
-        {  Z, X, N }, { -Z, X, N }, {  Z,-X, N }, { -Z,-X, N }
+    static const std::array<glm::vec3, 12> positions
+    {{
+        { -X,+N,+Z }, { +X,+N,+Z }, { -X,+N,-Z }, { +X,+N,-Z },
+        { +N,+Z,+X }, { +N,+Z,-X }, { +N,-Z,+X }, { +N,-Z,-X },
+        { +Z,+X,+N }, { -Z,+X,+N }, { +Z,-X,+N }, { -Z,-X,+N },
     }};
 
-    static const std::array<glm::ivec3, 20> indices{{
+    static const std::array<glm::ivec3, 20> indices
+    {{
         { 0, 4, 1}, { 0, 9, 4}, { 9, 5, 4}, { 4, 5, 8}, { 4, 8, 1},
         { 8,10, 1}, { 8, 3,10}, { 5, 3, 8}, { 5, 2, 3}, { 2, 7, 3},
         { 7,10, 3}, { 7, 6,10}, { 7,11, 6}, {11, 0, 6}, { 0, 1, 6},
@@ -189,7 +205,8 @@ void generateSphereVerticesFilled(float radius,
 
     vertices.clear();
     vertices.reserve(indices.size() * 3); // pre-allocate
-    for (const glm::ivec3& index : indices) {
+    for (const glm::ivec3& index : indices)
+    {
         vertices.push_back(positions[index.x]);
         vertices.push_back(positions[index.y]);
         vertices.push_back(positions[index.z]);
@@ -277,9 +294,10 @@ void Data::initialiseGeometries()
             .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 2)
             .addVbo()
             .setVboAsInstanced()
-            .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec2f, 0)
-            .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f, 2)
-            .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 4);
+            .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
+            .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f, 3)
+            .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 5)
+            .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 8);
 
         geometryBuilder.build(graphic.geometries.hudText.letters);
 
@@ -330,6 +348,10 @@ void Data::initialiseGeometries()
             glm::vec3 position;
             glm::vec2 texCoord;
         };
+
+        //
+        //
+        //
 
         // std::array<int, 6> refIndices{{ 1,0,2,  1,3,2 }};
 
@@ -384,6 +406,9 @@ void Data::initialiseGeometries()
         // for (int index : indices)
         //     vertices.push_back(quadVertices[index]);
 
+        //
+        //
+        //
 
         const auto& vSize = graphic.camera.viewportSize;
 
@@ -400,6 +425,10 @@ void Data::initialiseGeometries()
         vertices.reserve(indices.size()); // pre-allocate
         for (int index : indices)
             vertices.push_back(quadVertices[index]);
+
+        //
+        //
+        //
 
         graphic.geometries.hudPerspective.geometry.updateBuffer(0, vertices);
         graphic.geometries.hudPerspective.geometry.setPrimitiveCount(vertices.size());
@@ -430,6 +459,7 @@ void Data::initialiseGeometries()
             .setShader(*graphic.shaders.model)
             .setPrimitiveType(GL_TRIANGLES)
             .addVbo()
+            .setVboStride(9 * 4)
             .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
             .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
             // .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
@@ -446,6 +476,53 @@ void Data::initialiseGeometries()
             std::vector<ModelVertex> modelVertices;
             loadCarModel(modelVertices);
 
+            // {
+            //     modelVertices.reserve(8 * 1024);
+
+            //     auto addRectangle = [&modelVertices](
+            //         const glm::vec3& center,
+            //         const glm::vec3& size,
+            //         const glm::vec3& color)
+            //     {
+            //         const glm::vec3 hsize = size * 0.5f;
+
+            //         std::array<glm::vec3, 8> tmpVertices
+            //         {{
+            //             { center.x - hsize.x, center.y - hsize.y, center.z - hsize.z },
+            //             { center.x + hsize.x, center.y - hsize.y, center.z - hsize.z },
+            //             { center.x - hsize.x, center.y + hsize.y, center.z - hsize.z },
+            //             { center.x + hsize.x, center.y + hsize.y, center.z - hsize.z },
+
+            //             { center.x - hsize.x, center.y - hsize.y, center.z + hsize.z },
+            //             { center.x + hsize.x, center.y - hsize.y, center.z + hsize.z },
+            //             { center.x - hsize.x, center.y + hsize.y, center.z + hsize.z },
+            //             { center.x + hsize.x, center.y + hsize.y, center.z + hsize.z },
+            //         }};
+
+            //         std::array<int, 36> indices
+            //         {{
+            //             0,1,2,  1,2,3, // bottom
+            //             4,5,6,  5,6,7, // top
+
+            //             1,3,5,  3,5,7, // right
+            //             0,2,4,  2,4,6, // left
+
+            //             0,1,4, 1,4,5, // back
+            //             2,3,6, 3,6,7, // front
+            //         }};
+
+            //         for (int index : indices)
+            //             modelVertices.push_back({ tmpVertices[index], color, glm::vec3(1) });
+            //     };
+
+            //     addRectangle({ 0, 0, 0.2f }, { 0.75f, 4, 0.5f }, glm::vec3(1));
+            //     addRectangle({ 0, 0, 0.2f }, { 1.50f, 2, 0.4f }, glm::vec3(1));
+
+            //     // addRectangle({ 0, -0.5f, 0.4f }, { 1, 1, 0.25 }, glm::vec3(1,0,0));
+
+            //     addRectangle({ 0, -0.5f, 0.6f }, { 1, 1, 0.2 }, glm::vec3(0)); // cockpit
+            // }
+
             graphic.geometries.model.car.updateBuffer(0, modelVertices);
             graphic.geometries.model.car.setPrimitiveCount(modelVertices.size());
         }
@@ -454,6 +531,30 @@ void Data::initialiseGeometries()
 
             std::vector<ModelVertex> modelVertices;
             loadWheelModel(modelVertices);
+
+            // {
+            //     modelVertices.reserve(8 * 1024);
+            //     const int quality = 16;
+            //     for (int ii = 1; ii <= quality; ii += 2)
+            //     {
+            //         const float prevAngle = (float(ii - 1) / quality) * M_PI * 2;
+            //         const float currAngle = (float(ii % quality) / quality) * M_PI * 2;
+
+            //         constexpr float radius = 0.5f;
+
+            //         std::array<glm::vec3, 4> tmpVertices
+            //         {{
+            //             { -0.25f, std::cos(prevAngle) * radius, std::sin(prevAngle) * radius },
+            //             { +0.25f, std::cos(prevAngle) * radius, std::sin(prevAngle) * radius },
+            //             { -0.25f, std::cos(currAngle) * radius, std::sin(currAngle) * radius },
+            //             { +0.25f, std::cos(currAngle) * radius, std::sin(currAngle) * radius },
+            //         }};
+
+            //         std::array<int, 6> indices{{ 0,1,2,  1,2,3 }};
+            //         for (int index : indices)
+            //             modelVertices.push_back({ tmpVertices[index], glm::vec3(1), glm::vec3(1) });
+            //     }
+            // }
 
             graphic.geometries.model.wheel.updateBuffer(0, modelVertices);
             graphic.geometries.model.wheel.setPrimitiveCount(modelVertices.size());
@@ -478,8 +579,8 @@ void Data::initialiseGeometries()
             .setPrimitiveType(GL_LINE_STRIP); // <= reused instead of reset
 
         for (auto& wheelsTrail : graphic.geometries.wireframes.bestNewCarsTrails)
-            for (unsigned int ii = 0; ii < wheelsTrail.wheels.size(); ++ii)
-                geometryBuilder.build(wheelsTrail.wheels[ii]);
+            for (auto& wheel : wheelsTrail.wheels)
+                geometryBuilder.build(wheel);
 
         geometryBuilder.build(graphic.geometries.wireframes.leaderCarTrail);
 

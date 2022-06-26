@@ -3,7 +3,7 @@
 
 #include "../NonCopyable.hpp"
 
-#include "demo/helpers/OpenGLES.hpp"
+#include "helpers/OpenGLES.hpp"
 
 class SDLWindowWrapper
     : public NonCopyable

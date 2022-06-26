@@ -160,7 +160,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime, unsigne
 {
     const auto& NNetworks = _geneticAlgorithm.getNeuralNetworks();
 
-    for (unsigned int ii = 0; ii < _workerProducers.size(); ++ii)
+    for (std::size_t ii = 0; ii < _workerProducers.size(); ++ii)
     {
         auto first = NNetworks.begin() + (ii + 0) * _genomesPerCore;
         auto last = NNetworks.begin() + (ii + 1) * _genomesPerCore;

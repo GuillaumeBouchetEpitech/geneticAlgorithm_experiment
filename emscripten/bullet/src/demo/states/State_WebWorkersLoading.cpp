@@ -45,7 +45,6 @@ void State_WebWorkersLoading::render(const SDL_Window& window)
     Scene::renderSimple();
 }
 
-
 void State_WebWorkersLoading::visibility(bool visible)
 {
     static_cast<void>(visible); // <= unused

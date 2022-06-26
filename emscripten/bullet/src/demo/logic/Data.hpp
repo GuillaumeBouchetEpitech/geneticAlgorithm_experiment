@@ -1,14 +1,13 @@
 
 #pragma once
 
-#include "demo/helpers/OpenGLES.hpp"
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/OpenGLES.hpp"
+#include "helpers/GLMath.hpp"
 
 #include "graphic/utilities/StackRenderer.hpp"
 #include "graphic/utilities/TextRenderer.hpp"
 #include "graphic/utilities/ParticleManager.hpp"
-#include "graphic/utilities/FrustumCulling.hpp"
-#include "graphic/utilities/FlockingManager.hpp"
+#include "graphic/utilities/camera/Camera.hpp"
 
 #include "graphic/wrappers/Geometry.hpp"
 #include "graphic/wrappers/Texture.hpp"
@@ -55,6 +54,7 @@ public:
 
 private:
     void initialiseShaders();
+    void initialiseTextures();
     void initialiseGeometries();
     void initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore);
     void initialiseSimulationCallbacks();
@@ -67,54 +67,42 @@ public:
         {
             glm::vec2 viewportSize = { 800.0f, 600.0f };
 
-            struct Rotations
+            struct SceneData
             {
-                float theta = -2.5f;
-                float phi = 0.5f;
-            }
-            rotations;
-
-            glm::vec3 center = { 0.0f, 0.0f, 0.0f };
-            float distance = 0.0f;
-
-            glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
-            glm::vec3 front = { 1.0f, 0.0f, 0.0f };
-
-            glm::vec3 thirdPersonEye = { 0.0f, 0.0f, 0.0f };
-            glm::vec3 thirdPersonUpAxis = { 0.0f, 0.0f, 1.0f };
-
-            struct MatricesData
-            {
-                struct Matrices
+                struct Rotations
                 {
-                    glm::mat4 projection;
-                    glm::mat4 model;
-                    glm::mat4 view;
-                    glm::mat4 composed;
-                };
+                    float theta = -2.5f;
+                    float phi = 0.5f;
+                }
+                rotations;
 
-                Matrices scene;
-                Matrices thirdPerson;
+                glm::vec3 center = { 0.0f, 0.0f, 0.0f };
+                float distance = 0.0f;
 
-                glm::mat4 hud_ortho;
-                glm::mat4 hud_perspective;
+                Camera instance;
             }
-            matrices;
+            scene;
 
-            FrustumCulling frustumCulling;
+            struct ThirdPersonData
+            {
+                glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
+                glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
+
+                Camera instance;
+            }
+            thirdPerson;
         }
         camera;
 
         struct Shaders
         {
-            std::unique_ptr<ShaderProgram> stackRenderer = nullptr;
-            std::unique_ptr<ShaderProgram> wireframes = nullptr;
-            std::unique_ptr<ShaderProgram> animatedCircuit = nullptr;
-            std::unique_ptr<ShaderProgram> hudText = nullptr;
-            std::unique_ptr<ShaderProgram> particles = nullptr;
-            std::unique_ptr<ShaderProgram> model = nullptr;
-            std::unique_ptr<ShaderProgram> simpleTexture = nullptr;
-            std::unique_ptr<ShaderProgram> stackRendererNeuron = nullptr;
+            std::shared_ptr<ShaderProgram> stackRenderer = nullptr;
+            std::shared_ptr<ShaderProgram> wireframes = nullptr;
+            std::shared_ptr<ShaderProgram> animatedCircuit = nullptr;
+            std::shared_ptr<ShaderProgram> hudText = nullptr;
+            std::shared_ptr<ShaderProgram> particles = nullptr;
+            std::shared_ptr<ShaderProgram> model = nullptr;
+            std::shared_ptr<ShaderProgram> simpleTexture = nullptr;
         }
         shaders;
 
@@ -203,7 +191,6 @@ public:
         StackRenderer stackRenderer;
 
         ParticleManager particleManager;
-        FlockingManager flockingManager;
 
         struct HudText
         {
@@ -319,10 +306,9 @@ public:
 
         struct Mouse
         {
-            glm::ivec2 position = {0, 0};
-            glm::ivec2 delta = {0, 0};
+            glm::vec2 position = {0, 0};
+            glm::vec2 delta = {0, 0};
             bool tracking = false;
-            bool wasTracking = false;
         }
         mouse;
     }

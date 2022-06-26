@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 #include <array>
@@ -55,6 +55,5 @@ public:
     void update(float delta);
 
 public:
-    void emitParticles(const glm::vec3& position);
     void emitParticles(const glm::vec3& position, const glm::vec3& velocity);
 };

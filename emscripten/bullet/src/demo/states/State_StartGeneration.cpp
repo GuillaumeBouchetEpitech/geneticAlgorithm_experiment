@@ -6,11 +6,19 @@
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 void State_StartGeneration::enter()
 {
-    Data::get().logic.state.countdown = 750; // wait 0.75 seconds
+    auto& data = Data::get();
+    auto& logic = data.logic;
+
+    const float currFitness = logic.fitnessStats.allStats.back();
+
+    if (currFitness > 0.0f)
+        logic.state.countdown = 2000; // wait 2.0 second(s)
+    else
+        logic.state.countdown = 1000; // wait 1.0 second(s)
 }
 
 void State_StartGeneration::update(int deltaTime)
@@ -27,7 +35,6 @@ void State_StartGeneration::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-        graphic.flockingManager.update(elapsedTime);
 
         graphic.cylinderAnimationTime += elapsedTime;
     }
@@ -37,7 +44,7 @@ void State_StartGeneration::update(int deltaTime)
         auto& simulation = *logic.simulation;
         auto& camera = graphic.camera;
 
-        glm::vec3   cameraNextCenter = camera.center;
+        glm::vec3   cameraNextCenter = camera.scene.center;
         float       cameraNextDistance = 200.0f;
 
         if (logic.isAccelerated)
@@ -55,8 +62,8 @@ void State_StartGeneration::update(int deltaTime)
 
         const float lerpRatio = 0.1f;
 
-        camera.center += (cameraNextCenter - camera.center) * lerpRatio;
-        camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
+        camera.scene.center += (cameraNextCenter - camera.scene.center) * lerpRatio;
+        camera.scene.distance += (cameraNextDistance - camera.scene.distance) * lerpRatio;
 
     } // camera tracking
 

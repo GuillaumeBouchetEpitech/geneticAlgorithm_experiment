@@ -8,7 +8,7 @@ class NeuralNetworkTopology
 public:
     using HiddenLayers = std::vector<unsigned int>;
 
-private: // attributs
+private: // attributes
     unsigned int    _input = 0;
     HiddenLayers    _hiddens;
     unsigned int    _output = 0;
@@ -16,6 +16,7 @@ private: // attributs
     bool            _useBias = false;
 
     unsigned int    _totalWeights = 0;
+    unsigned int    _totalNeurons = 0;
 
 public:
     NeuralNetworkTopology() = default;
@@ -25,6 +26,7 @@ public:
 
 private:
     void _computeTotalWeights();
+    void _computeTotalNeurons();;
 
 public:
     bool isValid() const;
@@ -37,4 +39,5 @@ public:
     bool isUsingBias() const;
 
     unsigned int getTotalWeights() const;
+    unsigned int getTotalNeurons() const;
 };

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <array>
 #include <vector>
@@ -19,23 +19,23 @@ struct CarData
         glm::mat4 chassis;
         std::array<glm::mat4, 4> wheels;
     };
-    Transforms transforms;
+    Transforms liveTransforms;
 
     std::vector<Transforms> latestTransformsHistory;
 
     glm::vec3 velocity;
 
-    struct t_sensor
+    struct SensorData
     {
         glm::vec3 near;
         glm::vec3 far;
         float value;
     };
 
-    std::array<t_sensor, 15> eyeSensors;
-    t_sensor groundSensor;
+    std::array<SensorData, 15> eyeSensors;
+    SensorData groundSensor;
 
-    struct t_neuralNetworkOutput
+    struct NeuralNetworkOutput
     {
         float steer = 0.0f;
         float speed = 0.0f;

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/helpers/OpenGLES.hpp"
+#include "helpers/OpenGLES.hpp"
 
 #include <vector>
 

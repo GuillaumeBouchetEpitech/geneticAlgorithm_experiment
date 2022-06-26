@@ -14,18 +14,20 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
-    // SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1");
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    // OpenGl ES2 -> WebGL1
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+    // SDL_GL_SetSwapInterval(0);
+    // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
     const int posX = SDL_WINDOWPOS_UNDEFINED;
     const int posY = SDL_WINDOWPOS_UNDEFINED;
     const int flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    // const int flags = SDL_WINDOW_OPENGL;
 
     _window = SDL_CreateWindow("AI", posX, posY, width, height, flags);
 
@@ -63,6 +65,8 @@ SDLWindowWrapper::SDLWindowWrapper(int width, int height)
     D_MYLOG("GL_VERSION: " << glGetString(GL_VERSION));
 
     glViewport(0, 0, width, height);
+
+    glDepthFunc(GL_LESS);
 }
 
 SDLWindowWrapper::~SDLWindowWrapper()

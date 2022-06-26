@@ -1,7 +1,9 @@
 
-#include "Car.hpp"
+#include "CarAgent.hpp"
 
 #include "demo/utilities/types.hpp"
+
+#include "demo/utilities/TraceLogger.hpp"
 
 #include <cmath> // <= M_PI
 #include <iostream>
@@ -36,9 +38,10 @@ namespace constants
 
 };
 
-Car::Car(PhysicWorld& physicWorld,
-         const glm::vec3& position,
-         const glm::vec4& quaternion)
+CarAgent::CarAgent(
+    PhysicWorld& physicWorld,
+    const glm::vec3& position,
+    const glm::vec4& quaternion)
     : _physicWorld(physicWorld)
     , _physicVehicle(*_physicWorld.createVehicle())
 {
@@ -47,7 +50,7 @@ Car::Car(PhysicWorld& physicWorld,
     reset(position, quaternion);
 }
 
-void Car::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralNetwork)
+void CarAgent::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralNetwork)
 {
     if (!_isAlive)
         return;
@@ -77,6 +80,14 @@ void Car::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralN
         input.push_back(glm::clamp(eyeSensor.value, 0.0f, 1.0f));
     }
 
+
+
+    const float speed = _physicVehicle.getCurrentSpeedKmHour();
+    // D_MYLOG("speed=" << speed);
+    input.push_back(glm::clamp(speed / 100.0f, 0.0f, 1.0f));
+
+
+
     std::vector<float> output;
 
     neuralNetwork->compute(input, output);
@@ -98,7 +109,7 @@ void Car::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralN
     ++_totalUpdateNumber;
 }
 
-void Car::_updateSensors()
+void CarAgent::_updateSensors()
 {
     glm::mat4 vehicleTransform;
     _physicVehicle.getOpenGLMatrix(vehicleTransform);
@@ -112,7 +123,7 @@ void Car::_updateSensors()
         for (const auto& eyeElevation : constants::eyeElevations)
             for (const auto& eyeAngle : constants::eyeAngles)
             {
-                Car::Sensor& eyeSensor = _eyeSensors[sensorIndex++];
+                CarAgent::Sensor& eyeSensor = _eyeSensors[sensorIndex++];
 
                 glm::vec4 newFarValue(
                     constants::eyeMaxRange * std::sin(eyeAngle),
@@ -136,7 +147,7 @@ void Car::_updateSensors()
 }
 
 
-void Car::_collideEyeSensors()
+void CarAgent::_collideEyeSensors()
 {
     for (auto& sensor : _eyeSensors)
     {
@@ -156,45 +167,49 @@ void Car::_collideEyeSensors()
     }
 }
 
-bool Car::_collideGroundSensor()
+bool CarAgent::_collideGroundSensor()
 {
     // raycast the ground to get the checkpoints validation
 
     // ground sensor collide only ground
     PhysicWorld::RaycastParamsGroundsOnly params(_groundSensor.near, _groundSensor.far);
 
-    bool hasHitGround = _physicWorld.raycastGrounds(params);
+    _physicWorld.raycastGrounds(params);
+    if (!params.result.hasHit)
+        return false;
 
-    if (hasHitGround)
+    _groundSensor.far = params.result.impactPoint;
+
+    _groundSensor.value = glm::length(_groundSensor.far - _groundSensor.near) / constants::groundMaxRange;
+
+    int hitGroundIndex = params.result.impactIndex;
+
+    // is this the next "ground geometry" index?
+    if (_groundIndex + 1 == hitGroundIndex)
     {
-        _groundSensor.far = params.result.impactPoint;
+        // update so it only get rewarded at the next "ground geometry"
+        _groundIndex = hitGroundIndex;
 
-        _groundSensor.value = glm::length(_groundSensor.far - _groundSensor.near) / constants::groundMaxRange;
+        // restore health to full
+        _health = constants::healthMaxValue;
 
-        int hitGroundIndex = params.result.impactIndex;
-
-        // is this the next "ground geometry" index?
-        if (_groundIndex + 1 == hitGroundIndex)
-        {
-            // update so it only get rewarded at the next "ground geometry"
-            _groundIndex = hitGroundIndex;
-
-            // restore health to full
-            _health = constants::healthMaxValue;
-
-            // reward the genome
-            ++_fitness;
-        }
-        // else if (_groundIndex + 1 > hitGroundIndex)
-        // {
-        //     _physicVehicle.disableContactResponse();
-        // }
+        // reward the genome
+        ++_fitness;
     }
+    // else if (_groundIndex + 1 > hitGroundIndex)
+    // {
+    //     _physicVehicle.disableContactResponse();
+    // }
 
-    return hasHitGround;
+    // if (_groundIndex != hitGroundIndex)
+    // {
+    //     _physicVehicle.disableContactResponse();
+    // }
+
+    return true;
 }
 
-void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
+void CarAgent::reset(const glm::vec3& position, const glm::vec4& quaternion)
 {
     _isAlive = true;
     _fitness = 0;
@@ -214,47 +229,47 @@ void Car::reset(const glm::vec3& position, const glm::vec4& quaternion)
     _physicWorld.addVehicle(_physicVehicle); // ensure vehicle presence
 }
 
-const Car::Sensors& Car::getEyeSensors() const
+const CarAgent::Sensors& CarAgent::getEyeSensors() const
 {
     return _eyeSensors;
 }
 
-const Car::Sensor& Car::getGroundSensor() const
+const CarAgent::Sensor& CarAgent::getGroundSensor() const
 {
     return _groundSensor;
 }
 
-float Car::getFitness() const
+float CarAgent::getFitness() const
 {
     return _fitness;
 }
 
-bool Car::isAlive() const
+bool CarAgent::isAlive() const
 {
     return _isAlive;
 }
 
-int  Car::getGroundIndex() const
+int CarAgent::getGroundIndex() const
 {
     return _groundIndex;
 }
 
-const Car::NeuralNetworkOutput& Car::getNeuralNetworkOutput() const
+const CarAgent::NeuralNetworkOutput& CarAgent::getNeuralNetworkOutput() const
 {
     return _output;
 }
 
-const PhysicVehicle& Car::getVehicle() const
+const PhysicVehicle& CarAgent::getVehicle() const
 {
     return _physicVehicle;
 }
 
-float Car::getLife() const
+float CarAgent::getLife() const
 {
     return float(_health) / constants::healthMaxValue;
 }
 
-unsigned int Car::getTotalUpdates() const
+unsigned int CarAgent::getTotalUpdates() const
 {
     return _totalUpdateNumber;
 }

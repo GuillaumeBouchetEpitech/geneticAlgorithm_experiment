@@ -46,7 +46,7 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
     groundVertices.reserve(4 * 1024);
     wallsVertices.reserve(groundVertices.capacity() * 2); // walls twice bigger that ground geometry
 
-    const glm::vec3 greyColor = { 0.6f, 0.6f, 0.6f };
+    const glm::vec3 greyColor = { 0.7f, 0.7f, 0.7f };
     const glm::vec3 whiteColor = { 1.0f, 1.0f, 1.0f };
 
     const float maxFloat = std::numeric_limits<float>::max();
@@ -119,24 +119,6 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         }
 
         logic.circuitAnimation.maxUpperValue += 1.0f;
-
-        { // flockingManager
-
-            glm::vec3 sum{0, 0, 0};
-            int total = 0;
-
-            for (const glm::vec3& vertex : vertices)
-            {
-                sum += vertex;
-                ++total;
-            }
-
-            if (total > 0)
-            {
-                graphic.flockingManager.addKnot(sum / float(total));
-            }
-
-        } // flockingManager
     };
 
     auto onWallPatchCallback = [
@@ -176,7 +158,8 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         }
     };
 
-    logic.annTopology.init({15, 5, 2}, /*useBiasNeuron =*/ true);
+    logic.annTopology.init({16, 5, 2}, /*useBiasNeuron =*/ true);
+    // logic.annTopology.init({15, 10, 5, 2}, /*useBiasNeuron =*/ true);
 
     logic.cores.genomesPerCore = genomesPerCore;
     logic.cores.totalCores = totalCores;
@@ -203,8 +186,8 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
     boundaries.center = boundaries.min + (boundaries.max - boundaries.min) * 0.5f;
 
-    graphic.camera.center = logic.simulation->getStartPosition();
-    graphic.camera.distance = 200.0f;
+    graphic.camera.scene.center = logic.simulation->getStartPosition();
+    graphic.camera.scene.distance = 200.0f;
 
     { // compute circuit skeleton wireframe geometry
 
@@ -280,26 +263,106 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
         constexpr float pi2 = M_PI * 2.0f;
 
-        const int cylinderQuality = 128;
-        for (int ii = 0; ii < cylinderQuality; ++ii)
         {
-            const float currCoef = float(ii + 0) / cylinderQuality;
-            const float nextCoef = float(ii + 1) / cylinderQuality;
 
-            const float currCos = std::cos(currCoef * pi2);
-            const float nextCos = std::cos(nextCoef * pi2);
-            const float currSin = std::sin(currCoef * pi2);
-            const float nextSin = std::sin(nextCoef * pi2);
+            constexpr unsigned int cylinderQuality = 64;
+            for (unsigned int ii = 0; ii < cylinderQuality; ++ii)
+            {
+                const float currCoef = float(ii + 0) / cylinderQuality;
+                const float nextCoef = float(ii + 1) / cylinderQuality;
 
-            std::array<Vertex, 4> patchVertices{{
-                { { +boardHSize.x * 2.0f, radius * currCos, radius * currSin }, { 12.0f, currCoef * 8.0f } },
-                { { -boardHSize.x * 2.0f, radius * currCos, radius * currSin }, {  0.0f, currCoef * 8.0f } },
-                { { +boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, { 12.0f, nextCoef * 8.0f } },
-                { { -boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, {  0.0f, nextCoef * 8.0f } },
-            }};
+                const float currCos = std::cos(currCoef * pi2);
+                const float nextCos = std::cos(nextCoef * pi2);
+                const float currSin = std::sin(currCoef * pi2);
+                const float nextSin = std::sin(nextCoef * pi2);
 
-            for (int index : indices)
-                vertices.push_back(patchVertices[index]);
+                std::array<Vertex, 4> patchVertices
+                {{
+                    { { +boardHSize.x * 2.0f, radius * currCos, radius * currSin }, { 12.0f, currCoef * 8.0f } },
+                    { { -boardHSize.x * 2.0f, radius * currCos, radius * currSin }, {  0.0f, currCoef * 8.0f } },
+                    { { +boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, { 12.0f, nextCoef * 8.0f } },
+                    { { -boardHSize.x * 2.0f, radius * nextCos, radius * nextSin }, {  0.0f, nextCoef * 8.0f } },
+                }};
+
+                for (int index : indices)
+                    vertices.push_back(patchVertices[index]);
+            }
+
+        }
+
+        {
+
+            // constexpr unsigned int torusQuality = 32;
+            // for (unsigned int ii = 1; ii <= torusQuality; ++ii)
+            // {
+            //     const float currCoef1 = float(ii - 1) / torusQuality;
+            //     const float nextCoef1 = float(ii + 0) / torusQuality;
+
+            //     const float currAngle = currCoef1 * pi2;
+            //     const float nextAngle = nextCoef1 * pi2;
+
+            //     const float currCos1 = std::cos(currAngle);
+            //     const float nextCos1 = std::cos(nextAngle);
+            //     const float currSin1 = std::sin(currAngle);
+            //     const float nextSin1 = std::sin(nextAngle);
+
+            //     const glm::vec3 center = { 10.0f, 10.0f, 10.0f };
+            //     const glm::vec3 normal0 = glm::vec3(currCos1, currSin1, 0.0f);
+            //     const glm::vec3 normal1 = glm::vec3(nextCos1, nextSin1, 0.0f);
+            //     const glm::vec3 center0 = center + normal0 * 10.0f;
+            //     const glm::vec3 center1 = center + normal1 * 10.0f;
+
+            //     constexpr unsigned int cylinderQuality = 3;
+            //     for (unsigned int jj = 1; jj < cylinderQuality; ++jj)
+            //     {
+            //         const float currCoef2 = float(jj - 1) / cylinderQuality;
+            //         const float nextCoef2 = float(jj + 0) / cylinderQuality;
+
+            //         const float currCos2 = std::cos(currCoef2 * pi2);
+            //         const float nextCos2 = std::cos(nextCoef2 * pi2);
+            //         const float currSin2 = std::sin(currCoef2 * pi2);
+            //         const float nextSin2 = std::sin(nextCoef2 * pi2);
+
+            //         std::array<Vertex, 4> patchVertices
+            //         {{
+            //             // { { +boardHSize.x * 2.0f, radius * currCos2, radius * currSin2 }, { 12.0f, currCoef2 * 8.0f } },
+            //             // { { -boardHSize.x * 2.0f, radius * currCos2, radius * currSin2 }, {  0.0f, currCoef2 * 8.0f } },
+            //             // { { +boardHSize.x * 2.0f, radius * nextCos2, radius * nextSin2 }, { 12.0f, nextCoef2 * 8.0f } },
+            //             // { { -boardHSize.x * 2.0f, radius * nextCos2, radius * nextSin2 }, {  0.0f, nextCoef2 * 8.0f } },
+            //             { { +0.0f, radius * currCos2, radius * currSin2 }, { 12.0f, currCoef2 * 8.0f } },
+            //             { { -0.0f, radius * currCos2, radius * currSin2 }, {  0.0f, currCoef2 * 8.0f } },
+            //             { { +0.0f, radius * nextCos2, radius * nextSin2 }, { 12.0f, nextCoef2 * 8.0f } },
+            //             { { -0.0f, radius * nextCos2, radius * nextSin2 }, {  0.0f, nextCoef2 * 8.0f } },
+            //             // { { center1.x + currCos2 * 10.0f, center1.x + currCos2 * 10.0f, center1.z + currSin2 * 10.0f }, { 12.0f, currCoef2 * 8.0f } },
+            //             // { { center0.x + currCos2 * 10.0f, center0.x + currCos2 * 10.0f, center0.z + currSin2 * 10.0f }, {  0.0f, currCoef2 * 8.0f } },
+            //             // { { center1.x + nextCos2 * 10.0f, center1.x + nextCos2 * 10.0f, center1.z + nextSin2 * 10.0f }, { 12.0f, nextCoef2 * 8.0f } },
+            //             // { { center0.x + nextCos2 * 10.0f, center0.x + nextCos2 * 10.0f, center0.z + nextSin2 * 10.0f }, {  0.0f, nextCoef2 * 8.0f } },
+            //         }};
+
+            //         {
+            //             glm::mat4 model = glm::identity<glm::mat4>();
+            //             model = glm::translate(model, center0);
+            //             // model = glm::rotate(model, currAngle, glm::vec3(0, 0, 1));
+
+            //             patchVertices[0].position = model * glm::vec4(patchVertices[0].position, 1.0f);
+            //             patchVertices[1].position = model * glm::vec4(patchVertices[1].position, 1.0f);
+            //         }
+
+            //         {
+            //             glm::mat4 model = glm::identity<glm::mat4>();
+            //             model = glm::translate(model, center1);
+            //             // model = glm::rotate(model, nextAngle, glm::vec3(0, 0, 1));
+
+            //             patchVertices[0].position = model * glm::vec4(patchVertices[0].position, 1.0f);
+            //             patchVertices[1].position = model * glm::vec4(patchVertices[1].position, 1.0f);
+            //         }
+
+
+            //         for (int index : indices)
+            //             vertices.push_back(patchVertices[index]);
+            //     }
+            // }
+
         }
 
         for (auto& cylinder : graphic.geometries.ground.cylinders)

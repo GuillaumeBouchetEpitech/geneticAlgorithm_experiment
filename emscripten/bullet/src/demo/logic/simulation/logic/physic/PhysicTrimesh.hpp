@@ -3,7 +3,7 @@
 
 #include "./demo/utilities/NonCopyable.hpp"
 
-#include "demo/helpers/GLMath.hpp"
+#include "helpers/GLMath.hpp"
 
 #include <vector>
 #include <memory>

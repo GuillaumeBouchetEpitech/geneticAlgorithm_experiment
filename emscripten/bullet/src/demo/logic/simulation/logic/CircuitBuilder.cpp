@@ -158,7 +158,7 @@ void CircuitBuilder::load(const std::string& filename)
     //
     // concatenate skeleton
 
-    for (unsigned int ii = 0; ii < rawKnots.size(); ++ii)
+    for (std::size_t ii = 0; ii < rawKnots.size(); ++ii)
     {
         auto knot = rawKnots[ii];
 
@@ -204,7 +204,7 @@ void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
     // should be 0 but is not nice when shown with the chessboard floor
     constexpr float floorValue = 0.0f;
 
-    for (unsigned int ii = 0; ii < _knots.size(); ++ii)
+    for (std::size_t ii = 0; ii < _knots.size(); ++ii)
     {
         const auto& knot = _knots[ii];
 

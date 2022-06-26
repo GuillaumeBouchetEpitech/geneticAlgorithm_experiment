@@ -19,9 +19,9 @@ public:
         NeuralNetworkTopology topology;
     };
 
-private: // attributs
+private: // attributes
     Genomes _genomes;
-    Genomes _bestGenomes; // keep X elites
+    Genomes _eliteGenomes; // keep X elites
 
     unsigned int _currentGeneration = 1; // generation number
 

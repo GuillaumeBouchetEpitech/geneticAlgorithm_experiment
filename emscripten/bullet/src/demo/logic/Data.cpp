@@ -30,6 +30,7 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
     graphic.camera.viewportSize = { width, height };
 
     initialiseShaders();
+    initialiseTextures();
     initialiseGeometries();
 
     //
@@ -41,7 +42,7 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
     hud.frameBuffer.initialise();
     hud.frameBuffer.bind();
 
-    hud.colorTexture.allocateBlank({ width, height }, false, false);
+    hud.colorTexture.allocateBlank({ width, height }, true, false);
     hud.colorTexture.bind();
     hud.frameBuffer.attachColorTexture(hud.colorTexture);
 
@@ -117,8 +118,6 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
     } // compute the top left HUD text
 
     graphic.hudText.renderer.initialise();
-
-    graphic.flockingManager.initialise();
 }
 
 //
