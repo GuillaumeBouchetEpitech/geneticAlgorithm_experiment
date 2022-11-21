@@ -1,29 +1,6 @@
 #!/bin/bash
 
 echo ""
-echo "Build what?"
-echo "=> C++ Experiment: 1 (default)"
-echo "=> C++ Bullet:     2"
-echo ""
-
-read USER_INPUT_PROJECT
-
-case $USER_INPUT_PROJECT in
-2)
-    echo ""
-    echo "selected project: bullet"
-    echo ""
-    selected_project=bullet
-    ;;
-*)
-    echo ""
-    echo "selected project: experiment"
-    echo ""
-    selected_project=experiment
-    ;;
-esac
-
-echo ""
 echo "Build target?"
 echo "=> native:        1 (default)"
 echo "=> web (pthread): 2"
@@ -128,60 +105,44 @@ esac
 #
 #
 
-enable_emscripten() {
+# enable_emscripten() {
 
-    echo ""
-    echo "EMSDK ENV"
+#     echo ""
+#     echo "EMSDK ENV"
 
-    OLD_PWD=$PWD
-    cd ./tools/emsdk
-    . ./emsdk_env.sh
-    cd $OLD_PWD
+#     OLD_PWD=$PWD
+#     cd ../tools/emsdk
+#     . ./emsdk_env.sh
+#     cd $OLD_PWD
 
-    echo ""
-    echo "EM++"
+#     echo ""
+#     echo "EM++"
 
-    em++ --version
-}
+#     em++ --version
+# }
 
-case $selected_platform in
-web_pthread)
-    enable_emscripten
-    ;;
-web_worker)
-    enable_emscripten
+# case $selected_platform in
+# web_pthread)
+#     enable_emscripten
+#     ;;
+# web_worker)
+#     enable_emscripten
+#     ;;
+# esac
+
+#
+#
+#
+
+echo ""
+echo "=> building"
+echo ""
+case $must_clean in
+yes)
+    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" fclean
     ;;
 esac
 
-#
-#
-#
-
-case $selected_project in
-bullet)
-    echo ""
-    echo "=> building Bullet"
-    echo ""
-    case $must_clean in
-    yes)
-        make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" bullet_fclean
-        ;;
-    esac
-    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" bullet -j15
-    ;;
-experiment)
-    echo ""
-    echo "=> building Experiment"
-    echo ""
-    case $must_clean in
-    yes)
-        make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" fclean
-        ;;
-    esac
-    # careful: the `-j15` option will mess with the sdl2 and sdl2_image wasm port
-    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j15
-
-    # # currently the build script must be used several times to get all the ports correctly...
-    # make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all
-    ;;
-esac
+# careful: the `-j4` option will mess with the sdl2 and sdl2_image wasm port
+make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" machinelearning -j4
+make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j4

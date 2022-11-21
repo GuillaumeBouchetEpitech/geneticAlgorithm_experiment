@@ -1,25 +1,34 @@
 
 #pragma once
 
-#include "helpers/OpenGLES.hpp"
-#include "helpers/GLMath.hpp"
+#include "graphic/renderers/StackRenderer.hpp"
+#include "graphic/renderers/scene/ParticleManager.hpp"
+#include "graphic/renderers/scene/FloorRenderer.hpp"
+#include "graphic/renderers/scene/BackGroundCylindersRenderer.hpp"
+#include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
+#include "graphic/renderers/scene/FlockingManager.hpp"
+#include "graphic/renderers/scene/ModelsRenderer.hpp"
+#include "graphic/renderers/scene/CarTailsRenderer.hpp"
+#include "graphic/renderers/hud/TextRenderer.hpp"
 
-#include "graphic/utilities/StackRenderer.hpp"
-#include "graphic/utilities/TextRenderer.hpp"
-#include "graphic/utilities/ParticleManager.hpp"
-#include "graphic/utilities/camera/Camera.hpp"
+#include "framework/graphic/camera/Camera.hpp"
 
-#include "graphic/wrappers/Geometry.hpp"
-#include "graphic/wrappers/Texture.hpp"
-#include "graphic/wrappers/ShaderProgram.hpp"
-#include "graphic/wrappers/FrameBuffer.hpp"
-#include "graphic/wrappers/RenderBuffer.hpp"
+#include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/Texture.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
+#include "framework/graphic/FrameBuffer.hpp"
+#include "framework/graphic/RenderBuffer.hpp"
+
+#include "helpers/CarWheelsTrails.hpp"
+#include "helpers/ProfileData.hpp"
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
 #include "demo/states/StateManager.hpp"
 
-#include "demo/utilities/NonCopyable.hpp"
+#include "framework/NonCopyable.hpp"
+
+#include "framework/helpers/GLMath.hpp"
 
 #include <string>
 #include <list>
@@ -63,6 +72,7 @@ public:
 
     struct Graphic
     {
+        // TODO: move in a class
         struct CameraData
         {
             glm::vec2 viewportSize = { 800.0f, 600.0f };
@@ -94,28 +104,9 @@ public:
         }
         camera;
 
-        struct Shaders
-        {
-            std::shared_ptr<ShaderProgram> stackRenderer = nullptr;
-            std::shared_ptr<ShaderProgram> wireframes = nullptr;
-            std::shared_ptr<ShaderProgram> animatedCircuit = nullptr;
-            std::shared_ptr<ShaderProgram> hudText = nullptr;
-            std::shared_ptr<ShaderProgram> particles = nullptr;
-            std::shared_ptr<ShaderProgram> model = nullptr;
-            std::shared_ptr<ShaderProgram> simpleTexture = nullptr;
-        }
-        shaders;
-
-        struct Textures
-        {
-            Texture textFont;
-            Texture chessboard;
-            std::array<Texture, 4> cylinders;
-        }
-        textures;
-
         struct HudComponents
         {
+            // TODO: move in a class
             Texture colorTexture;
             RenderBuffer depthRenderBuffer;
             FrameBuffer frameBuffer;
@@ -124,84 +115,24 @@ public:
 
         struct Geometries
         {
-            struct Particles
-            {
-                Geometry firework;
-                Geometry boids;
-            }
-            particles;
-
-            struct StackRenderer
-            {
-                Geometry lines;
-                Geometry triangles;
-            }
-            stackRenderer;
-
-            struct Wireframes
-            {
-                Geometry circuitSkelton;
-
-                struct WheelsTrail
-                {
-                    std::array<Geometry, 4> wheels;
-                };
-
-                std::array<WheelsTrail, 5> bestNewCarsTrails;
-
-                Geometry leaderCarTrail;
-            }
-            wireframes;
-
-            struct AnimatedCircuit
-            {
-                Geometry ground;
-                Geometry walls;
-            }
-            animatedCircuit;
-
-            struct HudText
-            {
-                Geometry letters;
-            }
-            hudText;
-
+            // TODO: move in a class
             struct Hud
             {
                 Geometry geometry;
             }
             hudPerspective;
-
-            struct Model
-            {
-                Geometry car;
-                Geometry wheel;
-            }
-            model;
-
-            struct Ground
-            {
-                Geometry chessboard;
-                std::array<Geometry, 4> cylinders;
-            }
-            ground;
         }
         geometries;
 
         StackRenderer stackRenderer;
-
         ParticleManager particleManager;
-
-        struct HudText
-        {
-            const glm::vec2 textureSize = { 256, 256 };
-            const glm::vec2 gridSize = { 16, 16 };
-
-            TextRenderer renderer;
-        }
-        hudText;
-
-        float cylinderAnimationTime = 0.0f;
+        FloorRenderer floorRenderer;
+        BackGroundCylindersRenderer backGroundCylindersRenderer;
+        AnimatedCircuitRenderer animatedCircuitRenderer;
+        TextRenderer textRenderer;
+        ModelsRenderer modelsRenderer;
+        FlockingManager flockingManager;
+        CarTailsRenderer carTailsRenderer;
     }
     graphic;
 
@@ -209,13 +140,6 @@ public:
 
     struct Logic
     {
-        struct State
-        {
-            StateManager::States previousState;
-            int countdown = 0;
-        }
-        state;
-
         struct Metrics
         {
             unsigned int updateTime = 0;
@@ -229,13 +153,7 @@ public:
 
         struct Cores
         {
-            using StatesData = std::vector<AbstactSimulation::CoreState>;
-            using StatesHistory = std::vector<StatesData>;
-
-            static constexpr unsigned int maxStateHistory = 60;
-            unsigned int currHistoryIndex = 0;
-            StatesData statesData;
-            StatesHistory statesHistory;
+            ProfileData profileData;
 
             unsigned int genomesPerCore = 0;
             unsigned int totalCores = 0;
@@ -254,28 +172,10 @@ public:
         }
         leaderCar;
 
-        struct CarsTrails
-        {
-            std::unordered_map<unsigned int, unsigned int> genomeIndexMap;
-
-            struct WheelsTrail
-            {
-                std::array<std::vector<glm::vec3>, 4> wheels;
-            };
-            std::vector<WheelsTrail> allWheelsTrails;
-
-            unsigned int currentTrailIndex = 0;
-        }
-        carsTrails;
+        CarWheelsTrails carWheelsTrails;
 
         struct CircuitAnimation
         {
-            float targetValue = 10.0f;
-            float lowerValue = 10.0f;
-            float upperValue = 10.0f;
-            float maxUpperValue = 0.0f;
-            int maxPrimitiveCount = 0;
-
             struct Boundaries
             {
                 glm::vec3 min;

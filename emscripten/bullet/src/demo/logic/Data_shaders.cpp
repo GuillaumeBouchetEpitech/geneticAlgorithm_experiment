@@ -1,87 +1,142 @@
 
 #include "Data.hpp"
 
-#include "graphic/wrappers/ShaderProgramBuilder.hpp"
+#include "graphicIds.hpp"
+
+#include "framework/asValue.hpp"
+
+#include "framework/graphic/ResourceManager.hpp"
+
+#include "framework/graphic/ShaderProgramBuilder.hpp"
 
 void Data::initialiseShaders()
 {
     ShaderProgramBuilder shaderProgramBuilder;
 
-    graphic.shaders.stackRenderer = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/stackRenderer.vert")
-        .setFragmentFilename("assets/shaders/stackRenderer.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_color")
-        .addUniform("u_composedMatrix")
-        .build();
+    auto& rmanager = ResourceManager::get();
 
-    graphic.shaders.wireframes = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/wireframes.vert")
-        .setFragmentFilename("assets/shaders/wireframes.frag")
-        .addAttribute("a_position")
-        .addUniform("u_composedMatrix")
-        .addUniform("u_color")
-        .build();
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/stackRenderer.vert")
+            .setFragmentFilename("assets/shaders/stackRenderer.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_color")
+            .addUniform("u_composedMatrix");
 
-    graphic.shaders.animatedCircuit = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/animatedCircuit.vert")
-        .setFragmentFilename("assets/shaders/animatedCircuit.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_color")
-        .addAttribute("a_normal")
-        .addAttribute("a_index")
-        .addUniform("u_composedMatrix")
-        .addUniform("u_alpha")
-        .addUniform("u_lowerLimit")
-        .addUniform("u_upperLimit")
-        .build();
+        rmanager.createShader(asValue(Shaders::stackRenderer), shaderProgramBuilder.getDefinition());
+    }
 
-    graphic.shaders.hudText = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/hudText.vert")
-        .setFragmentFilename("assets/shaders/hudText.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_texCoord")
-        .addAttribute("a_offsetPosition")
-        .addAttribute("a_offsetTexCoord")
-        .addAttribute("a_offsetColor")
-        .addAttribute("a_offsetScale")
-        .addUniform("u_composedMatrix")
-        .addUniform("u_texture")
-        .build();
+    //
+    //
+    //
 
-    graphic.shaders.particles = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/particles.vert")
-        .setFragmentFilename("assets/shaders/particles.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_offsetPosition")
-        .addAttribute("a_offsetScale")
-        .addAttribute("a_offsetColor")
-        .addUniform("u_composedMatrix")
-        .build();
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/particles.vert")
+            .setFragmentFilename("assets/shaders/particles.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_offsetPosition")
+            .addAttribute("a_offsetScale")
+            .addAttribute("a_offsetColor")
+            .addUniform("u_composedMatrix");
 
-    graphic.shaders.model = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/model.vert")
-        .setFragmentFilename("assets/shaders/model.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_color")
-        .addAttribute("a_offsetTransform")
-        .addAttribute("a_offsetColor")
-        .addUniform("u_composedMatrix")
-        .build();
+        rmanager.createShader(asValue(Shaders::particles), shaderProgramBuilder.getDefinition());
 
-    graphic.shaders.simpleTexture = shaderProgramBuilder
-        .reset()
-        .setVertexFilename("assets/shaders/simpleTexture.vert")
-        .setFragmentFilename("assets/shaders/simpleTexture.frag")
-        .addAttribute("a_position")
-        .addAttribute("a_texCoord")
-        .addUniform("u_composedMatrix")
-        .addUniform("u_texture")
-        .build();
+    }
+
+    //
+    //
+    //
+
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/simpleTexture.vert")
+            .setFragmentFilename("assets/shaders/simpleTexture.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_texCoord")
+            .addUniform("u_composedMatrix")
+            .addUniform("u_texture");
+
+        rmanager.createShader(asValue(Shaders::simpleTexture), shaderProgramBuilder.getDefinition());
+    }
+
+    //
+    //
+    //
+
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/hudText.vert")
+            .setFragmentFilename("assets/shaders/hudText.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_texCoord")
+            .addAttribute("a_offsetPosition")
+            .addAttribute("a_offsetTexCoord")
+            .addAttribute("a_offsetColor")
+            .addAttribute("a_offsetScale")
+            .addUniform("u_composedMatrix")
+            .addUniform("u_texture");
+
+        rmanager.createShader(asValue(Shaders::hudText), shaderProgramBuilder.getDefinition());
+    }
+
+    //
+    //
+    //
+
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/wireframes.vert")
+            .setFragmentFilename("assets/shaders/wireframes.frag")
+            .addAttribute("a_position")
+            .addUniform("u_composedMatrix")
+            .addUniform("u_color");
+
+        rmanager.createShader(asValue(Shaders::wireframes), shaderProgramBuilder.getDefinition());
+    }
+
+    //
+    //
+    //
+
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/animatedCircuit.vert")
+            .setFragmentFilename("assets/shaders/animatedCircuit.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_color")
+            .addAttribute("a_normal")
+            .addAttribute("a_index")
+            .addUniform("u_composedMatrix")
+            .addUniform("u_alpha")
+            .addUniform("u_lowerLimit")
+            .addUniform("u_upperLimit");
+
+        rmanager.createShader(asValue(Shaders::animatedCircuit), shaderProgramBuilder.getDefinition());
+    }
+
+    //
+    //
+    //
+
+    {
+        shaderProgramBuilder
+            .reset()
+            .setVertexFilename("assets/shaders/model.vert")
+            .setFragmentFilename("assets/shaders/model.frag")
+            .addAttribute("a_position")
+            .addAttribute("a_color")
+            .addAttribute("a_offsetTransform")
+            .addAttribute("a_offsetColor")
+            .addUniform("u_composedMatrix");
+
+        rmanager.createShader(asValue(Shaders::models), shaderProgramBuilder.getDefinition());
+    }
+
 }

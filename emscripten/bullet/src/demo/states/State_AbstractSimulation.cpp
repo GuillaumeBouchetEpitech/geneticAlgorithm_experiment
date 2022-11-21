@@ -8,7 +8,7 @@
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <limits> // std::numeric_limits<T>::max();
 #include <cmath> // std::ceil
@@ -139,7 +139,6 @@ void State_AbstractSimulation::update(int deltaTime)
             else if (rotateDown)
                 camera.scene.rotations.phi += 1.0f * elapsedTime;
 
-            // only pthread builds support this
             data.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
         } // keyboard event(s)
@@ -214,8 +213,5 @@ void State_AbstractSimulation::visibility(bool visible)
     StateManager::States currentState = stateManager->getState();
 
     if (currentState != StateManager::States::Paused && !visible)
-    {
-        Data::get().logic.state.previousState = currentState;
         stateManager->changeState(StateManager::States::Paused);
-    }
 }

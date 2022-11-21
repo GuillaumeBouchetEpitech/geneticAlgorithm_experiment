@@ -4,9 +4,9 @@
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 
-#include "demo/logic/simulation/machineLearning/GeneticAlgorithm.hpp"
+#include "machineLearning/GeneticAlgorithm.hpp"
 
-#include "demo/utilities/NonCopyable.hpp"
+#include "framework/NonCopyable.hpp"
 
 #include "demo/defines.hpp"
 
@@ -47,6 +47,8 @@ public:
 
 public:
     virtual void update(float elapsedTime, unsigned int totalSteps) = 0;
+    virtual void breed() = 0;
+    virtual bool isGenerationComplete() const = 0;
 
 public:
     virtual unsigned int getTotalCores() const = 0;

@@ -3,9 +3,10 @@
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
-#include "demo/logic/simulation/machineLearning/GeneticAlgorithm.hpp"
 #include "demo/logic/simulation/webworker/producer/WorkerProducer.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
+
+#include "machineLearning/GeneticAlgorithm.hpp"
 
 #include "demo/defines.hpp"
 
@@ -58,6 +59,8 @@ public:
 
 public:
     virtual void update(float elapsedTime, unsigned int totalSteps) override;
+    virtual void breed() override;
+    virtual bool isGenerationComplete() const override;
 
 private:
     void _processSimulation(float elapsedTime, unsigned int totalSteps);

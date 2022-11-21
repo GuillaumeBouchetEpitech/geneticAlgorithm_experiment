@@ -3,9 +3,7 @@
 
 #include "StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
-
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 void State_Paused::handleEvent(const SDL_Event& event)
 {
@@ -16,7 +14,7 @@ void State_Paused::handleEvent(const SDL_Event& event)
         case SDL_KEYDOWN:
         case SDL_KEYUP:
         {
-            StateManager::get()->changeState(Data::get().logic.state.previousState);
+            StateManager::get()->returnToPreviousState();
             break;
         }
     }

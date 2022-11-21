@@ -1,8 +1,8 @@
 
 #include "Data.hpp"
 
-#include "demo/utilities/TraceLogger.hpp"
-#include "demo/utilities/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
+#include "framework/ErrorHandler.hpp"
 
 #include "demo/defines.hpp"
 
@@ -11,6 +11,10 @@
 #else
 #include "demo/logic/simulation/pthread/PthreadSimulation.hpp"
 #endif
+
+#include "framework/graphic/ResourceManager.hpp"
+
+#include "framework/graphic/GlContext.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -23,15 +27,25 @@ Data* Data::_instance = nullptr;
 
 Data::~Data()
 {
+    ResourceManager::destroy();
 }
 
 void Data::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
+    ResourceManager::create();
+
     graphic.camera.viewportSize = { width, height };
 
     initialiseShaders();
     initialiseTextures();
     initialiseGeometries();
+
+    graphic.stackRenderer.initialise();
+    graphic.particleManager.initialise();
+    graphic.textRenderer.initialise();
+    graphic.modelsRenderer.initialise();
+    graphic.flockingManager.initialise();
+    graphic.carTailsRenderer.initialise();
 
     //
     //
@@ -70,54 +84,39 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
     initialiseSimulationCallbacks();
     initialiseSimulation(totalCores, genomesPerCore);
 
-    logic.carsTrails.allWheelsTrails.resize(logic.simulation->getTotalCars());
-    for (auto &trail : logic.carsTrails.allWheelsTrails)
-        for (auto &wheel : trail.wheels)
-            wheel.reserve(2048); // pre-allocate
-
     { // compute the top left HUD text
 
+        std::string glVersion = GlContext::getVersion();
+        if (glVersion.empty())
+            glVersion = "unknown";
+
         std::stringstream sstr;
+        sstr << "Graphic: " << glVersion << std::endl;
 
-        const GLubyte *glVersion = glGetString(GL_VERSION);
+#if defined D_WEB_BUILD
 
-        std::string graphic;
-        if (!glVersion)
-        {
-            graphic = "unknown";
-        }
-        else
-        {
-            graphic = reinterpret_cast<const char *>(glVersion);
-        }
+        sstr << "Type: C++ (WebAssembly Build)" << std::endl;
 
-        sstr << "Graphic: " << graphic << std::endl;
+#  if defined D_WEB_PTHREAD_BUILD
 
-#if defined D_WEB_PTHREAD_BUILD
+        sstr << "Mode: pthread";
 
-        sstr
-            << "Type: C++ (WebAssembly Build)" << std::endl
-            << "Mode: pthread";
+#  else
 
-#elif defined D_WEB_WEBWORKER_BUILD
+        sstr << "Mode: webworker (as a fallback)";
 
-        sstr
-            << "Type: C++ (WebAssembly Build)" << std::endl
-            << "Mode: webworker (as a fallback)";
+#  endif
 
-#elif defined D_NATIVE_PTHREAD_BUILD
+#else
 
-        sstr
-            << "Type: C++ (Native Build)" << std::endl
-            << "Mode: pthread";
+        sstr << "Type: C++ (Native Build)" << std::endl;
+        sstr << "Mode: pthread";
 
 #endif
 
         logic.hudText.header = sstr.str();
 
     } // compute the top left HUD text
-
-    graphic.hudText.renderer.initialise();
 }
 
 //

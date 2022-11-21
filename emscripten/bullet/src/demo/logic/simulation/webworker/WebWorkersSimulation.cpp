@@ -1,8 +1,8 @@
 
 #include "WebWorkersSimulation.hpp"
 
-#include "demo/utilities/ErrorHandler.hpp"
-#include "demo/utilities/TraceLogger.hpp"
+#include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include "demo/defines.hpp"
 
@@ -24,10 +24,10 @@ void WebWorkersSimulation::initialise(const Definition& def)
                 "received invalid neural network topology");
 
     CircuitBuilder circuit;
-    circuit.load(def.filename);
+    circuit.parse(def.filename);
 
-    circuit.generateSkeleton(def.onSkeletonPatch);
-    circuit.generate(def.onNewGroundPatch, def.onNewWallPatch);
+    circuit.generateWireframeSkeleton(def.onSkeletonPatch);
+    circuit.generateCircuitGeometry(def.onNewGroundPatch, def.onNewWallPatch);
 
     //
 
@@ -83,18 +83,6 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps)
         return;
     }
 
-    bool incompleteSimulation = false;
-
-    for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
-    {
-        const auto& carResult = getCarResult(ii);
-
-        if (!carResult.isAlive)
-            continue;
-
-        incompleteSimulation = true;
-    }
-
     if (_currentRequest == WorkerRequest::ResetAndProcess)
     {
         if (_callbacks.onGenerationReset)
@@ -119,12 +107,17 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps)
             _callbacks.onGenerationStep();
     }
 
-    if (incompleteSimulation)
-    {
-        // ask the worker(s) to process/update the (physic) simulation
-        _processSimulation(elapsedTime, totalSteps);
+    if (isGenerationComplete())
         return;
-    }
+
+    // ask the worker(s) to process/update the (physic) simulation
+    _processSimulation(elapsedTime, totalSteps);
+}
+
+void WebWorkersSimulation::breed()
+{
+    if (!isGenerationComplete())
+        return;
 
     for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
     {
@@ -145,7 +138,17 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps)
     _carLiveStatus.assign(_totalGenomes, true);
 
     // ask the worker(s) to reset the (physic) simulation
+    const float elapsedTime = 0.0f;
+    const unsigned int totalSteps = 1;
     _resetAndProcessSimulation(elapsedTime, totalSteps);
+}
+
+bool WebWorkersSimulation::isGenerationComplete() const
+{
+    for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
+        if (getCarResult(ii).isAlive)
+            return false;
+    return true;
 }
 
 void WebWorkersSimulation::_processSimulation(float elapsedTime, unsigned int totalSteps)

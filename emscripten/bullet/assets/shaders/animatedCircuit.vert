@@ -1,5 +1,5 @@
 
-precision mediump float;
+precision highp float;
 
 uniform mat4 u_composedMatrix;
 uniform float u_alpha;

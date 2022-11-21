@@ -8,7 +8,7 @@
 
 void State_EndGeneration::enter()
 {
-    Data::get().logic.state.countdown = 750; // wait 0.75 seconds
+    _countdown = 750; // wait 0.75 seconds
 }
 
 void State_EndGeneration::update(int deltaTime)
@@ -16,7 +16,6 @@ void State_EndGeneration::update(int deltaTime)
     State_AbstractSimulation::update(deltaTime);
 
     auto& data = Data::get();
-    auto& logic = data.logic;
     auto& graphic = data.graphic;
 
     float elapsedTime = float(deltaTime) / 1000.0f;
@@ -25,11 +24,11 @@ void State_EndGeneration::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-
-        graphic.cylinderAnimationTime += elapsedTime;
+        graphic.backGroundCylindersRenderer.update(elapsedTime);
+        graphic.flockingManager.update();
     }
 
-    logic.state.countdown -= deltaTime;
-    if (logic.state.countdown <= 0)
+    _countdown -= deltaTime;
+    if (_countdown <= 0)
         StateManager::get()->changeState(StateManager::States::StartGeneration);
 }

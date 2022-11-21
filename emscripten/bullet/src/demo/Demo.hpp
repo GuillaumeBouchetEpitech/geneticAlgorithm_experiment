@@ -1,7 +1,9 @@
 
 #pragma once
 
-#include "demo/utilities/sdl/SDLWindowWrapper.hpp"
+#include "framework/sdl/SDLWindowWrapper.hpp"
+
+#include <cstdint>
 
 class Demo
     : public SDLWindowWrapper
@@ -9,10 +11,10 @@ class Demo
 public:
     struct Definition
     {
-        unsigned int totalCores;
-        unsigned int genomesPerCore;
-        unsigned int width;
-        unsigned int height;
+        uint32_t totalCores = 0;
+        uint32_t genomesPerCore = 0;
+        uint32_t width = 0;
+        uint32_t height = 0;
     };
 
 public:
@@ -21,8 +23,8 @@ public:
 
 protected:
     virtual void _onEvent(const SDL_Event& event) override;
-    virtual void _onUpdate(long int deltaTime) override;
+    virtual void _onUpdate(uint32_t deltaTime) override;
     virtual void _onRender(const SDL_Window& screen) override;
-    virtual void _onResize(int width, int height) override;
+    virtual void _onResize(uint32_t width, uint32_t height) override;
     virtual void _onVisibilityChange(bool visible) override;
 };

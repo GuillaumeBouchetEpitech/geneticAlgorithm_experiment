@@ -111,7 +111,7 @@ const onGlobalPageLoad = async () => {
 
     const onContextCreationError = (event) => {
 
-        event.preventDefault();
+        // event.preventDefault();
 
         const statusMessage = event.statusMessage || "Unknown error";
         logger.error(`[JS] could not create a WebGL context, statusMessage=${statusMessage}.`);
@@ -120,7 +120,7 @@ const onGlobalPageLoad = async () => {
 
     const onWebGlContextLost = (event) => {
 
-        event.preventDefault();
+        // event.preventDefault();
 
         logger.error("[JS] WebGL context lost. You will need to reload the page.");
     };

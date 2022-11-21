@@ -12,7 +12,7 @@
 #include "State_StartGeneration.hpp"
 #include "State_EndGeneration.hpp"
 
-#include "demo/utilities/TraceLogger.hpp"
+#include "framework/TraceLogger.hpp"
 
 //
 //
@@ -39,6 +39,7 @@ StateManager::StateManager()
     _currentState = States::StartGeneration;
 #endif
 
+    _previousState = _currentState;
     _states[asValue(_currentState)]->enter();
 }
 
@@ -78,7 +79,20 @@ void StateManager::changeState(States nextState)
 {
     _states[asValue(_currentState)]->leave();
 
+    _previousState = _currentState;
     _currentState = nextState;
+
+    _states[asValue(_currentState)]->enter();
+}
+
+void StateManager::returnToPreviousState()
+{
+    if (_currentState == _previousState)
+        return;
+
+    _states[asValue(_currentState)]->leave();
+
+    _currentState = _previousState;
 
     _states[asValue(_currentState)]->enter();
 }

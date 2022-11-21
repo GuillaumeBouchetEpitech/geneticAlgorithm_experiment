@@ -5,21 +5,18 @@
 
 #include "demo/logic/Data.hpp"
 
-#include "demo/utilities/TraceLogger.hpp"
-
 #include "demo/logic/graphic/Scene.hpp"
+
+#include "framework/TraceLogger.hpp"
 
 #include <chrono>
 
 Demo::Demo(const Definition& def)
-    : SDLWindowWrapper(def.width, def.height)
+    : SDLWindowWrapper("AI", def.width, def.height, 30)
 {
     Data::create(def.width, def.height, def.totalCores, def.genomesPerCore);
 
     StateManager::create();
-
-    // hacky?
-    Data::get().logic.state.previousState = StateManager::get()->getState();
 
     Scene::initialise();
 }
@@ -37,7 +34,7 @@ void Demo::_onEvent(const SDL_Event& event)
     StateManager::get()->handleEvent(event);
 }
 
-void Demo::_onUpdate(long int deltaTime)
+void Demo::_onUpdate(uint32_t deltaTime)
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -59,7 +56,7 @@ void Demo::_onRender(const SDL_Window& screen)
     Data::get().logic.metrics.renderTime = microseconds.count();
 }
 
-void Demo::_onResize(int width, int height)
+void Demo::_onResize(uint32_t width, uint32_t height)
 {
     StateManager::get()->resize(width, height);
 }

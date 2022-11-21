@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <string>
 #include <vector>
@@ -25,20 +25,6 @@ public:
         glm::vec3 right;
         float size;
         glm::vec3 color;
-
-        Knot() = default;
-
-        Knot(
-            const glm::vec3& left,
-            const glm::vec3& right,
-            float size,
-            const glm::vec3& color
-        )
-            : left(left)
-            , right(right)
-            , size(size)
-            , color(color)
-        {}
     };
     using Knots = std::vector<Knot>;
     using CircuitVertex = Knot;
@@ -57,12 +43,15 @@ private:
     Knots _knots;
 
 public:
-    void load(const std::string& filename);
+    void parse(const std::string& filename);
     void load(const StartTransform& startTransform, const Knots& knots);
 
 public:
-    void generateSkeleton(CallbackNoNormals onSkeletonPatch);
-    void generate(CallbackNormals onNewGroundPatch, CallbackNormals onNewWallPatch);
+    void generateWireframeSkeleton(CallbackNoNormals onSkeletonPatch);
+    void generateCircuitGeometry(CallbackNormals onNewGroundPatch, CallbackNormals onNewWallPatch);
+
+private:
+    void generateSmoothedKnotsData(Knots& smoothedVertices);
 
 public:
     const StartTransform& getStartTransform() const;

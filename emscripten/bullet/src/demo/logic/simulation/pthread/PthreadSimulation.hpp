@@ -2,11 +2,15 @@
 #pragma once
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
-#include "demo/logic/simulation/pthread/multithreading/Producer.hpp"
-#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
+#include "machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/logic/CarAgent.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
-#include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
+
+// #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
+
+#include "framework/physic/PhysicWorld.hpp"
+
+#include "framework/multithreading/Producer.hpp"
 
 #include <list>
 #include <vector>
@@ -34,6 +38,8 @@ private:
     CarAgents _carAgents;
     CarDatas _carsData;
 
+    CircuitBuilder _circuitBuilder;
+
     CircuitBuilder::StartTransform _startTransform;
 
     bool _isFirstGenerationFrame = true;
@@ -57,8 +63,13 @@ public:
 public:
     virtual void initialise(const Definition& def) override;
 
+private:
+    void _resetPhysic();
+
 public:
     virtual void update(float elapsedTime, unsigned int totalSteps) override;
+    virtual void breed() override;
+    virtual bool isGenerationComplete() const override;
 
 private:
     void _updateCarResult();

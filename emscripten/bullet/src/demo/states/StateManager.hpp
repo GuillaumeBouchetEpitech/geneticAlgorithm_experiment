@@ -5,9 +5,9 @@
 
 #include "IState.hpp"
 
-#include "demo/utilities/types.hpp"
+#include "framework/asValue.hpp"
 
-#include "demo/utilities/NonCopyable.hpp"
+#include "framework/NonCopyable.hpp"
 
 #include <array>
 
@@ -54,9 +54,11 @@ private:
     StateInstances _states;
 
     States _currentState;
+    States _previousState;
 
 public:
     void changeState(States nextState);
+    void returnToPreviousState();
     States getState() const;
 
 public:

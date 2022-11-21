@@ -2,11 +2,14 @@
 
 #include "CircuitBuilder.hpp"
 
-#include "demo/utilities/ErrorHandler.hpp"
-#include "demo/utilities/TraceLogger.hpp"
-#include "demo/utilities/math/BSpline.hpp"
-#include "demo/utilities/string/trim.hpp"
-#include "demo/utilities/types.hpp"
+#include "framework/math/BSpline.hpp"
+
+#include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
+
+#include "framework/string/trim.hpp"
+
+#include "framework/asValue.hpp"
 
 #include <stdexcept> // <= std::invalid_argument / runtime_error
 #include <algorithm>
@@ -31,7 +34,7 @@ namespace /*anonymous*/
     };
 };
 
-void CircuitBuilder::load(const std::string& filename)
+void CircuitBuilder::parse(const std::string& filename)
 {
     //
     //
@@ -58,7 +61,7 @@ void CircuitBuilder::load(const std::string& filename)
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> commandsMap;
 
     const std::string cmd_start_transform_pos = "START_TRANSFORM_POSITION";
-    commandsMap[cmd_start_transform_pos] = [&](std::istringstream& isstr)
+    commandsMap[cmd_start_transform_pos] = [&cmd_start_transform_pos, this](std::istringstream& isstr)
     {
         auto& value = _startTransform.position;
         if (!(isstr >> value.x >> value.y >> value.z))
@@ -69,7 +72,7 @@ void CircuitBuilder::load(const std::string& filename)
     };
 
     const std::string cmd_start_transform_quat = "START_TRANSFORM_QUATERNION";
-    commandsMap[cmd_start_transform_quat] = [&](std::istringstream& isstr)
+    commandsMap[cmd_start_transform_quat] = [&cmd_start_transform_quat, this](std::istringstream& isstr)
     {
         auto& value = _startTransform.quaternion;
         if (!(isstr >> value.x >> value.y >> value.z >> value.w))
@@ -80,7 +83,7 @@ void CircuitBuilder::load(const std::string& filename)
     };
 
     const std::string cmd_knots_color = "KNOTS_COLOR";
-    commandsMap[cmd_knots_color] = [&](std::istringstream& isstr)
+    commandsMap[cmd_knots_color] = [&cmd_knots_color, &currentColor](std::istringstream& isstr)
     {
         glm::vec3 color;
 
@@ -90,11 +93,16 @@ void CircuitBuilder::load(const std::string& filename)
         for (int ii = 0; ii < 3; ++ii)
             validateFloat(color[ii], cmd_knots_color);
 
+        if (color.x < 0 || color.x > 1 ||
+            color.y < 0 || color.y > 1 ||
+            color.z < 0 || color.z > 1)
+            D_THROW(std::runtime_error, "color values must be [0..1], type=" << cmd_knots_color);
+
         currentColor = color;
     };
 
     const std::string cmd_knots_size = "KNOTS_SIZE";
-    commandsMap[cmd_knots_size] = [&](std::istringstream& isstr)
+    commandsMap[cmd_knots_size] = [&cmd_knots_size, &currentKnotsSize](std::istringstream& isstr)
     {
         float knotsSize;
 
@@ -103,11 +111,14 @@ void CircuitBuilder::load(const std::string& filename)
 
         validateFloat(knotsSize, cmd_knots_size);
 
+        if (knotsSize <= 0)
+            D_THROW(std::runtime_error, "knotsSize values must be > 0, type=" << cmd_knots_size);
+
         currentKnotsSize = knotsSize;
     };
 
     const std::string cmd_knots_dual = "KNOTS_DUAL";
-    commandsMap[cmd_knots_dual] = [&](std::istringstream& isstr)
+    commandsMap[cmd_knots_dual] = [&cmd_knots_dual, &rawKnots, &currentKnotsSize, &currentColor](std::istringstream& isstr)
     {
         glm::vec3 left;
         glm::vec3 right;
@@ -121,7 +132,7 @@ void CircuitBuilder::load(const std::string& filename)
             validateFloat(right[ii], cmd_knots_dual);
         }
 
-        rawKnots.emplace_back(left, right, currentKnotsSize, currentColor);
+        rawKnots.push_back({ left, right, currentKnotsSize, currentColor });
     };
 
     //
@@ -187,7 +198,7 @@ void CircuitBuilder::load(const CircuitBuilder::StartTransform& startTransform,
 //
 //
 
-void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
+void CircuitBuilder::generateWireframeSkeleton(CallbackNoNormals onSkeletonPatch)
 {
     if (!onSkeletonPatch)
         D_THROW(std::invalid_argument, "no callback provided");
@@ -254,90 +265,88 @@ void CircuitBuilder::generateSkeleton(CallbackNoNormals onSkeletonPatch)
     onSkeletonPatch(vertices, indices);
 }
 
-void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
-                              CallbackNormals onNewWallPatch)
+void CircuitBuilder::generateSmoothedKnotsData(Knots& smoothedKnotsData)
+{
+    smoothedKnotsData.clear();
+    smoothedKnotsData.reserve(2048); // pre-allocate, ease the reallocation
+
+    enum class SplineType: unsigned int
+    {
+        leftX = 0,
+        leftY,
+        leftZ,
+        rightX,
+        rightY,
+        rightZ,
+        size,
+        colorR,
+        colorG,
+        colorB,
+
+        count,
+    };
+
+    constexpr unsigned int  dimension = asValue(SplineType::count);
+    const float*            knotsData = &_knots.front().left.x;
+    const std::size_t       knotsLength = _knots.size() * dimension;
+    constexpr unsigned int  splineDegree = 3;
+
+    BSpline bsplineSmoother;
+    bsplineSmoother.initialise({ knotsData, knotsLength, dimension, splineDegree });
+
+    CircuitBuilder::CircuitVertex vertex;
+
+    constexpr unsigned int maxIterations = 1000;
+    constexpr float step = 1.0f / maxIterations; // tiny steps
+
+    for (float coef = 0.0f; coef <= 1.0f; coef += step)
+    {
+        vertex.left.x = bsplineSmoother.calcAt(coef, asValue(SplineType::leftX));
+        vertex.left.y = bsplineSmoother.calcAt(coef, asValue(SplineType::leftY));
+        vertex.left.z = bsplineSmoother.calcAt(coef, asValue(SplineType::leftZ));
+        vertex.right.x = bsplineSmoother.calcAt(coef, asValue(SplineType::rightX));
+        vertex.right.y = bsplineSmoother.calcAt(coef, asValue(SplineType::rightY));
+        vertex.right.z = bsplineSmoother.calcAt(coef, asValue(SplineType::rightZ));
+
+        const float knotSize = bsplineSmoother.calcAt(coef, asValue(SplineType::size));
+
+        if (!smoothedKnotsData.empty())
+        {
+            // both left and right vertices must be far enough to be included
+            const auto& lastVertex = smoothedKnotsData.back();
+
+            if (glm::distance(lastVertex.left, vertex.left) < knotSize ||
+                glm::distance(lastVertex.right, vertex.right) < knotSize)
+                continue;
+        }
+
+        // check for invalid values (it create graphic and physic artifacts)
+        const float minLength = 0.001f;
+        if (glm::length(vertex.left) < minLength ||
+            glm::length(vertex.right) < minLength)
+            continue; // TODO: fix it
+
+        vertex.color.r = bsplineSmoother.calcAt(coef, asValue(SplineType::colorR));
+        vertex.color.g = bsplineSmoother.calcAt(coef, asValue(SplineType::colorG));
+        vertex.color.b = bsplineSmoother.calcAt(coef, asValue(SplineType::colorB));
+
+        smoothedKnotsData.push_back(vertex);
+    }
+}
+
+void CircuitBuilder::generateCircuitGeometry(
+    CallbackNormals onNewGroundPatch,
+    CallbackNormals onNewWallPatch)
 {
     if (_knots.empty())
         D_THROW(std::runtime_error, "not initialised");
 
-    if (!onNewGroundPatch || !onNewWallPatch)
+    if (!onNewGroundPatch && !onNewWallPatch)
         D_THROW(std::invalid_argument, "no callbacks provided");
 
-    //
-    //
-    // smooth the circuit
 
-    Knots smoothedVertices;
-    smoothedVertices.reserve(2048); // pre-allocate, ease the reallocation
-
-    {
-        enum class SplineType: unsigned int
-        {
-            leftX = 0,
-            leftY,
-            leftZ,
-            rightX,
-            rightY,
-            rightZ,
-            size,
-            colorR,
-            colorG,
-            colorB,
-
-            count,
-        };
-
-        constexpr unsigned int  dimension = asValue(SplineType::count);
-        const float*            knotsData = &_knots.front().left.x;
-        const std::size_t       knotsLength = _knots.size() * dimension;
-        constexpr unsigned int  splineDegree = 3;
-
-        BSpline bsplineSmoother;
-        bsplineSmoother.initialise({ knotsData, knotsLength, dimension, splineDegree });
-
-        CircuitBuilder::CircuitVertex vertex;
-
-        constexpr unsigned int maxIterations = 1000;
-        constexpr float step = 1.0f / maxIterations; // tiny steps
-
-        for (float coef = 0.0f; coef <= 1.0f; coef += step)
-        {
-            vertex.left.x = bsplineSmoother.calcAt(coef, asValue(SplineType::leftX));
-            vertex.left.y = bsplineSmoother.calcAt(coef, asValue(SplineType::leftY));
-            vertex.left.z = bsplineSmoother.calcAt(coef, asValue(SplineType::leftZ));
-            vertex.right.x = bsplineSmoother.calcAt(coef, asValue(SplineType::rightX));
-            vertex.right.y = bsplineSmoother.calcAt(coef, asValue(SplineType::rightY));
-            vertex.right.z = bsplineSmoother.calcAt(coef, asValue(SplineType::rightZ));
-
-            const float knotSize = bsplineSmoother.calcAt(coef, asValue(SplineType::size));
-
-            if (!smoothedVertices.empty())
-            {
-                // both left and right vertices must be far enough to be included
-                const auto& lastVertex = smoothedVertices.back();
-
-                if (glm::distance(lastVertex.left, vertex.left) < knotSize ||
-                    glm::distance(lastVertex.right, vertex.right) < knotSize)
-                    continue;
-            }
-
-            // check for invalid values (it create graphic and physic artifacts)
-            const float minLength = 0.001f;
-            if (glm::length(vertex.left) < minLength ||
-                glm::length(vertex.right) < minLength)
-                continue; // TODO: fix it
-
-            vertex.color.r = bsplineSmoother.calcAt(coef, asValue(SplineType::colorR));
-            vertex.color.g = bsplineSmoother.calcAt(coef, asValue(SplineType::colorG));
-            vertex.color.b = bsplineSmoother.calcAt(coef, asValue(SplineType::colorB));
-
-            smoothedVertices.push_back(vertex);
-        }
-    }
-
-    //
-    //
-    // generate circuit
+    Knots smoothedKnotsData;
+    generateSmoothedKnotsData(smoothedKnotsData);
 
     constexpr std::size_t patchesPerKnot = 6;
 
@@ -365,7 +374,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
     circuitPatchColors.reserve(512); // pre-allocate
 
     const unsigned int startIndex = 1;
-    for (std::size_t index = startIndex; index < smoothedVertices.size(); index += patchesPerKnot)
+    for (std::size_t index = startIndex; index < smoothedKnotsData.size(); index += patchesPerKnot)
     {
         indices.clear();
         ground.vertices.clear();
@@ -379,7 +388,7 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
 
         int indicexIndex = 0;
 
-        for (std::size_t stepIndex = index; stepIndex < smoothedVertices.size() && stepIndex < index + patchesPerKnot; ++stepIndex)
+        for (std::size_t stepIndex = index; stepIndex < smoothedKnotsData.size() && stepIndex < index + patchesPerKnot; ++stepIndex)
         {
             const int currIndex = indicexIndex++ * 4;
             indices.push_back(currIndex + 0);
@@ -389,8 +398,8 @@ void CircuitBuilder::generate(CallbackNormals onNewGroundPatch,
             indices.push_back(currIndex + 3);
             indices.push_back(currIndex + 2);
 
-            const auto& prevKnot = smoothedVertices[stepIndex - 1];
-            const auto& currKnot = smoothedVertices[stepIndex];
+            const auto& prevKnot = smoothedKnotsData[stepIndex - 1];
+            const auto& currKnot = smoothedKnotsData[stepIndex];
 
             const glm::vec3& prevLeft = prevKnot.left;
             const glm::vec3& prevRight = prevKnot.right;

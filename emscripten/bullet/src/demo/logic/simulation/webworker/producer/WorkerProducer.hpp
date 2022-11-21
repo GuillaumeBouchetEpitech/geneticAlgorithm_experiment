@@ -1,21 +1,22 @@
 
 #pragma once
 
-#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
-#include "demo/logic/simulation/webworker/messaging/MessageBuffer.hpp"
-#include "demo/logic/simulation/webworker/messaging/MessageView.hpp"
+#include "machineLearning/NeuralNetwork.hpp"
 
-#include "demo/utilities/NonCopyable.hpp"
-#include "demo/utilities/types.hpp"
+#include "framework/messaging/MessageBuffer.hpp"
+#include "framework/messaging/MessageView.hpp"
+
+#include "framework/NonCopyable.hpp"
+#include "framework/asValue.hpp"
 
 #include "demo/defines.hpp"
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <bitset>
 

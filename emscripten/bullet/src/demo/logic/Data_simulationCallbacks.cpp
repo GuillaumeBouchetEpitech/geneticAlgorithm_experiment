@@ -13,54 +13,38 @@ void Data::initialiseSimulationCallbacks()
     auto& allStats = logic.fitnessStats.allStats;
     std::memset(&allStats[0], 0, allStats.size() * sizeof(allStats[0]));
 
-#if defined D_WEB_WEBWORKER_BUILD
+// #if defined D_WEB_WEBWORKER_BUILD
 
-    logic.simulation->setOnWorkersReadyCallback([this]() -> void
-    {
-        // leave the "WEB WORKERS LOADING" message for at least 1 second
-        logic.state.countdown = 1000;
-    });
+//     logic.simulation->setOnWorkersReadyCallback([this]() -> void
+//     {
+//         // leave the "WEB WORKERS LOADING" message for at least 1 second
+//         logic.state.countdown = 1000;
+//     });
 
-#endif
+// #endif
 
     logic.simulation->setOnGenerationResetCallback([this]() -> void
     {
         { // handle the car trails
 
-            auto& carsTrails = logic.carsTrails;
             const auto& simulation = *logic.simulation;
-            const auto& genomes = simulation.getGenomes();
             const unsigned int totalCars = simulation.getTotalCars();
 
-            // reset trail map
-            carsTrails.genomeIndexMap.clear();
+            logic.carWheelsTrails.reset(simulation);
 
             for (unsigned int ii = 0; ii < totalCars; ++ii)
             {
-                // initialise trail map
-
-                const auto& genome = genomes[ii];
                 const auto& carData = simulation.getCarResult(ii);
-
-                // record the trail index with it's genome id in the lookup map
-                carsTrails.genomeIndexMap[genome.id] = ii;
-
-                auto& currentWheelsTrail = carsTrails.allWheelsTrails[ii];
-
-                // reset the old data
-
-                for (std::size_t ii = 0; ii < currentWheelsTrail.wheels.size(); ++ii)
-                    currentWheelsTrail.wheels[ii].clear();
 
                 // initialise the new data
 
                 for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    for (std::size_t ii = 0; ii < transforms.wheels.size(); ++ii)
+                    for (std::size_t jj = 0; jj < transforms.wheels.size(); ++jj)
                     {
-                        glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                        glm::vec3 wheelOrigin = transforms.wheels[jj] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                        currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
+                        logic.carWheelsTrails.push(ii, jj, wheelOrigin);
                     }
                 }
             }
@@ -83,15 +67,13 @@ void Data::initialiseSimulationCallbacks()
                 if (carData.isAlive == false)
                     continue;
 
-                auto& currentWheelsTrail = logic.carsTrails.allWheelsTrails[ii];
-
                 for (auto& transforms : carData.latestTransformsHistory)
                 {
-                    for (std::size_t ii = 0; ii < transforms.wheels.size(); ++ii)
+                    for (std::size_t jj = 0; jj < transforms.wheels.size(); ++jj)
                     {
-                        glm::vec3 wheelOrigin = transforms.wheels[ii] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                        glm::vec3 wheelOrigin = transforms.wheels[jj] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-                        currentWheelsTrail.wheels[ii].emplace_back(wheelOrigin);
+                        logic.carWheelsTrails.push(ii, jj, wheelOrigin);
                     }
                 }
             }
@@ -102,20 +84,10 @@ void Data::initialiseSimulationCallbacks()
 
             auto& cores = logic.cores;
 
-            for (unsigned int ii = 0; ii < simulation.getTotalCores(); ++ii)
-            {
-                const auto& coreState = simulation.getCoreState(ii);
-
-                cores.statesData[ii].delta = coreState.delta;
-                cores.statesData[ii].genomesAlive = coreState.genomesAlive;
-
-                // record core state history
-                auto& currCoreHistory = cores.statesHistory[ii];
-                currCoreHistory[cores.currHistoryIndex] = cores.statesData[ii];
-            }
-
-            // move to next core state history index
-            cores.currHistoryIndex = (cores.currHistoryIndex + 1) % Data::Logic::Cores::maxStateHistory;
+            cores.profileData.clearLatest();
+            for (unsigned int coreIndex = 0; coreIndex < simulation.getTotalCores(); ++coreIndex)
+                cores.profileData.addToLatest(simulation.getCoreState(coreIndex));
+            cores.profileData.pushLatest();
 
         } // handle the core data
     });
@@ -168,28 +140,24 @@ void Data::initialiseSimulationCallbacks()
 
             if (isSmarter)
             {
-                const auto& bestGenome = logic.simulation->getBestGenome();
-                auto& carsTrails = logic.carsTrails;
-                auto& currentTrailIndex = carsTrails.currentTrailIndex;
+                // const auto& bestGenome = logic.simulation->getBestGenome();
+                // auto& currentTrailIndex = graphic.geometries.wireframes.currentTrailIndex;
 
-                auto it = carsTrails.genomeIndexMap.find(bestGenome.id);
-                if (it != carsTrails.genomeIndexMap.end()) // <= this should never fail
-                {
-                    auto dataIndex = it->second;
+                // const auto& bestWheelsTrailData = logic.carWheelsTrails.getTrailById(bestGenome.id);
 
-                    const auto& bestWheelsTrailData = carsTrails.allWheelsTrails[dataIndex];
-                    auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-                    auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
+                // auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
+                // auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
 
-                    for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
-                    {
-                        currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
-                        currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
-                    }
+                // for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
+                // {
+                //     currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
+                //     currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
+                // }
 
-                    // increase the currently used trail index (loop if too high)
-                    currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
-                }
+                // // increase the currently used trail index (loop if too high)
+                // currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
+
+                graphic.carTailsRenderer.updateLatestTrail();
             }
 
         } // handle the car trails

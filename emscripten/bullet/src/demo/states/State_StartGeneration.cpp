@@ -6,7 +6,7 @@
 #include "demo/logic/Data.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 void State_StartGeneration::enter()
 {
@@ -16,9 +16,9 @@ void State_StartGeneration::enter()
     const float currFitness = logic.fitnessStats.allStats.back();
 
     if (currFitness > 0.0f)
-        logic.state.countdown = 2000; // wait 2.0 second(s)
+        _countdown = 2000; // wait 2.0 second(s)
     else
-        logic.state.countdown = 1000; // wait 1.0 second(s)
+        _countdown = 1000; // wait 1.0 second(s)
 }
 
 void State_StartGeneration::update(int deltaTime)
@@ -35,8 +35,9 @@ void State_StartGeneration::update(int deltaTime)
 
     {
         graphic.particleManager.update(elapsedTime);
-
-        graphic.cylinderAnimationTime += elapsedTime;
+        graphic.backGroundCylindersRenderer.update(elapsedTime);
+        graphic.animatedCircuitRenderer.update(elapsedTime);
+        graphic.flockingManager.update();
     }
 
     { // camera tracking
@@ -67,7 +68,7 @@ void State_StartGeneration::update(int deltaTime)
 
     } // camera tracking
 
-    logic.state.countdown -= deltaTime;
-    if (logic.state.countdown <= 0)
+    _countdown -= deltaTime;
+    if (_countdown <= 0)
         StateManager::get()->changeState(StateManager::States::Running);
 }

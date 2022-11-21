@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <array>
 #include <vector>

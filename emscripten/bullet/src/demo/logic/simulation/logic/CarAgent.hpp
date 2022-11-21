@@ -1,18 +1,15 @@
 
 #pragma once
 
-#include "./physic/PhysicWorld.hpp"
-#include "./physic/PhysicVehicle.hpp"
+#include "framework/physic/PhysicWorld.hpp"
+#include "framework/physic/vehicle/PhysicVehicle.hpp"
 
-#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
+#include "machineLearning/NeuralNetwork.hpp"
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <array>
 #include <vector>
-
-class PhysicWorld;
-class PhysicVehicle;
 
 class CarAgent
 {
@@ -31,8 +28,9 @@ public: // external structures
     };
 
 private: // attributes
-    PhysicWorld& _physicWorld;
-    PhysicVehicle& _physicVehicle;
+    PhysicWorld* _physicWorld = nullptr;
+    PhysicVehicleManager::VehicleWeakRef _physicVehicle;
+    PhysicBodyManager::BodyWeakRef _physicBody;
 
     float _fitness;
     bool _isAlive;
@@ -48,16 +46,14 @@ private: // attributes
     NeuralNetworkOutput _output;
 
 public: // ctor/dtor
-    CarAgent(
-        PhysicWorld& physicWorld,
-        const glm::vec3& position,
-        const glm::vec4& quaternion);
+    CarAgent() = default;
 
 public: // methods
     void update(float elapsedTime, const std::shared_ptr<NeuralNetwork> nn);
-    void reset(const glm::vec3& position, const glm::vec4& quaternion);
+    void reset(PhysicWorld* physicWorld, const glm::vec3& position, const glm::vec4& quaternion);
 
 private: // methods
+    void _createVehicle();
     void _updateSensors();
     void _collideEyeSensors();
     bool _collideGroundSensor();
@@ -69,7 +65,8 @@ public: // setter/getter
     bool isAlive() const;
     int getGroundIndex() const;
     const NeuralNetworkOutput& getNeuralNetworkOutput() const;
-    const PhysicVehicle& getVehicle() const;
+    const PhysicBodyManager::BodyWeakRef getBody() const;
+    const PhysicVehicleManager::VehicleWeakRef getVehicle() const;
     float getLife() const;
     unsigned int getTotalUpdates() const;
 };

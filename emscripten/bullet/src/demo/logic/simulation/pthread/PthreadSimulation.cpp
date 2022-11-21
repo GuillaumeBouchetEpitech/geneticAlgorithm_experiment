@@ -1,8 +1,12 @@
 
 #include "PthreadSimulation.hpp"
 
-#include "demo/utilities/ErrorHandler.hpp"
-#include "demo/utilities/TraceLogger.hpp"
+#include "../common.hpp"
+
+#include "framework/asValue.hpp"
+
+#include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include <chrono>
 
@@ -40,74 +44,142 @@ void PthreadSimulation::initialise(const Definition& def)
 
     _multithreadProducer.initialise(_totalCores);
 
-    _physicWorlds.resize(_totalCores);
-    for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _physicWorlds[ii] = std::make_unique<PhysicWorld>();
-
     _coreStates.resize(_totalCores);
 
-    { // generate circuit
+    {
 
-        int groundIndex = 0;
-        auto onNewPhysicGroundPatch = [&](const CircuitBuilder::Vec3Array& vertices,
-                                          const CircuitBuilder::Vec3Array& colors,
-                                          const CircuitBuilder::Vec3Array& normals,
-                                          const CircuitBuilder::Indices& indices) -> void {
-
-            static_cast<void>(colors); // <= unused
-            static_cast<void>(normals); // <= unused
-
-            for (auto& physicWorld : _physicWorlds)
-                physicWorld->createGround(vertices, indices, groundIndex);
-            groundIndex++;
-
+        auto onNewPhysicGroundPatch = [&](
+            const CircuitBuilder::Vec3Array& vertices,
+            const CircuitBuilder::Vec3Array& colors,
+            const CircuitBuilder::Vec3Array& normals,
+            const CircuitBuilder::Indices& indices) -> void
+        {
             if (def.onNewGroundPatch)
                 def.onNewGroundPatch(vertices, colors, normals, indices);
         };
 
-        auto onNewPhysicWallPatch = [&](const CircuitBuilder::Vec3Array& vertices,
-                                        const CircuitBuilder::Vec3Array& colors,
-                                        const CircuitBuilder::Vec3Array& normals,
-                                        const CircuitBuilder::Indices& indices) -> void {
-
-            static_cast<void>(colors); // <= unused
-            static_cast<void>(normals); // <= unused
-
-            for (auto& physicWorld : _physicWorlds)
-                physicWorld->createWall(vertices, indices);
-
+        auto onNewPhysicWallPatch = [&](
+            const CircuitBuilder::Vec3Array& vertices,
+            const CircuitBuilder::Vec3Array& colors,
+            const CircuitBuilder::Vec3Array& normals,
+            const CircuitBuilder::Indices& indices) -> void
+        {
             if (def.onNewWallPatch)
                 def.onNewWallPatch(vertices, colors, normals, indices);
         };
 
-        CircuitBuilder circuitBuilder;
-        circuitBuilder.load(def.filename);
-        circuitBuilder.generateSkeleton(def.onSkeletonPatch);
-        circuitBuilder.generate(onNewPhysicGroundPatch, onNewPhysicWallPatch);
+        _circuitBuilder.parse(def.filename);
+        _circuitBuilder.generateWireframeSkeleton(def.onSkeletonPatch);
+        _circuitBuilder.generateCircuitGeometry(onNewPhysicGroundPatch, onNewPhysicWallPatch);
+        _startTransform = _circuitBuilder.getStartTransform();
 
-        _startTransform = circuitBuilder.getStartTransform();
+    }
 
-    } // generate circuit
+    _resetPhysic();
 
-    { // generate cars
-
-        _carAgents.reserve(totalGenomes); // pre-allocate
-        for (auto& physicWorld : _physicWorlds)
-        {
-            for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            {
-                _carAgents.push_back(CarAgent(*physicWorld, _startTransform.position, _startTransform.quaternion));
-            }
-        }
-
-    } // generate cars
+    _carAgents.resize(totalGenomes);
 
     _carsData.resize(totalGenomes);
     for (auto& carData : _carsData)
         carData.latestTransformsHistory.reserve(50); // TODO: hardcoded (o_o)
 
-    for (CarAgent& car : _carAgents)
-        car.reset(_startTransform.position, _startTransform.quaternion);
+    for (std::size_t ii = 0; ii < _carAgents.size(); ++ii)
+    {
+        const std::size_t worldIndex = ii / _genomesPerCore;
+
+        _carAgents[ii].reset(
+            _physicWorlds[worldIndex].get(),
+            _startTransform.position,
+            _startTransform.quaternion);
+    }
+}
+
+void PthreadSimulation::_resetPhysic()
+{
+    _physicWorlds.clear();
+    _physicWorlds.resize(_totalCores);
+    for (unsigned int ii = 0; ii < _totalCores; ++ii)
+    {
+        _physicWorlds[ii] = std::make_unique<PhysicWorld>();
+
+        { // generate circuit
+
+            int groundIndex = 0;
+            auto onNewPhysicGroundPatch = [&](
+                const CircuitBuilder::Vec3Array& vertices,
+                const CircuitBuilder::Vec3Array& colors,
+                const CircuitBuilder::Vec3Array& normals,
+                const CircuitBuilder::Indices& indices) -> void
+            {
+                static_cast<void>(colors); // <= unused
+                static_cast<void>(normals); // <= unused
+
+                PhysicShapeDef shapeDef;
+                shapeDef.type = PhysicShapeDef::Type::staticMesh;
+                shapeDef.data.staticMesh.verticesData = const_cast<glm::vec3*>(vertices.data());
+                shapeDef.data.staticMesh.verticesLength = vertices.size();
+                shapeDef.data.staticMesh.indicesData = const_cast<int32_t*>(static_cast<const int32_t*>(indices.data()));
+                shapeDef.data.staticMesh.indicesLength = indices.size();
+
+                PhysicBodyDef bodyDef;
+                bodyDef.shape = shapeDef;
+                bodyDef.mass = 0.0f;
+                bodyDef.group = asValue(Groups::ground);
+                bodyDef.mask = asValue(Masks::ground);
+
+                auto body = _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+                body->setFriction(1.0f);
+                body->setUserValue(groundIndex);
+
+                groundIndex++;
+            };
+
+            auto onNewPhysicWallPatch = [&](
+                const CircuitBuilder::Vec3Array& vertices,
+                const CircuitBuilder::Vec3Array& colors,
+                const CircuitBuilder::Vec3Array& normals,
+                const CircuitBuilder::Indices& indices) -> void
+            {
+                static_cast<void>(colors); // <= unused
+                static_cast<void>(normals); // <= unused
+
+                PhysicShapeDef shapeDef;
+                shapeDef.type = PhysicShapeDef::Type::staticMesh;
+                shapeDef.data.staticMesh.verticesData = const_cast<glm::vec3*>(vertices.data());
+                shapeDef.data.staticMesh.verticesLength = vertices.size();
+                shapeDef.data.staticMesh.indicesData = const_cast<int32_t*>(static_cast<const int32_t*>(indices.data()));
+                shapeDef.data.staticMesh.indicesLength = indices.size();
+
+                PhysicBodyDef bodyDef;
+                bodyDef.shape = shapeDef;
+                bodyDef.mass = 0.0f;
+                bodyDef.group = asValue(Groups::wall);
+                bodyDef.mask = asValue(Masks::wall);
+
+                _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+            };
+
+            _circuitBuilder.generateCircuitGeometry(onNewPhysicGroundPatch, onNewPhysicWallPatch);
+
+        } // generate circuit
+
+        { // floor
+
+            PhysicShapeDef shapeDef;
+            shapeDef.type = PhysicShapeDef::Type::box;
+            shapeDef.data.box.size = { 1000, 1000, 0.5f};
+
+            PhysicBodyDef bodyDef;
+            bodyDef.shape = shapeDef;
+            bodyDef.mass = 0.0f;
+            bodyDef.group = asValue(Groups::ground);
+            bodyDef.mask = asValue(Masks::ground);
+
+            auto body = _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+            body->setPosition({ 0.0f, 0.0f, -0.5f });
+
+        } // floor
+    }
 }
 
 void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
@@ -118,15 +190,6 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
     //
     //
     //
-
-    bool generationCompleted = true;
-
-    for (const auto& car : _carAgents)
-        if (car.isAlive())
-        {
-            generationCompleted = false;
-            break;
-        }
 
     _updateCarResult();
 
@@ -143,33 +206,8 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
             _callbacks.onProcessStep();
     }
 
-    if (generationCompleted)
-    {
-        // rate genomes
-        for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
-        {
-            // this penalty reward fast cars (reaching farther in less updates)
-            const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
-
-            _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
-        }
-
-        bool isSmarter = _geneticAlgorithm.breedPopulation();
-
-        if (_callbacks.onGenerationEnd)
-            _callbacks.onGenerationEnd(isSmarter);
-
-        //
-        //
-
-        for (std::size_t threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
-            _physicWorlds[threadIndex]->reset();
-
-        for (CarAgent& car : _carAgents)
-            car.reset(_startTransform.position, _startTransform.quaternion);
-
-        _isFirstGenerationFrame = true;
-    }
+    if (isGenerationComplete())
+        return;
 
     for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
         _carsData[ii].latestTransformsHistory.clear();
@@ -189,7 +227,9 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
             {
                 // update physical world
 
-                _physicWorlds[threadIndex]->step(elapsedTime);
+                constexpr uint32_t maxSubSteps = 0;
+                constexpr float fixedTimeStep = 1.0f / 30.0f;
+                _physicWorlds[threadIndex]->step(fixedTimeStep, maxSubSteps, fixedTimeStep);
 
                 // update cars
 
@@ -205,16 +245,17 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
                     car.update(elapsedTime, neuralNets[index]);
 
                     {
-                        const auto& vehicle = car.getVehicle();
+                        const auto body = car.getBody();
+                        const auto vehicle = car.getVehicle();
 
                         CarData::Transforms newData;
 
                         // transformation matrix of the car
-                        vehicle.getOpenGLMatrix(newData.chassis);
+                        body->getTransform(newData.chassis);
 
                         // transformation matrix of the wheels
                         for (unsigned int jj = 0; jj < 4; ++jj)
-                            vehicle.getWheelOpenGLMatrix(jj, newData.wheels[jj]);
+                            vehicle->getWheelTransform(jj, newData.wheels[jj]);
 
                         _carsData[index].latestTransformsHistory.push_back(newData);
                     }
@@ -250,6 +291,57 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 // #endif
 }
 
+void PthreadSimulation::breed()
+{
+    if (!_multithreadProducer.allCompleted())
+        return;
+    if (!isGenerationComplete())
+        return;
+
+    // rate genomes
+    for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
+    {
+        // this penalty reward fast cars (reaching farther in less updates)
+        const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
+
+        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
+    }
+
+    const bool isSmarter = _geneticAlgorithm.breedPopulation();
+
+    if (_callbacks.onGenerationEnd)
+        _callbacks.onGenerationEnd(isSmarter);
+
+    //
+    //
+
+    _updateCarResult();
+
+    _resetPhysic();
+
+    for (std::size_t ii = 0; ii < _carAgents.size(); ++ii)
+    {
+        const std::size_t worldIndex = ii / _genomesPerCore;
+
+        _carAgents[ii].reset(
+            _physicWorlds[worldIndex].get(),
+            _startTransform.position,
+            _startTransform.quaternion);
+    }
+
+    // _updateCarResult();
+
+    _isFirstGenerationFrame = true;
+}
+
+bool PthreadSimulation::isGenerationComplete() const
+{
+    for (const auto& car : _carAgents)
+        if (car.isAlive())
+            return false;
+    return true;
+}
+
 void PthreadSimulation::_updateCarResult()
 {
     for (std::size_t ii = 0; ii < _carAgents.size(); ++ii)
@@ -271,18 +363,22 @@ void PthreadSimulation::_updateCarResult()
         }
 
         if (!carData.isAlive)
+        {
+            carData.latestTransformsHistory.clear();
             continue;
+        }
 
-        const auto& vehicle = carAgent.getVehicle();
+        const auto body = carAgent.getBody();
+        const auto vehicle = carAgent.getVehicle();
 
         // transformation matrix of the car
-        vehicle.getOpenGLMatrix(carData.liveTransforms.chassis);
+        body->getTransform(carData.liveTransforms.chassis);
 
         // transformation matrix of the wheels
         for (std::size_t jj = 0; jj < carData.liveTransforms.wheels.size(); ++jj)
-            vehicle.getWheelOpenGLMatrix(jj, carData.liveTransforms.wheels[jj]);
+            vehicle->getWheelTransform(jj, carData.liveTransforms.wheels[jj]);
 
-        carData.velocity = vehicle.getVelocity();
+        carData.velocity = body->getLinearVelocity();
 
         const auto& eyeSensors = carAgent.getEyeSensors();
         for (std::size_t jj = 0; jj < eyeSensors.size(); ++jj)

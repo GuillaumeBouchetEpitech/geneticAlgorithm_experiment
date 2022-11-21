@@ -1,22 +1,27 @@
 
 #pragma once
 
-#include "demo/logic/simulation/machineLearning/NeuralNetwork.hpp"
 #include "demo/logic/simulation/logic/CarAgent.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
-#include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
+// #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
-#include "demo/logic/simulation/webworker/messaging/MessageBuffer.hpp"
-#include "demo/logic/simulation/webworker/messaging/MessageView.hpp"
 
-#include "demo/utilities/NonCopyable.hpp"
+#include "machineLearning/NeuralNetwork.hpp"
+
+#include "framework/physic/PhysicWorld.hpp"
+
+#include "framework/messaging/MessageBuffer.hpp"
+#include "framework/messaging/MessageView.hpp"
+
+#include "framework/NonCopyable.hpp"
 
 #include "demo/defines.hpp"
 
-#include "helpers/GLMath.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 #include <vector>
+#include <memory>
 
 class WorkerConsumer
     : public NonCopyable
@@ -24,7 +29,7 @@ class WorkerConsumer
 private:
     unsigned int _genomesPerCore = 0;
 
-    PhysicWorld _physicWorld;
+    std::unique_ptr<PhysicWorld> _physicWorld;
 
     CarAgents _carAgents;
 
@@ -34,6 +39,8 @@ private:
     std::vector<std::shared_ptr<NeuralNetwork>> _neuralNetworks;
 
     CircuitBuilder::StartTransform _startTransform;
+    // CircuitBuilder::Knots _circuitKnots;
+    CircuitBuilder _circuitBuilder;
 
     MessageBuffer _messageToSend;
 
@@ -50,4 +57,8 @@ private:
     void _initialiseSimulation(MessageView &receivedMsg);
     void _resetSimulation(MessageView &receivedMsg);
     void _processSimulation(float elapsedTime, unsigned int totalSteps);
+
+private:
+    void _resetPhysic();
+
 };

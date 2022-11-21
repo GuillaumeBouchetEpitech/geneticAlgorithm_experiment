@@ -2,9 +2,11 @@
 
 #include "WorkerConsumer.hpp"
 
-#include "demo/utilities/ErrorHandler.hpp"
+#include "../../common.hpp"
 
 #include "demo/defines.hpp"
+
+#include "framework/ErrorHandler.hpp"
 
 #include <memory> // std::make_unique
 #include <chrono>
@@ -113,41 +115,15 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
     { // generate circuit
 
-        int physicIndex = 0;
+        _circuitBuilder.load(_startTransform, circuitKnots);
 
-        auto onNewGroundPatch = [&](const CircuitBuilder::Vec3Array& vertices,
-                                    const CircuitBuilder::Vec3Array& colors,
-                                    const CircuitBuilder::Vec3Array& normals,
-                                    const CircuitBuilder::Indices& indices) -> void {
-
-            static_cast<void>(colors); // <= unused
-            static_cast<void>(normals); // <= unused
-
-            _physicWorld.createGround(vertices, indices, physicIndex++);
-        };
-
-        auto onNewWallPatch = [&](const CircuitBuilder::Vec3Array& vertices,
-                                  const CircuitBuilder::Vec3Array& colors,
-                                  const CircuitBuilder::Vec3Array& normals,
-                                  const CircuitBuilder::Indices& indices) -> void {
-
-            static_cast<void>(colors); // <= unused
-            static_cast<void>(normals); // <= unused
-
-            _physicWorld.createWall(vertices, indices);
-        };
-
-        CircuitBuilder circuitBuilder;
-        circuitBuilder.load(_startTransform, circuitKnots);
-        circuitBuilder.generate(onNewGroundPatch, onNewWallPatch);
+        _resetPhysic();
 
     } // generate circuit
 
     { // generate cars
 
-        _carAgents.reserve(_genomesPerCore); // pre-allocate
-        for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-            _carAgents.emplace_back(CarAgent(_physicWorld, _startTransform.position, _startTransform.quaternion));
+        _carAgents.resize(_genomesPerCore);
 
         _latestTransformsHistory.resize(_genomesPerCore);
         for (auto& transforms : _latestTransformsHistory)
@@ -173,6 +149,8 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg)
 
 void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
 {
+    _resetPhysic();
+
     const unsigned int floatWeightsSize = _neuralNetworkTopology.getTotalWeights();
     const unsigned int byteWeightsSize = floatWeightsSize * sizeof(float);
 
@@ -189,7 +167,7 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
         std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
         _neuralNetworks[ii]->setWeights(weightsBuffer);
 
-        _carAgents[ii].reset(_startTransform.position, _startTransform.quaternion);
+        _carAgents[ii].reset(_physicWorld.get(), _startTransform.position, _startTransform.quaternion);
     }
 }
 
@@ -202,12 +180,16 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
     //
     //
 
-    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-        _latestTransformsHistory[ii].clear();
+    for (auto& transformsHistory : _latestTransformsHistory)
+        transformsHistory.clear();
+
+    CarData::Transforms newData;
 
     for (unsigned int step = 0; step < totalSteps; ++step)
     {
-        _physicWorld.step(elapsedTime);
+        constexpr uint32_t maxSubSteps = 0;
+        constexpr float fixedTimeStep = 1.0f / 30.0f;
+        _physicWorld->step(elapsedTime, maxSubSteps, fixedTimeStep);
 
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
         {
@@ -219,26 +201,20 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
             car.update(elapsedTime, _neuralNetworks[ii]);
 
             {
-                const auto& vehicle = car.getVehicle();
-
-                CarData::Transforms newData;
+                const auto body = car.getBody();
+                const auto vehicle = car.getVehicle();
 
                 // transformation matrix of the car
-                vehicle.getOpenGLMatrix(newData.chassis);
+                body->getTransform(newData.chassis);
 
                 // transformation matrix of the wheels
                 for (unsigned int jj = 0; jj < 4U; ++jj)
-                    vehicle.getWheelOpenGLMatrix(jj, newData.wheels[jj]);
+                    vehicle->getWheelTransform(jj, newData.wheels[jj]);
 
                 _latestTransformsHistory[ii].push_back(newData);
             }
         }
     }
-
-    unsigned int genomesAlive = 0;
-    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-        if (_carAgents[ii].isAlive())
-            ++genomesAlive;
 
     //
     //
@@ -246,6 +222,14 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
     const auto finishTime = std::chrono::high_resolution_clock::now();
     const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(finishTime - startTime);
     const unsigned int delta = milliseconds.count() * 1000;
+
+    //
+    //
+
+    unsigned int genomesAlive = 0;
+    for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
+        if (_carAgents[ii].isAlive())
+            ++genomesAlive;
 
     // send back the result
 
@@ -289,16 +273,17 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
         if (!car.isAlive())
             continue;
 
-        const auto& vehicle = car.getVehicle();
+        const auto body = car.getBody();
+        const auto vehicle = car.getVehicle();
 
         // record the transformation matrix of the car
-        _messageToSend << vehicle.getOpenGLMatrix(transform);
+        _messageToSend << body->getTransform(transform);
 
         // record the transformation matrix of the wheels
         for (int jj = 0; jj < 4; ++jj)
-            _messageToSend << vehicle.getWheelOpenGLMatrix(jj, transform);
+            _messageToSend << vehicle->getWheelTransform(jj, transform);
 
-        _messageToSend << vehicle.getVelocity();
+        _messageToSend << body->getLinearVelocity();
 
         const auto& eyeSensors = car.getEyeSensors();
         for (const auto& sensor : eyeSensors)
@@ -312,4 +297,86 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
     }
 
     _sendBackToProducer();
+}
+
+void WorkerConsumer::_resetPhysic()
+{
+    _physicWorld = std::make_unique<PhysicWorld>();
+
+    { // generate circuit
+
+        int groundIndex = 0;
+
+        auto onNewGroundPatch = [&](
+            const CircuitBuilder::Vec3Array& vertices,
+            const CircuitBuilder::Vec3Array& colors,
+            const CircuitBuilder::Vec3Array& normals,
+            const CircuitBuilder::Indices& indices) -> void
+        {
+            static_cast<void>(colors); // <= unused
+            static_cast<void>(normals); // <= unused
+
+            PhysicShapeDef shapeDef;
+            shapeDef.type = PhysicShapeDef::Type::staticMesh;
+            shapeDef.data.staticMesh.verticesData = const_cast<glm::vec3*>(vertices.data());
+            shapeDef.data.staticMesh.verticesLength = vertices.size();
+            shapeDef.data.staticMesh.indicesData = const_cast<int32_t*>(static_cast<const int32_t*>(indices.data()));
+            shapeDef.data.staticMesh.indicesLength = indices.size();
+
+            PhysicBodyDef bodyDef;
+            bodyDef.shape = shapeDef;
+            bodyDef.mass = 0.0f;
+            bodyDef.group = asValue(Groups::ground);
+            bodyDef.mask = asValue(Masks::ground);
+
+            auto body = _physicWorld->getPhysicBodyManager().createAndAddBody(bodyDef);
+            body->setFriction(1.0f);
+            body->setUserValue(groundIndex++);
+        };
+
+        auto onNewWallPatch = [&](
+            const CircuitBuilder::Vec3Array& vertices,
+            const CircuitBuilder::Vec3Array& colors,
+            const CircuitBuilder::Vec3Array& normals,
+            const CircuitBuilder::Indices& indices) -> void
+        {
+            static_cast<void>(colors); // <= unused
+            static_cast<void>(normals); // <= unused
+
+            PhysicShapeDef shapeDef;
+            shapeDef.type = PhysicShapeDef::Type::staticMesh;
+            shapeDef.data.staticMesh.verticesData = const_cast<glm::vec3*>(vertices.data());
+            shapeDef.data.staticMesh.verticesLength = vertices.size();
+            shapeDef.data.staticMesh.indicesData = const_cast<int32_t*>(static_cast<const int32_t*>(indices.data()));
+            shapeDef.data.staticMesh.indicesLength = indices.size();
+
+            PhysicBodyDef bodyDef;
+            bodyDef.shape = shapeDef;
+            bodyDef.mass = 0.0f;
+            bodyDef.group = asValue(Groups::wall);
+            bodyDef.mask = asValue(Masks::wall);
+
+            _physicWorld->getPhysicBodyManager().createAndAddBody(bodyDef);
+        };
+
+        _circuitBuilder.generateCircuitGeometry(onNewGroundPatch, onNewWallPatch);
+
+    } // generate circuit
+
+    { // generate floor
+
+        PhysicShapeDef shapeDef;
+        shapeDef.type = PhysicShapeDef::Type::box;
+        shapeDef.data.box.size = { 1000, 1000, 0.5f};
+
+        PhysicBodyDef bodyDef;
+        bodyDef.shape = shapeDef;
+        bodyDef.group = asValue(Groups::ground);
+        bodyDef.mask = asValue(Masks::ground);
+        bodyDef.mass = 0.0f;
+
+        auto body = _physicWorld->getPhysicBodyManager().createAndAddBody(bodyDef);
+        body->setPosition({ 0.0f, 0.0f, -0.5f });
+
+    } // generate floor
 }

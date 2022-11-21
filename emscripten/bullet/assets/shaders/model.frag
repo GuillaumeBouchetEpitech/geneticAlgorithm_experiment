@@ -1,5 +1,5 @@
 
-precision mediump float;
+precision lowp float;
 
 varying vec3 v_color;
 

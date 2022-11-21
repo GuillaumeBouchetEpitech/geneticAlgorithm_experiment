@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "helpers/OpenGLES.hpp" // SDL_Event + SDL_Window
+#include "framework/helpers/SDL.hpp" // SDL_Event + SDL_Window
 
-#include "demo/utilities/NonCopyable.hpp"
+#include "framework/NonCopyable.hpp"
 
 class IState
     : public NonCopyable
