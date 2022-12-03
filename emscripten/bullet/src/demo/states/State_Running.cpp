@@ -45,12 +45,13 @@ void State_Running::update(int deltaTime)
 
     Scene::updateMatrices(elapsedTime);
 
-    { // camera tracking
+    // done to avoid a spurious change of camera
+    // -> true when changing states: Running -> EndGeneration
+    if (StateManager::get()->getState() == StateManager::States::Running)
+    {
 
-        // done to avoid a spurious change of camera
-        // -> true when changing states: Running -> EndGeneration
-        if (StateManager::get()->getState() == StateManager::States::Running)
-        {
+        { // camera tracking
+
             glm::vec3   cameraNextCenter = logic.circuitDimension.center;
             float       cameraNextDistance = 200.0f;
 
@@ -82,16 +83,15 @@ void State_Running::update(int deltaTime)
                 camera.scene.center += (cameraNextCenter - camera.scene.center) * lerpRatio;
                 camera.scene.distance += (cameraNextDistance - camera.scene.distance) * lerpRatio;
             }
+
+        } // camera tracking
+
+        {
+            graphic.particleManager.update(elapsedTime);
+            graphic.backGroundCylindersRenderer.update(elapsedTime);
+            graphic.animatedCircuitRenderer.update(elapsedTime);
+            graphic.flockingManager.update();
+            graphic.postProcess.update(elapsedTime);
         }
-
-    } // camera tracking
-
-
-    {
-        graphic.particleManager.update(elapsedTime);
-        graphic.backGroundCylindersRenderer.update(elapsedTime);
-        graphic.animatedCircuitRenderer.update(elapsedTime);
-        graphic.flockingManager.update();
-        graphic.postProcess.update(elapsedTime);
     }
 }

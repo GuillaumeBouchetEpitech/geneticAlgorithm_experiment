@@ -23,7 +23,7 @@ void PostProcess::initialise(const glm::uvec2& frameSize)
       .setVertexFilename("assets/shaders/postProcess.glsl.vert")
       .setFragmentFilename("assets/shaders/postProcess.glsl.frag")
       .addAttribute("a_position")
-      .addAttribute("a_normal")
+      .addAttribute("a_animationNormal")
       .addAttribute("a_texCoord")
       .addUniform("u_composedMatrix")
       .addUniform("u_animationCoef")
@@ -44,7 +44,7 @@ void PostProcess::initialise(const glm::uvec2& frameSize)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 3)
+      .addVboAttribute("a_animationNormal", Geometry::AttrType::Vec3f, 3)
       .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 6);
     geometryBuilder.build(_screenQuad);
 
@@ -168,7 +168,7 @@ void PostProcess::resize(const glm::uvec2& frameSize)
     struct Vertex
     {
       glm::vec3 position;
-      glm::vec3 normal;
+      glm::vec3 animationNormal;
       glm::vec2 texCoord;
     };
 
@@ -219,27 +219,27 @@ void PostProcess::resize(const glm::uvec2& frameSize)
     for (int yy = 0; yy < divider; ++yy)
     for (int xx = 0; xx < divider; ++xx)
     {
-      const float verticalDir1 = ((xx % 2) == 0) ? -1.0f: +1.0f;
-      const float verticalDir2 = -verticalDir1;
+      const float verticalForwardDir = ((xx % 2) == 0) ? -1.0f: +1.0f;
+      const float verticalBackwardDir = -verticalForwardDir;
 
       quadVertices.push_back({
         { -hSize.x + quadSize.x * (xx + 1), -hSize.y + quadSize.y * (yy + 0), 0.0f },
-        { 0, verticalDir2, 0 },
+        { 0, verticalBackwardDir, 0 },
         { texCoord.x * (xx + 1), texCoord.y * (yy + 0) },
       });
       quadVertices.push_back({
         { -hSize.x + quadSize.x * (xx + 0), -hSize.y + quadSize.y * (yy + 0), 0.0f },
-        { 0, verticalDir1, 0 },
+        { 0, verticalForwardDir, 0 },
         { texCoord.x * (xx + 0), texCoord.y * (yy + 0) },
       });
       quadVertices.push_back({
         { -hSize.x + quadSize.x * (xx + 1), -hSize.y + quadSize.y * (yy + 1), 0.0f },
-        { 0, verticalDir2, 0 },
+        { 0, verticalBackwardDir, 0 },
         { texCoord.x * (xx + 1), texCoord.y * (yy + 1) },
       });
       quadVertices.push_back({
         { -hSize.x + quadSize.x * (xx + 0), -hSize.y + quadSize.y * (yy + 1), 0.0f },
-        { 0, verticalDir1, 0 },
+        { 0, verticalForwardDir, 0 },
         { texCoord.x * (xx + 0), texCoord.y * (yy + 1) },
       });
 

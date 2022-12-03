@@ -42,7 +42,7 @@ void StackRenderer::initialise()
 
     }
 
-    constexpr std::size_t preAllocatedSize = 1024 * 32;
+    constexpr std::size_t preAllocatedSize = 1024 * 32; // 32Ko
     _lineVertices.reserve(preAllocatedSize);
     _triangleVertices.reserve(preAllocatedSize);
 }
@@ -279,7 +279,7 @@ void StackRenderer::pushThickTriangle2dLine(
     pushThickTriangle2dLine(posA, posB, thickness, thickness, color, color, 0.0f);
 }
 
-void StackRenderer::pushThickTriangle3DLine(
+void StackRenderer::pushThickTriangle3dLine(
     const glm::vec3& posA,
     const glm::vec3& posB,
     float thicknessA,
@@ -337,8 +337,8 @@ void StackRenderer::pushThickTriangle3DLine(
 
     struct Vertex
     {
-        glm::vec3 position;
-        glm::vec4 color;
+        const glm::vec3& position;
+        const glm::vec4& color;
     };
 
     std::array<std::array<Vertex, 4>, 3> allQuads
@@ -374,13 +374,13 @@ void StackRenderer::pushThickTriangle3DLine(
                 quad[index[2]].color);
 }
 
-void StackRenderer::pushThickTriangle3DLine(
+void StackRenderer::pushThickTriangle3dLine(
     const glm::vec3& posA,
     const glm::vec3& posB,
     float thickness,
     const glm::vec4& color)
 {
-    pushThickTriangle3DLine(
+    pushThickTriangle3dLine(
         posA,
         posB,
         thickness,

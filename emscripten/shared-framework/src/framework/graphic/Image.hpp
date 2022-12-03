@@ -9,7 +9,7 @@ class Image
 {
 private:
   glm::uvec2  _size = { 0, 0 };
-  unsigned char* _pixels = nullptr;
+  uint8_t* _pixels = nullptr;
 
 public:
   Image() = default;
@@ -33,7 +33,7 @@ public:
 
 public:
   const glm::uvec2& getSize() const;
-  const unsigned char* getPixels() const;
+  const uint8_t* getPixels() const;
   bool isValid() const;
 
 };

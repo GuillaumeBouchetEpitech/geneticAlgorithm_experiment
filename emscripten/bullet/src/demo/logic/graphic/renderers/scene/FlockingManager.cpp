@@ -27,7 +27,7 @@ FlockingManager::Boid::Boid()
   velocity = { 0, 0, 0 };
 
   for (auto& item : trail)
-    item.position = position;
+    item = position;
 }
 
 void FlockingManager::Boid::seek(const glm::vec3& target, float coef)
@@ -178,7 +178,7 @@ void FlockingManager::update()
     // make a trail by reusing the previous positions N times
     for (std::size_t ii = boid.trail.size() - 1; ii > 0; --ii)
       boid.trail[ii] = boid.trail[ii - 1];
-    boid.trail[0].position = boid.position;
+    boid.trail[0] = boid.position;
   }
 }
 
@@ -224,9 +224,9 @@ void FlockingManager::render()
 
     for (Boid& boid : _boids)
       for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
-        stackRenderer.pushThickTriangle3DLine(
-          boid.trail[kk + 0].position,
-          boid.trail[kk + 1].position,
+        stackRenderer.pushThickTriangle3dLine(
+          boid.trail[kk + 0],
+          boid.trail[kk + 1],
           0.2f,
           color
         );

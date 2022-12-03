@@ -12,7 +12,7 @@
 #include <array>
 #include <memory>
 
-constexpr int trailSize = 30;
+constexpr std::size_t k_trailSize = 15;
 
 class FlockingManager
 {
@@ -23,12 +23,7 @@ private:
     glm::vec3   velocity;
     glm::vec3   acceleration;
 
-    struct TrailData
-    {
-      glm::vec3   position;
-    };
-
-    std::array<TrailData, trailSize> trail;
+    std::array<glm::vec3, k_trailSize> trail;
 
     Boid();
 

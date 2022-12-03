@@ -94,14 +94,14 @@ public:
         float thickness,
         const glm::vec4& color);
 
-    void pushThickTriangle3DLine(
+    void pushThickTriangle3dLine(
         const glm::vec3& posA,
         const glm::vec3& posB,
         float thicknessA,
         float thicknessB,
         const glm::vec4& colorA,
         const glm::vec4& colorB);
-    void pushThickTriangle3DLine(
+    void pushThickTriangle3dLine(
         const glm::vec3& posA,
         const glm::vec3& posB,
         float thickness,

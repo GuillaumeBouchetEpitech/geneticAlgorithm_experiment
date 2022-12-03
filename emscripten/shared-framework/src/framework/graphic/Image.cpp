@@ -70,6 +70,8 @@ bool Image::save(
   fs::path filePath = filename;
   if (filePath.extension() == ".png")
     return stbi_write_png(filename.c_str(), int(width), int(height), 4, pixels, 0);
+  if (filePath.extension() == ".jpg")
+    return stbi_write_jpg(filename.c_str(), int(width), int(height), 4, pixels, 0);
   if (filePath.extension() == ".bmp")
     return stbi_write_bmp(filename.c_str(), int(width), int(height), 4, pixels);
 
@@ -87,7 +89,7 @@ void Image::flipY()
 //
 
 const glm::uvec2& Image::getSize() const { return _size; }
-const unsigned char* Image::getPixels() const { return _pixels; }
+const uint8_t* Image::getPixels() const { return _pixels; }
 
 bool Image::isValid() const
 {
