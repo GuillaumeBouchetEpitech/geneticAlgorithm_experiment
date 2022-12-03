@@ -5,46 +5,12 @@ const fs    = require('fs');
 const path  = require('path');
 const os    = require('os');
 const zlib  = require('zlib');
-const port  = parseInt(process.argv[2] || 9000, 10);
+const g_port  = parseInt(process.argv[2] || 9000, 10);
 
-// useful to test on local WiFi with a smartphone
-const list_WiFi_IpAddresses = () => {
+const worker_port = g_port;
+const thread_port = g_port + 1;
 
-    const allInterfaces = [];
-
-    const ifaces = os.networkInterfaces();
-
-    Object.keys(ifaces).forEach((ifname) => {
-
-        let alias = 0;
-
-        ifaces[ifname].forEach((iface) => {
-
-            // skip over internal (i.e. 127.0.0.1)
-            if (iface.internal !== false)
-                return;
-
-            // skip over non-ipv4 addresses
-            if (iface.family.toLowerCase() !== 'ipv4')
-                return;
-
-            if (alias >= 1) {
-                // this single interface has multiple ipv4 addresses
-                allInterfaces.push(`ifname:${alias} http://${iface.address}:${port}/`);
-            }
-            else {
-                // this interface has only one ipv4 adress
-                allInterfaces.push(`ifname: http://${iface.address}:${port}/`);
-            }
-
-            ++alias;
-        });
-    });
-
-    const uniqueInterfaces = Array.from(new Set(allInterfaces));
-    for (const interface of uniqueInterfaces)
-        console.log(` => ${interface}`);
-}
+const async_sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // maps file extention to MIME typere
 const formatsMap = new Map([
@@ -64,9 +30,7 @@ const formatsMap = new Map([
     [ '.wasm',  'application/wasm'      ],
 ]);
 
-const onFileRequest = async (req, res) => {
-
-    console.log(`${req.method} ${req.url}`);
+const on_file_request = async (threading_headers, req, res) => {
 
     // parse URL
     const parsedUrl = url.parse(req.url);
@@ -86,7 +50,8 @@ const onFileRequest = async (req, res) => {
     let contentType = "text/plain";
 
     // if it is a directory: list it's content
-    if (fs.statSync(pathname).isDirectory()) {
+    const fileStats = fs.statSync(pathname);
+    if (fileStats.isDirectory()) {
 
         const content = fs.readdirSync(pathname, { withFileTypes: true });
 
@@ -130,36 +95,88 @@ const onFileRequest = async (req, res) => {
     // if the file is found, set Content-type and send data
     res.setHeader('Content-type', formatsMap.get(ext) || contentType );
 
-    //
-    // gzip compression
-    res.setHeader('Content-Encoding', "gzip" );
-    data = zlib.gzipSync(data);
-    // gzip compression
-    //
+    const originalSize = data.length;
+    let sizeToSend = originalSize;
 
-    // attempt at preventing browser caching (for debug)
-    res.setHeader('Last-Modified', (new Date()).toString());
+    if (
+        req.headers['accept-encoding'] &&
+        req.headers['accept-encoding'].indexOf("gzip") >= 0
+    ) {
+        res.setHeader('Content-Encoding', "gzip" );
+        data = zlib.gzipSync(data);
+    }
+
+    sizeToSend = data.length;
+
+    // // attempt at preventing browser caching (for debug)
+    // res.setHeader('Last-Modified', (new Date()).toString());
+
+    res.setHeader('Last-Modified', fileStats.mtime.toString());
 
 
-    // // firefox mulithreading
-    // // firefox mulithreading
-    // // firefox mulithreading
-    // res.setHeader('Cross-Origin-Opener-Policy', "same-origin");
-    // res.setHeader('Cross-Origin-Embedder-Policy', "require-corp");
-    // // firefox mulithreading
-    // // firefox mulithreading
-    // // firefox mulithreading
+    if (threading_headers === true) {
+        res.setHeader('Cross-Origin-Opener-Policy', "same-origin");
+        res.setHeader('Cross-Origin-Embedder-Policy', "require-corp");
+    }
 
+    // await async_sleep(500);
+
+    let logMsg = `${req.method} ${req.url} ${sizeToSend / 1000}Kb`;
+    if (sizeToSend < originalSize)
+        logMsg += ` (${originalSize / 1000}Kb, ${(originalSize / sizeToSend).toFixed(1)}x)`;
+    console.log(logMsg);
 
     res.end(data);
 }
 
-const onListen = () =>  {
+// useful to test on local WiFi with a smartphone
+const list_WiFi_IpAddresses = (inPort) => {
 
-    console.log(`Server listening`);
-    console.log(`=> http://127.0.0.1:${port}/`);
-    list_WiFi_IpAddresses();
+    const allInterfaces = [];
+
+    const ifaces = os.networkInterfaces();
+
+    Object.keys(ifaces).forEach((ifname) => {
+
+        let alias = 0;
+
+        ifaces[ifname].forEach((iface) => {
+
+            // skip over internal (i.e. 127.0.0.1)
+            if (iface.internal !== false)
+                return;
+
+            // skip over non-ipv4 addresses
+            if (iface.family.toLowerCase() !== 'ipv4')
+                return;
+
+            if (alias >= 1) {
+                // this single interface has multiple ipv4 addresses
+                allInterfaces.push(`ifname:${alias} http://${iface.address}:${inPort}/`);
+            }
+            else {
+                // this interface has only one ipv4 adress
+                allInterfaces.push(`ifname: http://${iface.address}:${inPort}/`);
+            }
+
+            ++alias;
+        });
+    });
+
+    const uniqueInterfaces = Array.from(new Set(allInterfaces));
+    for (const interface of uniqueInterfaces)
+        console.log(` => ${interface}`);
 }
 
-http.createServer(onFileRequest).listen(port, onListen);
+const make_server = (inPort, threading_headers) => {
+    http.createServer((req, res) => on_file_request(threading_headers, req, res))
+        .listen(inPort, () => {
+            console.log(`Server listening`);
+            console.log(`=> http://127.0.0.1:${inPort}/`);
+            list_WiFi_IpAddresses(inPort);
+        });
+};
+
+make_server(worker_port, false);
+make_server(thread_port, true);
 
