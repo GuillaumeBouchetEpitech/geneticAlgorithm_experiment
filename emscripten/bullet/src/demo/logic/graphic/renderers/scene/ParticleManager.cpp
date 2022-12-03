@@ -17,11 +17,21 @@
 namespace /*anonymous*/
 {
 
-    std::array<const glm::vec3, 3> k_particleColors{{
+    std::array<const glm::vec3, 3> k_particleColors
+    {{
         { 1.0f, 0.0f, 0.0f }, // red
         { 1.0f, 1.0f, 0.0f }, // yellow
         { 1.0f, 0.5f, 0.0f }, // orange
     }};
+
+    glm::vec3 getRandomVec3(float radius)
+    {
+        return glm::vec3(
+            RNG::getRangedValue(-radius, radius),
+            RNG::getRangedValue(-radius, radius),
+            RNG::getRangedValue(-radius, radius)
+        );
+    }
 
 };
 
@@ -42,16 +52,28 @@ ParticleManager::Particle::Particle(const glm::vec3& position,
         trailPos = position;
 }
 
+ParticleManager::ExplosionParticle::ExplosionParticle(
+    const glm::vec3& position,
+    const glm::vec3& color,
+    float scale,
+    float life)
+    : position(position)
+    , scale(scale)
+    , color(color)
+    , life(life)
+    , maxLife(life)
+{}
+
 void ParticleManager::initialise()
 {
-    _shader = ResourceManager::get().getShader(asValue(Shaders::particles));
+    _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
 
     {
 
         GeometryBuilder geometryBuilder;
 
         std::vector<glm::vec3> particlesVertices;
-        generateSphereVerticesFilled(0.5f, particlesVertices);
+        generateSphereVerticesFilled(0.5f, 1, particlesVertices);
 
         geometryBuilder
             .reset()
@@ -98,9 +120,20 @@ void ParticleManager::update(float delta)
         _particles.pop_back();
     }
 
-    // pre-allocate (1 position + N trailing positions)
-    _particlesInstances.reserve(_particles.size() * (1 + Particle::trail_size));
-    _particlesInstances.clear();
+    // update particle's life and handle removal of dead particles
+    for (std::size_t ii = 0; ii < _explosionParticles.size();)
+    {
+        _explosionParticles[ii].life -= delta;
+        if (_explosionParticles[ii].life > 0.0f)
+        {
+            ++ii;
+            continue;
+        }
+
+        // faster removal than erase (no reallocation)
+        std::swap(_explosionParticles[ii], _explosionParticles.back());
+        _explosionParticles.pop_back();
+    }
 
     for (auto& particle : _particles)
     {
@@ -122,34 +155,63 @@ void ParticleManager::update(float delta)
             // apply fake gravity
             particle.linearVelocity.z -= 20.0f * delta;
         }
-
-
-        // update scale
-        const float localScale = particle.life / particle.maxLife * particle.scale;
-
-        // push as instance
-        for (const auto& trailPos : particle.trail)
-            _particlesInstances.emplace_back(trailPos, localScale, particle.color);
-        _particlesInstances.emplace_back(particle.position, localScale, particle.color);
     }
+
 }
 
 void ParticleManager::render()
 {
-    if (_particlesInstances.empty())
-        return;
 
-    if (!_shader)
-        D_THROW(std::runtime_error, "shader not setup");
+    for (auto& particle : _explosionParticles)
+    {
+        // update scale
+        const float localScale = particle.life / particle.maxLife * particle.scale;
 
-    _shader->bind();
-    _shader->setUniform("u_composedMatrix", _matricesData.composed);
+        _particlesInstances.emplace_back(particle.position, localScale, particle.color);
+    }
 
-    _geometry.updateBuffer(1, _particlesInstances, true);
-    _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
-    _geometry.render();
+    if (!_particlesInstances.empty())
+    {
+        if (!_shader)
+            D_THROW(std::runtime_error, "shader not setup");
 
-    // _particlesInstances.clear();
+        _shader->bind();
+        _shader->setUniform("u_composedMatrix", _matricesData.composed);
+
+        _geometry.updateBuffer(1, _particlesInstances, true);
+        _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
+        _geometry.render();
+
+        _particlesInstances.clear();
+    }
+
+    {
+        auto& stackRenderer = Data::get().graphic.stackRenderer;
+
+        for (auto& particle : _particles)
+        {
+            // update scale
+            const float localScale = particle.life / particle.maxLife * particle.scale;
+
+            for (std::size_t ii = 0; ii + 1 < particle.trail.size(); ++ii)
+            {
+                stackRenderer.pushThickTriangle3DLine(
+                    particle.trail[ii + 0],
+                    particle.trail[ii + 1],
+                    localScale * 0.5f,
+                    localScale * 0.5f,
+                    glm::vec4(particle.color, 1),
+                    glm::vec4(particle.color, 1));
+            }
+            stackRenderer.pushThickTriangle3DLine(
+                particle.position,
+                particle.trail[0],
+                localScale * 0.5f,
+                localScale * 0.5f,
+                glm::vec4(particle.color, 1),
+                glm::vec4(particle.color, 1));
+        }
+    }
 }
 
 void ParticleManager::emitParticles(const glm::vec3& position, const glm::vec3& velocity)
@@ -170,21 +232,25 @@ void ParticleManager::emitParticles(const glm::vec3& position, const glm::vec3& 
     for (unsigned int ii = 0; ii < totalParticles; ++ii)
     {
         const float maxVelocity = RNG::getRangedValue(15.0f, 25.0f);
+        const glm::vec3 particleVel = glm::normalize(normalizedVel + getRandomVec3(0.25f)) * maxVelocity;
+        const glm::vec3 color = k_particleColors.at(RNG::getRangedValue(0, 3));
+        const float scale = RNG::getRangedValue(0.5f, 1.5f);
+        const float life = RNG::getRangedValue(0.5f, 1.5f);
 
-        const glm::vec3 velPertubation = {
-            RNG::getRangedValue(-1.0f, 1.0f),
-            RNG::getRangedValue(-1.0f, 1.0f),
-            RNG::getRangedValue(-1.0f, 1.0f),
-        };
-        const glm::vec3 particleVel = glm::normalize(normalizedVel + velPertubation) * maxVelocity;
+        _particles.emplace_back(position, particleVel, color, scale, life);
+    }
+
+    for (unsigned int ii = 0; ii < 3; ++ii)
+    {
+        const glm::vec3 particlePos = position + getRandomVec3(1.0f);
 
         const int colorIndex = RNG::getRangedValue(0, 3);
         const glm::vec3 color = k_particleColors.at(colorIndex);
 
-        const float scale = RNG::getRangedValue(0.5f, 1.5f);
+        const float scale = RNG::getRangedValue(3.0f, 5.0f);
 
-        const float life = RNG::getRangedValue(0.5f, 1.5f);
+        const float life = RNG::getRangedValue(0.25f, 0.75f);
 
-        _particles.emplace_back(position, particleVel, color, scale, life);
+        _explosionParticles.emplace_back(particlePos, color, scale, life);
     }
 }

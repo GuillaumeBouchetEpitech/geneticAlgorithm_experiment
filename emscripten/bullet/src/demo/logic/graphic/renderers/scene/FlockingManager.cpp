@@ -18,20 +18,82 @@
 
 FlockingManager::Boid::Boid()
 {
-  position = {0,0,0};
-  position.x = RNG::getRangedValue(-0.1f, +0.1f);
-  position.y = RNG::getRangedValue(-0.1f, +0.1f);
-  position.z = RNG::getRangedValue(-0.1f, +0.1f);
+  position = { 0, 0, 0 };
+  position.x = RNG::getRangedValue(-10.0f, +10.0f);
+  position.y = RNG::getRangedValue(-10.0f, +10.0f);
+  position.z = RNG::getRangedValue(-10.0f, +10.0f);
 
-  velocity = {0,0,0};
+  acceleration = { 0, 0, 0 };
+  velocity = { 0, 0, 0 };
 
-  distance = 0.0f;
+  for (auto& item : trail)
+    item.position = position;
+}
 
-  for (std::size_t ii = 0; ii < trail.size(); ++ii)
+void FlockingManager::Boid::seek(const glm::vec3& target, float coef)
+{
+  glm::vec3 diff = target - position;
+  const float diffMagnitude = glm::length(diff);
+
+  if (diffMagnitude > 0.0f)
+    diff = diff / diffMagnitude;
+
+  acceleration += diff * coef;
+}
+
+void FlockingManager::Boid::separate(const glm::vec3& target, float coef)
+{
+  return seek(target, -coef);
+}
+
+void FlockingManager::Boid::separate(const std::vector<Boid>& boids, float radius, float coef)
+{
+  glm::vec3 total = {0,0,0};
+  for (const Boid& other : boids)
   {
-    trail[ii].position = {0,0,0};
-    trail[ii].distance = 0;
+    if (*this == other)
+      continue;
+
+    const glm::vec3 diff = position - other.position;
+
+    if (glm::length(diff) > radius)
+      continue;
+
+    total += diff;
   }
+
+  const float magnitude = glm::length(total);
+  if (magnitude > 0.0f)
+    total = total / magnitude;
+
+  acceleration += total * coef;
+}
+
+void FlockingManager::Boid::wander(float coef)
+{
+  acceleration.x += RNG::getRangedValue(-coef, +coef);
+  acceleration.y += RNG::getRangedValue(-coef, +coef);
+  acceleration.z += RNG::getRangedValue(-coef, +coef);
+}
+
+void FlockingManager::Boid::applyAcceleration(float maxAcceleration, float maxVelocity)
+{
+  // limitate acc
+  const float accMagnitude = glm::length(acceleration);
+  if (accMagnitude > maxAcceleration)
+    acceleration = (acceleration / accMagnitude) * maxAcceleration;
+  velocity += acceleration;
+
+  // limitate vel
+  const float velMagnitude = glm::length(velocity);
+  if (velMagnitude > maxVelocity)
+    velocity = (velocity / velMagnitude) * maxVelocity;
+  position += velocity;
+}
+
+bool FlockingManager::Boid::operator==(const Boid& other) const
+{
+  return this == &other;
 }
 
 FlockingManager::FlockingManager()
@@ -43,13 +105,13 @@ FlockingManager::FlockingManager()
 
 void FlockingManager::initialise()
 {
-  _shader = ResourceManager::get().getShader(asValue(Shaders::particles));
+  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
 
   {
     GeometryBuilder geometryBuilder;
 
     std::vector<glm::vec3> particlesVertices;
-    generateSphereVerticesFilled(0.5f, particlesVertices);
+    generateSphereVerticesFilled(0.5f, 0, particlesVertices);
 
     geometryBuilder
       .reset()
@@ -84,128 +146,40 @@ void FlockingManager::update()
   const auto& leaderCar = logic.leaderCar;
 
   // valid leading car?
-  if (leaderCar.index >= 0)
+  if (auto leaderData = leaderCar.leaderData())
   {
-    const auto& leaderCarData = simulation.getCarResult(leaderCar.index);
-
     // leading car alive?
-    if (leaderCarData.isAlive)
+    if (leaderData->isAlive)
     {
-      target = leaderCarData.liveTransforms.chassis * glm::vec4(0, 0, 0, 1);
+      target = leaderData->liveTransforms.chassis * glm::vec4(0, 0, 0, 1);
     }
   }
 
   constexpr float maxAcc = 0.1f;
   constexpr float maxVel = 2.0f;
-  constexpr float sepRadius = 1.0f;
 
-  for (std::size_t ii = 0; ii < _boids.size(); ++ii)
+  for (Boid& boid : _boids)
   {
-    Boid& boid = _boids[ii];
+    boid.acceleration = { 0, 0, 0 };
 
-    glm::vec3 acceleration = {0,0,0};
+    const float distance = glm::distance(boid.position, target);
 
-    {
-      // seek
+    if (distance > 20.0f)
+      boid.seek(target, 1.0f);
+    else
+      boid.separate(target, 3.0f);
 
-      glm::vec3 diff = target - boid.position;
-      const float diffMagnitude = glm::length(diff);
+    boid.separate(_boids, 1.5f, 2.0f);
+    boid.wander(0.5f);
 
-      boid.distance = diffMagnitude;
-
-      float coef = 1.0f;
-      if (diffMagnitude < 20.0f)
-      {
-        diff = -diff; // separate
-        coef = 3.0f;
-      }
-
-      if (diffMagnitude > 0.0f)
-        diff = diff / diffMagnitude;
-
-      acceleration += diff * coef;
-    }
-    // else
-    // {
-    //   // slow down
-
-    //   const float velMagnitude = glm::length(boid.velocity);
-    //   if (velMagnitude > 0.1f)
-    //     boid.velocity = boid.velocity * 0.9f;
-    // }
-
-    {
-
-      const glm::vec3& target = data.graphic.camera.scene.instance.getEye();
-
-      glm::vec3 diff = boid.position - target;
-      const float diffMagnitude = glm::length(diff);
-
-      if (diffMagnitude < 20.0f)
-      {
-        if (diffMagnitude > 0.0f)
-          diff = diff / diffMagnitude;
-
-        acceleration += diff * 3.0f;
-      }
-
-    }
-
-    {
-      // separate
-
-      glm::vec3 sep = {0,0,0};
-      for (std::size_t jj = 0; jj < _boids.size(); ++jj)
-      {
-        if (ii == jj)
-          continue;
-
-        const Boid& other = _boids[jj];
-
-        const glm::vec3 diff = boid.position - other.position;
-
-        if (glm::length(diff) > sepRadius)
-          continue;
-
-        sep += diff;
-      }
-
-      const float sepVel = glm::length(sep);
-      if (sepVel > 0.0f)
-        sep = sep / sepVel;
-
-      acceleration += sep * 2.0f;
-    }
-
-    {
-
-      constexpr float maxWander = 0.5f;
-      acceleration.x += RNG::getRangedValue(-maxWander, +maxWander);
-      acceleration.y += RNG::getRangedValue(-maxWander, +maxWander);
-      acceleration.z += RNG::getRangedValue(-maxWander, +maxWander);
-
-    }
-
-    // limitate acc
-    const float accMagnitude = glm::length(acceleration);
-    if (accMagnitude > maxAcc)
-      acceleration = (acceleration / accMagnitude) * maxAcc;
-    boid.velocity += acceleration;
-
-    // limitate vel
-    const float velMagnitude = glm::length(boid.velocity);
-    if (velMagnitude > maxVel)
-      boid.velocity = (boid.velocity / velMagnitude) * maxVel;
-    boid.position += boid.velocity;
+    const float coef = distance > 30.0f ? 3.0f : 1.0f;
+    boid.applyAcceleration(maxAcc * coef, maxVel * coef);
 
     // make a trail by reusing the previous positions N times
     for (std::size_t ii = boid.trail.size() - 1; ii > 0; --ii)
       boid.trail[ii] = boid.trail[ii - 1];
     boid.trail[0].position = boid.position;
-    boid.trail[0].distance = boid.distance;
   }
-
-  _thickerTrailIndex = (_thickerTrailIndex + 1) % trailSize;
 }
 
 void FlockingManager::render()
@@ -219,58 +193,47 @@ void FlockingManager::render()
   //
   //
 
-  _particlesInstances.clear();
-  for (Boid& boid : _boids)
-    _particlesInstances.emplace_back(boid.position, 0.4f, glm::vec3(0.6f, 0.6f, 0.0f));
-
-  _shader->bind();
-  _shader->setUniform("u_composedMatrix", _matricesData.composed);
-
-  _geometry.updateBuffer(1, _particlesInstances);
-  _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
-  _geometry.render();
-
-  //
-  //
-
-  GlContext::disable(GlContext::States::depthTest);
-
-  auto& stackRenderer = Data::get().graphic.stackRenderer;
-
-  const glm::vec3 focusedColor = glm::vec3(1.0f, 1.0f, 1.0f);
-  const glm::vec3 standardColor = glm::vec3(0.6f, 0.6f, 0.0f);
-
-  for (Boid& boid : _boids)
   {
-    for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
+
+    _particlesInstances.clear();
+    for (Boid& boid : _boids)
+      _particlesInstances.emplace_back(boid.position, 0.4f, glm::vec3(0.6f, 0.6f, 0.0f));
+
+    if (!_particlesInstances.empty())
     {
-      const std::size_t indexA = kk;
-      const std::size_t indexB = kk + 1;
-      // const bool focusedA = int(indexA) == _thickerTrailIndex;
-      // const bool focusedB = int(indexB) == _thickerTrailIndex;
-      const bool focusedA = false;
-      const bool focusedB = false;
+      _shader->bind();
+      _shader->setUniform("u_composedMatrix", _matricesData.composed);
 
-      const float alphaA = (boid.trail[indexA].distance > 20.0f) ? 0.4f : 0.1f;
-      const float alphaB = (boid.trail[indexB].distance > 20.0f) ? 0.4f : 0.1f;
-
-      const float thicknessA = (focusedA ? 0.2f : 0.1f);
-      const float thicknessB = (focusedB ? 0.2f : 0.1f);
-      const glm::vec3& colorA = (focusedA ? focusedColor : standardColor);
-      const glm::vec3& colorB = (focusedB ? focusedColor : standardColor);
-
-      stackRenderer.pushThickTriangle3DLine(
-        boid.trail[indexA].position,
-        boid.trail[indexB].position,
-        thicknessA,
-        thicknessB,
-        glm::vec4(colorA, alphaA),
-        glm::vec4(colorB, alphaB)
-      );
+      _geometry.updateBuffer(1, _particlesInstances);
+      _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
+      _geometry.render();
     }
+
   }
 
-  stackRenderer.flush();
+  //
+  //
 
-  GlContext::enable(GlContext::States::depthTest);
+  {
+
+    GlContext::disable(GlContext::States::depthTest);
+
+    auto& stackRenderer = Data::get().graphic.stackRenderer;
+
+    const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
+
+    for (Boid& boid : _boids)
+      for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
+        stackRenderer.pushThickTriangle3DLine(
+          boid.trail[kk + 0].position,
+          boid.trail[kk + 1].position,
+          0.2f,
+          color
+        );
+
+    stackRenderer.flush();
+
+    GlContext::enable(GlContext::States::depthTest);
+
+  }
 }

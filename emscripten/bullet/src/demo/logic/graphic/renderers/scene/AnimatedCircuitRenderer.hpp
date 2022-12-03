@@ -18,7 +18,8 @@ public:
   {
     glm::vec3 postion;
     glm::vec3 color;
-    glm::vec3 normal; // <= animation
+    glm::vec3 normal;
+    glm::vec3 animatedNormal; // <= animation
     float limitId; // <= animation
 
     AnimatedVertex() = default;
@@ -27,10 +28,12 @@ public:
         const glm::vec3& postion,
         const glm::vec3& color,
         const glm::vec3& normal,
+        const glm::vec3& animatedNormal,
         float limitId)
         : postion(postion)
         , color(color)
         , normal(normal)
+        , animatedNormal(animatedNormal)
         , limitId(limitId)
     {}
   };
@@ -55,6 +58,7 @@ public:
 
 private:
   std::shared_ptr<ShaderProgram> _shaderWireframe;
+  std::shared_ptr<ShaderProgram> _shaderCircuitLit;
   std::shared_ptr<ShaderProgram> _shaderCircuit;
 
   struct Geometries

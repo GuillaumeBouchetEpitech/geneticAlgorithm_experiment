@@ -9,29 +9,29 @@ void NewLeaderRenderer::compute()
   auto& graphic = data.graphic;
   auto& logic = data.logic;
 
-  const auto& simulation = *logic.simulation;
+  if (logic.leaderCar.totalTimeAsLeader() > 1.0f)
+      return;
 
-  if (logic.leaderCar.index >= 0 &&
-      logic.leaderCar.totalTimeAsLeader < 1.0f)
+  if (auto leaderData = logic.leaderCar.leaderData())
   {
-      const Camera& scene = graphic.camera.scene.instance;
+    const Camera& scene = graphic.camera.scene.instance;
 
-      const auto& leaderCarData = simulation.getCarResult(logic.leaderCar.index);
-
-    if (// we don't advertise a dead leader
-        leaderCarData.isAlive &&
-        // we don't advertise an early leader
-        leaderCarData.fitness > 5.0f &&
-        // we don't advertise a dying leader
-        leaderCarData.groundSensor.value < 0.5f)
+    if (
+      // we don't advertise a dead leader
+      leaderData->isAlive &&
+      // we don't advertise an early leader
+      leaderData->fitness > 5.0f &&
+      // we don't advertise a dying leader
+      leaderData->groundSensor.value < 0.5f)
     {
-      const glm::vec3 carPos = leaderCarData.liveTransforms.chassis * glm::vec4(0, 0, 0, 1);
+      const glm::vec3 carPos = leaderData->liveTransforms.chassis * glm::vec4(0, 0, 0, 1);
 
       const bool isVisible = scene.sceneToHudCoord(carPos, _screenCoord);
 
-      if (isVisible &&
-          // out of range?
-          _screenCoord.z < 1.0f)
+      if (
+        isVisible &&
+        // out of range?
+        _screenCoord.z < 1.0f)
       {
         _isVisible = true;
       }

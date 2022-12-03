@@ -25,12 +25,15 @@ void Camera::computeMatrices()
 {
   { // scene
 
-    const float fovy = glm::radians(70.0f);
-    const float aspectRatio = float(_viewportSize.x) / _viewportSize.y;
-
     if (_dirtyProjectionMatrices)
     {
-      _matrices.scene.projection = glm::perspective(fovy, aspectRatio, 0.1f, 1500.f);
+      const float aspectRatio = float(_viewportSize.x) / _viewportSize.y;
+
+      _matrices.scene.projection = glm::perspective(
+        glm::radians(_perspective.fovy),
+        aspectRatio,
+        _perspective.near,
+        _perspective.far);
     }
 
     _matrices.scene.view = glm::lookAt(_eye, _target, _up);
@@ -109,19 +112,19 @@ void Camera::setSize(int width, int height)
   _dirtyProjectionMatrices = true;
 }
 
-const glm::vec2& Camera::getSize() const
-{
-  return _viewportSize;
-}
+const glm::vec2& Camera::getSize() const { return _viewportSize; }
+
+void Camera::setPerspective(const Perspective& perspective) { _perspective = perspective; }
+const Camera::Perspective& Camera::getPerspective() const { return _perspective; }
 
 //
 
-const Camera::MatricesData& Camera::getSceneMatricsData() const
+const Camera::MatricesData& Camera::getSceneMatricesData() const
 {
   return _matrices.scene;
 }
 
-const Camera::MatricesData& Camera::getHudMatricsData() const
+const Camera::MatricesData& Camera::getHudMatricesData() const
 {
   return _matrices.hud;
 }

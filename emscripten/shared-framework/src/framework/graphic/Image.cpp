@@ -1,22 +1,25 @@
 
 #include "Image.hpp"
 
-#include "framework/helpers/STBImage.hpp"
-
 #include "framework/ErrorHandler.hpp"
+
+#include "framework/helpers/internals/STBImage.hpp"
+
+#include <filesystem> // C++17
+namespace fs = std::filesystem;
 
 //
 
 Image::~Image()
 {
-  unload();
+  dispose();
 }
 
 //
 
 void Image::load(const std::string& filename, bool supportNonPowerOfTow /* = true */)
 {
-  unload();
+  dispose();
 
   int width;
   int height;
@@ -35,35 +38,58 @@ void Image::load(const std::string& filename, bool supportNonPowerOfTow /* = tru
       D_THROW(std::runtime_error, "image height not a power of 2, filename=\"" << filename << "\"");
   }
 
-  _size.x = width;
-  _size.y = height;
+  _size.x = uint32_t(width);
+  _size.y = uint32_t(height);
 }
 
-void Image::unload()
+void Image::dispose()
 {
-  if (_pixels)
-    stbi_image_free(_pixels);
+  if (!isValid())
+    return;
 
   _size.x = 0;
   _size.y = 0;
+  stbi_image_free(_pixels);
+  _pixels = nullptr;
+}
+
+bool Image::save(const std::string& filename)
+{
+  if (!isValid())
+    D_THROW(std::runtime_error, "image not initialised, filename: " << filename);
+
+  return Image::save(filename, _size.x, _size.y, _pixels);
+}
+
+bool Image::save(
+  const std::string& filename,
+  uint32_t width,
+  uint32_t height,
+  const uint8_t* pixels)
+{
+  fs::path filePath = filename;
+  if (filePath.extension() == ".png")
+    return stbi_write_png(filename.c_str(), int(width), int(height), 4, pixels, 0);
+  if (filePath.extension() == ".bmp")
+    return stbi_write_bmp(filename.c_str(), int(width), int(height), 4, pixels);
+
+  D_THROW(std::runtime_error, "unknown file extension, filename: " << filename);
 }
 
 void Image::flipY()
 {
-  const int hsize = _size.y / 2;
-  for (int yy = 0; yy < hsize; ++yy)
-  for (int xx = 0; xx < _size.x; ++xx)
+  const uint32_t hsize = _size.y / 2;
+  for (uint32_t yy = 0; yy < hsize; ++yy)
+  for (uint32_t xx = 0; xx < _size.x; ++xx)
     std::swap(_pixels[yy * _size.x + xx], _pixels[(_size.y - yy) * _size.x + xx]);
 }
 
 //
 
-const glm::ivec2& Image::getSize() const
-{
-  return _size;
-}
+const glm::uvec2& Image::getSize() const { return _size; }
+const unsigned char* Image::getPixels() const { return _pixels; }
 
-const unsigned char* Image::getPixels() const
+bool Image::isValid() const
 {
-  return _pixels;
+  return _size.x > 0 && _size.y > 0 && _pixels != nullptr;
 }

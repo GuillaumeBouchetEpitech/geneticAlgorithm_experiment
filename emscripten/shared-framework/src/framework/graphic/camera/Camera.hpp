@@ -16,6 +16,13 @@ public:
     glm::mat4 invComposed;
   };
 
+  struct Perspective
+  {
+    float fovy = 70.0f;
+    float near = 0.1f;
+    float far = 500.0f;
+  };
+
 public:
   Camera() = default;
   ~Camera() = default;
@@ -38,9 +45,12 @@ public:
   void setSize(int width, int height);
   const glm::vec2& getSize() const;
 
+  void setPerspective(const Perspective& perspective);
+  const Perspective& getPerspective() const;
+
 public:
-  const MatricesData& getSceneMatricsData() const;
-  const MatricesData& getHudMatricsData() const;
+  const MatricesData& getSceneMatricesData() const;
+  const MatricesData& getHudMatricesData() const;
 
 private:
   glm::vec2 _viewportSize = { 800.0f, 600.0f };
@@ -59,6 +69,8 @@ private:
     MatricesData hud;
   }
   _matrices;
+
+  Perspective _perspective;
 
   FrustumCulling _frustumCulling;
 

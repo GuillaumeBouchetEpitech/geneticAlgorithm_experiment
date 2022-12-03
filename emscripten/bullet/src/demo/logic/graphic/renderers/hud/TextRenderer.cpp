@@ -15,9 +15,9 @@
 void TextRenderer::initialise()
 {
 
-    _shader = ResourceManager::get().getShader(asValue(Shaders::hudText));
+    _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::hudText));
 
-    _texture = ResourceManager::get().getTexture(0);
+    _texture = Data::get().graphic.resourceManager.getTexture(0);
 
     const glm::vec2 gridSize = { 16, 16 };
     const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
@@ -49,11 +49,8 @@ void TextRenderer::initialise()
             glm::vec2 texCoord;
         };
 
-        // const auto& hudText = graphic.hudText;
-        // const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
-        // const glm::vec2 texCoord = letterSize / hudText.textureSize;
-
-        std::array<Vertex, 4> vertices{{
+        std::array<Vertex, 4> vertices
+        {{
             { { +letterSize.x,             0 }, { texCoord.x, texCoord.y } },
             { {             0,             0 }, {          0, texCoord.y } },
             { { +letterSize.x, +letterSize.y }, { texCoord.x,          0 } },
@@ -73,17 +70,13 @@ void TextRenderer::initialise()
 
     }
 
-    // const auto& hudText = Data::get().graphic.hudText;
-    // const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
-    // const glm::vec2 texCoord = letterSize / hudText.textureSize;
-
     constexpr std::size_t preAllocatedSize = 1024;
 
     _lettersOffsetColored.reserve(preAllocatedSize); // <= pre-allocate
     _lettersOffsetBackground.reserve(preAllocatedSize * 8); // <= pre-allocate
 
-    _lettersTexCoordMap = {
-
+    _lettersTexCoordMap =
+    {
         { ' ',  {  0 * texCoord.x, 0 * texCoord.y } },
         { '!',  {  1 * texCoord.x, 0 * texCoord.y } },
         { '\"', {  2 * texCoord.x, 0 * texCoord.y } },
@@ -195,22 +188,19 @@ void TextRenderer::setMatricesData(const Camera::MatricesData& matricesData)
 
 //
 
-void TextRenderer::push(const glm::vec2& position,
-                        const std::string& message,
-                        const glm::vec3& color,
-                        float scale /* = 1.0f */,
-                        TextAllign allign /* = TextAllign::left */)
+void TextRenderer::push(
+    const glm::vec2& position,
+    std::string_view message,
+    const glm::vec3& color,
+    float scale /* = 1.0f */,
+    TextAllign allign /* = TextAllign::left */)
 {
     // TODO: support text align
 
     static_cast<void>(allign); // unused
 
-    // const auto& hudText = Data::get().graphic.hudText;
-    // const glm::vec2 letterSize = hudText.textureSize / hudText.gridSize;
-
     const glm::vec2 gridSize = { 16, 16 };
     const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
-    // const glm::vec2 texCoord = letterSize / glm::vec2(_texture->getSize());
 
     std::vector<float> allLinesWidth;
     allLinesWidth.reserve(64);

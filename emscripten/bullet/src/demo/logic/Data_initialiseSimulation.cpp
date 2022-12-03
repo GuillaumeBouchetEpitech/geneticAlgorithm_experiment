@@ -20,12 +20,12 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
     const glm::vec3 whiteColor = { 1.0f, 1.0f, 1.0f };
 
     const float maxFloat = std::numeric_limits<float>::max();
-    auto& boundaries = logic.circuitAnimation.boundaries;
-    boundaries.min = glm::vec3(+maxFloat, +maxFloat, +maxFloat);
-    boundaries.max = glm::vec3(-maxFloat, -maxFloat, -maxFloat);
+    auto& circuitDimension = logic.circuitDimension;
+    circuitDimension.min = glm::vec3(+maxFloat, +maxFloat, +maxFloat);
+    circuitDimension.max = glm::vec3(-maxFloat, -maxFloat, -maxFloat);
 
     auto onSkeletonPatch = [
-        &boundaries,
+        &circuitDimension,
         &skeletonVertices
     ](
         const CircuitBuilder::Vec3Array& vertices,
@@ -38,13 +38,13 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
             skeletonVertices.push_back(vertex);
 
-            if (vertex.x < boundaries.min.x) boundaries.min.x = vertex.x;
-            if (vertex.y < boundaries.min.y) boundaries.min.y = vertex.y;
-            if (vertex.z < boundaries.min.z) boundaries.min.z = vertex.z;
+            if (vertex.x < circuitDimension.min.x) circuitDimension.min.x = vertex.x;
+            if (vertex.y < circuitDimension.min.y) circuitDimension.min.y = vertex.y;
+            if (vertex.z < circuitDimension.min.z) circuitDimension.min.z = vertex.z;
 
-            if (vertex.x > boundaries.max.x) boundaries.max.x = vertex.x;
-            if (vertex.y > boundaries.max.y) boundaries.max.y = vertex.y;
-            if (vertex.z > boundaries.max.z) boundaries.max.z = vertex.z;
+            if (vertex.x > circuitDimension.max.x) circuitDimension.max.x = vertex.x;
+            if (vertex.y > circuitDimension.max.y) circuitDimension.max.y = vertex.y;
+            if (vertex.z > circuitDimension.max.z) circuitDimension.max.z = vertex.z;
         }
     };
 
@@ -72,20 +72,20 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
         for (int index : indices)
         {
-            bool firstLine = (index < 2); // hacky
+            const bool firstLine = (index < 2); // hacky
 
             const auto& color = (firstLine ? whiteColor : colors[index]);
 
-            glm::vec3 deformation =
+            const glm::vec3 deformation =
             {
                 RNG::getRangedValue(-maxDeformation, +maxDeformation),
                 RNG::getRangedValue(-maxDeformation, +maxDeformation),
                 RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
-            glm::vec3 normal = (normals[index] + deformation) * 4.0f;
+            const glm::vec3 animNormal = (normals[index] + deformation) * 4.0f;
 
-            groundVertices.emplace_back(vertices[index], color, normal, limitValue);
+            groundVertices.emplace_back(vertices[index], color, normals[index], animNormal, limitValue);
 
             limitValue += limitStep;
         }
@@ -108,23 +108,24 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         static_cast<void>(colors); // <= unused
 
         float limitValue = latestSize / indices.size();
-        float limitStep = 1.0f / indices.size();
+        const float limitStep = 1.0f / indices.size();
 
         for (int index : indices)
         {
-            bool firstLine = (index < 2); // hacky
+            const bool firstLine = (index < 2); // hacky
 
             const auto& color = (firstLine ? whiteColor : greyColor);
 
-            glm::vec3 deformation = {
+            const glm::vec3 deformation =
+            {
                 RNG::getRangedValue(-maxDeformation, +maxDeformation),
                 RNG::getRangedValue(-maxDeformation, +maxDeformation),
                 RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
-            glm::vec3 normal = (normals[index] + deformation) * 4.0f;
+            const glm::vec3 animNormal = (normals[index] + deformation) * 4.0f;
 
-            wallsVertices.emplace_back(vertices[index], color, normal, limitValue);
+            wallsVertices.emplace_back(vertices[index], color, normals[index], animNormal, limitValue);
 
             limitValue += limitStep;
         }
@@ -153,7 +154,7 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
     logic.cores.profileData.initialise(simulationDef.totalCores, 60);
 
-    boundaries.center = boundaries.min + (boundaries.max - boundaries.min) * 0.5f;
+    circuitDimension.center = circuitDimension.min + (circuitDimension.max - circuitDimension.min) * 0.5f;
 
     graphic.camera.scene.center = logic.simulation->getStartPosition();
     graphic.camera.scene.distance = 200.0f;
@@ -164,8 +165,8 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         wallsVertices,
         maxUpperValue);
 
-    const glm::vec3 boundariesSize = boundaries.max - boundaries.min;
+    const glm::vec3 boundariesSize = circuitDimension.max - circuitDimension.min;
 
-    graphic.floorRenderer.initialise(boundaries.center, boundariesSize);
+    graphic.floorRenderer.initialise(circuitDimension.center, boundariesSize);
     graphic.backGroundCylindersRenderer.initialise(boundariesSize);
 }

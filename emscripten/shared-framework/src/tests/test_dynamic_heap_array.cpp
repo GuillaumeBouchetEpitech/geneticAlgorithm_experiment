@@ -1,6 +1,8 @@
 
 #include "framework/containers/dynamic_heap_array.hpp"
 
+#include "framework/TraceLogger.hpp"
+
 #include "common.hpp"
 
 #include <vector>
@@ -12,17 +14,20 @@
 
 #include <cassert>
 
+template<typename T>
+using empty_heap_array = dynamic_heap_array<T, std::allocator<T>, 0>;
+
 void test_dynamic_heap_array()
 {
-  std::cout << "test_dynamic_heap_array()" << std::endl;
+  D_MYLOG("test_dynamic_heap_array()");
 
   {
 
     // common::enableLogs();
 
-    dynamic_heap_array<common::Test> vertices;
+    empty_heap_array<common::Test> vertices;
     // std::vector<Test> vertices;
-    // vertices.reserve(16);
+    // vertices.pre_allocate(16);
 
     assert(vertices.empty() == true);
     assert(vertices.size() == 0);
@@ -80,7 +85,7 @@ void test_dynamic_heap_array()
     assert(vertices[3].value == 4);
     assert(vertices[4].value == 5);
 
-    vertices.unsortedErase(1);
+    vertices.unsorted_erase(1);
 
     assert(vertices.empty() == false);
     assert(vertices.size() == 4);
@@ -90,7 +95,7 @@ void test_dynamic_heap_array()
     assert(vertices[2].value == 3);
     assert(vertices[3].value == 4);
 
-    vertices.sortedErase(1);
+    vertices.sorted_erase(1);
 
     assert(vertices.empty() == false);
     assert(vertices.size() == 3);
@@ -107,7 +112,7 @@ void test_dynamic_heap_array()
     assert(vertices[0].value == 1);
     assert(vertices[1].value == 3);
 
-    vertices.reserve(20);
+    vertices.pre_allocate(20);
 
     assert(vertices.empty() == false);
     assert(vertices.size() == 2);
@@ -115,7 +120,7 @@ void test_dynamic_heap_array()
     assert(vertices[0].value == 1);
     assert(vertices[1].value == 3);
 
-    vertices.reserve(8);
+    vertices.pre_allocate(8);
 
     assert(vertices.empty() == false);
     assert(vertices.size() == 2);
@@ -158,7 +163,7 @@ void test_dynamic_heap_array()
 
     common::reset();
     std::vector<common::Test> vertices;
-    // vertices.reserve(16);
+    // vertices.pre_allocate(16);
 
     vertices.push_back(common::Test(1));
     vertices.emplace_back(222222222); // emplace test
@@ -179,8 +184,8 @@ void test_dynamic_heap_array()
     // std::cout << "dynamic_heap_array" << std::endl;
 
     common::reset();
-    dynamic_heap_array<common::Test> vertices;
-    // vertices.reserve(16);
+    empty_heap_array<common::Test> vertices;
+    // vertices.pre_allocate(16);
 
     vertices.push_back(common::Test(1));
     vertices.emplace_back(222222222); // emplace test
@@ -202,5 +207,193 @@ void test_dynamic_heap_array()
     // print();
   }
 
-  std::cout << " => DONE" << std::endl;
+  {
+    // std::cout << "dynamic_heap_array" << std::endl;
+
+    common::reset();
+    empty_heap_array<common::Test> vertices;
+    vertices.pre_allocate(16);
+
+    vertices.push_back(common::Test(1));
+    vertices.push_back(common::Test(2));
+    vertices.push_back(common::Test(3));
+    vertices.push_back(common::Test(4));
+    vertices.push_back(common::Test(5));
+
+    {
+      int index = 0;
+      for (volatile auto& test : vertices)
+      {
+        assert(test.value == ((index++) + 1));
+      }
+    }
+
+    {
+      int index = 0;
+      empty_heap_array<common::Test>& cvertices = vertices;
+      for (volatile const auto& test : cvertices)
+      {
+        assert(test.value == ((index++) + 1));
+      }
+
+    }
+
+    // print();
+  }
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test> vertices;
+    // vertices.pre_allocate(16);
+
+    vertices.push_back(common::Test(1));
+    vertices.emplace_back(222222222); // emplace test
+
+    D_MYLOG("vertices[0].my_string " << vertices[0].my_string);
+    D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
+
+    vertices[0].my_string = "LOL";
+    vertices[1].my_string = "LOL";
+
+    D_MYLOG("vertices[0].my_string " << vertices[0].my_string);
+    D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
+
+    // my_string
+
+  }
+
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test2> vertices;
+    // vertices.pre_allocate(16);
+
+    // vertices.push_back();
+    vertices.emplace_back();
+
+    vertices.emplace_back();
+
+    D_MYLOG("vertices[0].my_string " << vertices[0].my_string);
+    D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
+
+    vertices[0].my_string = "LOL";
+    vertices[1].my_string = "LOL";
+
+    D_MYLOG("vertices[0].my_string " << vertices[0].my_string);
+    D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
+
+    // my_string
+
+  }
+
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test2> vertices;
+
+    common::Test2 test1;
+    test1.my_string = "666";
+
+    assert(!test1.my_string.empty());
+    assert(test1.my_string == "666");
+
+    vertices.push_back(std::move(test1));
+
+    assert(test1.my_string.empty());
+    assert(!vertices[0].my_string.empty());
+    assert(vertices[0].my_string == "666");
+
+  }
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test> vertices1;
+    dynamic_heap_array<common::Test> vertices2;
+    // vertices.pre_allocate(16);
+
+    vertices1.emplace_back(111);
+    vertices1.emplace_back(222);
+
+    assert(vertices1.size() == 2);
+    assert(vertices2.size() == 0);
+    assert(vertices1[0].value == 111);
+    assert(vertices1[1].value == 222);
+
+    vertices2 = std::move(vertices1);
+
+    assert(vertices1.size() == 0);
+    assert(vertices2.size() == 2);
+    assert(vertices2[0].value == 111);
+    assert(vertices2[1].value == 222);
+
+  }
+
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test> vertices;
+
+    for (int ii = 0; ii < 5; ++ii)
+      vertices.emplace_back(ii);
+
+    assert(vertices.size() == 5);
+
+    assert(vertices[-5].value == 0);
+    assert(vertices[-4].value == 1);
+    assert(vertices[-3].value == 2);
+    assert(vertices[-2].value == 3);
+    assert(vertices[-1].value == 4);
+
+    assert(vertices[0].value == 0);
+    assert(vertices[1].value == 1);
+    assert(vertices[2].value == 2);
+    assert(vertices[3].value == 3);
+    assert(vertices[4].value == 4);
+
+    assert(vertices[5].value == 0);
+    assert(vertices[6].value == 1);
+    assert(vertices[7].value == 2);
+    assert(vertices[8].value == 3);
+    assert(vertices[9].value == 4);
+
+    {
+      int index = 0;
+      for (auto it = vertices.begin(); it != vertices.end(); ++it)
+        assert(it->value == index++);
+      assert(index == int(vertices.size()));
+    }
+
+    {
+      int index = 0;
+      const auto& cvertices = vertices;
+      for (auto it = cvertices.begin(); it != cvertices.end(); ++it)
+        assert(it->value == index++);
+      assert(index == int(vertices.size()));
+    }
+
+    {
+      int index = 0;
+      for (common::Test& item : vertices)
+        assert(item.value == index++);
+      assert(index == int(vertices.size()));
+    }
+
+    {
+      int index = 0;
+      const auto& cvertices = vertices;
+      for (const common::Test& item : cvertices)
+        assert(item.value == index++);
+      assert(index == int(vertices.size()));
+    }
+
+  }
+
+
+
+  D_MYLOG(" => DONE");
 }

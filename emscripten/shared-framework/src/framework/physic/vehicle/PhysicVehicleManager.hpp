@@ -13,7 +13,7 @@ class PhysicVehicleManager
   friend PhysicWorld;
 
 public:
-  using VehiclesPool = weak_ref_data_pool<PhysicVehicle, AbstractPhysicVehicle>;
+  using VehiclesPool = weak_ref_data_pool<PhysicVehicle, AbstractPhysicVehicle, 256, false>;
   using VehicleWeakRef = VehiclesPool::weak_ref;
 
 private:

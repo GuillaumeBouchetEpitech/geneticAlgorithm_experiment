@@ -15,7 +15,7 @@ class PhysicBodyManager
   friend PhysicWorld;
 
 public:
-  using BodyContainer = weak_ref_data_pool<PhysicBody, AbstractPhysicBody>;
+  using BodyContainer = weak_ref_data_pool<PhysicBody, AbstractPhysicBody, 256, false>;
   using BodyWeakRef = BodyContainer::weak_ref;
 
 private:

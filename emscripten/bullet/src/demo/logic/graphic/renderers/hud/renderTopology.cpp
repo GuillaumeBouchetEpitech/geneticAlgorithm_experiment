@@ -11,6 +11,9 @@ void renderTopology(
   auto& logic = data.logic;
   auto& graphic = data.graphic;
 
+  if (!logic.leaderCar.hasLeader())
+    return;
+
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
   const glm::vec4 redColor(1.0f,0.0f,0.0f,0.85f);
   const glm::vec4 blueColor(0.5f,0.5f,1.0f,0.85f);
@@ -27,7 +30,7 @@ void renderTopology(
   const NeuralNetworks& neuralNetworks = logic.simulation->getGeneticAlgorithm().getNeuralNetworks();
 
   std::vector<float> connectionsWeights;
-  const auto leaderNnPtr = neuralNetworks[logic.leaderCar.index];
+  const auto leaderNnPtr = neuralNetworks[logic.leaderCar.leaderIndex()];
   leaderNnPtr->getWeights(connectionsWeights);
 
   struct NeuronData
@@ -80,11 +83,12 @@ void renderTopology(
       constexpr float thickness = 10.0f;
       const glm::vec4 color = glm::mix(redColor, glm::vec4(0,1,0,1), neuron.value);
 
-      graphic.stackRenderer.pushThickTriangleLine(
+      graphic.stackRenderer.pushThickTriangle2dLine(
         start,
         neuron.position,
         thickness,
         1.0f,
+        color,
         color,
         +0.2f);
     }
@@ -99,22 +103,24 @@ void renderTopology(
       if (neuron.value > 0.0f)
       {
         const float thickness = 2.0f + neuron.value * +10.0f;
-        graphic.stackRenderer.pushThickTriangleLine(
+        graphic.stackRenderer.pushThickTriangle2dLine(
           start,
           neuron.position,
           thickness,
           12.0f,
-          redColor
+          redColor,
+          redColor,
           +0.2f);
       }
       else
       {
         const float thickness = 2.0f + neuron.value * -10.0f;
-        graphic.stackRenderer.pushThickTriangleLine(
+        graphic.stackRenderer.pushThickTriangle2dLine(
           start,
           neuron.position,
           thickness,
           12.0f,
+          blueColor,
           blueColor,
           +0.2f);
       }
@@ -185,13 +191,11 @@ void renderTopology(
 
             const glm::vec4 targetColor (weight > 0.0f ? positiveColor : negativeColor);
 
-            graphic.stackRenderer.pushThickTriangleLine(
+            graphic.stackRenderer.pushThickTriangle2dLine(
               prevNeuron.position,
               currNeuron.position,
               targetThickness,
-              targetThickness,
-              targetColor,
-              +0.0f);
+              targetColor);
           }
         }
       }

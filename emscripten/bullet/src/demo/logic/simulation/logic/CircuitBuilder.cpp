@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <string_view>
 
 #include <cmath>
 
@@ -24,7 +25,7 @@
 
 namespace /*anonymous*/
 {
-    void validateFloat(float value, const std::string type)
+    void validateFloat(float value, const std::string_view type)
     {
         if (glm::isnan(value))
             D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
@@ -34,13 +35,13 @@ namespace /*anonymous*/
     };
 };
 
-void CircuitBuilder::parse(const std::string& filename)
+void CircuitBuilder::parse(const std::string_view& filename)
 {
     //
     //
     // open/read file
 
-    std::ifstream fileStream(filename);
+    std::ifstream fileStream(filename.data());
 
     if (!fileStream.is_open())
         D_THROW(std::runtime_error, "fail to read a file, name=" << filename);
@@ -58,9 +59,9 @@ void CircuitBuilder::parse(const std::string& filename)
     //
     // build command handler (parser)
 
-    std::unordered_map<std::string, std::function<void(std::istringstream&)>> commandsMap;
+    std::unordered_map<std::string_view, std::function<void(std::istringstream&)>> commandsMap;
 
-    const std::string cmd_start_transform_pos = "START_TRANSFORM_POSITION";
+    const std::string_view cmd_start_transform_pos = "START_TRANSFORM_POSITION";
     commandsMap[cmd_start_transform_pos] = [&cmd_start_transform_pos, this](std::istringstream& isstr)
     {
         auto& value = _startTransform.position;
@@ -71,7 +72,7 @@ void CircuitBuilder::parse(const std::string& filename)
             validateFloat(value[ii], cmd_start_transform_pos);
     };
 
-    const std::string cmd_start_transform_quat = "START_TRANSFORM_QUATERNION";
+    const std::string_view cmd_start_transform_quat = "START_TRANSFORM_QUATERNION";
     commandsMap[cmd_start_transform_quat] = [&cmd_start_transform_quat, this](std::istringstream& isstr)
     {
         auto& value = _startTransform.quaternion;
@@ -82,7 +83,7 @@ void CircuitBuilder::parse(const std::string& filename)
             validateFloat(value[ii], cmd_start_transform_quat);
     };
 
-    const std::string cmd_knots_color = "KNOTS_COLOR";
+    const std::string_view cmd_knots_color = "KNOTS_COLOR";
     commandsMap[cmd_knots_color] = [&cmd_knots_color, &currentColor](std::istringstream& isstr)
     {
         glm::vec3 color;
@@ -101,7 +102,7 @@ void CircuitBuilder::parse(const std::string& filename)
         currentColor = color;
     };
 
-    const std::string cmd_knots_size = "KNOTS_SIZE";
+    const std::string_view cmd_knots_size = "KNOTS_SIZE";
     commandsMap[cmd_knots_size] = [&cmd_knots_size, &currentKnotsSize](std::istringstream& isstr)
     {
         float knotsSize;
@@ -117,7 +118,7 @@ void CircuitBuilder::parse(const std::string& filename)
         currentKnotsSize = knotsSize;
     };
 
-    const std::string cmd_knots_dual = "KNOTS_DUAL";
+    const std::string_view cmd_knots_dual = "KNOTS_DUAL";
     commandsMap[cmd_knots_dual] = [&cmd_knots_dual, &rawKnots, &currentKnotsSize, &currentColor](std::istringstream& isstr)
     {
         glm::vec3 left;
@@ -146,7 +147,7 @@ void CircuitBuilder::parse(const std::string& filename)
         StringUtils::trim(textLine);
 
          // skip empty line(s) and comment(s)
-        if (textLine.empty() || textLine[0] == '#')
+        if (textLine.empty() || textLine.front() == '#')
             continue;
 
         std::istringstream isstr(textLine);
@@ -169,13 +170,11 @@ void CircuitBuilder::parse(const std::string& filename)
     //
     // concatenate skeleton
 
-    for (std::size_t ii = 0; ii < rawKnots.size(); ++ii)
+    for (CircuitBuilder::Knot& knot : rawKnots)
     {
-        auto knot = rawKnots[ii];
-
-        if (ii > 0)
+        if (!_knots.empty())
         {
-            const auto& prevKnot = _knots[ii - 1];
+            const auto& prevKnot = _knots.back();
 
             // concatenate the knot with the previous one
             // => this is so the next knots can have relative coordinates
@@ -344,7 +343,6 @@ void CircuitBuilder::generateCircuitGeometry(
     if (!onNewGroundPatch && !onNewWallPatch)
         D_THROW(std::invalid_argument, "no callbacks provided");
 
-
     Knots smoothedKnotsData;
     generateSmoothedKnotsData(smoothedKnotsData);
 
@@ -409,16 +407,16 @@ void CircuitBuilder::generateCircuitGeometry(
             const glm::vec3& prevColor = prevKnot.color;
             const glm::vec3& currColor = currKnot.color;
 
-            glm::vec3 currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
+            const glm::vec3 currNormal = glm::normalize(glm::cross(prevLeft - prevRight, prevRight - currRight));
 
             // for the first time
             if (stepIndex == startIndex)
                 prevNormal = currNormal;
 
-            glm::vec3 prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);
-            glm::vec3 currNormalLeft(currNormal.x, currNormal.z, currNormal.y);
-            glm::vec3 prevNormalRight = -prevNormalLeft;
-            glm::vec3 currNormalRight = -currNormalLeft;
+            const glm::vec3 prevNormalLeft(prevNormal.x, prevNormal.z, prevNormal.y);
+            const glm::vec3 currNormalLeft(currNormal.x, currNormal.z, currNormal.y);
+            const glm::vec3 prevNormalRight = -prevNormalLeft;
+            const glm::vec3 currNormalRight = -currNormalLeft;
 
             //
 
@@ -439,13 +437,13 @@ void CircuitBuilder::generateCircuitGeometry(
 
             //
 
-            glm::vec3 prevHeight = prevNormal * 10.0f;
-            glm::vec3 currHeight = currNormal * 10.0f;
+            const glm::vec3 prevHeight = prevNormal * 10.0f;
+            const glm::vec3 currHeight = currNormal * 10.0f;
 
             //
 
-            glm::vec3 prevTopLeft = prevLeft + prevHeight;
-            glm::vec3 currTopLeft = currLeft + currHeight;
+            const glm::vec3 prevTopLeft = prevLeft + prevHeight;
+            const glm::vec3 currTopLeft = currLeft + currHeight;
 
             leftWall.vertices.push_back(prevLeft);
             leftWall.vertices.push_back(prevTopLeft);
@@ -459,8 +457,8 @@ void CircuitBuilder::generateCircuitGeometry(
 
             //
 
-            glm::vec3 prevTopRight = prevRight + prevHeight;
-            glm::vec3 currTopRight = currRight + currHeight;
+            const glm::vec3 prevTopRight = prevRight + prevHeight;
+            const glm::vec3 currTopRight = currRight + currHeight;
 
             rightWall.vertices.push_back(prevRight);
             rightWall.vertices.push_back(prevTopRight);

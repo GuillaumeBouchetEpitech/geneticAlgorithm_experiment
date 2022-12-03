@@ -12,12 +12,10 @@
 #include <chrono>
 
 Demo::Demo(const Definition& def)
-    : SDLWindowWrapper("AI", def.width, def.height, 30)
+    : SDLWindowWrapper("AI", def.width, def.height, 30, SDLWindowWrapper::OpenGlEsVersion::v2)
 {
     Data::create(def.width, def.height, def.totalCores, def.genomesPerCore);
-
     StateManager::create();
-
     Scene::initialise();
 }
 

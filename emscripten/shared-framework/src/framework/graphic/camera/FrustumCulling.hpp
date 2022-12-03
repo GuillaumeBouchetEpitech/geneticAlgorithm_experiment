@@ -3,6 +3,7 @@
 
 #include "framework/helpers/GLMath.hpp"
 
+#include <array>
 #include <cmath>
 
 class IFrustumCulling
@@ -29,13 +30,20 @@ public:
   virtual bool cubeInFrustum(const glm::vec3& v, const glm::vec3& s) const override;
 
 private:
-  enum e_FrustumSide { eRight, eLeft, eBottom, eTop, eBack, eFront };
-  enum e_PlaneData { eA, eB, eC, eD };
+  enum class FrustumSide: std::size_t { eRight = 0, eLeft, eBottom, eTop, eBack, eFront };
+  enum class PlaneData: std::size_t { eA = 0, eB, eC, eD };
 
 private:
-  float _frustum[6][4];
+  struct Plane
+  {
+    float a;
+    float b;
+    float c;
+    float d;
+  };
+  std::array<Plane, 6> _frustum;
 
 private:
-  void _normalizePlane(e_FrustumSide side);
+  void _normalizePlane(FrustumSide side);
 
 };

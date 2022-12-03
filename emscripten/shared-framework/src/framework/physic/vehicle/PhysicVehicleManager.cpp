@@ -3,7 +3,7 @@
 
 #include "framework/physic/PhysicWorld.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 PhysicVehicleManager::PhysicVehicleManager(PhysicWorld& physicWorld)
   : _physicWorld(physicWorld)

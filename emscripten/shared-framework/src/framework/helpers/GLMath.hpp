@@ -10,3 +10,7 @@
 #include "thirdparty/glm/glm/common.hpp"
 #include "thirdparty/glm/glm/glm.hpp"
 #include "thirdparty/glm/glm/ext.hpp"
+
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include "thirdparty/glm/glm/gtx/quaternion.hpp"

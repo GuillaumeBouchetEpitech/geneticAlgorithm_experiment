@@ -3,7 +3,7 @@
 
 #include "framework/ErrorHandler.hpp"
 
-#include "framework/helpers/TinyObjLoader.hpp"
+#include "framework/helpers/internals/TinyObjLoader.hpp"
 
 namespace loader
 {

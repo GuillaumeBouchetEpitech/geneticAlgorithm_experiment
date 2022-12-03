@@ -10,16 +10,9 @@
 
 class ResourceManager
 {
-private:
-  static ResourceManager* _instance;
-
+public:
   ResourceManager() = default;
   ~ResourceManager() = default;
-
-public:
-  static void create();
-  static void destroy();
-  static ResourceManager& get();
 
 private:
   std::unordered_map<std::string, int> _shaderDefsMap;

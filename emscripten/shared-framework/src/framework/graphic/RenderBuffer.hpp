@@ -20,6 +20,7 @@ public:
 
 public:
   void allocateDepth(const glm::ivec2& size);
+  void dispose();
 
 public:
   const glm::ivec2& getSize() const;

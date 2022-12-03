@@ -43,7 +43,7 @@ private:
     Knots _knots;
 
 public:
-    void parse(const std::string& filename);
+    void parse(const std::string_view& filename);
     void load(const StartTransform& startTransform, const Knots& knots);
 
 public:

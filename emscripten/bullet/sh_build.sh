@@ -144,5 +144,5 @@ yes)
 esac
 
 # careful: the `-j4` option will mess with the sdl2 and sdl2_image wasm port
-make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" machinelearning -j4
+make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" machine_learning -j4
 make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j4

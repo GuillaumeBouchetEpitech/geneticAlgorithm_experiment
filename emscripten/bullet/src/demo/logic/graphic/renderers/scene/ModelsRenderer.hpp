@@ -24,6 +24,20 @@ private:
   }
   _geometries;
 
+  struct Attributes
+  {
+    glm::mat4 tranform;
+    glm::vec3 color;
+
+    Attributes(const glm::mat4& tranform, const glm::vec3& color)
+      : tranform(tranform)
+      , color(color)
+    {}
+  };
+
+  std::vector<Attributes> _modelsChassisMatrices;
+  std::vector<Attributes> _modelWheelsMatrices;
+
 public:
   ModelsRenderer() = default;
 

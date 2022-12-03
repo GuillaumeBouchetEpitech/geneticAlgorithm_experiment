@@ -3,6 +3,7 @@
 
 #include "framework/graphic/GlContext.hpp"
 
+#include "framework/asValue.hpp"
 #include "framework/ErrorHandler.hpp"
 
 #include <stdexcept>
@@ -15,23 +16,20 @@ SDLWindowWrapper::SDLWindowWrapper(
   const char* name,
   uint32_t width,
   uint32_t height,
-  uint32_t framesPerSecond)
+  uint32_t framesPerSecond,
+  OpenGlEsVersion openGlEsVersion)
 {
   _framesPerSecond = framesPerSecond;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
     D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
 
-  // OpenGl ES2 -> WebGL1
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, asValue(openGlEsVersion));
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-  // SDL_GL_SetSwapInterval(0);
-  // SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+  // SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+  // SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
 
   const int posX = SDL_WINDOWPOS_UNDEFINED;
   const int posY = SDL_WINDOWPOS_UNDEFINED;
@@ -97,9 +95,9 @@ void SDLWindowWrapper::_webStep(void* pData)
   SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
   const uint32_t currentTime = SDL_GetTicks(); // in millisecond
-  const uint32_t deltaTime = currentTime - self->_startTime;
+  const uint32_t delta = currentTime - self->_startTime;
 
-  self->process(deltaTime);
+  self->process(delta);
 
   self->_startTime = currentTime;
 }
@@ -124,17 +122,10 @@ void SDLWindowWrapper::run()
 
   const int32_t frameDelay = 1000 / int32_t(_framesPerSecond);
 
-  // constexpr int maxDelay = 16; // 16ms, duration of one frame at 60FPS
-  // constexpr int minDelay = 32; // 32ms, duration of one frame at 30FPS
-
   while (_running)
   {
     const uint32_t startFrameTime = SDL_GetTicks(); // in millisecond
-
-    // ensure delta isn't greater than maxMsDelay
-    uint32_t delta = startFrameTime - _startTime;
-    // if (delta < maxDelay) delta = maxDelay; // no lower than X fps
-    // if (delta > minDelay) delta = minDelay; // no higher than X fps
+    const uint32_t delta = startFrameTime - _startTime;
 
     process(delta);
 

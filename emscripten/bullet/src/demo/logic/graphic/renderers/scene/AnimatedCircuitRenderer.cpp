@@ -21,8 +21,9 @@ void AnimatedCircuitRenderer::initialise(
     float maxUpperValue)
 {
   _maxUpperValue = maxUpperValue;
-  _shaderWireframe = ResourceManager::get().getShader(asValue(Shaders::wireframes));
-  _shaderCircuit = ResourceManager::get().getShader(asValue(Shaders::animatedCircuit));
+  _shaderWireframe = Data::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
+  _shaderCircuitLit = Data::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuitLit));
+  _shaderCircuit = Data::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuit));
 
   GeometryBuilder geometryBuilder;
 
@@ -41,28 +42,43 @@ void AnimatedCircuitRenderer::initialise(
 
   } // compute circuit skeleton wireframe geometry
 
-  { // compute circuit ground and walls geometries
+  { // compute circuit ground geometries
+
+    geometryBuilder
+      .reset()
+      .setShader(*_shaderCircuitLit)
+      .setPrimitiveType(Geometry::PrimitiveType::triangles)
+      .addVbo()
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+      .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
+      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
+      .addVboAttribute("a_animated_normal", Geometry::AttrType::Vec3f, 9)
+      .addVboAttribute("a_index", Geometry::AttrType::Float, 12);
+
+    geometryBuilder.build(_geometries.grounds);
+    _geometries.grounds.updateBuffer(0, groundVertices);
+    _geometries.grounds.setPrimitiveCount(groundVertices.size());
+
+  } // compute circuit ground geometries
+
+  { // compute circuit walls geometries
 
     geometryBuilder
       .reset()
       .setShader(*_shaderCircuit)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
+      .setVboStride(13 * 4)
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
       .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
-      .addVboAttribute("a_index", Geometry::AttrType::Float, 9);
+      .addVboAttribute("a_animated_normal", Geometry::AttrType::Vec3f, 9)
+      .addVboAttribute("a_index", Geometry::AttrType::Float, 12);
 
-    geometryBuilder.build(_geometries.grounds);
     geometryBuilder.build(_geometries.walls);
-
-    _geometries.grounds.updateBuffer(0, groundVertices);
-    _geometries.grounds.setPrimitiveCount(groundVertices.size());
-
     _geometries.walls.updateBuffer(0, wallsVertices);
     _geometries.walls.setPrimitiveCount(wallsVertices.size());
 
-  } // compute circuit ground and walls geometries
+  } // compute circuit walls geometries
 
   _maxPrimitiveCount = groundVertices.size();
 
@@ -75,20 +91,8 @@ void AnimatedCircuitRenderer::setMatricesData(const Camera::MatricesData& matric
 
 void AnimatedCircuitRenderer::update(float elapsedTime)
 {
-  // // do not run if not currently in one of those states
-  // auto currentState = StateManager::get()->getState();
-  // if (
-  //   currentState != StateManager::States::StartGeneration &&
-  //   currentState != StateManager::States::Running
-  // ) {
-  //   return;
-  // }
-
   auto& logic = Data::get().logic;
   const auto& simulation = *logic.simulation;
-  // auto& graphic = Data::get().graphic;
-
-  // auto& animation = logic.circuitAnimation;
 
   if (logic.isAccelerated)
   {
@@ -165,8 +169,6 @@ void AnimatedCircuitRenderer::update(float elapsedTime)
 
   }
 
-  // auto& animatedCircuit = graphic.geometries.animatedCircuit;
-
   const unsigned int verticesLength = 36; // <= 3 * 12 triangles
   int indexValue = std::ceil(_upperValue) * verticesLength;
   if (indexValue > int(_maxPrimitiveCount))
@@ -191,6 +193,21 @@ void AnimatedCircuitRenderer::render()
 
   } // circuit skeleton
 
+  GlContext::disable(GlContext::States::depthTest);
+
+  {
+
+    _shaderCircuitLit->bind();
+    _shaderCircuitLit->setUniform("u_projectionMatrix", _matricesData.projection);
+    _shaderCircuitLit->setUniform("u_modelViewMatrix", _matricesData.view);
+    _shaderCircuitLit->setUniform("u_lowerLimit", _lowerValue);
+    _shaderCircuitLit->setUniform("u_upperLimit", _upperValue);
+    _shaderCircuitLit->setUniform("u_alpha", 0.8f);
+
+    _geometries.grounds.render();
+
+  }
+
   {
 
     _shaderCircuit->bind();
@@ -199,15 +216,12 @@ void AnimatedCircuitRenderer::render()
     _shaderCircuit->setUniform("u_upperLimit", _upperValue);
     _shaderCircuit->setUniform("u_alpha", 0.8f);
 
-    _geometries.grounds.render();
-
-    GlContext::disable(GlContext::States::depthTest);
-
     _shaderCircuit->setUniform("u_alpha", 0.2f);
 
     _geometries.walls.render();
 
-    GlContext::enable(GlContext::States::depthTest);
-
   }
+
+  GlContext::enable(GlContext::States::depthTest);
+
 }

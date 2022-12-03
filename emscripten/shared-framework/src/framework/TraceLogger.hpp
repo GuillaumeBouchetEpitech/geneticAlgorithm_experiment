@@ -1,10 +1,14 @@
 
 #pragma once
 
+#include "framework/helpers/GLMath.hpp"
+
 #include <sstream> // <= std::stringstream
 #include <cstring> // <= strrchr()
 
 #include <ostream>
+#include <vector>
+#include <cstdint>
 
 class TraceLogger
 {
@@ -13,7 +17,38 @@ public:
 
 public:
   static void log(const std::string& msg);
+
+private:
+  std::stringstream _sstr;
+
+public:
+  void dump();
+  std::string getData() const;
+
+public:
+  template<typename T>
+  TraceLogger& operator <<(T data)
+  {
+    _sstr << data;
+    return *this;
+  }
+
 };
+
+template<>
+TraceLogger& TraceLogger::operator << <bool>(bool data);
+
+template<>
+TraceLogger& TraceLogger::operator << <float>(float data);
+
+template<>
+TraceLogger& TraceLogger::operator << <double>(double data);
+
+template<>
+TraceLogger& TraceLogger::operator << <glm::vec3>(glm::vec3 data);
+
+
+
 
 // this will reduce the "__FILE__" macro to it's filename -> friendlier to read
 #define D_MYLOG_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
@@ -23,22 +58,13 @@ public:
 
 #define D_MYLOG_PREFIX "MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
 
-// one line macro allowing flexible logs with the current time and "stacktrace"
-#define D_MYLOG_MAKE_PREFIXED_STRING(resultString, streamMsg) \
-{ \
-  std::stringstream sstr_xxxx; \
-  sstr_xxxx << D_MYLOG_PREFIX << streamMsg; \
-  resultString = sstr_xxxx.str(); \
-}
-
 // one line logging macro
 #define D_MYLOG(streamMsg) \
 { \
-  std::string log; \
-  D_MYLOG_MAKE_PREFIXED_STRING(log, streamMsg) \
-  TraceLogger::log(log); \
+  TraceLogger logger; \
+  logger << D_MYLOG_PREFIX << streamMsg; \
+  logger.dump(); \
 }
-
 
 
 // TODO: std::ostream

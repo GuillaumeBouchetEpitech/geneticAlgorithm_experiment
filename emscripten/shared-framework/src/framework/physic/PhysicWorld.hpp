@@ -1,14 +1,10 @@
 
 #pragma once
 
-// #include "framework/containers/weak_ref_data_pool.hpp"
-
 #include "framework/helpers/GLMath.hpp"
 
-// #include "body/PhysicDefinitions.hpp"
 #include "body/PhysicBodyManager.hpp"
 #include "vehicle/PhysicVehicleManager.hpp"
-// #include "vehicle/PhysicVehicleDef.hpp"
 
 #include "queries/QueryRadius.hpp"
 #include "queries/Raycaster.hpp"

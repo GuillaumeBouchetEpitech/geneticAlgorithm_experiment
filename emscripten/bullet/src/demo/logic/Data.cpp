@@ -12,8 +12,6 @@
 #include "demo/logic/simulation/pthread/PthreadSimulation.hpp"
 #endif
 
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/graphic/GlContext.hpp"
 
 #include <iomanip>
@@ -27,18 +25,14 @@ Data* Data::_instance = nullptr;
 
 Data::~Data()
 {
-    ResourceManager::destroy();
 }
 
 void Data::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
-    ResourceManager::create();
-
     graphic.camera.viewportSize = { width, height };
+    graphic.camera.scene.instance.setPerspective({ 70.0f, 0.1f, 1500.0f });
 
-    initialiseShaders();
-    initialiseTextures();
-    initialiseGeometries();
+    initialiseGraphicResource();
 
     graphic.stackRenderer.initialise();
     graphic.particleManager.initialise();
@@ -47,25 +41,7 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
     graphic.flockingManager.initialise();
     graphic.carTailsRenderer.initialise();
 
-    //
-    //
-    // initialise hud frame buffer
-
-    auto& hud = graphic.hudComponents;
-
-    hud.frameBuffer.initialise();
-    hud.frameBuffer.bind();
-
-    hud.colorTexture.allocateBlank({ width, height }, true, false);
-    hud.colorTexture.bind();
-    hud.frameBuffer.attachColorTexture(hud.colorTexture);
-
-    hud.depthRenderBuffer.allocateDepth({ width, height });
-    hud.depthRenderBuffer.bind();
-    hud.frameBuffer.attachDepthRenderBuffer(hud.depthRenderBuffer);
-
-    hud.frameBuffer.executeCheck();
-    FrameBuffer::unbind();
+    graphic.postProcess.initialise({ width, height });
 
     //
     //

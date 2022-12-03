@@ -11,7 +11,7 @@
 
 #include "framework/TraceLogger.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 #include <algorithm>
 #include <array>
@@ -167,59 +167,6 @@ void PhysicWorld::render()
 {
   _bullet.dynamicsWorld->debugDrawWorld();
 }
-
-// void PhysicWorld::reset()
-// {
-//     { // remove
-
-//         for (PhysicVehicle* vehicle : _vehicles)
-//         {
-//             removeVehicle(*vehicle);
-//             vehicle->_dispose();
-//         }
-
-//         for (PhysicTrimesh* trimesh : _wallsTrimesh)
-//             _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
-//         for (PhysicTrimesh* trimesh : _groundsTrimesh)
-//             _bullet.dynamicsWorld->removeRigidBody(trimesh->_bullet.body);
-
-//         // dispose only the physic world
-//         // => we want to keep the vehicles container full
-//         _dispose(false);
-
-//     } // remove
-
-//     { // rebuild
-
-//         _initialise();
-
-//         for (PhysicTrimesh* trimesh : _groundsTrimesh)
-//         {
-//             const short group = asValue(PhysicWorld::Groups::ground);
-//             const short mask = asValue(PhysicWorld::Masks::ground);
-
-//             _bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, group, mask);
-//         }
-
-//         for (PhysicTrimesh* trimesh : _wallsTrimesh)
-//         {
-//             const short group = asValue(PhysicWorld::Groups::wall);
-//             const short mask = asValue(PhysicWorld::Masks::wall);
-
-//             _bullet.dynamicsWorld->addRigidBody(trimesh->_bullet.body, group, mask);
-//         }
-
-//         for (PhysicVehicle* vehicle : _vehicles)
-//         {
-//             const short group = asValue(PhysicWorld::Groups::vehicle);
-//             const short mask = asValue(PhysicWorld::Masks::vehicle);
-
-//             vehicle->_initialise(*_bullet.dynamicsWorld, group, mask);
-//             vehicle->reset();
-//         }
-
-//     } // rebuild
-// }
 
 //
 //

@@ -31,8 +31,6 @@ void Scene::_renderHUD_ortho()
   auto& graphic = data.graphic;
   auto& logic = data.logic;
 
-  // glDisable(GL_DEPTH_TEST); // <= not useful for a HUD
-
   NewLeaderRenderer newLeaderRndr;
   newLeaderRndr.compute();
 
@@ -134,17 +132,8 @@ void Scene::_renderHUD_ortho()
 
     } // bottom-left text
 
-    { // advertise a new leader
-
-      newLeaderRndr.renderHudText();
-
-    } // advertise a new leader
-
-    { // show cores status
-
-      coreUsageRndr.renderHudText();
-
-    } // show cores status
+    newLeaderRndr.renderHudText();
+    coreUsageRndr.renderHudText();
 
     { // big titles
 
@@ -189,9 +178,8 @@ void Scene::_renderHUD_ortho()
         {
           const float scale = 2.0f;
 
-          const std::size_t totalStats = logic.fitnessStats.allStats.size();
-          const float prevFitness = logic.fitnessStats.allStats[totalStats - 2];
-          const float currFitness = logic.fitnessStats.allStats[totalStats - 1];
+          const float prevFitness = logic.fitnessStats.get(-2);
+          const float currFitness = logic.fitnessStats.get(-1);
 
           if (currFitness > 0.0f)
           {
@@ -228,17 +216,8 @@ void Scene::_renderHUD_ortho()
 
   { // wireframes
 
-    { // cores history graphics
-
-      coreUsageRndr.renderWireframe();
-
-    } // cores history graphics
-
-    { // advertise a new leader
-
-      newLeaderRndr.renderWireframe();
-
-    } // advertise a new leader
+    coreUsageRndr.renderWireframe();
+    newLeaderRndr.renderWireframe();
 
     auto& stackRenderer = graphic.stackRenderer;
 
@@ -252,18 +231,13 @@ void Scene::_renderHUD_ortho()
       stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
       stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
 
-      const auto& allStats = logic.fitnessStats.allStats;
+      const float maxFitness = logic.fitnessStats.max();
+      float stepWidth = borderSize.x / (logic.fitnessStats.size() - 1);
 
-      float maxFitness = 0.0f;
-      for (float stat : allStats)
-        maxFitness = std::max(maxFitness, stat);
-
-      float stepWidth = borderSize.x / (allStats.size() - 1);
-
-      for (std::size_t ii = 1; ii < allStats.size(); ++ii)
+      for (std::size_t ii = 1; ii < logic.fitnessStats.size(); ++ii)
       {
-        const float prevData = allStats[ii - 1];
-        const float currData = allStats[ii];
+        const float prevData = logic.fitnessStats.get(ii - 1);
+        const float currData = logic.fitnessStats.get(ii);
 
         const glm::vec2 prevPos =
         {
@@ -281,32 +255,22 @@ void Scene::_renderHUD_ortho()
 
     } // progresses curve
 
-    if (logic.leaderCar.index >= 0)
+    if (logic.leaderCar.hasLeader())
     {
       const auto& vSize = graphic.camera.viewportSize;
 
-      { // topology
+      renderTopology(
+        glm::vec2(vSize.x - 150 - 10, 170),
+        glm::vec2(150, 125));
 
-        renderTopology(
-          glm::vec2(vSize.x - 150 - 10, 170),
-          glm::vec2(150, 125));
-
-      } // topology
-
-      { // leader's eye
-
-        renderLeaderEye(
-          glm::vec2(vSize.x - 100 - 10, 305),
-          glm::vec2(100, 60));
-
-      } // leader's eye
+      renderLeaderEye(
+        glm::vec2(vSize.x - 100 - 10, 305),
+        glm::vec2(100, 60));
     }
 
     stackRenderer.flush();
 
   } // wireframes
-
-  // glEnable(GL_DEPTH_TEST);
 }
 
 void Scene::_renderHUD_thirdPerson()
@@ -317,7 +281,7 @@ void Scene::_renderHUD_thirdPerson()
   const auto& leaderCar = logic.leaderCar;
 
   // valid leading car?
-  if (logic.isAccelerated || leaderCar.index < 0)
+  if (logic.isAccelerated || !leaderCar.hasLeader())
     return;
 
   auto& camera = graphic.camera;
@@ -333,15 +297,18 @@ void Scene::_renderHUD_thirdPerson()
 
   const Camera& camInstance = camera.thirdPerson.instance;
 
-  graphic.stackRenderer.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.particleManager.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.floorRenderer.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.backGroundCylindersRenderer.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.flockingManager.setMatricesData(camInstance.getSceneMatricsData());
-  graphic.carTailsRenderer.setMatricesData(camInstance.getSceneMatricsData());
+  const auto& matriceData = camInstance.getSceneMatricesData();
+
+  graphic.stackRenderer.setMatricesData(matriceData);
+  graphic.particleManager.setMatricesData(matriceData);
+  graphic.floorRenderer.setMatricesData(matriceData);
+  graphic.backGroundCylindersRenderer.setMatricesData(matriceData);
+  graphic.animatedCircuitRenderer.setMatricesData(matriceData);
+  graphic.flockingManager.setMatricesData(matriceData);
+  graphic.carTailsRenderer.setMatricesData(matriceData);
 
   Scene::_renderFloor(camInstance);
+  graphic.animatedCircuitRenderer.render();
 
   Scene::_renderLeadingCarSensors();
   graphic.flockingManager.render();
@@ -352,7 +319,6 @@ void Scene::_renderHUD_thirdPerson()
 
   graphic.modelsRenderer.render(camInstance);
   graphic.carTailsRenderer.render();
-  graphic.animatedCircuitRenderer.render();
 
   GlContext::disable(GlContext::States::scissorTest);
   GlContext::setViewport(0, 0, viewportSize.x, viewportSize.y);
@@ -365,7 +331,7 @@ void Scene::_renderHUD()
 
   { // render in framebuffer
 
-    graphic.hudComponents.frameBuffer.bind();
+    graphic.postProcess.bind();
 
     GlContext::clearColor(0, 0, 0, 0);
     GlContext::clear(asValue(GlContext::Buffers::color) | asValue(GlContext::Buffers::depth));
@@ -373,24 +339,13 @@ void Scene::_renderHUD()
     Scene::_renderHUD_ortho();
     Scene::_renderHUD_thirdPerson();
 
-    FrameBuffer::unbind();
+    graphic.postProcess.unbind();
 
   } // render in framebuffer
 
   { // render framebuffer texture in curved geometry
 
-    auto shader = ResourceManager::get().getShader(asValue(Shaders::simpleTexture));
-
-    shader->bind();
-    shader->setUniform("u_composedMatrix", graphic.camera.scene.instance.getHudMatricsData().composed);
-
-    GlContext::disable(GlContext::States::depthTest);
-
-    graphic.hudComponents.colorTexture.bind();
-
-    graphic.geometries.hudPerspective.geometry.render();
-
-    GlContext::enable(GlContext::States::depthTest);
+    graphic.postProcess.render();
 
   } // render framebuffer texture in curved geometry
 }

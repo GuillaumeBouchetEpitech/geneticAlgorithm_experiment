@@ -1,26 +1,28 @@
 
 #include "FrustumCulling.hpp"
 
-void FrustumCulling::_normalizePlane(e_FrustumSide side)
+#include "framework/asValue.hpp"
+
+void FrustumCulling::_normalizePlane(FrustumSide side)
 {
-	float magnitude = std::sqrt(
-    _frustum[side][eA] * _frustum[side][eA] +
-    _frustum[side][eB] * _frustum[side][eB] +
-    _frustum[side][eC] * _frustum[side][eC]
+	const float magnitude = std::sqrt(
+    _frustum[asValue(side)].a * _frustum[asValue(side)].a +
+    _frustum[asValue(side)].b * _frustum[asValue(side)].b +
+    _frustum[asValue(side)].c * _frustum[asValue(side)].c
   );
 
-	_frustum[side][eA] /= magnitude;
-	_frustum[side][eB] /= magnitude;
-	_frustum[side][eC] /= magnitude;
-	_frustum[side][eD] /= magnitude;
+	_frustum[asValue(side)].a /= magnitude;
+	_frustum[asValue(side)].b /= magnitude;
+	_frustum[asValue(side)].c /= magnitude;
+	_frustum[asValue(side)].d /= magnitude;
 }
 
-void FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& modl2)
+void FrustumCulling::calculateFrustum(const glm::mat4& inProj, const glm::mat4& inModl)
 {
-	float clip[16];
+	std::array<float, 16> clip;
 
-	const float* proj = glm::value_ptr(proj2);
-	const float* modl = glm::value_ptr(modl2);
+	const float* proj = glm::value_ptr(inProj);
+	const float* modl = glm::value_ptr(inModl);
 
 	clip[ 0] = modl[ 0] * proj[ 0] + modl[ 1] * proj[ 4] + modl[ 2] * proj[ 8] + modl[ 3] * proj[12];
 	clip[ 1] = modl[ 0] * proj[ 1] + modl[ 1] * proj[ 5] + modl[ 2] * proj[ 9] + modl[ 3] * proj[13];
@@ -44,45 +46,63 @@ void FrustumCulling::calculateFrustum(const glm::mat4& proj2, const glm::mat4& m
 
   //
 
-	_frustum[eRight][eA] = clip[ 3] - clip[ 0];
-	_frustum[eRight][eB] = clip[ 7] - clip[ 4];
-	_frustum[eRight][eC] = clip[11] - clip[ 8];
-	_frustum[eRight][eD] = clip[15] - clip[12];
-	_normalizePlane(eRight);
+	_frustum[asValue(FrustumSide::eRight)] =
+	{
+		clip[ 3] - clip[ 0],
+		clip[ 7] - clip[ 4],
+		clip[11] - clip[ 8],
+		clip[15] - clip[12],
+	};
+	_normalizePlane(FrustumSide::eRight);
 
-	_frustum[eLeft][eA] = clip[ 3] + clip[ 0];
-	_frustum[eLeft][eB] = clip[ 7] + clip[ 4];
-	_frustum[eLeft][eC] = clip[11] + clip[ 8];
-	_frustum[eLeft][eD] = clip[15] + clip[12];
-	_normalizePlane(eLeft);
-
-  //
-
-	_frustum[eBottom][eA] = clip[ 3] + clip[ 1];
-	_frustum[eBottom][eB] = clip[ 7] + clip[ 5];
-	_frustum[eBottom][eC] = clip[11] + clip[ 9];
-	_frustum[eBottom][eD] = clip[15] + clip[13];
-	_normalizePlane(eBottom);
-
-	_frustum[eTop][eA] = clip[ 3] - clip[ 1];
-	_frustum[eTop][eB] = clip[ 7] - clip[ 5];
-	_frustum[eTop][eC] = clip[11] - clip[ 9];
-	_frustum[eTop][eD] = clip[15] - clip[13];
-	_normalizePlane(eTop);
+	_frustum[asValue(FrustumSide::eLeft)] =
+	{
+		clip[ 3] + clip[ 0],
+		clip[ 7] + clip[ 4],
+		clip[11] + clip[ 8],
+		clip[15] + clip[12],
+	};
+	_normalizePlane(FrustumSide::eLeft);
 
   //
 
-	_frustum[eBack][eA] = clip[ 3] - clip[ 2];
-	_frustum[eBack][eB] = clip[ 7] - clip[ 6];
-	_frustum[eBack][eC] = clip[11] - clip[10];
-	_frustum[eBack][eD] = clip[15] - clip[14];
-	_normalizePlane(eBack);
+	_frustum[asValue(FrustumSide::eBottom)] =
+	{
+		clip[ 3] + clip[ 1],
+		clip[ 7] + clip[ 5],
+		clip[11] + clip[ 9],
+		clip[15] + clip[13],
+	};
+	_normalizePlane(FrustumSide::eBottom);
 
-	_frustum[eFront][eA] = clip[ 3] + clip[ 2];
-	_frustum[eFront][eB] = clip[ 7] + clip[ 6];
-	_frustum[eFront][eC] = clip[11] + clip[10];
-	_frustum[eFront][eD] = clip[15] + clip[14];
-	_normalizePlane(eFront);
+	_frustum[asValue(FrustumSide::eTop)] =
+	{
+		clip[ 3] - clip[ 1],
+		clip[ 7] - clip[ 5],
+		clip[11] - clip[ 9],
+		clip[15] - clip[13],
+	};
+	_normalizePlane(FrustumSide::eTop);
+
+  //
+
+	_frustum[asValue(FrustumSide::eBack)] =
+	{
+		clip[ 3] - clip[ 2],
+		clip[ 7] - clip[ 6],
+		clip[11] - clip[10],
+		clip[15] - clip[14],
+	};
+	_normalizePlane(FrustumSide::eBack);
+
+	_frustum[asValue(FrustumSide::eFront)] =
+	{
+		clip[ 3] + clip[ 2],
+		clip[ 7] + clip[ 6],
+		clip[11] + clip[10],
+		clip[15] + clip[14],
+	};
+	_normalizePlane(FrustumSide::eFront);
 }
 
 bool FrustumCulling::pointInFrustum(const glm::vec3& v) const
@@ -92,11 +112,11 @@ bool FrustumCulling::pointInFrustum(const glm::vec3& v) const
 
 bool FrustumCulling::sphereInFrustum(const glm::vec3& center, float radius) const
 {
-	for (int ii = 0; ii < 6; ++ii)
-		if (_frustum[ii][eA] * center.x +
-        _frustum[ii][eB] * center.y +
-        _frustum[ii][eC] * center.z +
-        _frustum[ii][eD] <= -radius)
+	for (const auto& currSide : _frustum)
+		if (currSide.a * center.x +
+        currSide.b * center.y +
+        currSide.c * center.z +
+        currSide.d <= -radius)
 			return false;
 
 	return true;
@@ -106,54 +126,54 @@ bool FrustumCulling::cubeInFrustum(const glm::vec3& center, const glm::vec3& cub
 {
 	const glm::vec3 cubeHSize = cubeSize * 0.5f;
 
-	for (int ii = 0; ii < 6; ++ii)
+	for (const auto& currSide : _frustum)
 	{
-		if (_frustum[ii][eA] * (center.x - cubeHSize.x) +
-        _frustum[ii][eB] * (center.y - cubeHSize.y) +
-        _frustum[ii][eC] * (center.z - cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x - cubeHSize.x) +
+        currSide.b * (center.y - cubeHSize.y) +
+        currSide.c * (center.z - cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x + cubeHSize.x) +
-        _frustum[ii][eB] * (center.y - cubeHSize.y) +
-        _frustum[ii][eC] * (center.z - cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x + cubeHSize.x) +
+        currSide.b * (center.y - cubeHSize.y) +
+        currSide.c * (center.z - cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x - cubeHSize.x) +
-        _frustum[ii][eB] * (center.y + cubeHSize.y) +
-        _frustum[ii][eC] * (center.z - cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x - cubeHSize.x) +
+        currSide.b * (center.y + cubeHSize.y) +
+        currSide.c * (center.z - cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x + cubeHSize.x) +
-        _frustum[ii][eB] * (center.y + cubeHSize.y) +
-        _frustum[ii][eC] * (center.z - cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x + cubeHSize.x) +
+        currSide.b * (center.y + cubeHSize.y) +
+        currSide.c * (center.z - cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x - cubeHSize.x) +
-        _frustum[ii][eB] * (center.y - cubeHSize.y) +
-        _frustum[ii][eC] * (center.z + cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x - cubeHSize.x) +
+        currSide.b * (center.y - cubeHSize.y) +
+        currSide.c * (center.z + cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x + cubeHSize.x) +
-        _frustum[ii][eB] * (center.y - cubeHSize.y) +
-        _frustum[ii][eC] * (center.z + cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x + cubeHSize.x) +
+        currSide.b * (center.y - cubeHSize.y) +
+        currSide.c * (center.z + cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x - cubeHSize.x) +
-        _frustum[ii][eB] * (center.y + cubeHSize.y) +
-        _frustum[ii][eC] * (center.z + cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x - cubeHSize.x) +
+        currSide.b * (center.y + cubeHSize.y) +
+        currSide.c * (center.z + cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
-		if (_frustum[ii][eA] * (center.x + cubeHSize.x) +
-        _frustum[ii][eB] * (center.y + cubeHSize.y) +
-        _frustum[ii][eC] * (center.z + cubeHSize.z) +
-        _frustum[ii][eD] > 0)
+		if (currSide.a * (center.x + cubeHSize.x) +
+        currSide.b * (center.y + cubeHSize.y) +
+        currSide.c * (center.z + cubeHSize.z) +
+        currSide.d > 0)
 			continue;
 
 		return false;

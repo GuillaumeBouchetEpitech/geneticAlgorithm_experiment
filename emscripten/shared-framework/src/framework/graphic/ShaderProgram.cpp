@@ -117,7 +117,7 @@ ShaderProgram::ShaderProgram(const Definition& def)
               << ", sources: vertex=" << def.filenames.vertex
               << ", fragment=" << def.filenames.fragment);
 
-    int location = GlContext::getAttribLocation(_programId, attribute.c_str());
+    const int location = GlContext::getAttribLocation(_programId, attribute.c_str());
 
     if (location == -1)
       D_THROW(std::runtime_error, "fail to get an attribute location"
@@ -136,7 +136,7 @@ ShaderProgram::ShaderProgram(const Definition& def)
               << ", sources: vertex=" << def.filenames.vertex
               << ", fragment=" << def.filenames.fragment);
 
-    int location = GlContext::getUniformLocation(_programId, uniform.c_str());
+    const int location = GlContext::getUniformLocation(_programId, uniform.c_str());
 
     if (location == -1)
       D_THROW(std::runtime_error, "fail to get an uniform location"
@@ -198,19 +198,49 @@ bool ShaderProgram::hasAttribute(const char* name) const
 
 bool ShaderProgram::hasUniform(const char* name) const
 {
-  return (_uniformsMap.find(name) != _uniformsMap.end());
+  return (_uniformsMap.count(name) > 0);
 }
 
 //
+
+void ShaderProgram::setUniform(const char* name, int value) const
+{
+  setUniform(getUniform(name), value);
+}
+
+void ShaderProgram::setUniform(const char* name, int x, int y) const
+{
+  setUniform(getUniform(name), x, y);
+}
+
+void ShaderProgram::setUniform(const char* name, int x, int y, int z) const
+{
+  setUniform(getUniform(name), x, y, z);
+}
+
+void ShaderProgram::setUniform(const char* name, int x, int y, int z, int w) const
+{
+  setUniform(getUniform(name), x, y, z, w);
+}
 
 void ShaderProgram::setUniform(const char* name, float value) const
 {
   setUniform(getUniform(name), value);
 }
 
+void ShaderProgram::setUniform(const char* name, float x, float y, float z) const
+{
+  setUniform(getUniform(name), x, y, z);
+}
+
 void ShaderProgram::setUniform(const char* name, float x, float y, float z, float w) const
 {
   setUniform(getUniform(name), x, y, z, w);
+}
+
+void ShaderProgram::setUniform(const char* name, const glm::vec3& vec3) const
+{
+  setUniform(getUniform(name), vec3.x, vec3.y, vec3.z);
 }
 
 void ShaderProgram::setUniform(const char* name, const glm::vec4& vec4) const
@@ -225,14 +255,44 @@ void ShaderProgram::setUniform(const char* name, const glm::mat4& mat4) const
 
 //
 
+void ShaderProgram::setUniform(int location, int value) const
+{
+  GlContext::setUniform(location, value);
+}
+
+void ShaderProgram::setUniform(int location, int x, int y) const
+{
+  GlContext::setUniform(location, x, y);
+}
+
+void ShaderProgram::setUniform(int location, int x, int y, int z) const
+{
+  GlContext::setUniform(location, x, y, z);
+}
+
+void ShaderProgram::setUniform(int location, int x, int y, int z, int w) const
+{
+  GlContext::setUniform(location, x, y, z, w);
+}
+
 void ShaderProgram::setUniform(int location, float value) const
 {
   GlContext::setUniform(location, value);
 }
 
+void ShaderProgram::setUniform(int location, float x, float y, float z) const
+{
+  GlContext::setUniform(location, x, y, z);
+}
+
 void ShaderProgram::setUniform(int location, float x, float y, float z, float w) const
 {
   GlContext::setUniform(location, x, y, z, w);
+}
+
+void ShaderProgram::setUniform(int location, const glm::vec3& vec3) const
+{
+  GlContext::setUniform(location, vec3.x, vec3.y, vec3.z);
 }
 
 void ShaderProgram::setUniform(int location, const glm::vec4& vec4) const

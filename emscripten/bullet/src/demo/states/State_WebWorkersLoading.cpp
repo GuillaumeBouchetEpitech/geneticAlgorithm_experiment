@@ -12,12 +12,12 @@
 
 void State_WebWorkersLoading::enter()
 {
-    _countdown = 0;
+    _countdownUntilNextState = 0;
 
     Data::get().logic.simulation->setOnWorkersReadyCallback([this]() -> void
     {
         // leave the "WEB WORKERS LOADING" message for at least 1 second
-        _countdown = 1000;
+        _countdownUntilNextState = 1000;
     });
 }
 
@@ -28,7 +28,7 @@ void State_WebWorkersLoading::handleEvent(const SDL_Event& event)
 
 void State_WebWorkersLoading::update(int deltaTime)
 {
-    if (_countdown == 0)
+    if (_countdownUntilNextState == 0)
     {
         // only update to load the webworkers
         Data::get().logic.simulation->update(0.0f, 1);
@@ -36,8 +36,8 @@ void State_WebWorkersLoading::update(int deltaTime)
     else
     {
         // to ensure the message is visible (<= why the user waited)
-        _countdown -= deltaTime;
-        if (_countdown <= 0)
+        _countdownUntilNextState -= deltaTime;
+        if (_countdownUntilNextState <= 0)
             StateManager::get()->changeState(StateManager::States::StartGeneration);
     }
 }

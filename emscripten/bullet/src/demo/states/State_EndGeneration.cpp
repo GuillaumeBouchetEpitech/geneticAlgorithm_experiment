@@ -8,7 +8,7 @@
 
 void State_EndGeneration::enter()
 {
-    _countdown = 750; // wait 0.75 seconds
+    _countdownUntilNextState = 750; // wait 0.75 seconds
 }
 
 void State_EndGeneration::update(int deltaTime)
@@ -28,7 +28,7 @@ void State_EndGeneration::update(int deltaTime)
         graphic.flockingManager.update();
     }
 
-    _countdown -= deltaTime;
-    if (_countdown <= 0)
+    _countdownUntilNextState -= deltaTime;
+    if (_countdownUntilNextState <= 0)
         StateManager::get()->changeState(StateManager::States::StartGeneration);
 }

@@ -31,9 +31,9 @@ void Scene::renderSimple()
   { // scene
 
     const Camera& camInstance = graphic.camera.scene.instance;
-    graphic.stackRenderer.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.particleManager.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricsData());
+    graphic.stackRenderer.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.particleManager.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricesData());
 
     Scene::_renderFloor(camInstance);
     graphic.animatedCircuitRenderer.render();
@@ -42,9 +42,9 @@ void Scene::renderSimple()
   { // HUD
 
     const Camera& camInstance = graphic.camera.scene.instance;
-    graphic.stackRenderer.setMatricesData(camInstance.getHudMatricsData());
-    graphic.particleManager.setMatricesData(camInstance.getHudMatricsData());
-    graphic.textRenderer.setMatricesData(camInstance.getHudMatricsData());
+    graphic.stackRenderer.setMatricesData(camInstance.getHudMatricesData());
+    graphic.particleManager.setMatricesData(camInstance.getHudMatricesData());
+    graphic.textRenderer.setMatricesData(camInstance.getHudMatricesData());
 
     Scene::_renderHUD();
   }
@@ -66,13 +66,13 @@ void Scene::renderAll()
     auto& camera = graphic.camera;
     const Camera& camInstance = camera.scene.instance;
 
-    graphic.stackRenderer.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.particleManager.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.floorRenderer.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.backGroundCylindersRenderer.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.flockingManager.setMatricesData(camInstance.getSceneMatricsData());
-    graphic.carTailsRenderer.setMatricesData(camInstance.getSceneMatricsData());
+    graphic.stackRenderer.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.particleManager.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.floorRenderer.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.backGroundCylindersRenderer.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.flockingManager.setMatricesData(camInstance.getSceneMatricesData());
+    graphic.carTailsRenderer.setMatricesData(camInstance.getSceneMatricesData());
 
     Scene::_renderFloor(camInstance);
     graphic.animatedCircuitRenderer.render();
@@ -81,9 +81,11 @@ void Scene::renderAll()
       Scene::_renderLeadingCarSensors();
 
     graphic.flockingManager.render();
-    graphic.stackRenderer.flush();
 
     graphic.particleManager.render();
+
+    graphic.stackRenderer.flush();
+
     graphic.modelsRenderer.render(camInstance);
     graphic.carTailsRenderer.render();
   }
@@ -91,11 +93,11 @@ void Scene::renderAll()
   { // HUD
 
     const Camera& camInstance = graphic.camera.scene.instance;
-    graphic.stackRenderer.setMatricesData(camInstance.getHudMatricsData());
-    graphic.particleManager.setMatricesData(camInstance.getHudMatricsData());
-    graphic.floorRenderer.setMatricesData(camInstance.getHudMatricsData());
-    graphic.backGroundCylindersRenderer.setMatricesData(camInstance.getHudMatricsData());
-    graphic.textRenderer.setMatricesData(camInstance.getHudMatricsData());
+    graphic.stackRenderer.setMatricesData(camInstance.getHudMatricesData());
+    graphic.particleManager.setMatricesData(camInstance.getHudMatricesData());
+    graphic.floorRenderer.setMatricesData(camInstance.getHudMatricesData());
+    graphic.backGroundCylindersRenderer.setMatricesData(camInstance.getHudMatricesData());
+    graphic.textRenderer.setMatricesData(camInstance.getHudMatricesData());
 
     Scene::_renderHUD();
   }
@@ -107,7 +109,6 @@ void Scene::updateMatrices(float elapsedTime)
 {
   auto& data = Data::get();
   const auto& logic = data.logic;
-  const auto& simulation = *logic.simulation;
   auto& graphic = data.graphic;
   auto& camera = graphic.camera;
 
@@ -134,12 +135,10 @@ void Scene::updateMatrices(float elapsedTime)
 
   { // third person
 
-    if (logic.leaderCar.index >= 0)
+    if (auto leaderData = logic.leaderCar.leaderData())
     {
-      const auto& carResult = simulation.getCarResult(logic.leaderCar.index);
-
-      glm::vec3 carOrigin = carResult.liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
-      glm::vec3 carUpAxis = carResult.liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+      glm::vec3 carOrigin = leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+      glm::vec3 carUpAxis = leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 
       StateManager::States currentState = StateManager::get()->getState();
 

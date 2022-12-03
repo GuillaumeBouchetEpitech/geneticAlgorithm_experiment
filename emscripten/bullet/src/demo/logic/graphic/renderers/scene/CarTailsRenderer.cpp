@@ -12,7 +12,7 @@
 
 void CarTailsRenderer::initialise()
 {
-  _shader = ResourceManager::get().getShader(asValue(Shaders::wireframes));
+  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
 
   {
 
@@ -84,9 +84,9 @@ void CarTailsRenderer::render()
 
   { // leader trail
 
-    if (logic.leaderCar.index >= 0)
+    if (logic.leaderCar.hasLeader())
     {
-      const auto& trailData = logic.carWheelsTrails.getTrailByIndex(logic.leaderCar.index);
+      const auto& trailData = logic.carWheelsTrails.getTrailByIndex(logic.leaderCar.leaderIndex());
 
       // rely on only the 30 last positions recorded
       constexpr int maxSize = 30;

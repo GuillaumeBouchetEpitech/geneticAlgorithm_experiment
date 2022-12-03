@@ -35,27 +35,45 @@ private:
     };
     using Particles = std::vector<Particle>;
 
+    struct ExplosionParticle
+    {
+        glm::vec3   position;
+        float       scale;
+        glm::vec3   color;
+        float       life;
+        float       maxLife;
+
+        ExplosionParticle(
+            const glm::vec3& position,
+            const glm::vec3& color,
+            float scale,
+            float life);
+    };
+    using ExplosionParticles = std::vector<ExplosionParticle>;
+
 private:
 
-    struct t_attributes
+    struct ParticleInstance
     {
         glm::vec3   position;
         float       scale;
         glm::vec3   color;
 
-        t_attributes(const glm::vec3& position, float scale, const glm::vec3& color)
+        ParticleInstance(
+            const glm::vec3& position,
+            float scale,
+            const glm::vec3& color)
             : position(position)
             , scale(scale)
             , color(color)
         {}
     };
 
-    std::vector<t_attributes> _particlesInstances;
-
     Particles _particles;
+    ExplosionParticles _explosionParticles;
 
+    std::vector<ParticleInstance> _particlesInstances;
     std::shared_ptr<ShaderProgram> _shader;
-
     Geometry _geometry;
 
     Camera::MatricesData _matricesData;

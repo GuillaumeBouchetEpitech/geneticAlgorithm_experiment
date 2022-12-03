@@ -1,6 +1,8 @@
 
 #include "common.hpp"
 
+#include "framework/TraceLogger.hpp"
+
 #include <vector>
 #include <functional>
 #include <iostream>
@@ -110,5 +112,33 @@ namespace common
       std::cout << "op= move " << value << ", " << other.value << std::endl;
     return *this;
   }
+
+  //
+  //
+  //
+  //
+  //
+
+  Test2::Test2(Test2&& other)
+  {
+    D_MYLOG("value " << value);
+    D_MYLOG("other.value " << other.value);
+
+    // value = std::move(other.value);
+    std::swap(value, other.value);
+    my_string = std::move(other.my_string);
+  }
+
+  Test2& Test2::operator=(Test2&& other)
+  {
+    D_MYLOG("value " << value);
+    D_MYLOG("other.value " << other.value);
+
+    // value = std::move(other.value);
+    std::swap(value, other.value);
+    my_string = std::move(other.my_string);
+    return *this;
+  }
+
 
 }

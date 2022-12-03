@@ -10,15 +10,15 @@
 
 void State_StartGeneration::enter()
 {
-    auto& data = Data::get();
-    auto& logic = data.logic;
-
-    const float currFitness = logic.fitnessStats.allStats.back();
-
-    if (currFitness > 0.0f)
-        _countdown = 2000; // wait 2.0 second(s)
+    const float lastFitness = Data::get().logic.fitnessStats.get(-1);
+    if (lastFitness > 0.0f)
+    {
+        _countdownUntilNextState = 2000; // wait 2.0 second(s)
+    }
     else
-        _countdown = 1000; // wait 1.0 second(s)
+    {
+        _countdownUntilNextState = 1000; // wait 1.0 second(s)
+    }
 }
 
 void State_StartGeneration::update(int deltaTime)
@@ -50,7 +50,7 @@ void State_StartGeneration::update(int deltaTime)
 
         if (logic.isAccelerated)
         {
-            cameraNextCenter = logic.circuitAnimation.boundaries.center;
+            cameraNextCenter = logic.circuitDimension.center;
         }
         else
         {
@@ -68,7 +68,11 @@ void State_StartGeneration::update(int deltaTime)
 
     } // camera tracking
 
-    _countdown -= deltaTime;
-    if (_countdown <= 0)
+    _countdownUntilNextState -= deltaTime;
+    if (_countdownUntilNextState <= 0)
+    {
+        graphic.postProcess.animate();
+
         StateManager::get()->changeState(StateManager::States::Running);
+    }
 }

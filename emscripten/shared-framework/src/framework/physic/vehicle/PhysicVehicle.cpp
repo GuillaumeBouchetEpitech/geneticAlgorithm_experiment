@@ -7,7 +7,7 @@
 #include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 namespace
 {

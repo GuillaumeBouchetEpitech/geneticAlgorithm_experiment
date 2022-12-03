@@ -3,7 +3,7 @@
 
 #include "framework/physic/PhysicWorld.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 PhysicBodyManager::PhysicBodyManager(PhysicWorld& physicWorld)
   : _physicWorld(physicWorld)

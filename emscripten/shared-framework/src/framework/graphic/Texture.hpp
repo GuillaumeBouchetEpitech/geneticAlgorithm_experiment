@@ -15,7 +15,7 @@ class Texture
 
 private:
   unsigned int _textureId = 0;
-  glm::ivec2 _size = { 0, 0 };
+  glm::uvec2 _size = { 0, 0 };
 
 public:
   Texture() = default;
@@ -24,13 +24,16 @@ public:
 public:
   void setFromImage(const Image& image, bool pixelated = false, bool repeat = false);
   void allocateBlank(
-    const glm::ivec2& size,
+    const glm::uvec2& size,
     bool pixelated = false,
     bool repeat = false,
     const void* pixels = nullptr);
+  void allocateDepth(const glm::uvec2& size);
+  void dispose();
 
 public:
-  const glm::ivec2& getSize() const;
+  const glm::uvec2& getSize() const;
+  bool isValid() const;
 
 public:
   void bind() const;

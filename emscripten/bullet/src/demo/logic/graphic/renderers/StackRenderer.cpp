@@ -16,7 +16,7 @@
 
 void StackRenderer::initialise()
 {
-    _shader = ResourceManager::get().getShader(asValue(Shaders::stackRenderer));
+    _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::stackRenderer));
 
     {
 
@@ -42,7 +42,7 @@ void StackRenderer::initialise()
 
     }
 
-    constexpr std::size_t preAllocatedSize = 1024 * 8;
+    constexpr std::size_t preAllocatedSize = 1024 * 32;
     _lineVertices.reserve(preAllocatedSize);
     _triangleVertices.reserve(preAllocatedSize);
 }
@@ -54,21 +54,13 @@ void StackRenderer::setMatricesData(const Camera::MatricesData& matricesData)
 
 //
 
-// void StackRenderer::push(const Vertex& vertex)
-// {
-//     if (_lineVertices.size() == _lineVertices.capacity())
-//         flush();
-
-//     _lineVertices.emplace_back(vertex);
-// }
-
 void StackRenderer::pushLine(
     const glm::vec3& posA,
     const glm::vec3& posB,
     const glm::vec4& color)
 {
     if (_lineVertices.size() + 2 >= _lineVertices.capacity())
-        flush();
+        flushLines();
 
     _lineVertices.emplace_back(posA, color);
     _lineVertices.emplace_back(posB, color);
@@ -108,6 +100,22 @@ void StackRenderer::pushTriangle(
     const glm::vec3& posA,
     const glm::vec3& posB,
     const glm::vec3& posC,
+    const glm::vec4& colorA,
+    const glm::vec4& colorB,
+    const glm::vec4& colorC)
+{
+    if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
+        flushTriangles();
+
+    _triangleVertices.emplace_back(posA, colorA);
+    _triangleVertices.emplace_back(posB, colorB);
+    _triangleVertices.emplace_back(posC, colorC);
+}
+
+void StackRenderer::pushTriangle(
+    const glm::vec3& posA,
+    const glm::vec3& posB,
+    const glm::vec3& posC,
     const glm::vec4& color)
 {
     pushTriangle(
@@ -120,28 +128,10 @@ void StackRenderer::pushTriangle(
     );
 }
 
-void StackRenderer::pushTriangle(
-    const glm::vec3& posA,
-    const glm::vec3& posB,
-    const glm::vec3& posC,
-    const glm::vec4& colorA,
-    const glm::vec4& colorB,
-    const glm::vec4& colorC)
-{
-    if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
-        flush();
-
-    _triangleVertices.emplace_back(posA, colorA);
-    _triangleVertices.emplace_back(posB, colorB);
-    _triangleVertices.emplace_back(posC, colorC);
-}
-
-void StackRenderer::pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color)
-{
-    pushQuad(glm::vec3(center, 0.0f), size, color);
-}
-
-void StackRenderer::pushQuad(const glm::vec3& center, const glm::vec2& size, const glm::vec4& color)
+void StackRenderer::pushQuad(
+    const glm::vec3& center,
+    const glm::vec2& size,
+    const glm::vec4& color)
 {
     const glm::vec2 hsize = size * 0.5f;
 
@@ -152,18 +142,29 @@ void StackRenderer::pushQuad(const glm::vec3& center, const glm::vec2& size, con
         { center.x + hsize.x, center.y - hsize.y, center.z },
         { center.x - hsize.x, center.y - hsize.y, center.z },
     }};
-    std::array<int, 6> indices = {{ 0,1,2, 2,1,3, }};
 
-    pushTriangle(vertices[indices[0]], vertices[indices[1]], vertices[indices[2]], color);
-    pushTriangle(vertices[indices[3]], vertices[indices[4]], vertices[indices[5]], color);
+    std::array<glm::uvec3, 2> indices =
+    {{
+        { 0, 1, 2 },
+        { 2, 1, 3 }
+    }};
+
+    for (const glm::uvec3& index : indices)
+        pushTriangle(vertices[index[0]], vertices[index[1]], vertices[index[2]], color);
 }
 
-void StackRenderer::pushCircle(const glm::vec2& center, float radius, const glm::vec4& color)
+void StackRenderer::pushQuad(
+    const glm::vec2& center,
+    const glm::vec2& size,
+    const glm::vec4& color)
 {
-    pushCircle(glm::vec3(center, 0.0f), radius, color);
+    pushQuad(glm::vec3(center, 0.0f), size, color);
 }
 
-void StackRenderer::pushCircle(const glm::vec3& center, float radius, const glm::vec4& color)
+void StackRenderer::pushCircle(
+    const glm::vec3& center,
+    float radius,
+    const glm::vec4& color)
 {
     constexpr int quality = 16;
 
@@ -182,13 +183,15 @@ void StackRenderer::pushCircle(const glm::vec3& center, float radius, const glm:
         const int indexA = ii;
         const int indexB = (ii + 1) % quality;
 
-        glm::vec3 vertexA = {
+        glm::vec3 vertexA =
+        {
             center.x + radius * cachedValues[indexA].x,
             center.y + radius * cachedValues[indexA].y,
             0.0f
         };
 
-        glm::vec3 vertexB = {
+        glm::vec3 vertexB =
+        {
             center.x + radius * cachedValues[indexB].x,
             center.y + radius * cachedValues[indexB].y,
             0.0f
@@ -198,131 +201,139 @@ void StackRenderer::pushCircle(const glm::vec3& center, float radius, const glm:
     }
 }
 
-void StackRenderer::pushThickTriangleLine(const glm::vec2& posA, const glm::vec2& posB, float thickness, const glm::vec4& color)
-{
-    const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
-
-    const float stepX = std::cos(angle) * thickness * 0.5f;
-    const float stepY = std::sin(angle) * thickness * 0.5f;
-
-    std::array<glm::vec3, 4> vertices
-    {{
-        { posA.x - stepX, posA.y - stepY, 0.0f },
-        { posA.x + stepX, posA.y + stepY, 0.0f },
-        { posB.x - stepX, posB.y - stepY, 0.0f },
-        { posB.x + stepX, posB.y + stepY, 0.0f },
-    }};
-
-    pushTriangle(vertices[0], vertices[3], vertices[2], color);
-    pushTriangle(vertices[0], vertices[1], vertices[3], color);
-}
-
-// void StackRenderer::pushThickTriangleLine(const glm::vec3& posA, const glm::vec3& posB, float thickness, const glm::vec4& color)
-// {
-//     const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
-
-//     const float stepX = std::cos(angle) * thickness * 0.5f;
-//     const float stepY = std::sin(angle) * thickness * 0.5f;
-
-//     std::array<glm::vec3, 4> vertices{{
-//         { posA.x - stepX, posA.y - stepY, posA.z },
-//         { posA.x + stepX, posA.y + stepY, posA.z },
-//         { posB.x - stepX, posB.y - stepY, posB.z },
-//         { posB.x + stepX, posB.y + stepY, posB.z },
-//     }};
-
-//     pushTriangle(vertices[0], vertices[3], vertices[2], color);
-//     pushTriangle(vertices[0], vertices[1], vertices[3], color);
-// }
-
-void StackRenderer::pushThickTriangleLine(
-    const glm::vec2& posA,
-    const glm::vec2& posB,
-    float thicknessA,
-    float thicknessB,
+void StackRenderer::pushCircle(
+    const glm::vec2& center,
+    float radius,
     const glm::vec4& color)
 {
-    const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
-
-    const float stepAX = std::cos(angle) * thicknessA * 0.5f;
-    const float stepAY = std::sin(angle) * thicknessA * 0.5f;
-    const float stepBX = std::cos(angle) * thicknessB * 0.5f;
-    const float stepBY = std::sin(angle) * thicknessB * 0.5f;
-
-    std::array<glm::vec3, 4> vertices{{
-        { posA.x - stepAX, posA.y - stepAY, 0.0f },
-        { posA.x + stepAX, posA.y + stepAY, 0.0f },
-        { posB.x - stepBX, posB.y - stepBY, 0.0f },
-        { posB.x + stepBX, posB.y + stepBY, 0.0f },
-    }};
-
-    pushTriangle(vertices[0], vertices[3], vertices[2], color);
-    pushTriangle(vertices[0], vertices[1], vertices[3], color);
+    pushCircle(glm::vec3(center, 0.0f), radius, color);
 }
 
-void StackRenderer::pushThickTriangleLine(
+void StackRenderer::pushThickTriangle2dLine(
     const glm::vec2& posA,
     const glm::vec2& posB,
     float thicknessA,
     float thicknessB,
-    const glm::vec4& color,
+    const glm::vec4& colorA,
+    const glm::vec4& colorB,
     float z)
 {
     const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
 
-    const float stepAX = std::cos(angle) * thicknessA * 0.5f;
-    const float stepAY = std::sin(angle) * thicknessA * 0.5f;
-    const float stepBX = std::cos(angle) * thicknessB * 0.5f;
-    const float stepBY = std::sin(angle) * thicknessB * 0.5f;
+    const glm::vec2 direction = { std::cos(angle), std::sin(angle) };
+    const glm::vec2 stepA = direction * thicknessA * 0.5f;
+    const glm::vec2 stepB = direction * thicknessB * 0.5f;
 
-    std::array<glm::vec3, 4> vertices{{
-        { posA.x - stepAX, posA.y - stepAY, z },
-        { posA.x + stepAX, posA.y + stepAY, z },
-        { posB.x - stepBX, posB.y - stepBY, z },
-        { posB.x + stepBX, posB.y + stepBY, z },
+    std::array<glm::vec3, 4> vertices
+    {{
+        { posA.x - stepA.x, posA.y - stepA.y, z },
+        { posA.x + stepA.x, posA.y + stepA.y, z },
+        { posB.x - stepB.x, posB.y - stepB.y, z },
+        { posB.x + stepB.x, posB.y + stepB.y, z },
     }};
 
-    pushTriangle(vertices[0], vertices[3], vertices[2], color);
-    pushTriangle(vertices[0], vertices[1], vertices[3], color);
+    pushTriangle(
+        vertices[0],
+        vertices[3],
+        vertices[2],
+        colorA,
+        colorB,
+        colorB);
+
+    pushTriangle(
+        vertices[0],
+        vertices[1],
+        vertices[3],
+        colorA,
+        colorA,
+        colorB);
 }
 
-void StackRenderer::pushThickTriangle3DLine(const glm::vec3& posA, const glm::vec3& posB,
-                                            float thicknessA, float thicknessB,
-                                            const glm::vec4& colorA, const glm::vec4& colorB)
+void StackRenderer::pushThickTriangle2dLine(
+    const glm::vec2& posA,
+    const glm::vec2& posB,
+    float thicknessA,
+    float thicknessB,
+    const glm::vec4& colorA,
+    const glm::vec4& colorB)
+{
+    pushThickTriangle2dLine(posA, posB, thicknessA, thicknessB, colorA, colorB, 0.0f);
+}
+
+void StackRenderer::pushThickTriangle2dLine(
+    const glm::vec2& posA,
+    const glm::vec2& posB,
+    float thickness,
+    const glm::vec4& color,
+    float z)
+{
+    pushThickTriangle2dLine(posA, posB, thickness, thickness, color, color, z);
+}
+
+void StackRenderer::pushThickTriangle2dLine(
+    const glm::vec2& posA,
+    const glm::vec2& posB,
+    float thickness,
+    const glm::vec4& color)
+{
+    pushThickTriangle2dLine(posA, posB, thickness, thickness, color, color, 0.0f);
+}
+
+void StackRenderer::pushThickTriangle3DLine(
+    const glm::vec3& posA,
+    const glm::vec3& posB,
+    float thicknessA,
+    float thicknessB,
+    const glm::vec4& colorA,
+    const glm::vec4& colorB)
 {
     const glm::vec3 diff = posB - posA;
     const float horizontalAngle = std::atan2(diff.y, diff.x);
-    const float verticalAngle = std::atan2(diff.z, glm::length(glm::vec2(diff)));
+    const float verticalAngle = std::atan2(diff.z, glm::length(glm::vec2(diff.x, diff.y)));
 
-    const float verticalUpAngleRad = verticalAngle - math::hpi;
-    const float verticalForwardAngleRad = verticalAngle;
-    const float horizontalAngleRad = horizontalAngle;
+    const glm::vec2 direction =
+    {
+        std::cos(horizontalAngle),
+        std::sin(horizontalAngle)
+    };
 
-    glm::vec3 upAxis;
-    glm::vec3 forwardAxis;
-    glm::vec3 leftAxis;
+    const float verticalUpAngle = verticalAngle - math::hpi;
+    const float upRadius = std::cos(verticalUpAngle);
+    const glm::vec3 upAxis =
+    {
+        std::sin(verticalUpAngle),
+        upRadius * direction.x,
+        upRadius * direction.y,
+    };
 
-    const float upRadius = std::cos(verticalUpAngleRad);
-    upAxis.z = std::sin(verticalUpAngleRad);
-    upAxis.x = upRadius * std::cos(horizontalAngleRad);
-    upAxis.y = upRadius * std::sin(horizontalAngleRad);
+    const float forwardRadius = std::cos(verticalAngle);
+    const glm::vec3 forwardAxis =
+    {
+        std::sin(verticalAngle),
+        forwardRadius * direction.x,
+        forwardRadius * direction.y,
+    };
 
-    const float forwardRadius = std::cos(verticalForwardAngleRad);
-    forwardAxis.z = std::sin(verticalForwardAngleRad);
-    forwardAxis.x = forwardRadius * std::cos(horizontalAngleRad);
-    forwardAxis.y = forwardRadius * std::sin(horizontalAngleRad);
+    const glm::vec3 leftAxis =
+    {
+        upAxis.y * forwardAxis.z - upAxis.z * forwardAxis.y,
+        upAxis.z * forwardAxis.x - upAxis.x * forwardAxis.z,
+        upAxis.x * forwardAxis.y - upAxis.y * forwardAxis.x,
+    };
 
-    leftAxis.x = upAxis.y * forwardAxis.z - upAxis.z * forwardAxis.y;
-    leftAxis.y = upAxis.z * forwardAxis.x - upAxis.x * forwardAxis.z;
-    leftAxis.z = upAxis.x * forwardAxis.y - upAxis.y * forwardAxis.x;
+    const std::array<glm::vec3, 3> sideA =
+    {{
+        posA - leftAxis * thicknessA - upAxis * thicknessA,
+        posA + leftAxis * thicknessA - upAxis * thicknessA,
+        posA + upAxis * thicknessA
+    }};
 
-    glm::vec3 posA_bottomLeft = posA - leftAxis * thicknessA - upAxis * thicknessA;
-    glm::vec3 posA_bottomRight = posA + leftAxis * thicknessA - upAxis * thicknessA;
-    glm::vec3 posA_topCenter = posA + upAxis * thicknessA;
-
-    glm::vec3 posB_bottomLeft = posB - leftAxis * thicknessB - upAxis * thicknessB;
-    glm::vec3 posB_bottomRight = posB + leftAxis * thicknessB - upAxis * thicknessB;
-    glm::vec3 posB_topCenter = posB + upAxis * thicknessB;
+    const std::array<glm::vec3, 3> sideB =
+    {{
+        posB - leftAxis * thicknessB - upAxis * thicknessB,
+        posB + leftAxis * thicknessB - upAxis * thicknessB,
+        posB + upAxis * thicknessB
+    }};
 
     struct Vertex
     {
@@ -333,30 +344,49 @@ void StackRenderer::pushThickTriangle3DLine(const glm::vec3& posA, const glm::ve
     std::array<std::array<Vertex, 4>, 3> allQuads
     {{
         {{
-            { posA_bottomLeft, colorA },
-            { posA_bottomRight, colorA },
-            { posB_bottomLeft, colorB },
-            { posB_bottomRight, colorB }
+            { sideA[0], colorA }, { sideA[1], colorA },
+            { sideB[0], colorB }, { sideB[1], colorB }
         }},
         {{
-            { posA_bottomLeft, colorA },
-            { posA_topCenter, colorA },
-            { posB_bottomLeft, colorB },
-            { posB_topCenter, colorB }
+            { sideA[0], colorA }, { sideA[2], colorA },
+            { sideB[0], colorB }, { sideB[2], colorB }
         }},
         {{
-            { posA_bottomRight, colorA },
-            { posA_topCenter, colorA },
-            { posB_bottomRight, colorB },
-            { posB_topCenter, colorB }
+            { sideA[1], colorA }, { sideA[2], colorA },
+            { sideB[1], colorB }, { sideB[2], colorB }
         }},
     }};
 
+    std::array<glm::uvec3, 2> indices =
+    {{
+        { 0, 3, 2 },
+        { 0, 1, 3 }
+    }};
+
     for (auto& quad : allQuads)
-    {
-        pushTriangle(quad[0].position, quad[3].position, quad[2].position, quad[0].color, quad[3].color, quad[2].color);
-        pushTriangle(quad[0].position, quad[1].position, quad[3].position, quad[0].color, quad[3].color, quad[2].color);
-    }
+        for (const glm::uvec3& index : indices)
+            pushTriangle(
+                quad[index[0]].position,
+                quad[index[1]].position,
+                quad[index[2]].position,
+                quad[index[0]].color,
+                quad[index[1]].color,
+                quad[index[2]].color);
+}
+
+void StackRenderer::pushThickTriangle3DLine(
+    const glm::vec3& posA,
+    const glm::vec3& posB,
+    float thickness,
+    const glm::vec4& color)
+{
+    pushThickTriangle3DLine(
+        posA,
+        posB,
+        thickness,
+        thickness,
+        color,
+        color);
 }
 
 void StackRenderer::pushLine(const glm::vec2& posA,

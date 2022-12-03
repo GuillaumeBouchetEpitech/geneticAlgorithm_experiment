@@ -14,9 +14,33 @@
 
 #include "framework/math/RandomNumberGenerator.hpp"
 
+
+namespace
+{
+
+  void updateVerticesNormals(loader::ModelVertices& vertices)
+  {
+    for (std::size_t index = 0; index < vertices.size(); index += 3)
+    {
+      loader::ModelVertex& vertexA = vertices[index + 0];
+      loader::ModelVertex& vertexB = vertices[index + 1];
+      loader::ModelVertex& vertexC = vertices[index + 2];
+
+      const glm::vec3 normal = glm::cross(
+        vertexA.position - vertexB.position,
+        vertexA.position - vertexC.position);
+
+      vertexA.normal = normal;
+      vertexB.normal = normal;
+      vertexC.normal = normal;
+    }
+  }
+
+}
+
 void ModelsRenderer::initialise()
 {
-  _shader = ResourceManager::get().getShader(asValue(Shaders::models));
+  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::models));
 
   {
     GeometryBuilder geometryBuilder;
@@ -26,14 +50,13 @@ void ModelsRenderer::initialise()
       .setShader(*_shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .setVboStride(9 * 4)
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
-      // .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
+      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
+      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
+      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f, 6)
       .addVbo()
       .setVboAsInstanced()
-      .addVboAttribute("a_offsetTransform", Geometry::AttrType::Mat4f, 0)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 16);
+      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f, 0)
+      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec3f, 16);
 
     geometryBuilder.build(_geometries.cars);
     geometryBuilder.build(_geometries.wheels);
@@ -46,52 +69,7 @@ void ModelsRenderer::initialise()
         "./assets/model/",
         modelVertices);
 
-      // {
-      //     modelVertices.reserve(8 * 1024);
-
-      //     auto addRectangle = [&modelVertices](
-      //         const glm::vec3& center,
-      //         const glm::vec3& size,
-      //         const glm::vec3& color)
-      //     {
-      //         const glm::vec3 hsize = size * 0.5f;
-
-      //         std::array<glm::vec3, 8> tmpVertices
-      //         {{
-      //             { center.x - hsize.x, center.y - hsize.y, center.z - hsize.z },
-      //             { center.x + hsize.x, center.y - hsize.y, center.z - hsize.z },
-      //             { center.x - hsize.x, center.y + hsize.y, center.z - hsize.z },
-      //             { center.x + hsize.x, center.y + hsize.y, center.z - hsize.z },
-
-      //             { center.x - hsize.x, center.y - hsize.y, center.z + hsize.z },
-      //             { center.x + hsize.x, center.y - hsize.y, center.z + hsize.z },
-      //             { center.x - hsize.x, center.y + hsize.y, center.z + hsize.z },
-      //             { center.x + hsize.x, center.y + hsize.y, center.z + hsize.z },
-      //         }};
-
-      //         std::array<int, 36> indices
-      //         {{
-      //             0,1,2,  1,2,3, // bottom
-      //             4,5,6,  5,6,7, // top
-
-      //             1,3,5,  3,5,7, // right
-      //             0,2,4,  2,4,6, // left
-
-      //             0,1,4, 1,4,5, // back
-      //             2,3,6, 3,6,7, // front
-      //         }};
-
-      //         for (int index : indices)
-      //             modelVertices.push_back({ tmpVertices[index], color, glm::vec3(1) });
-      //     };
-
-      //     addRectangle({ 0, 0, 0.2f }, { 0.75f, 4, 0.5f }, glm::vec3(1));
-      //     addRectangle({ 0, 0, 0.2f }, { 1.50f, 2, 0.4f }, glm::vec3(1));
-
-      //     // addRectangle({ 0, -0.5f, 0.4f }, { 1, 1, 0.25 }, glm::vec3(1,0,0));
-
-      //     addRectangle({ 0, -0.5f, 0.6f }, { 1, 1, 0.2 }, glm::vec3(0)); // cockpit
-      // }
+      updateVerticesNormals(modelVertices);
 
       _geometries.cars.updateBuffer(0, modelVertices);
       _geometries.cars.setPrimitiveCount(modelVertices.size());
@@ -105,29 +83,7 @@ void ModelsRenderer::initialise()
         "./assets/model/",
         modelVertices);
 
-      // {
-      //     modelVertices.reserve(8 * 1024);
-      //     const int quality = 16;
-      //     for (int ii = 1; ii <= quality; ii += 2)
-      //     {
-      //         const float prevAngle = (float(ii - 1) / quality) * M_PI * 2;
-      //         const float currAngle = (float(ii % quality) / quality) * M_PI * 2;
-
-      //         constexpr float radius = 0.5f;
-
-      //         std::array<glm::vec3, 4> tmpVertices
-      //         {{
-      //             { -0.25f, std::cos(prevAngle) * radius, std::sin(prevAngle) * radius },
-      //             { +0.25f, std::cos(prevAngle) * radius, std::sin(prevAngle) * radius },
-      //             { -0.25f, std::cos(currAngle) * radius, std::sin(currAngle) * radius },
-      //             { +0.25f, std::cos(currAngle) * radius, std::sin(currAngle) * radius },
-      //         }};
-
-      //         std::array<int, 6> indices{{ 0,1,2,  1,2,3 }};
-      //         for (int index : indices)
-      //             modelVertices.push_back({ tmpVertices[index], glm::vec3(1), glm::vec3(1) });
-      //     }
-      // }
+      updateVerticesNormals(modelVertices);
 
       _geometries.wheels.updateBuffer(0, modelVertices);
       _geometries.wheels.setPrimitiveCount(modelVertices.size());
@@ -144,31 +100,22 @@ void ModelsRenderer::render(const Camera &cameraInstance)
   const auto& logic = Data::get().logic;
   const auto& simulation = *logic.simulation;
 
+  const unsigned int totalCars = simulation.getTotalCars();
+  if (totalCars == 0)
+    return;
+
   const IFrustumCulling& frustumCulling = cameraInstance.getFrustumCulling();
 
   _shader->bind();
-  _shader->setUniform("u_composedMatrix", cameraInstance.getSceneMatricsData().composed);
+  _shader->setUniform("u_projectionMatrix", cameraInstance.getSceneMatricesData().projection);
+  _shader->setUniform("u_modelViewMatrix", cameraInstance.getSceneMatricesData().view);
 
-  unsigned int totalCars = simulation.getTotalCars();
+  _modelsChassisMatrices.clear();
+  _modelWheelsMatrices.clear();
+  _modelsChassisMatrices.reserve(totalCars); // pre-allocate
+  _modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
 
-  struct Attributes
-  {
-    glm::mat4   tranform;
-    glm::vec3   color;
-
-    Attributes(const glm::mat4& tranform, const glm::vec3& color)
-      : tranform(tranform)
-      , color(color)
-    {}
-  };
-
-  std::vector<Attributes> modelsChassisMatrices;
-  std::vector<Attributes> modelWheelsMatrices;
-
-  modelsChassisMatrices.reserve(totalCars); // pre-allocate
-  modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
-
-  glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
+  const glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
 
   const glm::vec3 whiteColor(1, 1, 1);
   const glm::vec3 greenColor(0, 1, 0);
@@ -196,29 +143,29 @@ void ModelsRenderer::render(const Camera &cameraInstance)
     //
     // color
 
-    const bool isLeader = (logic.leaderCar.index == int(ii));
+    const bool isLeader = (logic.leaderCar.leaderIndex() == int(ii));
     const glm::vec3 targetColor = isLeader ? leaderColor : lifeColor;
     const glm::vec3 color = glm::mix(deathColor, targetColor, carData.life);
 
     //
     // transforms
 
-    modelsChassisMatrices.emplace_back(chassisTransform, color);
+    _modelsChassisMatrices.emplace_back(chassisTransform, color);
     for (const auto& wheelTransform : carData.liveTransforms.wheels)
-      modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
+      _modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
   }
 
-  if (!modelsChassisMatrices.empty())
+  if (!_modelsChassisMatrices.empty())
   {
-    _geometries.cars.updateBuffer(1, modelsChassisMatrices);
-    _geometries.cars.setInstancedCount(modelsChassisMatrices.size());
+    _geometries.cars.updateBuffer(1, _modelsChassisMatrices);
+    _geometries.cars.setInstancedCount(_modelsChassisMatrices.size());
     _geometries.cars.render();
   }
 
-  if (!modelWheelsMatrices.empty())
+  if (!_modelWheelsMatrices.empty())
   {
-    _geometries.wheels.updateBuffer(1, modelWheelsMatrices);
-    _geometries.wheels.setInstancedCount(modelWheelsMatrices.size());
+    _geometries.wheels.updateBuffer(1, _modelWheelsMatrices);
+    _geometries.wheels.setInstancedCount(_modelWheelsMatrices.size());
     _geometries.wheels.render();
   }
 }

@@ -46,7 +46,7 @@ const CarWheelsTrails::WheelsTrail& CarWheelsTrails::getTrailById(int id) const
 {
   auto it = _genomeIndexMap.find(id);
   if (it == _genomeIndexMap.end())
-    D_THROW(std::runtime_error, "TODO");
+    D_THROW(std::runtime_error, "trail not found, id: " << id);
 
   return _allWheelsTrails[it->second];
 }

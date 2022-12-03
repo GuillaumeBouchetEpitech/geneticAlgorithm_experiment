@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 template<typename T>
 T clamp(T value, T minVal, T maxVal)
 {

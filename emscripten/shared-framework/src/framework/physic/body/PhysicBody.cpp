@@ -1,10 +1,10 @@
 
 #include "PhysicBody.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
-
 #include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 #include <algorithm>
 

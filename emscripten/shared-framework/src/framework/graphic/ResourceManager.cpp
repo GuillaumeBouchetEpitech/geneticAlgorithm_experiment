@@ -10,41 +10,6 @@
 
 #include <sstream>
 
-//
-//
-// singleton
-
-ResourceManager* ResourceManager::_instance = nullptr;
-
-void ResourceManager::create()
-{
-  if (_instance)
-    D_THROW(std::runtime_error, "ResourceManager singleton already initialised");
-
-  _instance = new ResourceManager();
-}
-
-void ResourceManager::destroy()
-{
-  if (!_instance)
-    D_THROW(std::runtime_error, "ResourceManager singleton already destroyed");
-
-  delete _instance, _instance = nullptr;
-}
-
-ResourceManager& ResourceManager::get()
-{
-  if (!_instance)
-    D_THROW(std::runtime_error, "ResourceManager singleton not initialised");
-
-  return *_instance;
-}
-
-// singleton
-//
-//
-
-
 std::shared_ptr<ShaderProgram> ResourceManager::createShader(int aliasCode, const ShaderProgram::Definition def)
 {
   std::stringstream sstr;

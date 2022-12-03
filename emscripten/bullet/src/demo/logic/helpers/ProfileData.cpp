@@ -51,3 +51,21 @@ const AbstactSimulation::CoreState& ProfileData::getCoreHistoryData(unsigned int
 
   return _statesHistory.at(coreIndex).at(actualIndex);
 }
+
+unsigned int ProfileData::getLatestTotalDelta() const
+{
+  unsigned int totalDelta = 0;
+  for (std::size_t statIndex = 0; statIndex < _latestStatesData.size(); ++statIndex)
+    totalDelta += _latestStatesData[statIndex].delta;
+  return totalDelta;
+}
+
+unsigned int ProfileData::getAllTimeMaxDelta() const
+{
+  unsigned int maxDelta = 0;
+  for (unsigned int coreIndex = 0; coreIndex < _totalCores; ++coreIndex)
+    for (unsigned int statIndex = 0; statIndex < _maxStateHistory; ++statIndex)
+      maxDelta = std::max(maxDelta, _statesHistory.at(coreIndex).at(statIndex).delta);
+  return maxDelta;
+}
+

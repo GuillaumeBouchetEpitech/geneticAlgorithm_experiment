@@ -7,8 +7,7 @@
 
 RenderBuffer::~RenderBuffer()
 {
-  if (_bufferId != 0)
-    GlContext::deleteRenderbuffers(1, &_bufferId);
+  dispose();
 }
 
 //
@@ -26,6 +25,15 @@ void RenderBuffer::allocateDepth(const glm::ivec2& size)
   GlContext::bindRenderbuffer(_bufferId);
   GlContext::renderbufferStorage(uint32_t(_size.x), uint32_t(_size.y));
   GlContext::bindRenderbuffer(0);
+}
+
+void RenderBuffer::dispose()
+{
+  if (_bufferId == 0)
+    return;
+
+  GlContext::deleteRenderbuffers(1, &_bufferId);
+  _bufferId = 0;
 }
 
 const glm::ivec2& RenderBuffer::getSize() const

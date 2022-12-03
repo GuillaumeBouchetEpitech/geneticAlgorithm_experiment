@@ -36,4 +36,7 @@ public:
   const AbstactSimulation::CoreState& getCoreData(unsigned int index) const;
   const AbstactSimulation::CoreState& getCoreHistoryData(unsigned int coreIndex, unsigned int dataIndex) const;
 
+  unsigned int getLatestTotalDelta() const;
+  unsigned int getAllTimeMaxDelta() const;
+
 };

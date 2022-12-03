@@ -6,22 +6,41 @@
 
 #include "framework/helpers/GLMath.hpp"
 
+#include <vector>
+#include <cstdint>
+
 class FrameBuffer
 {
+public:
+  struct Definition
+  {
+    struct ColorTexture
+    {
+      uint32_t index = 0;
+      Texture* texture = nullptr;
+    };
+
+    std::vector<ColorTexture> colorTextures;
+
+    RenderBuffer* renderBuffer = nullptr;
+    Texture* depthTexture = nullptr;
+  };
+
 private:
-  unsigned int _frameBufferId = 0;
+  uint32_t _frameBufferId = 0;
 
 public:
   FrameBuffer() = default;
   ~FrameBuffer();
 
 public:
-  void initialise();
-  void attachColorTexture(Texture& texture);
-  void attachDepthRenderBuffer(RenderBuffer& buffer);
+  void initialise(const Definition& def);
+  void dispose();
 
-public:
-  void executeCheck() const;
+private:
+  void _attachColorTexture(uint32_t index, const Texture& colorTexture);
+  void _attachDepthTexture(const Texture& depthTexture);
+  void _attachDepthRenderBuffer(const RenderBuffer& buffer);
 
 public:
   void bind() const;

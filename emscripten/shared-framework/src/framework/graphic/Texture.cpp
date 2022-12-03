@@ -9,27 +9,30 @@
 
 Texture::~Texture()
 {
-  if (_textureId != 0)
-    GlContext::deleteTexture(_textureId);
+  dispose();
 }
 
 //
 
-void Texture::setFromImage(const Image& image, bool pixelated /*= false*/, bool repeat  /*= false*/)
+void Texture::setFromImage(
+  const Image& image,
+  bool pixelated /*= false*/,
+  bool repeat  /*= false*/)
 {
   allocateBlank(image.getSize(), pixelated, repeat, image.getPixels());
 }
 
 void Texture::allocateBlank(
-  const glm::ivec2& size,
+  const glm::uvec2& size,
   bool pixelated /*= false*/,
   bool repeat /*= false*/,
   const void* pixels /*= nullptr*/)
 {
   _size = size;
 
-  if (_size.x < 1 || _size.y < 1)
-    D_THROW(std::runtime_error, "image allocated with incorrect size");
+  // TODO: check max texture size
+  // if (_size.x < 1 || _size.y < 1)
+  //   D_THROW(std::runtime_error, "image allocated with incorrect size");
 
   if (_textureId == 0)
     _textureId = GlContext::genTexture();
@@ -52,9 +55,41 @@ void Texture::allocateBlank(
   GlContext::bindTexture(0);
 }
 
-const glm::ivec2& Texture::getSize() const
+void Texture::allocateDepth(const glm::uvec2& size)
+{
+  _size = size;
+
+  // TODO: check max texture size
+  // if (_size.x < 1 || _size.y < 1)
+  //   D_THROW(std::runtime_error, "image allocated with incorrect size");
+
+  if (_textureId == 0)
+    _textureId = GlContext::genTexture();
+
+  GlContext::bindTexture(_textureId);
+  GlContext::setAsDepthTexture(_size.x, _size.y);
+  GlContext::bindTexture(0);
+}
+
+void Texture::dispose()
+{
+  if (!isValid())
+    return;
+
+  _size.x = 0;
+  _size.y = 0;
+  GlContext::deleteTexture(_textureId);
+  _textureId = 0;
+}
+
+const glm::uvec2& Texture::getSize() const
 {
   return _size;
+}
+
+bool Texture::isValid() const
+{
+  return _size.x > 0 && _size.x > 0 && _textureId != 0;
 }
 
 //

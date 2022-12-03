@@ -21,24 +21,30 @@ private:
   {
     glm::vec3   position;
     glm::vec3   velocity;
-    float       distance;
+    glm::vec3   acceleration;
 
     struct TrailData
     {
       glm::vec3   position;
-      float       distance;
     };
 
     std::array<TrailData, trailSize> trail;
 
     Boid();
+
+    void seek(const glm::vec3& target, float coef);
+    void separate(const glm::vec3& target, float coef);
+    void separate(const std::vector<Boid>& boids, float radius, float coef);
+    void wander(float coef);
+
+    void applyAcceleration(float maxAcceleration, float maxVelocity);
+
+    bool operator==(const Boid& other) const;
   };
   using Boids = std::vector<Boid>;
 
 private:
   Boids _boids;
-
-  int _thickerTrailIndex = 0;
 
 private:
   struct BufferAttr

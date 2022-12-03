@@ -5,6 +5,15 @@
 
 #include "demo/logic/graphic/helpers/writeTime.hpp"
 
+
+namespace
+{
+
+  constexpr unsigned int k_slowdownDelta = 16 * 1000;
+  constexpr float k_divider = 5000.0f; // 5ms
+
+}
+
 void CoreUsageRenderer::renderWireframe()
 {
 
@@ -18,20 +27,15 @@ void CoreUsageRenderer::renderWireframe()
   const glm::vec2 borderPos = { position.x, position.y + 16 + 8 };
   const glm::vec2 borderSize = { size.x, size.y - 16  * 3 };
 
-  const auto& cores = data.logic.cores;
-  const auto& profileData = cores.profileData;
+  const auto& profileData = data.logic.cores.profileData;
 
-  unsigned int commonMaxDelta = 0;
-  for (unsigned int ii = 0; ii < profileData.getTotalCores(); ++ii)
-    for (unsigned int jj = 0; jj < profileData.getMaxStateHistory(); ++jj)
-      commonMaxDelta = std::max(commonMaxDelta, profileData.getCoreHistoryData(ii, jj).delta);
+  const unsigned int allTimeMaxDelta = profileData.getAllTimeMaxDelta();
 
-  constexpr float divider = 5000.0f; // 5ms
-  const float maxVal = (std::ceil(float(commonMaxDelta) / divider)) * divider;
+  const float verticalSize = (std::ceil(float(allTimeMaxDelta) / k_divider)) * k_divider;
 
   { // background
 
-    glm::vec4 bgColor = commonMaxDelta > 16000 ? glm::vec4(1,0,0, 1.00f) : glm::vec4(0,0,0, 0.75f);
+    const glm::vec4 bgColor = allTimeMaxDelta > k_slowdownDelta ? glm::vec4(1,0,0, 1.00f) : glm::vec4(0,0,0, 0.75f);
 
     stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, bgColor);
     stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
@@ -43,14 +47,14 @@ void CoreUsageRenderer::renderWireframe()
 
   { // dividers
 
-    for (float ii = divider; ii < maxVal; ii += divider)
+    for (float currDivider = k_divider; currDivider < verticalSize; currDivider += k_divider)
     {
-      const float coef = ii / maxVal;
+      const float ratio = currDivider / verticalSize;
 
-      const glm::vec2 coordA(0, borderSize.y * coef);
-      const glm::vec2 coordB(borderSize.x, borderSize.y * coef);
-
-      stackRenderer.pushLine(borderPos + coordA, borderPos + coordB, whiteColor);
+      stackRenderer.pushLine(
+        borderPos + glm::vec2(0, borderSize.y * ratio),
+        borderPos + glm::vec2(borderSize.x, borderSize.y * ratio),
+        whiteColor);
     }
 
   } // dividers
@@ -58,25 +62,25 @@ void CoreUsageRenderer::renderWireframe()
   //
   //
 
-  for (std::size_t coreIndex = 0; coreIndex < profileData.getTotalCores(); ++coreIndex)
   {
+
     const float widthStep = borderSize.x / profileData.getMaxStateHistory();
 
-    for (unsigned int ii = 0; ii + 1 < profileData.getMaxStateHistory(); ++ii)
-    {
-      const auto& prevState = profileData.getCoreHistoryData(coreIndex, ii);
-      const auto& currState = profileData.getCoreHistoryData(coreIndex, ii + 1);
+    for (std::size_t coreIndex = 0; coreIndex < profileData.getTotalCores(); ++coreIndex)
+      for (unsigned int statIndex = 0; statIndex + 1 < profileData.getMaxStateHistory(); ++statIndex)
+      {
+        const float prevDelta = float(profileData.getCoreHistoryData(coreIndex, statIndex + 0).delta);
+        const float currDelta = float(profileData.getCoreHistoryData(coreIndex, statIndex + 1).delta);
 
-      //
+        const float prevHeight = borderSize.y * prevDelta / verticalSize;
+        const float currHeight = borderSize.y * currDelta / verticalSize;
 
-      const float prevRatio = float(prevState.delta) / maxVal;
-      const float currRatio = float(currState.delta) / maxVal;
+        stackRenderer.pushLine(
+          borderPos + glm::vec2((statIndex + 0) * widthStep, prevHeight),
+          borderPos + glm::vec2((statIndex + 1) * widthStep, currHeight),
+          whiteColor);
+      }
 
-      const glm::vec2 prevCoord(ii * widthStep, borderSize.y * prevRatio);
-      const glm::vec2 currCoord((ii + 1) * widthStep, borderSize.y * currRatio);
-
-      stackRenderer.pushLine(borderPos + prevCoord, borderPos + currCoord, whiteColor);
-    }
   }
 
   stackRenderer.flush();
@@ -89,17 +93,18 @@ void CoreUsageRenderer::renderHudText()
   auto& graphic = data.graphic;
   auto& logic = data.logic;
   auto& textRenderer = graphic.textRenderer;
+  auto& profileData = logic.cores.profileData;
 
   {
     std::stringstream sstr;
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    sstr << "WORKERS: " << logic.cores.profileData.getTotalCores() << std::endl;
+    sstr << "WORKERS: " << profileData.getTotalCores();
 
 #else
 
-    sstr << "THREADS: " << logic.cores.profileData.getTotalCores() << std::endl;
+    sstr << "THREADS: " << profileData.getTotalCores();
 
 #endif
 
@@ -109,27 +114,13 @@ void CoreUsageRenderer::renderHudText()
 
   {
 
-    unsigned int globalDelta = 0;
-    for (std::size_t ii = 0; ii < logic.cores.profileData.getTotalCores(); ++ii)
-    {
-      const auto& coreState = logic.cores.profileData.getCoreData(ii);
-
-      globalDelta += coreState.delta;
-    }
+    const unsigned int totalDelta = profileData.getLatestTotalDelta();
 
     std::stringstream sstr;
-
-    sstr << "Total: " << writeTime(globalDelta);
-
+    sstr << "CPU time: " << writeTime(totalDelta);
     std::string str = sstr.str();
 
-    unsigned int commonMaxDelta = 0;
-    const auto& profileData = logic.cores.profileData;
-    for (unsigned int ii = 0; ii < profileData.getTotalCores(); ++ii)
-      for (unsigned int jj = 0; jj < profileData.getMaxStateHistory(); ++jj)
-        commonMaxDelta = std::max(commonMaxDelta, profileData.getCoreHistoryData(ii, jj).delta);
-
-    glm::vec3 textColor = commonMaxDelta > 16000 ? glm::vec3(1,0,0) : glm::vec3(1,1,1);
+    const glm::vec3 textColor = profileData.getAllTimeMaxDelta() > k_slowdownDelta ? glm::vec3(1,0,0) : glm::vec3(1,1,1);
 
     textRenderer.push({ position.x, position.y - 16 }, str, textColor, 1.0f);
   }

@@ -82,10 +82,10 @@ esac
 
 case $selected_platform in
 native)
-    ARG_SEL_PLATFORM="native_pthread"
+    ARG_SEL_PLATFORM="native"
     ;;
 web_wasm)
-    ARG_SEL_PLATFORM="web_wasm_pthread"
+    ARG_SEL_PLATFORM="web_wasm"
     ;;
 esac
 

@@ -21,9 +21,11 @@ public:
   static void deleteFramebuffers(uint32_t total, const uint32_t* buffers);
   static uint32_t genFramebuffer();
   static void deleteFramebuffer(uint32_t bufferId);
-  static void framebufferTexture2D(uint32_t textureId);
+  static void framebufferTexture2D(uint32_t index, uint32_t textureId);
+  static void framebufferDepthTexture2D(uint32_t textureId);
   static void framebufferRenderbuffer(uint32_t bufferId);
   static void checkFrameBuffer();
+  static void drawFrameBuffers(uint32_t size, uint32_t* buffers);
   static void bindFramebuffer(uint32_t frameBufferId);
 
 public:
@@ -51,6 +53,10 @@ public:
   static int getAttribLocation(uint32_t programId, const char* name);
   static int getUniformLocation(uint32_t programId, const char* name);
   static void useProgram(uint32_t programId);
+  static void setUniform(int location, int value);
+  static void setUniform(int location, int x, int y);
+  static void setUniform(int location, int x, int y, int z);
+  static void setUniform(int location, int x, int y, int z, int w);
   static void setUniform(int location, float value);
   static void setUniform(int location, float x, float y, float z);
   static void setUniform(int location, float x, float y, float z, float w);
@@ -61,8 +67,10 @@ public:
   static void deleteTextures(uint32_t total, const uint32_t* buffers);
   static uint32_t genTexture();
   static void deleteTexture(uint32_t textureId);
+  static void activeTexture(uint32_t index);
   static void bindTexture(uint32_t textureId);
   static void uploadPixels(uint32_t width, uint32_t height, const void* pixels);
+  static void setAsDepthTexture(uint32_t width, uint32_t height);
   static void setTextureAsRepeat(bool repeat);
   static void setTextureAsPixelated();
   static void setTextureAsSmoothed(bool generateMipMap = false);
@@ -129,6 +137,7 @@ public:
 
   static void clear(int mask);
   static void clearColor(float r, float g, float b, float a);
+  static void clearDepth(float value);
 
   // static void polygonModeAsLine();
   // static void polygonModeAsFill();

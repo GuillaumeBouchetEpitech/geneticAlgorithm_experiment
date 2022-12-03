@@ -2,8 +2,12 @@
 
 #include "TraceLogger.hpp"
 
+#include "framework/ErrorHandler.hpp"
+
 #include <iostream>
+// #include <sstream>
 #include <iomanip>
+#include <memory>
 
 #include <ctime>
 
@@ -49,3 +53,51 @@ void TraceLogger::log(const std::string& msg)
   std::cout << msg << std::endl;
   // std::cerr << msg << std::endl;
 }
+
+void TraceLogger::dump()
+{
+  std::cout << _sstr.str() << std::endl;
+}
+
+std::string TraceLogger::getData() const
+{
+  return _sstr.str();
+}
+
+template<>
+TraceLogger& TraceLogger::operator << <bool>(bool data)
+{
+  _sstr << std::boolalpha << data;
+  return *this;
+}
+
+template<>
+TraceLogger& TraceLogger::operator << <float>(float data)
+{
+  _sstr << std::fixed << std::setprecision(2) << data;
+  return *this;
+}
+
+template<>
+TraceLogger& TraceLogger::operator << <double>(double data)
+{
+  _sstr << std::fixed << std::setprecision(2) << data;
+  return *this;
+}
+
+template<>
+TraceLogger& TraceLogger::operator << <glm::vec3>(glm::vec3 data)
+{
+  _sstr << "[";
+  (*this) << data.x;
+  _sstr << " / ";
+  (*this) << data.y;
+  _sstr << " / ";
+  (*this) << data.z;
+  _sstr << "]";
+
+  return *this;
+}
+
+
+

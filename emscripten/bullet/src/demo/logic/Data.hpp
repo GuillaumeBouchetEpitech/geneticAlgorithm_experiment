@@ -10,17 +10,16 @@
 #include "graphic/renderers/scene/ModelsRenderer.hpp"
 #include "graphic/renderers/scene/CarTailsRenderer.hpp"
 #include "graphic/renderers/hud/TextRenderer.hpp"
+#include "graphic/postProcess/PostProcess.hpp"
 
 #include "framework/graphic/camera/Camera.hpp"
 
-#include "framework/graphic/Geometry.hpp"
-#include "framework/graphic/Texture.hpp"
-#include "framework/graphic/ShaderProgram.hpp"
-#include "framework/graphic/FrameBuffer.hpp"
-#include "framework/graphic/RenderBuffer.hpp"
+#include "framework/graphic/ResourceManager.hpp"
 
 #include "helpers/CarWheelsTrails.hpp"
 #include "helpers/ProfileData.hpp"
+#include "helpers/FitnessStats.hpp"
+#include "helpers/LeaderCar.hpp"
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
@@ -62,9 +61,7 @@ public:
     //
 
 private:
-    void initialiseShaders();
-    void initialiseTextures();
-    void initialiseGeometries();
+    void initialiseGraphicResource();
     void initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore);
     void initialiseSimulationCallbacks();
 
@@ -104,26 +101,6 @@ public:
         }
         camera;
 
-        struct HudComponents
-        {
-            // TODO: move in a class
-            Texture colorTexture;
-            RenderBuffer depthRenderBuffer;
-            FrameBuffer frameBuffer;
-        }
-        hudComponents;
-
-        struct Geometries
-        {
-            // TODO: move in a class
-            struct Hud
-            {
-                Geometry geometry;
-            }
-            hudPerspective;
-        }
-        geometries;
-
         StackRenderer stackRenderer;
         ParticleManager particleManager;
         FloorRenderer floorRenderer;
@@ -133,6 +110,9 @@ public:
         ModelsRenderer modelsRenderer;
         FlockingManager flockingManager;
         CarTailsRenderer carTailsRenderer;
+        PostProcess postProcess;
+
+        ResourceManager resourceManager;
     }
     graphic;
 
@@ -164,27 +144,17 @@ public:
         bool isAccelerated = false;
         float timeSinceLastFrame = 0.0f;
 
-        struct LeaderCarData
-        {
-            float timeoutUntilNewLeader = 0;
-            int index = -1;
-            float totalTimeAsLeader = 0;
-        }
-        leaderCar;
+        LeaderCar leaderCar;
 
         CarWheelsTrails carWheelsTrails;
 
-        struct CircuitAnimation
+        struct CircuitDimension
         {
-            struct Boundaries
-            {
-                glm::vec3 min;
-                glm::vec3 max;
-                glm::vec3 center;
-            }
-            boundaries;
+            glm::vec3 min;
+            glm::vec3 max;
+            glm::vec3 center;
         }
-        circuitAnimation;
+        circuitDimension;
 
         struct HudText
         {
@@ -192,11 +162,7 @@ public:
         }
         hudText;
 
-        struct FitnessStats
-        {
-            std::array<float, 10> allStats;
-        }
-        fitnessStats;
+        FitnessStats fitnessStats;
     }
     logic;
 

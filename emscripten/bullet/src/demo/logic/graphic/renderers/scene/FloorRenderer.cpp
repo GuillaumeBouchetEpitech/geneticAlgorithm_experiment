@@ -16,7 +16,7 @@ void FloorRenderer::initialise(
   const glm::vec3& center,
   const glm::vec3& size)
 {
-  _shader = ResourceManager::get().getShader(asValue(Shaders::simpleTexture));
+  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::litTexture));
 
   {
 
@@ -28,7 +28,8 @@ void FloorRenderer::initialise(
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
+      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 3)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 6);
 
     geometryBuilder.build(_geometry);
     _geometry.setPrimitiveCount(0);
@@ -79,24 +80,23 @@ void FloorRenderer::initialise(
     struct Vertex
     {
       glm::vec3 position;
+      glm::vec3 normal;
       glm::vec2 texCoord;
     };
 
-    // glm::vec3 boardHSize = glm::ceil((boundaries.max - boundaries.min) * 0.55f / 100.55f) * 100.0f;
-    // glm::vec3 boardPos = boundaries.center;
-    // glm::vec3 boardHSize = { 700, 150, 0 };
-    // glm::vec3 boardPos = boardHSize * 0.5f;
     glm::vec3 boardHSize = glm::ceil(size * 0.55f / 100.55f) * 100.0f;
     glm::vec3 boardPos = center;
     glm::vec3 texCoordSize = boardHSize / 100.0f;
     constexpr float boardHeight = -0.1f;
 
+    const glm::vec3 normal = { 0, 0, 1 };
+
     std::array<Vertex, 4> quadVertices
     {{
-      { { boardPos.x + boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, { +texCoordSize.x, -texCoordSize.y } },
-      { { boardPos.x - boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, { -texCoordSize.x, -texCoordSize.y } },
-      { { boardPos.x + boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, { +texCoordSize.x, +texCoordSize.y } },
-      { { boardPos.x - boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, { -texCoordSize.x, +texCoordSize.y } },
+      { { boardPos.x + boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, normal, { +texCoordSize.x, -texCoordSize.y } },
+      { { boardPos.x - boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, normal, { -texCoordSize.x, -texCoordSize.y } },
+      { { boardPos.x + boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, normal, { +texCoordSize.x, +texCoordSize.y } },
+      { { boardPos.x - boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, normal, { -texCoordSize.x, +texCoordSize.y } },
     }};
 
     std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
@@ -124,7 +124,8 @@ void FloorRenderer::render()
     D_THROW(std::runtime_error, "shader not setup");
   _shader->bind();
 
-  _shader->setUniform("u_composedMatrix", _matricesData.composed);
+  _shader->setUniform("u_projectionMatrix", _matricesData.projection);
+  _shader->setUniform("u_modelViewMatrix", _matricesData.view);
 
   _texture.bind();
   _geometry.render();

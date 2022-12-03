@@ -16,7 +16,7 @@
 
 void BackGroundCylindersRenderer::initialise(const glm::vec3& size)
 {
-  _shader = ResourceManager::get().getShader(asValue(Shaders::simpleTexture));
+  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::simpleTexture));
 
   { // cylinders (generate the texture)
 

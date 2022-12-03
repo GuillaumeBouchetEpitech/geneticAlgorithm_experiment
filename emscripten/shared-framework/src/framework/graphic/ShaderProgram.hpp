@@ -50,14 +50,26 @@ public:
   bool hasUniform(const char* name) const;
 
 public:
+  void setUniform(const char* name, int value) const;
+  void setUniform(const char* name, int x, int y) const;
+  void setUniform(const char* name, int x, int y, int z) const;
+  void setUniform(const char* name, int x, int y, int z, int w) const;
   void setUniform(const char* name, float value) const;
+  void setUniform(const char* name, float x, float y, float z) const;
   void setUniform(const char* name, float x, float y, float z, float w) const;
+  void setUniform(const char* name, const glm::vec3& vec3) const;
   void setUniform(const char* name, const glm::vec4& vec4) const;
   void setUniform(const char* name, const glm::mat4& mat4) const;
 
 public:
+  void setUniform(int location, int value) const;
+  void setUniform(int location, int x, int y) const;
+  void setUniform(int location, int x, int y, int z) const;
+  void setUniform(int location, int x, int y, int z, int w) const;
   void setUniform(int location, float value) const;
+  void setUniform(int location, float x, float y, float z) const;
   void setUniform(int location, float x, float y, float z, float w) const;
+  void setUniform(int location, const glm::vec3& vec3) const;
   void setUniform(int location, const glm::vec4& vec4) const;
   void setUniform(int location, const glm::mat4& mat4) const;
 };

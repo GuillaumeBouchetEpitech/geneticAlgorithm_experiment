@@ -12,6 +12,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <string_view>
 
 class Shader;
 
@@ -58,7 +59,7 @@ public:
 
 public:
     void push(const glm::vec2& position,
-              const std::string& message,
+              std::string_view message,
               const glm::vec3& color,
               float scale = 1.0f,
               TextAllign allign = TextAllign::left);

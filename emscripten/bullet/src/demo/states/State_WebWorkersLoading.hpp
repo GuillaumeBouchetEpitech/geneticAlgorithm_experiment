@@ -12,7 +12,7 @@ class State_WebWorkersLoading
     : public State_AbstractSimulation
 {
 private:
-    int _countdown = 0;
+    int _countdownUntilNextState = 0;
 
 public:
     virtual void enter() override;

@@ -10,19 +10,6 @@
 
 void Data::initialiseSimulationCallbacks()
 {
-    auto& allStats = logic.fitnessStats.allStats;
-    std::memset(&allStats[0], 0, allStats.size() * sizeof(allStats[0]));
-
-// #if defined D_WEB_WEBWORKER_BUILD
-
-//     logic.simulation->setOnWorkersReadyCallback([this]() -> void
-//     {
-//         // leave the "WEB WORKERS LOADING" message for at least 1 second
-//         logic.state.countdown = 1000;
-//     });
-
-// #endif
-
     logic.simulation->setOnGenerationResetCallback([this]() -> void
     {
         { // handle the car trails
@@ -106,69 +93,14 @@ void Data::initialiseSimulationCallbacks()
 
     logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void
     {
-        { // handle the stats
+        logic.fitnessStats.update(logic.simulation->getBestGenome().fitness);
 
-            const auto& bestGenome = logic.simulation->getBestGenome();
-            auto& fitnessStats = logic.fitnessStats;
-            auto& allStats = fitnessStats.allStats;
+        if (isSmarter)
+            graphic.carTailsRenderer.updateLatestTrail();
 
-            /**
-             * => if last stat was smartest
-             * ===> erase first and push_back new one
-             * => else
-             * ===> erase back and push_back new one
-             */
+        StateManager::get()->changeState(StateManager::States::EndGeneration);
 
-            const float prevLastOne = allStats[allStats.size() - 2];
-            const float currLastOne = allStats[allStats.size() - 1];
-
-            if (currLastOne > prevLastOne)
-            {
-                // last one is smarter -> erase first, add last
-                std::memmove(&allStats[0], &allStats[1], 9 * sizeof(allStats[0]));
-                allStats.back() = bestGenome.fitness;
-            }
-            else
-            {
-                // last one is not smarter -> replace last
-                allStats.back() = bestGenome.fitness;
-            }
-
-        } // handle the stats
-
-        { // handle the car trails
-
-            if (isSmarter)
-            {
-                // const auto& bestGenome = logic.simulation->getBestGenome();
-                // auto& currentTrailIndex = graphic.geometries.wireframes.currentTrailIndex;
-
-                // const auto& bestWheelsTrailData = logic.carWheelsTrails.getTrailById(bestGenome.id);
-
-                // auto& bestNewCarsTrails = graphic.geometries.wireframes.bestNewCarsTrails;
-                // auto& currCarNewTrail = bestNewCarsTrails[currentTrailIndex];
-
-                // for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
-                // {
-                //     currCarNewTrail.wheels[ii].updateBuffer(0, bestWheelsTrailData.wheels[ii]);
-                //     currCarNewTrail.wheels[ii].setPrimitiveCount(bestWheelsTrailData.wheels[ii].size());
-                // }
-
-                // // increase the currently used trail index (loop if too high)
-                // currentTrailIndex = (currentTrailIndex + 1) % bestNewCarsTrails.size();
-
-                graphic.carTailsRenderer.updateLatestTrail();
-            }
-
-        } // handle the car trails
-
-        { // switch the current state
-
-            StateManager::get()->changeState(StateManager::States::EndGeneration);
-
-            logic.leaderCar.index = -1;
-
-        } // switch the current state
+        logic.leaderCar.reset();
     });
 }
 

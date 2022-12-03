@@ -1,10 +1,10 @@
 
 #include "PhysicShape.hpp"
 
-#include "framework/helpers/BulletPhysics.hpp"
-
 #include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+
+#include "framework/helpers/internals/BulletPhysics.hpp"
 
 PhysicShape::PhysicShape(const PhysicShapeDef& def)
   : _type(def.type)

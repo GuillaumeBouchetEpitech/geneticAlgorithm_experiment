@@ -8,7 +8,7 @@ uniform float u_upperLimit;
 
 attribute vec3 a_position;
 attribute vec3 a_color;
-attribute vec3 a_normal;
+attribute vec3 a_animated_normal;
 attribute float a_index;
 
 varying vec4 v_color;
@@ -48,7 +48,7 @@ void main(void)
 		v_color = mix(vec4(a_color, u_alpha), k_white, deformationCoef);
 
 		// modified shape (normal shape <-> shattered shape)
-		position -= a_normal * deformationCoef;
+		position -= a_animated_normal * deformationCoef;
 	}
 
 	gl_Position = u_composedMatrix * vec4(position, 1.0);
