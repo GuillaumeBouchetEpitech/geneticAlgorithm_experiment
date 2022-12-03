@@ -308,7 +308,8 @@ void Scene::_renderHUD_thirdPerson()
   graphic.carTailsRenderer.setMatricesData(matriceData);
 
   Scene::_renderFloor(camInstance);
-  graphic.animatedCircuitRenderer.render();
+  graphic.animatedCircuitRenderer.renderWireframe();
+  graphic.animatedCircuitRenderer.renderWalls();
 
   Scene::_renderLeadingCarSensors();
   graphic.flockingManager.render();
@@ -318,6 +319,7 @@ void Scene::_renderHUD_thirdPerson()
   graphic.particleManager.render();
 
   graphic.modelsRenderer.render(camInstance);
+  graphic.animatedCircuitRenderer.renderGround();
   graphic.carTailsRenderer.render();
 
   GlContext::disable(GlContext::States::scissorTest);

@@ -36,7 +36,9 @@ void Scene::renderSimple()
     graphic.animatedCircuitRenderer.setMatricesData(camInstance.getSceneMatricesData());
 
     Scene::_renderFloor(camInstance);
-    graphic.animatedCircuitRenderer.render();
+    graphic.animatedCircuitRenderer.renderWireframe();
+    graphic.animatedCircuitRenderer.renderWalls();
+    graphic.animatedCircuitRenderer.renderGround();
   }
 
   { // HUD
@@ -75,7 +77,8 @@ void Scene::renderAll()
     graphic.carTailsRenderer.setMatricesData(camInstance.getSceneMatricesData());
 
     Scene::_renderFloor(camInstance);
-    graphic.animatedCircuitRenderer.render();
+    graphic.animatedCircuitRenderer.renderWireframe();
+    graphic.animatedCircuitRenderer.renderWalls();
 
     if (!logic.isAccelerated)
       Scene::_renderLeadingCarSensors();
@@ -87,6 +90,7 @@ void Scene::renderAll()
     graphic.stackRenderer.flush();
 
     graphic.modelsRenderer.render(camInstance);
+    graphic.animatedCircuitRenderer.renderGround();
     graphic.carTailsRenderer.render();
   }
 

@@ -54,7 +54,9 @@ public:
 
 public:
   void update(float elapsedTime);
-  void render();
+  void renderWireframe();
+  void renderWalls();
+  void renderGround();
 
 private:
   std::shared_ptr<ShaderProgram> _shaderWireframe;

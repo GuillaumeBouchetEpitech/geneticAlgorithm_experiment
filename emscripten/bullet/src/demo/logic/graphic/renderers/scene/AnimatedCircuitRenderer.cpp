@@ -178,50 +178,50 @@ void AnimatedCircuitRenderer::update(float elapsedTime)
   _geometries.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
 }
 
-void AnimatedCircuitRenderer::render()
+void AnimatedCircuitRenderer::renderWireframe()
 {
-  if (!_shaderWireframe || !_shaderCircuit)
+  if (!_shaderWireframe)
     D_THROW(std::runtime_error, "shader not setup");
 
-  { // circuit skeleton
+  _shaderWireframe->bind();
+  _shaderWireframe->setUniform("u_composedMatrix", _matricesData.composed);
+  _shaderWireframe->setUniform("u_color", 0.6f, 0.6f, 0.6f, 1.0f);
 
-    _shaderWireframe->bind();
-    _shaderWireframe->setUniform("u_composedMatrix", _matricesData.composed);
-    _shaderWireframe->setUniform("u_color", 0.6f, 0.6f, 0.6f, 1.0f);
+  _geometries.skeleton.render();
+}
 
-    _geometries.skeleton.render();
-
-  } // circuit skeleton
+void AnimatedCircuitRenderer::renderWalls()
+{
+  if (!_shaderCircuit)
+    D_THROW(std::runtime_error, "shader not setup");
 
   GlContext::disable(GlContext::States::depthTest);
 
-  {
+  _shaderCircuit->bind();
+  _shaderCircuit->setUniform("u_composedMatrix", _matricesData.composed);
+  _shaderCircuit->setUniform("u_lowerLimit", _lowerValue);
+  _shaderCircuit->setUniform("u_upperLimit", _upperValue);
+  _shaderCircuit->setUniform("u_alpha", 0.8f);
 
-    _shaderCircuitLit->bind();
-    _shaderCircuitLit->setUniform("u_projectionMatrix", _matricesData.projection);
-    _shaderCircuitLit->setUniform("u_modelViewMatrix", _matricesData.view);
-    _shaderCircuitLit->setUniform("u_lowerLimit", _lowerValue);
-    _shaderCircuitLit->setUniform("u_upperLimit", _upperValue);
-    _shaderCircuitLit->setUniform("u_alpha", 0.8f);
+  _shaderCircuit->setUniform("u_alpha", 0.2f);
 
-    _geometries.grounds.render();
-
-  }
-
-  {
-
-    _shaderCircuit->bind();
-    _shaderCircuit->setUniform("u_composedMatrix", _matricesData.composed);
-    _shaderCircuit->setUniform("u_lowerLimit", _lowerValue);
-    _shaderCircuit->setUniform("u_upperLimit", _upperValue);
-    _shaderCircuit->setUniform("u_alpha", 0.8f);
-
-    _shaderCircuit->setUniform("u_alpha", 0.2f);
-
-    _geometries.walls.render();
-
-  }
+  _geometries.walls.render();
 
   GlContext::enable(GlContext::States::depthTest);
+}
 
+void AnimatedCircuitRenderer::renderGround()
+{
+  if (!_shaderCircuit)
+    D_THROW(std::runtime_error, "shader not setup");
+
+  _shaderCircuitLit->bind();
+  _shaderCircuitLit->setUniform("u_projectionMatrix", _matricesData.projection);
+  _shaderCircuitLit->setUniform("u_modelViewMatrix", _matricesData.view);
+  _shaderCircuitLit->setUniform("u_lowerLimit", _lowerValue);
+  _shaderCircuitLit->setUniform("u_upperLimit", _upperValue);
+
+  _shaderCircuitLit->setUniform("u_alpha", 0.8f);
+
+  _geometries.grounds.render();
 }
