@@ -70,6 +70,7 @@ public:
   static void activeTexture(uint32_t index);
   static void bindTexture(uint32_t textureId);
   static void uploadPixels(uint32_t width, uint32_t height, const void* pixels);
+  static void downloadPixels(uint32_t posX, uint32_t posY, uint32_t width, uint32_t height, void* pixels);
   static void setAsDepthTexture(uint32_t width, uint32_t height);
   static void setTextureAsRepeat(bool repeat);
   static void setTextureAsPixelated();

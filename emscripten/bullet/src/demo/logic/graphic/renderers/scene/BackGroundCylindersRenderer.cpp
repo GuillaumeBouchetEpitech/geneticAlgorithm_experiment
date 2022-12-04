@@ -12,11 +12,11 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 void BackGroundCylindersRenderer::initialise(const glm::vec3& size)
 {
-  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::simpleTexture));
+  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::simpleTexture));
 
   { // cylinders (generate the texture)
 
@@ -78,16 +78,16 @@ void BackGroundCylindersRenderer::initialise(const glm::vec3& size)
     unsigned char* rawPixels = pixelsPtr.get();
 
     fillBuffer(size, rawPixels, size.x * 0.00f, size.x * 0.25f);
-    _textures[0].allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(0).allocateBlank(size, pixelated, repeat, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.25f, size.x * 0.50f);
-    _textures[1].allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(1).allocateBlank(size, pixelated, repeat, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.50f, size.x * 0.75f);
-    _textures[2].allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(2).allocateBlank(size, pixelated, repeat, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.75f, size.x * 1.00f);
-    _textures[3].allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(3).allocateBlank(size, pixelated, repeat, rawPixels);
 
   } // cylinders (generate the texture)
 
@@ -130,7 +130,7 @@ void BackGroundCylindersRenderer::initialise(const glm::vec3& size)
         }};
 
         for (int index : indices)
-          vertices.push_back(patchVertices[index]);
+          vertices.push_back(patchVertices.at(index));
       }
 
     }
@@ -185,7 +185,7 @@ void BackGroundCylindersRenderer::render(const glm::vec3& center)
 
     _shader->setUniform("u_composedMatrix", composed);
 
-    _textures[ii].bind();
-    _geometries[ii].render();
+    _textures.at(ii).bind();
+    _geometries.at(ii).render();
   }
 }

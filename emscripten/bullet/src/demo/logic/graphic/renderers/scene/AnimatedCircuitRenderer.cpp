@@ -12,7 +12,7 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 void AnimatedCircuitRenderer::initialise(
     const std::vector<glm::vec3>& skeletonVertices,
@@ -21,9 +21,9 @@ void AnimatedCircuitRenderer::initialise(
     float maxUpperValue)
 {
   _maxUpperValue = maxUpperValue;
-  _shaderWireframe = Data::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
-  _shaderCircuitLit = Data::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuitLit));
-  _shaderCircuit = Data::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuit));
+  _shaderWireframe = Context::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
+  _shaderCircuitLit = Context::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuitLit));
+  _shaderCircuit = Context::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuit));
 
   GeometryBuilder geometryBuilder;
 
@@ -91,7 +91,7 @@ void AnimatedCircuitRenderer::setMatricesData(const Camera::MatricesData& matric
 
 void AnimatedCircuitRenderer::update(float elapsedTime)
 {
-  auto& logic = Data::get().logic;
+  auto& logic = Context::get().logic;
   const auto& simulation = *logic.simulation;
 
   if (logic.isAccelerated)

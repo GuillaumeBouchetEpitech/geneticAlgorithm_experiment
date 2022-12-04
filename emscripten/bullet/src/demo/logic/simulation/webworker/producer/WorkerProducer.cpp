@@ -100,7 +100,7 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
                 {
                     receivedMsg >> newData.chassis;
                     for (std::size_t jj = 0; jj < newData.wheels.size(); ++jj)
-                        receivedMsg >> newData.wheels[jj];
+                        receivedMsg >> newData.wheels.at(jj);
 
                     car.latestTransformsHistory.push_back(newData);
                 }
@@ -162,7 +162,7 @@ void WorkerProducer::resetAndProcessSimulation(float elapsedTime, unsigned int t
 
     for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
     {
-        neuralNetworks[ii]->getWeights(weights);
+        neuralNetworks.at(ii)->getWeights(weights);
 
         _message.append(weights.data(), weights.size() * sizeof(float));
     }

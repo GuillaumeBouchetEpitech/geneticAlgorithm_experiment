@@ -1,7 +1,7 @@
 
 #include "ParticleManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphic/helpers/generateSphereVerticesFilled.hpp"
 
@@ -69,7 +69,7 @@ ParticleManager::TrailParticle::TrailParticle(
 
 void ParticleManager::initialise()
 {
-    _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
+    _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
 
     {
 
@@ -116,8 +116,8 @@ void ParticleManager::update(float delta)
     // update particle's life and handle removal of dead particles
     for (std::size_t ii = 0; ii < _trailParticles.size();)
     {
-        _trailParticles[ii].life -= delta;
-        if (_trailParticles[ii].life > 0.0f)
+        _trailParticles.at(ii).life -= delta;
+        if (_trailParticles.at(ii).life > 0.0f)
         {
             ++ii;
             continue;
@@ -129,8 +129,8 @@ void ParticleManager::update(float delta)
     // update particle's life and handle removal of dead particles
     for (std::size_t ii = 0; ii < _smallExplosionParticles.size();)
     {
-        _smallExplosionParticles[ii].life -= delta;
-        if (_smallExplosionParticles[ii].life > 0.0f)
+        _smallExplosionParticles.at(ii).life -= delta;
+        if (_smallExplosionParticles.at(ii).life > 0.0f)
         {
             ++ii;
             continue;
@@ -142,8 +142,8 @@ void ParticleManager::update(float delta)
     // update particle's life and handle removal of dead particles
     for (std::size_t ii = 0; ii < _bigExplosionParticles.size();)
     {
-        _bigExplosionParticles[ii].life -= delta;
-        if (_bigExplosionParticles[ii].life > 0.0f)
+        _bigExplosionParticles.at(ii).life -= delta;
+        if (_bigExplosionParticles.at(ii).life > 0.0f)
         {
             ++ii;
             continue;
@@ -157,8 +157,8 @@ void ParticleManager::update(float delta)
         // make a trail by reusing the previous positions N times
         auto& trail = trailParticle.trail;
         for (std::size_t ii = trail.size() - 1; ii > 0; --ii)
-            trail[ii] = trail[ii - 1];
-        trail[0] = trailParticle.position;
+            trail.at(ii) = trail.at(ii - 1);
+        trail.at(0) = trailParticle.position;
 
         // update current position
         trailParticle.position += trailParticle.linearVelocity * delta;
@@ -263,7 +263,7 @@ void ParticleManager::render()
     }
 
     {
-        auto& stackRenderer = Data::get().graphic.stackRenderer;
+        auto& stackRenderer = Context::get().graphic.stackRenderer;
 
         for (auto& trailParticle : _trailParticles)
         {
@@ -277,14 +277,14 @@ void ParticleManager::render()
             for (std::size_t ii = 0; ii + 1 < trail.size(); ++ii)
             {
                 stackRenderer.pushThickTriangle3dLine(
-                    trail[ii + 0],
-                    trail[ii + 1],
+                    trail.at(ii + 0),
+                    trail.at(ii + 1),
                     localScale * 0.5f,
                     particleColor);
             }
             stackRenderer.pushThickTriangle3dLine(
                 trailParticle.position,
-                trail[0],
+                trail.at(0),
                 localScale * 0.5f,
                 particleColor);
         }

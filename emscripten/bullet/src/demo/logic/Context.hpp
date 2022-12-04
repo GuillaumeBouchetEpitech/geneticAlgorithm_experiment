@@ -10,6 +10,7 @@
 #include "graphic/renderers/scene/ModelsRenderer.hpp"
 #include "graphic/renderers/scene/CarTailsRenderer.hpp"
 #include "graphic/renderers/hud/TextRenderer.hpp"
+#include "graphic/renderers/hud/TopologyRenderer.hpp"
 #include "graphic/postProcess/PostProcess.hpp"
 
 #include "framework/graphic/camera/Camera.hpp"
@@ -35,7 +36,7 @@
 #include <array>
 #include <memory> // <= unique_ptr / make_unique
 
-class Data
+class Context
     : public NonCopyable
 {
 
@@ -44,17 +45,17 @@ class Data
     // singleton
 
 private:
-    static Data* _instance;
+    static Context* _instance;
 
-    Data() = default;
-    ~Data();
+    Context() = default;
+    ~Context();
 private:
     void initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
 
 public:
     static void create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
     static void destroy();
-    static Data& get();
+    static Context& get();
 
     // singleton
     //
@@ -86,16 +87,17 @@ public:
                 glm::vec3 center = { 0.0f, 0.0f, 0.0f };
                 float distance = 0.0f;
 
-                Camera instance;
+                Camera scene;
+                Camera hud;
             }
-            scene;
+            main;
 
             struct ThirdPersonData
             {
                 glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
                 glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
 
-                Camera instance;
+                Camera scene;
             }
             thirdPerson;
         }
@@ -110,6 +112,7 @@ public:
         ModelsRenderer modelsRenderer;
         FlockingManager flockingManager;
         CarTailsRenderer carTailsRenderer;
+        TopologyRenderer topologyRenderer;
         PostProcess postProcess;
 
         ResourceManager resourceManager;

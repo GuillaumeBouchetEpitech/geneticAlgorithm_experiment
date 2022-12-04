@@ -216,7 +216,7 @@ void CircuitBuilder::generateWireframeSkeleton(CallbackNoNormals onSkeletonPatch
 
     for (std::size_t ii = 0; ii < _knots.size(); ++ii)
     {
-        const auto& knot = _knots[ii];
+        const auto& knot = _knots.at(ii);
 
         // "real" value
         vertices.push_back(knot.left);
@@ -396,8 +396,8 @@ void CircuitBuilder::generateCircuitGeometry(
             indices.push_back(currIndex + 3);
             indices.push_back(currIndex + 2);
 
-            const auto& prevKnot = smoothedKnotsData[stepIndex - 1];
-            const auto& currKnot = smoothedKnotsData[stepIndex];
+            const auto& prevKnot = smoothedKnotsData.at(stepIndex - 1);
+            const auto& currKnot = smoothedKnotsData.at(stepIndex);
 
             const glm::vec3& prevLeft = prevKnot.left;
             const glm::vec3& prevRight = prevKnot.right;

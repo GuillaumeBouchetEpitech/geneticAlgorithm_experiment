@@ -1,7 +1,7 @@
 
 #include "TextRenderer.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphicIds.hpp"
 
@@ -15,9 +15,9 @@
 void TextRenderer::initialise()
 {
 
-    _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::hudText));
+    _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::hudText));
 
-    _texture = Data::get().graphic.resourceManager.getTexture(0);
+    _texture = Context::get().graphic.resourceManager.getTexture(0);
 
     const glm::vec2 gridSize = { 16, 16 };
     const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
@@ -63,7 +63,7 @@ void TextRenderer::initialise()
         letterVertices.reserve(indices.size()); // pre-allocate
 
         for (int index : indices)
-            letterVertices.push_back(vertices[index]);
+            letterVertices.push_back(vertices.at(index));
 
         _geometry.updateBuffer(0, letterVertices);
         _geometry.setPrimitiveCount(letterVertices.size());

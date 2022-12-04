@@ -1,12 +1,12 @@
 
 #include "LeaderCar.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 
 void LeaderCar::update(float elapsedTime)
 {
-  auto& simulation = *Data::get().logic.simulation;
+  auto& simulation = *Context::get().logic.simulation;
 
   if (_timeoutUntilNewLeader > 0)
     _timeoutUntilNewLeader -= elapsedTime;
@@ -88,7 +88,7 @@ std::optional<CarData> LeaderCar::leaderData() const
   if (_index < 0)
     return {};
 
-  return Data::get().logic.simulation->getCarResult(_index);
+  return Context::get().logic.simulation->getCarResult(_index);
 }
 
 std::optional<glm::vec3> LeaderCar::leaderPosition() const

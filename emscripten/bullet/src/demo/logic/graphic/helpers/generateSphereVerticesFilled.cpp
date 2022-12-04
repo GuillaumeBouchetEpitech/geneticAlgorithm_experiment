@@ -93,8 +93,8 @@ void generateSphereVerticesFilled(
       vertices,
       quality,
       radius,
-      positions[index.x],
-      positions[index.y],
-      positions[index.z]);
+      positions.at(index.x),
+      positions.at(index.y),
+      positions.at(index.z));
   }
 }

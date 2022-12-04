@@ -60,11 +60,25 @@ public:
     void pushRectangle(const glm::vec2& pos, const glm::vec2& size, const glm::vec3& color);
     // 2d
 
-    void pushQuad(const glm::vec3& center, const glm::vec2& size, const glm::vec4& color);
-    void pushQuad(const glm::vec2& center, const glm::vec2& size, const glm::vec4& color);
+    void pushQuad(
+        const glm::vec2& center,
+        const glm::vec2& size,
+        const glm::vec4& color,
+        float z);
+    void pushQuad(
+        const glm::vec2& center,
+        const glm::vec2& size,
+        const glm::vec4& color);
 
-    void pushCircle(const glm::vec3& center, float radius, const glm::vec4& color);
-    void pushCircle(const glm::vec2& center, float radius, const glm::vec4& color);
+    void pushCircle(
+        const glm::vec2& center,
+        float radius,
+        const glm::vec4& color,
+        float z);
+    void pushCircle(
+        const glm::vec2& center,
+        float radius,
+        const glm::vec4& color);
 
 public:
     void pushThickTriangle2dLine(
@@ -94,6 +108,7 @@ public:
         float thickness,
         const glm::vec4& color);
 
+public:
     void pushThickTriangle3dLine(
         const glm::vec3& posA,
         const glm::vec3& posB,

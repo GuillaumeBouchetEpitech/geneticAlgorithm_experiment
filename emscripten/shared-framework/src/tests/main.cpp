@@ -19,6 +19,7 @@ int main()
   // test_math();
   test_frustum_culling();
   test_static_stack_array();
+  test_deterministic_rng();
 
   return EXIT_SUCCESS;
 }

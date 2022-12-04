@@ -1,5 +1,5 @@
 
-#include "Data.hpp"
+#include "Context.hpp"
 
 #include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
@@ -21,16 +21,32 @@
 //
 // singleton
 
-Data* Data::_instance = nullptr;
+Context* Context::_instance = nullptr;
 
-Data::~Data()
+Context::~Context()
 {
 }
 
-void Data::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
+void Context::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
-    graphic.camera.viewportSize = { width, height };
-    graphic.camera.scene.instance.setPerspective({ 70.0f, 0.1f, 1500.0f });
+    {
+        graphic.camera.viewportSize = { width, height };
+
+        graphic.camera.main.scene.setPerspective({ 70.0f, 0.1f, 1500.0f });
+
+        graphic.camera.main.hud.setOrthographic({
+            0.0f, float(width),
+            0.0f, float(height),
+            -10.0f, +10.0f
+        });
+        graphic.camera.main.hud.lookAt(
+            glm::vec3(0, 0, 1),
+            glm::vec3(0, 0, 0),
+            glm::vec3(0, 1, 0));
+        graphic.camera.main.hud.computeMatrices();
+
+        graphic.camera.thirdPerson.scene.setPerspective({ 70.0f, 0.1f, 1500.0f });
+    }
 
     initialiseGraphicResource();
 
@@ -97,27 +113,27 @@ void Data::initialise(unsigned int width, unsigned int height, unsigned int tota
 
 //
 
-void Data::create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
+void Context::create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
 {
     if (_instance)
-        D_THROW(std::runtime_error, "Data singleton already initialised");
+        D_THROW(std::runtime_error, "Context singleton already initialised");
 
-    _instance = new Data();
+    _instance = new Context();
     _instance->initialise(width, height, totalCores, genomesPerCore);
 }
 
-void Data::destroy()
+void Context::destroy()
 {
     if (!_instance)
-        D_THROW(std::runtime_error, "Data singleton already destroyed");
+        D_THROW(std::runtime_error, "Context singleton already destroyed");
 
     delete _instance, _instance = nullptr;
 }
 
-Data& Data::get()
+Context& Context::get()
 {
     if (!_instance)
-        D_THROW(std::runtime_error, "Data singleton not initialised");
+        D_THROW(std::runtime_error, "Context singleton not initialised");
 
     return *_instance;
 }

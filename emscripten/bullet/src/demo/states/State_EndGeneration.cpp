@@ -3,7 +3,7 @@
 
 #include "StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
 void State_EndGeneration::enter()
@@ -15,8 +15,7 @@ void State_EndGeneration::update(int deltaTime)
 {
     State_AbstractSimulation::update(deltaTime);
 
-    auto& data = Data::get();
-    auto& graphic = data.graphic;
+    auto& graphic = Context::get().graphic;
 
     float elapsedTime = float(deltaTime) / 1000.0f;
 

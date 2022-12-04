@@ -485,6 +485,11 @@ void GlContext::uploadPixels(uint32_t width, uint32_t height, const void* pixels
   glCheck(glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, GLsizei(width), GLsizei(height), border, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
 }
 
+void GlContext::downloadPixels(uint32_t posX, uint32_t posY, uint32_t width, uint32_t height, void* pixels)
+{
+  glCheck(glReadPixels(GLint(posX), GLint(posY), GLsizei(width), GLsizei(height), GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+}
+
 void GlContext::setAsDepthTexture(uint32_t width, uint32_t height)
 {
   // glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, width, height);

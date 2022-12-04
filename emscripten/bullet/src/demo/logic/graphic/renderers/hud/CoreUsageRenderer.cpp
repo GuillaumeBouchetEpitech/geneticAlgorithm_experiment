@@ -1,7 +1,7 @@
 
 #include "CoreUsageRenderer.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphic/helpers/writeTime.hpp"
 
@@ -17,8 +17,8 @@ namespace
 void CoreUsageRenderer::renderWireframe()
 {
 
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
 
   auto& stackRenderer = graphic.stackRenderer;
 
@@ -27,7 +27,7 @@ void CoreUsageRenderer::renderWireframe()
   const glm::vec2 borderPos = { position.x, position.y + 16 + 8 };
   const glm::vec2 borderSize = { size.x, size.y - 16  * 3 };
 
-  const auto& profileData = data.logic.cores.profileData;
+  const auto& profileData = context.logic.cores.profileData;
 
   const unsigned int allTimeMaxDelta = profileData.getAllTimeMaxDelta();
 
@@ -89,9 +89,9 @@ void CoreUsageRenderer::renderWireframe()
 void CoreUsageRenderer::renderHudText()
 {
 
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
-  auto& logic = data.logic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+  auto& logic = context.logic;
   auto& textRenderer = graphic.textRenderer;
   auto& profileData = logic.cores.profileData;
 

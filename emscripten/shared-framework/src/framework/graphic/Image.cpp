@@ -24,10 +24,13 @@ void Image::load(const std::string& filename, bool supportNonPowerOfTow /* = tru
   int width;
   int height;
   int bpp;
-  _pixels = stbi_load(filename.c_str(), &width, &height, &bpp, 0);
+  _stbPixels = stbi_load(filename.c_str(), &width, &height, &bpp, 0);
+  _rawPixels = _stbPixels;
 
-  if (!_pixels)
+  if (!_rawPixels)
     D_THROW(std::runtime_error, "image not found, filename=\"" << filename << "\"");
+  if (bpp != 4)
+    D_THROW(std::runtime_error, "image format not supported, bpp: " << bpp);
 
   if (supportNonPowerOfTow == false)
   {
@@ -49,8 +52,17 @@ void Image::dispose()
 
   _size.x = 0;
   _size.y = 0;
-  stbi_image_free(_pixels);
-  _pixels = nullptr;
+
+  if (_stbPixels)
+  {
+    stbi_image_free(_stbPixels);
+    _stbPixels = nullptr;
+    _rawPixels = nullptr;
+  }
+  else if (_rawPixels)
+  {
+    delete[] _rawPixels, _rawPixels = nullptr;
+  }
 }
 
 bool Image::save(const std::string& filename)
@@ -58,7 +70,7 @@ bool Image::save(const std::string& filename)
   if (!isValid())
     D_THROW(std::runtime_error, "image not initialised, filename: " << filename);
 
-  return Image::save(filename, _size.x, _size.y, _pixels);
+  return Image::save(filename, _size.x, _size.y, _rawPixels);
 }
 
 bool Image::save(
@@ -80,18 +92,21 @@ bool Image::save(
 
 void Image::flipY()
 {
+  if (!isValid())
+    D_THROW(std::runtime_error, "image not initialised");
+
   const uint32_t hsize = _size.y / 2;
   for (uint32_t yy = 0; yy < hsize; ++yy)
   for (uint32_t xx = 0; xx < _size.x; ++xx)
-    std::swap(_pixels[yy * _size.x + xx], _pixels[(_size.y - yy) * _size.x + xx]);
+    std::swap(_rawPixels[yy * _size.x + xx], _rawPixels[(_size.y - yy) * _size.x + xx]);
 }
 
 //
 
 const glm::uvec2& Image::getSize() const { return _size; }
-const uint8_t* Image::getPixels() const { return _pixels; }
+const uint8_t* Image::getPixels() const { return _rawPixels; }
 
 bool Image::isValid() const
 {
-  return _size.x > 0 && _size.y > 0 && _pixels != nullptr;
+  return _size.x > 0 && _size.y > 0 && _rawPixels != nullptr;
 }

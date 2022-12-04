@@ -18,7 +18,7 @@ read USER_INPUT_PLATFORM
 case $USER_INPUT_PLATFORM in
 2)
     echo ""
-    echo "selected target: web (pthread)"
+    echo "selected target: web wasm"
     echo ""
     selected_platform=web_wasm
     ;;

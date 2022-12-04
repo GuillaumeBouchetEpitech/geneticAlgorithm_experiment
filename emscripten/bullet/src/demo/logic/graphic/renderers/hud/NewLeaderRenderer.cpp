@@ -1,20 +1,20 @@
 
 #include "NewLeaderRenderer.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 void NewLeaderRenderer::compute()
 {
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
-  auto& logic = data.logic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+  auto& logic = context.logic;
 
   if (logic.leaderCar.totalTimeAsLeader() > 1.0f)
       return;
 
   if (auto leaderData = logic.leaderCar.leaderData())
   {
-    const Camera& scene = graphic.camera.scene.instance;
+    const Camera& scene = graphic.camera.main.scene;
 
     if (
       // we don't advertise a dead leader
@@ -44,8 +44,8 @@ void NewLeaderRenderer::renderWireframe()
   if (!_isVisible)
       return;
 
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
 
   glm::vec2 textPos = { _screenCoord.x + 50, _screenCoord.y + 50 };
 
@@ -57,11 +57,7 @@ void NewLeaderRenderer::renderHudText()
   if (!_isVisible)
       return;
 
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
-  auto& textRenderer = graphic.textRenderer;
-
   glm::vec2 textPos = { _screenCoord.x + 50, _screenCoord.y + 50 };
 
-  textRenderer.push(textPos, "NEW\nLEADER", glm::vec3(1), 1.1f);
+  Context::get().graphic.textRenderer.push(textPos, "NEW\nLEADER", glm::vec3(1), 1.1f);
 }

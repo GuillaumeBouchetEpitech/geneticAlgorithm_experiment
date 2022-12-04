@@ -9,6 +9,8 @@
 #include <vector>
 #include <cstdint>
 
+class Image;
+
 class FrameBuffer
 {
 public:
@@ -47,5 +49,11 @@ public:
 
 public:
   static void unbind();
+
+public:
+  bool isValid() const;
+
+public:
+  void getAsImage(Image& image, uint32_t posX, uint32_t posY, uint32_t width, uint32_t height) const;
 
 };

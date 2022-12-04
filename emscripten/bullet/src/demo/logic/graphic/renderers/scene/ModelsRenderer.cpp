@@ -1,7 +1,7 @@
 
 #include "ModelsRenderer.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphicIds.hpp"
 
@@ -22,9 +22,9 @@ namespace
   {
     for (std::size_t index = 0; index < vertices.size(); index += 3)
     {
-      loader::ModelVertex& vertexA = vertices[index + 0];
-      loader::ModelVertex& vertexB = vertices[index + 1];
-      loader::ModelVertex& vertexC = vertices[index + 2];
+      loader::ModelVertex& vertexA = vertices.at(index + 0);
+      loader::ModelVertex& vertexB = vertices.at(index + 1);
+      loader::ModelVertex& vertexC = vertices.at(index + 2);
 
       const glm::vec3 normal = glm::cross(
         vertexA.position - vertexB.position,
@@ -40,7 +40,7 @@ namespace
 
 void ModelsRenderer::initialise()
 {
-  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::models));
+  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::models));
 
   {
     GeometryBuilder geometryBuilder;
@@ -97,7 +97,7 @@ void ModelsRenderer::render(const Camera &cameraInstance)
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
 
-  const auto& logic = Data::get().logic;
+  const auto& logic = Context::get().logic;
   const auto& simulation = *logic.simulation;
 
   const unsigned int totalCars = simulation.getTotalCars();
@@ -106,9 +106,11 @@ void ModelsRenderer::render(const Camera &cameraInstance)
 
   const IFrustumCulling& frustumCulling = cameraInstance.getFrustumCulling();
 
+  const auto& matricesData = cameraInstance.getMatricesData();
+
   _shader->bind();
-  _shader->setUniform("u_projectionMatrix", cameraInstance.getSceneMatricesData().projection);
-  _shader->setUniform("u_modelViewMatrix", cameraInstance.getSceneMatricesData().view);
+  _shader->setUniform("u_projectionMatrix", matricesData.projection);
+  _shader->setUniform("u_modelViewMatrix", matricesData.view);
 
   _modelsChassisMatrices.clear();
   _modelWheelsMatrices.clear();

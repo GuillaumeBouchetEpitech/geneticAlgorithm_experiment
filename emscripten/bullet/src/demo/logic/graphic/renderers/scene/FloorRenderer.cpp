@@ -10,13 +10,13 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 void FloorRenderer::initialise(
   const glm::vec3& center,
   const glm::vec3& size)
 {
-  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::litTexture));
+  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::litTexture));
 
   {
 
@@ -104,7 +104,7 @@ void FloorRenderer::initialise(
     std::vector<Vertex> vertices;
     vertices.reserve(indices.size()); // pre-allocate
     for (int index : indices)
-      vertices.push_back(quadVertices[index]);
+      vertices.push_back(quadVertices.at(index));
 
     _geometry.updateBuffer(0, vertices);
     _geometry.setPrimitiveCount(vertices.size());

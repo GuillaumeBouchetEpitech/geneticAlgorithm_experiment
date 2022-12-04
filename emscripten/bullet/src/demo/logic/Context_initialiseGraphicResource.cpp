@@ -1,5 +1,5 @@
 
-#include "Data.hpp"
+#include "Context.hpp"
 
 #include "graphicIds.hpp"
 
@@ -9,7 +9,7 @@
 
 #include "framework/graphic/ShaderProgramBuilder.hpp"
 
-void Data::initialiseGraphicResource()
+void Context::initialiseGraphicResource()
 {
     ShaderProgramBuilder shaderProgramBuilder;
 

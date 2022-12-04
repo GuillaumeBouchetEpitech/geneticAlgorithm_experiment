@@ -31,6 +31,8 @@ public:
   void allocateDepth(const glm::uvec2& size);
   void dispose();
 
+  void getAsImage(Image& image);
+
 public:
   const glm::uvec2& getSize() const;
   bool isValid() const;

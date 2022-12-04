@@ -87,8 +87,8 @@ void PthreadSimulation::initialise(const Definition& def)
     {
         const std::size_t worldIndex = ii / _genomesPerCore;
 
-        _carAgents[ii].reset(
-            _physicWorlds[worldIndex].get(),
+        _carAgents.at(ii).reset(
+            _physicWorlds.at(worldIndex).get(),
             _startTransform.position,
             _startTransform.quaternion);
     }
@@ -100,7 +100,7 @@ void PthreadSimulation::_resetPhysic()
     _physicWorlds.resize(_totalCores);
     for (unsigned int ii = 0; ii < _totalCores; ++ii)
     {
-        _physicWorlds[ii] = std::make_unique<PhysicWorld>();
+        _physicWorlds.at(ii) = std::make_unique<PhysicWorld>();
 
         { // generate circuit
 
@@ -127,7 +127,7 @@ void PthreadSimulation::_resetPhysic()
                 bodyDef.group = asValue(Groups::ground);
                 bodyDef.mask = asValue(Masks::ground);
 
-                auto body = _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+                auto body = _physicWorlds.at(ii)->getPhysicBodyManager().createAndAddBody(bodyDef);
                 body->setFriction(1.0f);
                 body->setUserValue(groundIndex);
 
@@ -156,7 +156,7 @@ void PthreadSimulation::_resetPhysic()
                 bodyDef.group = asValue(Groups::wall);
                 bodyDef.mask = asValue(Masks::wall);
 
-                _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+                _physicWorlds.at(ii)->getPhysicBodyManager().createAndAddBody(bodyDef);
             };
 
             _circuitBuilder.generateCircuitGeometry(onNewPhysicGroundPatch, onNewPhysicWallPatch);
@@ -175,7 +175,7 @@ void PthreadSimulation::_resetPhysic()
             bodyDef.group = asValue(Groups::ground);
             bodyDef.mask = asValue(Masks::ground);
 
-            auto body = _physicWorlds[ii]->getPhysicBodyManager().createAndAddBody(bodyDef);
+            auto body = _physicWorlds.at(ii)->getPhysicBodyManager().createAndAddBody(bodyDef);
             body->setPosition({ 0.0f, 0.0f, -0.5f });
 
         } // floor
@@ -210,7 +210,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
         return;
 
     for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
-        _carsData[ii].latestTransformsHistory.clear();
+        _carsData.at(ii).latestTransformsHistory.clear();
 
     for (std::size_t threadIndex = 0; threadIndex < _physicWorlds.size(); ++threadIndex)
     {
@@ -229,7 +229,7 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 
                 constexpr uint32_t maxSubSteps = 0;
                 constexpr float fixedTimeStep = 1.0f / 30.0f;
-                _physicWorlds[threadIndex]->step(fixedTimeStep, maxSubSteps, fixedTimeStep);
+                _physicWorlds.at(threadIndex)->step(fixedTimeStep, maxSubSteps, fixedTimeStep);
 
                 // update cars
 
@@ -237,12 +237,12 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
                 {
                     unsigned int index = threadIndex * _genomesPerCore + ii;
 
-                    auto& car = _carAgents[index];
+                    auto& car = _carAgents.at(index);
 
                     if (!car.isAlive())
                         continue;
 
-                    car.update(elapsedTime, neuralNets[index]);
+                    car.update(elapsedTime, neuralNets.at(index));
 
                     {
                         const auto body = car.getBody();
@@ -255,21 +255,21 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps)
 
                         // transformation matrix of the wheels
                         for (unsigned int jj = 0; jj < 4; ++jj)
-                            vehicle->getWheelTransform(jj, newData.wheels[jj]);
+                            vehicle->getWheelTransform(jj, newData.wheels.at(jj));
 
-                        _carsData[index].latestTransformsHistory.push_back(newData);
+                        _carsData.at(index).latestTransformsHistory.push_back(newData);
                     }
                 }
             }
 
-            auto& coreState = _coreStates[threadIndex];
+            auto& coreState = _coreStates.at(threadIndex);
             coreState.genomesAlive = 0;
 
             for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
             {
                 unsigned int index = threadIndex * _genomesPerCore + ii;
 
-                auto& car = _carAgents[index];
+                auto& car = _carAgents.at(index);
 
                 if (car.isAlive())
                     coreState.genomesAlive++;
@@ -302,9 +302,9 @@ void PthreadSimulation::breed()
     for (std::size_t ii = 0; ii < _carsData.size(); ++ii)
     {
         // this penalty reward fast cars (reaching farther in less updates)
-        const float fitnessPenalty = float(_carsData[ii].totalUpdates) / 10000;
+        const float fitnessPenalty = float(_carsData.at(ii).totalUpdates) / 10000;
 
-        _geneticAlgorithm.rateGenome(ii, _carsData[ii].fitness - fitnessPenalty);
+        _geneticAlgorithm.rateGenome(ii, _carsData.at(ii).fitness - fitnessPenalty);
     }
 
     const bool isSmarter = _geneticAlgorithm.breedPopulation();
@@ -323,8 +323,8 @@ void PthreadSimulation::breed()
     {
         const std::size_t worldIndex = ii / _genomesPerCore;
 
-        _carAgents[ii].reset(
-            _physicWorlds[worldIndex].get(),
+        _carAgents.at(ii).reset(
+            _physicWorlds.at(worldIndex).get(),
             _startTransform.position,
             _startTransform.quaternion);
     }
@@ -346,8 +346,8 @@ void PthreadSimulation::_updateCarResult()
 {
     for (std::size_t ii = 0; ii < _carAgents.size(); ++ii)
     {
-        const auto& carAgent = _carAgents[ii];
-        auto& carData = _carsData[ii];
+        const auto& carAgent = _carAgents.at(ii);
+        auto& carData = _carsData.at(ii);
 
         bool carWasAlive = carData.isAlive;
         carData.isAlive = carAgent.isAlive();
@@ -376,16 +376,16 @@ void PthreadSimulation::_updateCarResult()
 
         // transformation matrix of the wheels
         for (std::size_t jj = 0; jj < carData.liveTransforms.wheels.size(); ++jj)
-            vehicle->getWheelTransform(jj, carData.liveTransforms.wheels[jj]);
+            vehicle->getWheelTransform(jj, carData.liveTransforms.wheels.at(jj));
 
         carData.velocity = body->getLinearVelocity();
 
         const auto& eyeSensors = carAgent.getEyeSensors();
         for (std::size_t jj = 0; jj < eyeSensors.size(); ++jj)
         {
-            carData.eyeSensors[jj].near = eyeSensors[jj].near;
-            carData.eyeSensors[jj].far = eyeSensors[jj].far;
-            carData.eyeSensors[jj].value = eyeSensors[jj].value;
+            carData.eyeSensors.at(jj).near = eyeSensors.at(jj).near;
+            carData.eyeSensors.at(jj).far = eyeSensors.at(jj).far;
+            carData.eyeSensors.at(jj).value = eyeSensors.at(jj).value;
         }
 
         const auto& gSensor = carAgent.getGroundSensor();

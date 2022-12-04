@@ -113,7 +113,7 @@ public:
 
 public:
   struct weak_ref
-    : public basic_double_linked_list::link
+    : protected basic_double_linked_list::link
   {
     friend weak_ref_data_pool;
 

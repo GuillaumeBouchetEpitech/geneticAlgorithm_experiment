@@ -254,7 +254,7 @@ void PostProcess::resize(const glm::uvec2& frameSize)
     std::vector<Vertex> vertices;
     vertices.reserve(indices.size()); // pre-allocate
     for (std::size_t index : indices)
-      vertices.push_back(quadVertices[index]);
+      vertices.push_back(quadVertices.at(index));
 
     _screenQuad.updateBuffer(0, vertices);
     _screenQuad.setPrimitiveCount(uint32_t(vertices.size()));

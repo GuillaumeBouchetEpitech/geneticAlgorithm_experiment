@@ -114,10 +114,10 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
     const auto& hiddens = _topology.getHiddens();
     for (std::size_t ii = 0; ii < hiddens.size(); ++ii)
     {
-        const unsigned int currentLayerSize = hiddens[ii];
+        const unsigned int currentLayerSize = hiddens.at(ii);
 
         // +1 to skip the input layer
-        auto& currHiddenLayer = _layers[ii + 1];
+        auto& currHiddenLayer = _layers.at(ii + 1);
 
         fillLayerCallback(currHiddenLayer, currentLayerSize, previousLayerSize);
 
@@ -149,7 +149,7 @@ void NeuralNetwork::compute(const std::vector<float>& inputValues,
     // update input layer
 
     for (std::size_t ii = 0; ii < inputLayer.size(); ++ii)
-        inputLayer[ii].value = inputValues[ii];
+        inputLayer.at(ii).value = inputValues.at(ii);
 
     //
     //
@@ -157,15 +157,15 @@ void NeuralNetwork::compute(const std::vector<float>& inputValues,
 
     for (std::size_t ii = 1; ii < _layers.size(); ++ii)
     {
-        const Layer& prevLayer = _layers[ii - 1];
-        Layer& currLayer = _layers[ii];
+        const Layer& prevLayer = _layers.at(ii - 1);
+        Layer& currLayer = _layers.at(ii);
 
         for (auto& neuron : currLayer)
         {
             // Sum the weights to the activation value.
             float summedValues = 0.0f;
             for (std::size_t jj = 0; jj < neuron.connectionsWeights.size(); ++jj)
-                summedValues += prevLayer[jj].value * neuron.connectionsWeights[jj];
+                summedValues += prevLayer.at(jj).value * neuron.connectionsWeights.at(jj);
 
             if (_topology.isUsingBias())
                 summedValues += 1.0f;
@@ -207,9 +207,9 @@ void NeuralNetwork::setWeights(const std::vector<float>& inputWeights)
     unsigned int weightsIndex = 0;
 
     for (std::size_t ii = 1; ii < _layers.size(); ++ii)
-        for (Neuron& neuron : _layers[ii])
+        for (Neuron& neuron : _layers.at(ii))
             for (float& connectionsWeight : neuron.connectionsWeights)
-                connectionsWeight = inputWeights[weightsIndex++];
+                connectionsWeight = inputWeights.at(weightsIndex++);
 }
 
 void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
@@ -218,7 +218,7 @@ void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const
     outputWeights.reserve(_topology.getTotalWeights()); // pre-allocate
 
     for (std::size_t ii = 1; ii < _layers.size(); ++ii)
-        for (const Neuron& neuron : _layers[ii])
+        for (const Neuron& neuron : _layers.at(ii))
             for (const float connectionsWeight : neuron.connectionsWeights)
                 outputWeights.push_back(connectionsWeight);
 }

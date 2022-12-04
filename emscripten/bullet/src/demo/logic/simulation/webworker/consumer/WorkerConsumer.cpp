@@ -165,9 +165,9 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg)
         receivedMsg.read(newWeightsRaw, byteWeightsSize);
 
         std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
-        _neuralNetworks[ii]->setWeights(weightsBuffer);
+        _neuralNetworks.at(ii)->setWeights(weightsBuffer);
 
-        _carAgents[ii].reset(_physicWorld.get(), _startTransform.position, _startTransform.quaternion);
+        _carAgents.at(ii).reset(_physicWorld.get(), _startTransform.position, _startTransform.quaternion);
     }
 }
 
@@ -193,12 +193,12 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
         for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
         {
-            CarAgent& car = _carAgents[ii];
+            CarAgent& car = _carAgents.at(ii);
 
             if (!car.isAlive())
                 continue;
 
-            car.update(elapsedTime, _neuralNetworks[ii]);
+            car.update(elapsedTime, _neuralNetworks.at(ii));
 
             {
                 const auto body = car.getBody();
@@ -209,9 +209,9 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
                 // transformation matrix of the wheels
                 for (unsigned int jj = 0; jj < 4U; ++jj)
-                    vehicle->getWheelTransform(jj, newData.wheels[jj]);
+                    vehicle->getWheelTransform(jj, newData.wheels.at(jj));
 
-                _latestTransformsHistory[ii].push_back(newData);
+                _latestTransformsHistory.at(ii).push_back(newData);
             }
         }
     }
@@ -228,7 +228,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
     unsigned int genomesAlive = 0;
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
-        if (_carAgents[ii].isAlive())
+        if (_carAgents.at(ii).isAlive())
             ++genomesAlive;
 
     // send back the result
@@ -242,7 +242,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
-        const CarAgent& car = _carAgents[ii];
+        const CarAgent& car = _carAgents.at(ii);
 
         _messageToSend
             << car.isAlive()
@@ -255,7 +255,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
         //
         //
 
-        auto& transformsHistory = _latestTransformsHistory[ii];
+        auto& transformsHistory = _latestTransformsHistory.at(ii);
 
         _messageToSend << int(transformsHistory.size());
         for (const CarData::Transforms& tranforms : transformsHistory)

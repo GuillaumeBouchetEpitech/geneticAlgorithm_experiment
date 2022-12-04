@@ -2,6 +2,7 @@
 #include "Texture.hpp"
 
 #include "Image.hpp"
+#include "FrameBuffer.hpp"
 
 #include "GlContext.hpp"
 
@@ -28,11 +29,14 @@ void Texture::allocateBlank(
   bool repeat /*= false*/,
   const void* pixels /*= nullptr*/)
 {
-  _size = size;
+  if (size.x == 0 || size.y == 0)
+    D_THROW(std::runtime_error, "texture allocated with incorrect size, size.x: " << size.x << ", size.y: " << size.y);
 
   // TODO: check max texture size
   // if (_size.x < 1 || _size.y < 1)
   //   D_THROW(std::runtime_error, "image allocated with incorrect size");
+
+  _size = size;
 
   if (_textureId == 0)
     _textureId = GlContext::genTexture();
@@ -80,6 +84,21 @@ void Texture::dispose()
   _size.y = 0;
   GlContext::deleteTexture(_textureId);
   _textureId = 0;
+}
+
+void Texture::getAsImage(Image& image)
+{
+  if (!isValid())
+    D_THROW(std::runtime_error, "texture not valid");
+
+  image.dispose();
+
+  FrameBuffer::Definition def;
+  def.colorTextures.push_back({ 0, this });
+
+  FrameBuffer tmpFrameBuffer;
+  tmpFrameBuffer.initialise(def);
+  tmpFrameBuffer.getAsImage(image, 0, 0, _size.x, _size.y);
 }
 
 const glm::uvec2& Texture::getSize() const

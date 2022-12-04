@@ -5,7 +5,7 @@
 
 #include "StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
 #include "framework/helpers/GLMath.hpp"
@@ -27,9 +27,9 @@ void State_AbstractSimulation::leave()
 
 void State_AbstractSimulation::handleEvent(const SDL_Event& event)
 {
-    auto& data = Data::get();
-    auto& keys = data.inputs.keys;
-    auto& mouse = data.inputs.mouse;
+    auto& context = Context::get();
+    auto& keys = context.inputs.keys;
+    auto& mouse = context.inputs.mouse;
 
     switch (event.type)
     {
@@ -84,20 +84,22 @@ void State_AbstractSimulation::update(int deltaTime)
 {
     float elapsedTime = float(deltaTime) / 1000.0f;
 
-    auto& data = Data::get();
-    auto& graphic = data.graphic;
+    auto& context = Context::get();
+    auto& graphic = context.graphic;
     auto& camera = graphic.camera;
 
     { // events
 
+        auto& rotations = camera.main.rotations;
+
         { // mouse/touch event(s)
 
-            auto& mouse = data.inputs.mouse;
+            auto& mouse = context.inputs.mouse;
 
             if (mouse.tracking)
             {
-                camera.scene.rotations.theta -= float(mouse.delta.x) * 1.0f * elapsedTime;
-                camera.scene.rotations.phi += float(mouse.delta.y) * 1.0f * elapsedTime;
+                rotations.theta -= float(mouse.delta.x) * 1.0f * elapsedTime;
+                rotations.phi += float(mouse.delta.y) * 1.0f * elapsedTime;
                 mouse.delta = { 0, 0 };
             }
 
@@ -105,7 +107,7 @@ void State_AbstractSimulation::update(int deltaTime)
 
         { // keyboard event(s)
 
-            auto& keys = data.inputs.keys;
+            auto& keys = context.inputs.keys;
 
             bool rotateLeft = (
                 keys[SDLK_LEFT] ||  // ARROW
@@ -130,16 +132,16 @@ void State_AbstractSimulation::update(int deltaTime)
             );
 
             if (rotateLeft)
-                camera.scene.rotations.theta += 2.0f * elapsedTime;
+                rotations.theta += 2.0f * elapsedTime;
             else if (rotateRight)
-                camera.scene.rotations.theta -= 2.0f * elapsedTime;
+                rotations.theta -= 2.0f * elapsedTime;
 
             if (rotateUp)
-                camera.scene.rotations.phi -= 1.0f * elapsedTime;
+                rotations.phi -= 1.0f * elapsedTime;
             else if (rotateDown)
-                camera.scene.rotations.phi += 1.0f * elapsedTime;
+                rotations.phi += 1.0f * elapsedTime;
 
-            data.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
+            context.logic.isAccelerated = (keys[SDLK_SPACE]); // spacebar
 
         } // keyboard event(s)
 
@@ -156,8 +158,7 @@ void State_AbstractSimulation::render(const SDL_Window& window)
 
 void State_AbstractSimulation::resize(int width, int height)
 {
-    auto& data = Data::get();
-    auto& graphic = data.graphic;
+    auto& graphic = Context::get().graphic;
 
     graphic.camera.viewportSize = { width, height };
 

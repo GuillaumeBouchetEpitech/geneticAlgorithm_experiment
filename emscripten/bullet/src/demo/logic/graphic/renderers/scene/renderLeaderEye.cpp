@@ -1,15 +1,15 @@
 
 #include "renderLeaderEye.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 void renderLeaderEye(
   const glm::vec2& position,
   const glm::vec2& size)
 {
-  auto& data = Data::get();
-  auto& logic = data.logic;
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& logic = context.logic;
+  auto& graphic = context.graphic;
 
   if (auto leaderData = logic.leaderCar.leaderData())
   {
@@ -22,7 +22,7 @@ void renderLeaderEye(
     //
     //
 
-    const unsigned int totalInputs = data.logic.annTopology.getInput();
+    const unsigned int totalInputs = context.logic.annTopology.getInput();
     const unsigned int layerSize = 5; // <= hardcoded :(
     const unsigned int layerCount = totalInputs / layerSize;
 
@@ -48,11 +48,11 @@ void renderLeaderEye(
 
     for (std::size_t ii = 0; ii < allPositions.size(); ++ii)
     {
-      const auto& position = allPositions[ii];
+      const auto& position = allPositions.at(ii);
 
       graphic.stackRenderer.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
 
-      glm::vec3 color = glm::mix(redColor, greenColor, leaderData->eyeSensors[ii].value);
+      glm::vec3 color = glm::mix(redColor, greenColor, leaderData->eyeSensors.at(ii).value);
 
       graphic.stackRenderer.pushQuad(position, eyeSize, glm::vec4(color, 1.0f));
     }

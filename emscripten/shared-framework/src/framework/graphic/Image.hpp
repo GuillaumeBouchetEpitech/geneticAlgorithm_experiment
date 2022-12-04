@@ -5,11 +5,16 @@
 
 #include <string>
 
+class FrameBuffer;
+
 class Image
 {
+  friend FrameBuffer;
+
 private:
   glm::uvec2  _size = { 0, 0 };
-  uint8_t* _pixels = nullptr;
+  uint8_t* _stbPixels = nullptr;
+  uint8_t* _rawPixels = nullptr;
 
 public:
   Image() = default;

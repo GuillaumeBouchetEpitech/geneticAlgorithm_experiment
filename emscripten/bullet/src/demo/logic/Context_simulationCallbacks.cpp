@@ -1,14 +1,14 @@
 
 #include "demo/defines.hpp"
 
-#include "Data.hpp"
+#include "Context.hpp"
 
 #include "demo/states/StateManager.hpp"
 
 #include <iomanip>
 #include <sstream>
 
-void Data::initialiseSimulationCallbacks()
+void Context::initialiseSimulationCallbacks()
 {
     logic.simulation->setOnGenerationResetCallback([this]() -> void
     {
@@ -29,7 +29,7 @@ void Data::initialiseSimulationCallbacks()
                 {
                     for (std::size_t jj = 0; jj < transforms.wheels.size(); ++jj)
                     {
-                        glm::vec3 wheelOrigin = transforms.wheels[jj] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                        glm::vec3 wheelOrigin = transforms.wheels.at(jj) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
                         logic.carWheelsTrails.push(ii, jj, wheelOrigin);
                     }
@@ -58,7 +58,7 @@ void Data::initialiseSimulationCallbacks()
                 {
                     for (std::size_t jj = 0; jj < transforms.wheels.size(); ++jj)
                     {
-                        glm::vec3 wheelOrigin = transforms.wheels[jj] * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+                        glm::vec3 wheelOrigin = transforms.wheels.at(jj) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
                         logic.carWheelsTrails.push(ii, jj, wheelOrigin);
                     }

@@ -1,11 +1,11 @@
 
 #pragma once
 
+#include "framework/ErrorHandler.hpp"
+
 #include <string>
 #include <memory>
 #include <iostream>
-
-
 
 template<typename dynamic_heap_array>
 class dynamic_heap_array_iterator
@@ -346,6 +346,19 @@ public:
 
   const Type& operator[](int index) const { return _data[_getIndex(index)]; }
   Type& operator[](int index) { return _data[_getIndex(index)]; }
+
+  const Type& at(std::size_t index) const
+  {
+    if (index >= _size)
+      D_THROW(std::runtime_error, "out of range, index: " << index);
+    return _data[_getIndex(index)];
+  }
+  Type& at(std::size_t index)
+  {
+    if (index >= _size)
+      D_THROW(std::runtime_error, "out of range, index: " << index);
+    return _data[_getIndex(index)];
+  }
 
   // const Type& at(std::size_t index) const
   // {

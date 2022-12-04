@@ -1,7 +1,7 @@
 
 #include "FlockingManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphic/helpers/generateSphereVerticesFilled.hpp"
 
@@ -105,7 +105,7 @@ FlockingManager::FlockingManager()
 
 void FlockingManager::initialise()
 {
-  _shader = Data::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
+  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::particles));
 
   {
     GeometryBuilder geometryBuilder;
@@ -139,8 +139,8 @@ void FlockingManager::setMatricesData(const Camera::MatricesData& matricesData)
 
 void FlockingManager::update()
 {
-  auto& data = Data::get();
-  const auto& logic = data.logic;
+  auto& context = Context::get();
+  const auto& logic = context.logic;
   const auto& simulation = *logic.simulation;
   glm::vec3 target = simulation.getStartPosition();
   const auto& leaderCar = logic.leaderCar;
@@ -177,8 +177,8 @@ void FlockingManager::update()
 
     // make a trail by reusing the previous positions N times
     for (std::size_t ii = boid.trail.size() - 1; ii > 0; --ii)
-      boid.trail[ii] = boid.trail[ii - 1];
-    boid.trail[0] = boid.position;
+      boid.trail.at(ii) = boid.trail.at(ii - 1);
+    boid.trail.at(0) = boid.position;
   }
 }
 
@@ -218,15 +218,15 @@ void FlockingManager::render()
 
     GlContext::disable(GlContext::States::depthTest);
 
-    auto& stackRenderer = Data::get().graphic.stackRenderer;
+    auto& stackRenderer = Context::get().graphic.stackRenderer;
 
     const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
 
     for (Boid& boid : _boids)
       for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
         stackRenderer.pushThickTriangle3dLine(
-          boid.trail[kk + 0],
-          boid.trail[kk + 1],
+          boid.trail.at(kk + 0),
+          boid.trail.at(kk + 1),
           0.2f,
           color
         );

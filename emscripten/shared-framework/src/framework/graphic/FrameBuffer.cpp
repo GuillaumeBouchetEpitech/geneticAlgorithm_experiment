@@ -1,5 +1,6 @@
 
 #include "FrameBuffer.hpp"
+#include "Image.hpp"
 
 #include "framework/ErrorHandler.hpp"
 
@@ -71,8 +72,9 @@ void FrameBuffer::initialise(const Definition& def)
 
 void FrameBuffer::dispose()
 {
-  if (_frameBufferId == 0)
+  if (!isValid())
     return;
+
   GlContext::deleteFramebuffer(_frameBufferId);
   _frameBufferId = 0;
 }
@@ -99,8 +101,8 @@ void FrameBuffer::_attachDepthRenderBuffer(const RenderBuffer& buffer)
 
 void FrameBuffer::bind() const
 {
-  if (_frameBufferId == 0)
-    D_THROW(std::runtime_error, "not allocated");
+  if (!isValid())
+    D_THROW(std::runtime_error, "framebuffer not valid");
 
   GlContext::bindFramebuffer(_frameBufferId);
 }
@@ -108,4 +110,27 @@ void FrameBuffer::bind() const
 void FrameBuffer::unbind()
 {
   GlContext::bindFramebuffer(0);
+}
+
+bool FrameBuffer::isValid() const
+{
+  return _frameBufferId != 0;
+}
+
+void FrameBuffer::getAsImage(Image& image, uint32_t posX, uint32_t posY, uint32_t width, uint32_t height) const
+{
+  if (!isValid())
+    D_THROW(std::runtime_error, "framebuffer not valid");
+
+  image.dispose();
+
+  const uint32_t bufferSize = width * height * 4;
+  uint8_t* pixels = new uint8_t[bufferSize];
+
+  bind();
+  GlContext::downloadPixels(posX, posY, width, height, pixels);
+  unbind();
+
+  image._rawPixels = pixels;
+  image._size = { width, height };
 }

@@ -7,14 +7,14 @@
 
 #include "StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
 void State_WebWorkersLoading::enter()
 {
     _countdownUntilNextState = 0;
 
-    Data::get().logic.simulation->setOnWorkersReadyCallback([this]() -> void
+    Context::get().logic.simulation->setOnWorkersReadyCallback([this]() -> void
     {
         // leave the "WEB WORKERS LOADING" message for at least 1 second
         _countdownUntilNextState = 1000;
@@ -31,7 +31,7 @@ void State_WebWorkersLoading::update(int deltaTime)
     if (_countdownUntilNextState == 0)
     {
         // only update to load the webworkers
-        Data::get().logic.simulation->update(0.0f, 1);
+        Context::get().logic.simulation->update(0.0f, 1);
     }
     else
     {

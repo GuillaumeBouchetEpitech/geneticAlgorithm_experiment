@@ -12,7 +12,6 @@
 #include "framework/TraceLogger.hpp"
 #include "framework/math/clamp.hpp"
 
-#include "renderers/hud/renderTopology.hpp"
 #include "renderers/hud/CoreUsageRenderer.hpp"
 #include "renderers/hud/NewLeaderRenderer.hpp"
 #include "renderers/scene/renderLeaderEye.hpp"
@@ -27,9 +26,9 @@
 
 void Scene::_renderHUD_ortho()
 {
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
-  auto& logic = data.logic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+  auto& logic = context.logic;
 
   NewLeaderRenderer newLeaderRndr;
   newLeaderRndr.compute();
@@ -259,7 +258,7 @@ void Scene::_renderHUD_ortho()
     {
       const auto& vSize = graphic.camera.viewportSize;
 
-      renderTopology(
+      graphic.topologyRenderer.render(
         glm::vec2(vSize.x - 150 - 10, 170),
         glm::vec2(150, 125));
 
@@ -275,9 +274,9 @@ void Scene::_renderHUD_ortho()
 
 void Scene::_renderHUD_thirdPerson()
 {
-  auto& data = Data::get();
-  auto& logic = data.logic;
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& logic = context.logic;
+  auto& graphic = context.graphic;
   const auto& leaderCar = logic.leaderCar;
 
   // valid leading car?
@@ -295,9 +294,9 @@ void Scene::_renderHUD_thirdPerson()
   GlContext::clearColor(0, 0, 0, 1);
   GlContext::clear(asValue(GlContext::Buffers::color) | asValue(GlContext::Buffers::depth));
 
-  const Camera& camInstance = camera.thirdPerson.instance;
+  const Camera& camInstance = camera.thirdPerson.scene;
 
-  const auto& matriceData = camInstance.getSceneMatricesData();
+  const auto& matriceData = camInstance.getMatricesData();
 
   graphic.stackRenderer.setMatricesData(matriceData);
   graphic.particleManager.setMatricesData(matriceData);
@@ -328,8 +327,8 @@ void Scene::_renderHUD_thirdPerson()
 
 void Scene::_renderHUD()
 {
-  auto& data = Data::get();
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
 
   { // render in framebuffer
 

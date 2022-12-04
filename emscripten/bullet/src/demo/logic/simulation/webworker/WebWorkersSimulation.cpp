@@ -94,10 +94,10 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps)
         {
             const auto& carResult = getCarResult(ii);
 
-            if (carResult.isAlive == _carLiveStatus[ii])
+            if (carResult.isAlive == _carLiveStatus.at(ii))
                 continue;
 
-            _carLiveStatus[ii] = false;
+            _carLiveStatus.at(ii) = false;
 
             if (_callbacks.onGenomeDie)
                 _callbacks.onGenomeDie(ii);
@@ -169,7 +169,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime, unsigne
         auto last = NNetworks.begin() + (ii + 1) * _genomesPerCore;
         const NeuralNetworks subNetwork(first, last);
 
-        _workerProducers[ii]->resetAndProcessSimulation(elapsedTime, totalSteps, subNetwork);
+        _workerProducers.at(ii)->resetAndProcessSimulation(elapsedTime, totalSteps, subNetwork);
     }
 
     _currentRequest = WorkerRequest::ResetAndProcess;

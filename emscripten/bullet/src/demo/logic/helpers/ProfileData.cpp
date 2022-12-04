@@ -56,7 +56,7 @@ unsigned int ProfileData::getLatestTotalDelta() const
 {
   unsigned int totalDelta = 0;
   for (std::size_t statIndex = 0; statIndex < _latestStatesData.size(); ++statIndex)
-    totalDelta += _latestStatesData[statIndex].delta;
+    totalDelta += _latestStatesData.at(statIndex).delta;
   return totalDelta;
 }
 

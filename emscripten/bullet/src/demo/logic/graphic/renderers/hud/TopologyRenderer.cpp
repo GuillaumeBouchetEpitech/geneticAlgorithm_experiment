@@ -1,17 +1,29 @@
 
-#include "renderTopology.hpp"
+#include "TopologyRenderer.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
-void renderTopology(
+#include "framework/math/DeterministicRng.hpp"
+
+void TopologyRenderer::update(float elapsedTime)
+{
+  _animationTime += elapsedTime * 2.0f;
+  while (_animationTime > 1.0f)
+    _animationTime -= 1.0f;
+}
+
+void TopologyRenderer::render(
   const glm::vec2& position,
   const glm::vec2& size)
 {
-  auto& data = Data::get();
-  auto& logic = data.logic;
-  auto& graphic = data.graphic;
+  auto& context = Context::get();
+  auto& logic = context.logic;
+  auto& graphic = context.graphic;
 
   if (!logic.leaderCar.hasLeader())
+    return;
+
+  if (logic.leaderCar.totalTimeAsLeader() < 0.25f)
     return;
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
@@ -22,6 +34,7 @@ void renderTopology(
   graphic.stackRenderer.pushRectangle(position, size, whiteColor);
 
   std::vector<unsigned int> topologyArray;
+  topologyArray.reserve(logic.annTopology.getInput() + logic.annTopology.getHiddens().size() + logic.annTopology.getOutput());
   topologyArray.push_back(logic.annTopology.getInput());
   for (const auto& hidden : logic.annTopology.getHiddens())
     topologyArray.push_back(hidden);
@@ -30,7 +43,7 @@ void renderTopology(
   const NeuralNetworks& neuralNetworks = logic.simulation->getGeneticAlgorithm().getNeuralNetworks();
 
   std::vector<float> connectionsWeights;
-  const auto leaderNnPtr = neuralNetworks[logic.leaderCar.leaderIndex()];
+  const auto leaderNnPtr = neuralNetworks.at(logic.leaderCar.leaderIndex());
   leaderNnPtr->getWeights(connectionsWeights);
 
   struct NeuronData
@@ -52,19 +65,19 @@ void renderTopology(
     int neuronIndex = 0;
     for (std::size_t ii = 0; ii < topologyArray.size(); ++ii)
     {
-      const unsigned int actualSize = topologyArray[ii];
+      const unsigned int actualSize = topologyArray.at(ii);
 
       glm::vec2 currPos = position;
       currPos.y += size.y - size.y / topologyArray.size() * (float(ii) + 0.5f);
 
-      layersData[ii].reserve(actualSize); // pre-allocate
+      layersData.at(ii).reserve(actualSize); // pre-allocate
       for (unsigned int jj = 0; jj < actualSize; ++jj)
       {
         currPos.x += size.x / (actualSize + 1);
 
-        const float neuronsValue = glm::clamp(neuronsValues[neuronIndex++], 0.0f, 1.0f);
+        const float neuronsValue = glm::clamp(neuronsValues.at(neuronIndex++), 0.0f, 1.0f);
 
-        layersData[ii].push_back({ currPos, neuronsValue });
+        layersData.at(ii).push_back({ currPos, neuronsValue });
       }
     }
 
@@ -152,32 +165,49 @@ void renderTopology(
       float min;
       float max;
       float alpha;
+      float depth;
     };
 
     std::array<ValueRange, 4> valueRanges
     {{
-      { 0.75f, 1.00f, 1.00f },
-      { 0.50f, 0.75f, 0.85f },
-      { 0.25f, 0.50f, 0.70f },
-      { 0.00f, 0.25f, 0.55f },
+      { min: 0.75f, max: 1.00f, alpha: 1.00f, depth: +0.4f },
+      { min: 0.50f, max: 0.75f, alpha: 0.85f, depth: +0.3f },
+      { min: 0.25f, max: 0.50f, alpha: 0.70f, depth: +0.2f },
+      { min: 0.00f, max: 0.25f, alpha: 0.55f, depth: +0.1f },
     }};
+
+    DeterministicRng rng;
+    rng.setSeed(logic.leaderCar.leaderIndex());
+
+    std::vector<float> connectionValues;
+    connectionValues.reserve(512);
+    for (std::size_t ii = 1; ii < layersData.size(); ++ii)
+    {
+      const auto& prevLayer = layersData.at(ii - 1);
+      const auto& currLayer = layersData.at(ii);
+      for (std::size_t plIndex = 0; plIndex < prevLayer.size(); ++plIndex)
+        for (std::size_t clIndex = 0; clIndex < currLayer.size(); ++clIndex)
+          connectionValues.push_back(rng.getRangedValue(0.0f, 1.0f));
+    }
 
     for (ValueRange range : valueRanges)
     {
       const glm::vec4 positiveColor = glm::vec4(glm::vec3(redColor), range.alpha);
       const glm::vec4 negativeColor = glm::vec4(glm::vec3(blueColor), range.alpha);
+      // const glm::vec4 impulseColor = glm::vec4(whiteColor, range.alpha);
 
       int connectionIndex = 0;
       for (std::size_t ii = 1; ii < layersData.size(); ++ii)
       {
-        const auto& prevLayer = layersData[ii - 1];
-        const auto& currLayer = layersData[ii];
+        const auto& prevLayer = layersData.at(ii - 1);
+        const auto& currLayer = layersData.at(ii);
 
         for (const auto& prevNeuron : prevLayer)
         {
           for (const auto& currNeuron : currLayer)
           {
-            const float weight = connectionsWeights[connectionIndex++];
+            const int currConnectionIndex = connectionIndex++;
+            const float weight = connectionsWeights.at(currConnectionIndex);
 
             if (!(prevNeuron.value >= range.min && prevNeuron.value <= range.max))
               continue;
@@ -195,7 +225,23 @@ void renderTopology(
               prevNeuron.position,
               currNeuron.position,
               targetThickness,
-              targetColor);
+              targetColor,
+              range.depth);
+
+            // float tmpVal = _animationTime + rng.getRangedValue(0.0f, 1.0f);
+            float tmpVal = _animationTime + connectionValues.at(currConnectionIndex);
+            while (tmpVal > 1.0f)
+              tmpVal -= 1.0f;
+
+            const glm::vec2 diff = currNeuron.position - prevNeuron.position;
+
+            graphic.stackRenderer.pushThickTriangle2dLine(
+              prevNeuron.position + diff * (tmpVal - 0.05f),
+              prevNeuron.position + diff * (tmpVal + 0.05f),
+              targetThickness * 1.5f,
+              targetColor,
+              range.depth + 0.01f);
+
           }
         }
       }

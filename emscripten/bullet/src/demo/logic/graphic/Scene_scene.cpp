@@ -5,9 +5,9 @@
 
 void Scene::_renderLeadingCarSensors()
 {
-  auto&       data = Data::get();
-  const auto& leaderCar = data.logic.leaderCar;
-  auto&       stackRenderer = data.graphic.stackRenderer;
+  auto&       context = Context::get();
+  const auto& leaderCar = context.logic.leaderCar;
+  auto&       stackRenderer = context.graphic.stackRenderer;
 
   if (auto leaderCarData = leaderCar.leaderData())
   {
@@ -53,7 +53,7 @@ void Scene::_renderLeadingCarSensors()
 
 void Scene::_renderFloor(const Camera& camera)
 {
-  auto& graphic = Data::get().graphic;
+  auto& graphic = Context::get().graphic;
 
   // hide the floor if the camera is looking from beneath it
   GlContext::enable(GlContext::States::cullFace);

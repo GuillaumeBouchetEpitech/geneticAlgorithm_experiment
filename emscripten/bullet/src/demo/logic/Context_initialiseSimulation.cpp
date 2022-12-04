@@ -1,11 +1,11 @@
 
-#include "Data.hpp"
+#include "Context.hpp"
 
 #include "framework/math/RandomNumberGenerator.hpp"
 
 #include <limits> // <= std::numeric_limits<T>::max()
 
-void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore)
+void Context::initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore)
 {
     std::vector<glm::vec3> skeletonVertices;
     AnimatedCircuitRenderer::AnimatedVertices groundVertices;
@@ -34,7 +34,7 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
     {
         for (int index : indices)
         {
-            const glm::vec3& vertex = vertices[index];
+            const glm::vec3& vertex = vertices.at(index);
 
             skeletonVertices.push_back(vertex);
 
@@ -74,7 +74,7 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
         {
             const bool firstLine = (index < 2); // hacky
 
-            const auto& color = (firstLine ? whiteColor : colors[index]);
+            const auto& color = (firstLine ? whiteColor : colors.at(index));
 
             const glm::vec3 deformation =
             {
@@ -83,9 +83,9 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
                 RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
-            const glm::vec3 animNormal = (normals[index] + deformation) * 4.0f;
+            const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
-            groundVertices.emplace_back(vertices[index], color, normals[index], animNormal, limitValue);
+            groundVertices.emplace_back(vertices.at(index), color, normals.at(index), animNormal, limitValue);
 
             limitValue += limitStep;
         }
@@ -123,9 +123,9 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
                 RNG::getRangedValue(-maxDeformation, +maxDeformation)
             };
 
-            const glm::vec3 animNormal = (normals[index] + deformation) * 4.0f;
+            const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
-            wallsVertices.emplace_back(vertices[index], color, normals[index], animNormal, limitValue);
+            wallsVertices.emplace_back(vertices.at(index), color, normals.at(index), animNormal, limitValue);
 
             limitValue += limitStep;
         }
@@ -156,8 +156,8 @@ void Data::initialiseSimulation(unsigned int totalCores, unsigned int genomesPer
 
     circuitDimension.center = circuitDimension.min + (circuitDimension.max - circuitDimension.min) * 0.5f;
 
-    graphic.camera.scene.center = logic.simulation->getStartPosition();
-    graphic.camera.scene.distance = 200.0f;
+    graphic.camera.main.center = logic.simulation->getStartPosition();
+    graphic.camera.main.distance = 200.0f;
 
     graphic.animatedCircuitRenderer.initialise(
         skeletonVertices,

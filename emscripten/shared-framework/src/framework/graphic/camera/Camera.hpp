@@ -16,11 +16,28 @@ public:
     glm::mat4 invComposed;
   };
 
+public:
+  enum class ProjectionType
+  {
+    perspective,
+    orthographic,
+  };
+
   struct Perspective
   {
-    float fovy = 70.0f;
-    float near = 0.1f;
-    float far = 500.0f;
+    float fovy;
+    float near;
+    float far;
+  };
+
+  struct Orthographic
+  {
+    float left;
+    float right;
+    float bottom;
+    float top;
+    float near;
+    float far;
   };
 
 public:
@@ -46,11 +63,11 @@ public:
   const glm::vec2& getSize() const;
 
   void setPerspective(const Perspective& perspective);
-  const Perspective& getPerspective() const;
+  void setOrthographic(const Orthographic& orthographic);
+  ProjectionType getProjectionType() const;
 
 public:
-  const MatricesData& getSceneMatricesData() const;
-  const MatricesData& getHudMatricesData() const;
+  const MatricesData& getMatricesData() const;
 
 private:
   glm::vec2 _viewportSize = { 800.0f, 600.0f };
@@ -63,14 +80,16 @@ private:
 
   bool _dirtyProjectionMatrices = true;
 
-  struct Matrices
-  {
-    MatricesData scene;
-    MatricesData hud;
-  }
-  _matrices;
+  MatricesData _matricesData;
 
-  Perspective _perspective;
+  ProjectionType _projectionType;
+
+  union ProjectionData
+  {
+    Perspective perspective;
+    Orthographic orthographic;
+  }
+  _projectionData;
 
   FrustumCulling _frustumCulling;
 

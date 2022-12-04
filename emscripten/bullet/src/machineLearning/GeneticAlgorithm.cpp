@@ -82,9 +82,9 @@ bool GeneticAlgorithm::breedPopulation()
         Genomes tmpBestGenomes;
         tmpBestGenomes.reserve(_eliteGenomes.size() + latestBestGenomes.size());
         for (std::size_t ii = 0; ii < _eliteGenomes.size(); ++ii)
-            tmpBestGenomes.push_back(_eliteGenomes[ii]);
+            tmpBestGenomes.push_back(_eliteGenomes.at(ii));
         for (std::size_t ii = 0; ii < latestBestGenomes.size(); ++ii)
-            tmpBestGenomes.push_back(latestBestGenomes[ii]);
+            tmpBestGenomes.push_back(latestBestGenomes.at(ii));
 
         //
         //
@@ -103,7 +103,7 @@ bool GeneticAlgorithm::breedPopulation()
         // replace the elites with the sorted best genomes
 
         for (std::size_t ii = 0; ii < _eliteGenomes.size(); ++ii)
-            _eliteGenomes[ii] = tmpBestGenomes[ii];
+            _eliteGenomes.at(ii) = tmpBestGenomes.at(ii);
 
     } // refresh the elite genomes internal array
 
@@ -140,12 +140,12 @@ bool GeneticAlgorithm::breedPopulation()
         auto cmpFunc = [&latestBestGenomes](const ParentPair& a, const ParentPair& b)
         {
             float fitnessPairA = (
-                latestBestGenomes[a.parentA].fitness +
-                latestBestGenomes[a.parentB].fitness
+                latestBestGenomes.at(a.parentA).fitness +
+                latestBestGenomes.at(a.parentB).fitness
             );
             float fitnessPairB = (
-                latestBestGenomes[b.parentA].fitness +
-                latestBestGenomes[b.parentB].fitness
+                latestBestGenomes.at(b.parentA).fitness +
+                latestBestGenomes.at(b.parentB).fitness
             );
             return (fitnessPairA > fitnessPairB); // <= the higher the better
         };
@@ -162,8 +162,8 @@ bool GeneticAlgorithm::breedPopulation()
             if (maxOffspring-- <= 0)
                 break;
 
-            const auto& parentGenomeA = latestBestGenomes[parentPair.parentA];
-            const auto& parentGenomeB = latestBestGenomes[parentPair.parentB];
+            const auto& parentGenomeA = latestBestGenomes.at(parentPair.parentA);
+            const auto& parentGenomeB = latestBestGenomes.at(parentPair.parentB);
 
             Genome newOffspring;
 
@@ -200,7 +200,7 @@ bool GeneticAlgorithm::breedPopulation()
     _genomes = std::move(offsprings); // move, no realloc of the vector content
 
     for (std::size_t ii = 0; ii < _genomes.size(); ++ii)
-        _neuralNetworks[ii]->setWeights(_genomes[ii].weights);
+        _neuralNetworks.at(ii)->setWeights(_genomes.at(ii).weights);
 
     ++_currentGeneration;
 
@@ -220,7 +220,7 @@ void GeneticAlgorithm::_getBestGenomes(Genomes& output) const
 
     sortedGenomes.reserve(_genomes.size()); // pre-allocate
     for (std::size_t ii = 0; ii < _genomes.size(); ++ii)
-        sortedGenomes.push_back({ _genomes[ii].fitness, ii });
+        sortedGenomes.push_back({ _genomes.at(ii).fitness, ii });
 
     // sort by fitness
     auto cmpFunc = [](const SortPair& a, const SortPair& b)
@@ -232,7 +232,7 @@ void GeneticAlgorithm::_getBestGenomes(Genomes& output) const
 
     output.reserve(_genomes.size()); // pre-allocate
     for (const auto& sortedGenome : sortedGenomes)
-        output.push_back(_genomes[sortedGenome.index]);
+        output.push_back(_genomes.at(sortedGenome.index));
 }
 
 void GeneticAlgorithm::_reproduce(const Genome& parentA,
@@ -258,9 +258,9 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA,
     for (unsigned int ii = 0; ii < totalWeights; ++ii)
     {
         if (RNG::getRangedValue(0, 100) < chancesForParentA)
-            offspring.weights.push_back(parentA.weights[ii]);
+            offspring.weights.push_back(parentA.weights.at(ii));
         else
-            offspring.weights.push_back(parentB.weights[ii]);
+            offspring.weights.push_back(parentB.weights.at(ii));
     }
 }
 
@@ -288,7 +288,7 @@ const Genomes& GeneticAlgorithm::getGenomes() const
 
 const Genome& GeneticAlgorithm::getBestGenome() const
 {
-    return _eliteGenomes[0];
+    return _eliteGenomes.at(0);
 }
 
 unsigned int GeneticAlgorithm::getGenerationNumber() const

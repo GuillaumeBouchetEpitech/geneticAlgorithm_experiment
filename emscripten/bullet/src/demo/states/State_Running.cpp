@@ -5,7 +5,7 @@
 
 #include "StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphic/Scene.hpp"
 
@@ -20,10 +20,10 @@ void State_Running::update(int deltaTime)
 
     float elapsedTime = float(deltaTime) / 1000.0f;
 
-    auto& data = Data::get();
-    auto& logic = data.logic;
+    auto& context = Context::get();
+    auto& logic = context.logic;
     auto& simulation = *logic.simulation;
-    auto& graphic = data.graphic;
+    auto& graphic = context.graphic;
     auto& camera = graphic.camera;
 
     { // simulation update
@@ -80,8 +80,8 @@ void State_Running::update(int deltaTime)
             {
                 const float lerpRatio = 6.0f * elapsedTime;
 
-                camera.scene.center += (cameraNextCenter - camera.scene.center) * lerpRatio;
-                camera.scene.distance += (cameraNextDistance - camera.scene.distance) * lerpRatio;
+                camera.main.center += (cameraNextCenter - camera.main.center) * lerpRatio;
+                camera.main.distance += (cameraNextDistance - camera.main.distance) * lerpRatio;
             }
 
         } // camera tracking
@@ -91,6 +91,7 @@ void State_Running::update(int deltaTime)
             graphic.backGroundCylindersRenderer.update(elapsedTime);
             graphic.animatedCircuitRenderer.update(elapsedTime);
             graphic.flockingManager.update();
+            graphic.topologyRenderer.update(elapsedTime);
             graphic.postProcess.update(elapsedTime);
         }
     }

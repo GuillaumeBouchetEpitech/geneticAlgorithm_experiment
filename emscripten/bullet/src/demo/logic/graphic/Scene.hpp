@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 

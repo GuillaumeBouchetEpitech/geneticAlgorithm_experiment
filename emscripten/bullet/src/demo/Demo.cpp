@@ -3,7 +3,7 @@
 
 #include "states/StateManager.hpp"
 
-#include "demo/logic/Data.hpp"
+#include "demo/logic/Context.hpp"
 
 #include "demo/logic/graphic/Scene.hpp"
 
@@ -14,7 +14,7 @@
 Demo::Demo(const Definition& def)
     : SDLWindowWrapper("AI", def.width, def.height, 30, SDLWindowWrapper::OpenGlEsVersion::v2)
 {
-    Data::create(def.width, def.height, def.totalCores, def.genomesPerCore);
+    Context::create(def.width, def.height, def.totalCores, def.genomesPerCore);
     StateManager::create();
     Scene::initialise();
 }
@@ -22,7 +22,7 @@ Demo::Demo(const Definition& def)
 Demo::~Demo()
 {
     StateManager::destroy();
-    Data::destroy();
+    Context::destroy();
 }
 
 //
@@ -40,7 +40,7 @@ void Demo::_onUpdate(uint32_t deltaTime)
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    Data::get().logic.metrics.updateTime = microseconds.count();
+    Context::get().logic.metrics.updateTime = microseconds.count();
 }
 
 void Demo::_onRender(const SDL_Window& screen)
@@ -51,7 +51,7 @@ void Demo::_onRender(const SDL_Window& screen)
 
     auto endTime = std::chrono::high_resolution_clock::now();
     auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    Data::get().logic.metrics.renderTime = microseconds.count();
+    Context::get().logic.metrics.renderTime = microseconds.count();
 }
 
 void Demo::_onResize(uint32_t width, uint32_t height)

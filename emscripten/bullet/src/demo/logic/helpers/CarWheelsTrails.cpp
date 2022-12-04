@@ -25,10 +25,11 @@ void CarWheelsTrails::reset(const AbstactSimulation& simulation)
 
   const auto& genomes = simulation.getGenomes();
 
-  for (unsigned int ii = 0; ii < totalCars; ++ii)
+  const std::size_t safeSize = std::min<std::size_t>(totalCars, genomes.size());
+  for (std::size_t ii = 0; ii < safeSize; ++ii)
   {
     // record the trail index with it's genome id in the lookup map
-    _genomeIndexMap[genomes[ii].id] = ii;
+    _genomeIndexMap[genomes.at(ii).id] = ii;
   }
 }
 
@@ -48,5 +49,5 @@ const CarWheelsTrails::WheelsTrail& CarWheelsTrails::getTrailById(int id) const
   if (it == _genomeIndexMap.end())
     D_THROW(std::runtime_error, "trail not found, id: " << id);
 
-  return _allWheelsTrails[it->second];
+  return _allWheelsTrails.at(it->second);
 }

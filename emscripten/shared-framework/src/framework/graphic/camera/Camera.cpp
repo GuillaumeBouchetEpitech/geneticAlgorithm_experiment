@@ -27,41 +27,40 @@ void Camera::computeMatrices()
 
     if (_dirtyProjectionMatrices)
     {
-      const float aspectRatio = float(_viewportSize.x) / _viewportSize.y;
+      _dirtyProjectionMatrices = false;
 
-      _matrices.scene.projection = glm::perspective(
-        glm::radians(_perspective.fovy),
-        aspectRatio,
-        _perspective.near,
-        _perspective.far);
+      if (_projectionType == ProjectionType::perspective)
+      {
+        const float aspectRatio = _viewportSize.x / _viewportSize.y;
+        auto& proj = _projectionData.perspective;
+        _matricesData.projection = glm::perspective(
+          glm::radians(proj.fovy),
+          aspectRatio,
+          proj.near,
+          proj.far);
+      }
+      else
+      {
+        auto& proj = _projectionData.orthographic;
+        _matricesData.projection = glm::ortho(
+          proj.left,
+          proj.right,
+          proj.bottom,
+          proj.top,
+          proj.near,
+          proj.far);
+      }
     }
 
-    _matrices.scene.view = glm::lookAt(_eye, _target, _up);
-    _matrices.scene.composed = _matrices.scene.projection * _matrices.scene.view;
+    _matricesData.view = glm::lookAt(_eye, _target, _up);
+    _matricesData.composed = _matricesData.projection * _matricesData.view;
 
-    _matrices.scene.invComposed = glm::inverse(_matrices.scene.composed);
+    _matricesData.invComposed = glm::inverse(_matricesData.composed);
 
-    _frustumCulling.calculateFrustum(_matrices.scene.projection, _matrices.scene.view);
+    _frustumCulling.calculateFrustum(_matricesData.projection, _matricesData.view);
 
   } // scene
 
-  { // hud
-
-    if (_dirtyProjectionMatrices)
-    {
-      _matrices.hud.projection = glm::ortho(0.0f,_viewportSize.x, 0.0f,_viewportSize.y, -2.0f, 2.0f);
-
-      const glm::vec3 eye = { 0.0f, 0.0f, 1.0f };
-      const glm::vec3 center = { 0.0f, 0.0f, 0.0f };
-      const glm::vec3 upAxis = { 0.0f, 1.0f, 0.0f };
-      _matrices.hud.view = glm::lookAt(eye, center, upAxis);
-
-      _matrices.hud.composed = _matrices.hud.projection * _matrices.hud.view;
-    }
-
-  } // hud
-
-  _dirtyProjectionMatrices = false;
 }
 
 const IFrustumCulling& Camera::getFrustumCulling() const
@@ -75,8 +74,8 @@ bool Camera::sceneToHudCoord(const glm::vec3& scenePos, glm::vec3& hudPos) const
 
   return sceneToScreen(
       scenePos,
-      _matrices.scene.view,
-      _matrices.scene.projection,
+      _matricesData.view,
+      _matricesData.projection,
       hudOrigin, _viewportSize,
       hudPos);
 }
@@ -87,8 +86,8 @@ void Camera::hudToSceneCoord(const glm::vec2& hudPos, glm::vec3& from, glm::vec3
   //origin is top-left and +y mouse is down
   actualPos.y = -actualPos.y;
 
-  glm::vec4 fromV4 = _matrices.scene.invComposed * glm::vec4(actualPos, -1.0f, 1.0f);
-  glm::vec4 toV4 = _matrices.scene.invComposed * glm::vec4(actualPos, 1.0f, 1.0f);
+  glm::vec4 fromV4 = _matricesData.invComposed * glm::vec4(actualPos, -1.0f, 1.0f);
+  glm::vec4 toV4 = _matricesData.invComposed * glm::vec4(actualPos, 1.0f, 1.0f);
 
   // perspective divide ("normalize" homogeneous coordinates)
   fromV4 /= fromV4.w;
@@ -114,18 +113,28 @@ void Camera::setSize(int width, int height)
 
 const glm::vec2& Camera::getSize() const { return _viewportSize; }
 
-void Camera::setPerspective(const Perspective& perspective) { _perspective = perspective; }
-const Camera::Perspective& Camera::getPerspective() const { return _perspective; }
+void Camera::setPerspective(const Perspective& perspective)
+{
+  _projectionType = ProjectionType::perspective;
+  _projectionData.perspective = perspective;
+  _dirtyProjectionMatrices = true;
+}
+
+void Camera::setOrthographic(const Orthographic& orthographic)
+{
+  _projectionType = ProjectionType::orthographic;
+  _projectionData.orthographic = orthographic;
+  _dirtyProjectionMatrices = true;
+}
+
+Camera::ProjectionType Camera::getProjectionType() const
+{
+  return _projectionType;
+}
 
 //
 
-const Camera::MatricesData& Camera::getSceneMatricesData() const
+const Camera::MatricesData& Camera::getMatricesData() const
 {
-  return _matrices.scene;
+  return _matricesData;
 }
-
-const Camera::MatricesData& Camera::getHudMatricesData() const
-{
-  return _matrices.hud;
-}
-

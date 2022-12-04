@@ -1,7 +1,12 @@
 
 #include "DeterministicRng.hpp"
 
-#define	D_RAND_MAX	2147483648
+// constexpr int64_t DeterministicRng::k_randMax = 2147483648;
+
+void DeterministicRng::setSeed(int32_t seed)
+{
+  _seed = uint64_t(seed);
+}
 
 int DeterministicRng::getValue()
 {
@@ -15,10 +20,21 @@ int DeterministicRng::getValue()
 	if (x < 0)
 		x += 0x7fffffff;
 
-	return int((_seed = uint64_t(x)) % (int64_t(D_RAND_MAX) + 1));
+	return int((_seed = uint64_t(x)) % (k_randMax + 1));
 }
 
-void DeterministicRng::setSeed(int32_t seed)
+float DeterministicRng::getNormalisedValue()
 {
-  _seed = uint64_t(seed);
+	return float(getValue()) / float(k_randMax);
 }
+
+int DeterministicRng::getRangedValue(int minVal, int maxVal)
+{
+	return int(getRangedValue(float(minVal), float(maxVal)));
+}
+
+float DeterministicRng::getRangedValue(float minVal, float maxVal)
+{
+	return minVal + getNormalisedValue() * (maxVal - minVal);
+}
+

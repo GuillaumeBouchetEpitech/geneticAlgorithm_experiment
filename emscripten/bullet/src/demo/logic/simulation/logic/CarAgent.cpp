@@ -88,15 +88,15 @@ void CarAgent::update(float elapsedTime, const std::shared_ptr<NeuralNetwork> ne
     neuralNetwork->compute(input, output);
 
     // ensure output range is [0..1]
-    output[0] = glm::clamp(output[0], 0.0f, 1.0f);
-    output[1] = glm::clamp(output[1], 0.0f, 1.0f);
+    output.at(0) = glm::clamp(output.at(0), 0.0f, 1.0f);
+    output.at(1) = glm::clamp(output.at(1), 0.0f, 1.0f);
 
     // switch output range to [-1..1]
-    output[0] = output[0] * 2.0f - 1.0f;
-    output[1] = output[1] * 2.0f - 1.0f;
+    output.at(0) = output.at(0) * 2.0f - 1.0f;
+    output.at(1) = output.at(1) * 2.0f - 1.0f;
 
-    _output.steer = output[0]; // steering angle: left/right
-    _output.speed = output[1]; // speed coef: forward/backward
+    _output.steer = output.at(0); // steering angle: left/right
+    _output.speed = output.at(1); // speed coef: forward/backward
 
     _physicVehicle->setSteeringValue(0, _output.steer * constants::steeringMaxValue);
     _physicVehicle->setSteeringValue(1, _output.steer * constants::steeringMaxValue);
@@ -252,7 +252,7 @@ void CarAgent::_updateSensors()
         for (const auto& eyeElevation : constants::eyeElevations)
             for (const auto& eyeAngle : constants::eyeAngles)
             {
-                CarAgent::Sensor& eyeSensor = _eyeSensors[sensorIndex++];
+                CarAgent::Sensor& eyeSensor = _eyeSensors.at(sensorIndex++);
 
                 const glm::vec4 newFarValue(
                     constants::eyeMaxRange * std::sin(eyeAngle),
