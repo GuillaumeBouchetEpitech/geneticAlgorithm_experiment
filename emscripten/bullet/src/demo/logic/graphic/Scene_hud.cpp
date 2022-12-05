@@ -218,7 +218,7 @@ void Scene::_renderHUD_ortho()
     coreUsageRndr.renderWireframe();
     newLeaderRndr.renderWireframe();
 
-    auto& stackRenderer = graphic.stackRenderer;
+    auto& stackRenderer = graphic.stackRenderers;
 
     { // progresses curve
 
@@ -227,8 +227,8 @@ void Scene::_renderHUD_ortho()
       const glm::vec2 borderPos(8, 160);
       const glm::vec2 borderSize(150, 75);
 
-      stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
-      stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+      stackRenderer.triangles.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, glm::vec4(0,0,0, 0.75f));
+      stackRenderer.wireframes.pushRectangle(borderPos, borderSize, whiteColor);
 
       const float maxFitness = logic.fitnessStats.max();
       float stepWidth = borderSize.x / (logic.fitnessStats.size() - 1);
@@ -249,7 +249,7 @@ void Scene::_renderHUD_ortho()
           (currData / maxFitness) * borderSize.y,
         };
 
-        stackRenderer.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
+        stackRenderer.wireframes.pushLine(borderPos + prevPos, borderPos + currPos, whiteColor);
       }
 
     } // progresses curve
@@ -267,7 +267,8 @@ void Scene::_renderHUD_ortho()
         glm::vec2(100, 60));
     }
 
-    stackRenderer.flush();
+    stackRenderer.wireframes.flush();
+    stackRenderer.triangles.flush();
 
   } // wireframes
 }
@@ -298,7 +299,8 @@ void Scene::_renderHUD_thirdPerson()
 
   const auto& matriceData = camInstance.getMatricesData();
 
-  graphic.stackRenderer.setMatricesData(matriceData);
+  graphic.stackRenderers.wireframes.setMatricesData(matriceData);
+  graphic.stackRenderers.triangles.setMatricesData(matriceData);
   graphic.particleManager.setMatricesData(matriceData);
   graphic.floorRenderer.setMatricesData(matriceData);
   graphic.backGroundCylindersRenderer.setMatricesData(matriceData);
@@ -313,7 +315,8 @@ void Scene::_renderHUD_thirdPerson()
   Scene::_renderLeadingCarSensors();
   graphic.flockingManager.render();
 
-  graphic.stackRenderer.flush();
+  graphic.stackRenderers.wireframes.flush();
+  graphic.stackRenderers.triangles.flush();
 
   graphic.particleManager.render();
 

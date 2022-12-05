@@ -218,7 +218,7 @@ void FlockingManager::render()
 
     GlContext::disable(GlContext::States::depthTest);
 
-    auto& stackRenderer = Context::get().graphic.stackRenderer;
+    auto& stackRenderer = Context::get().graphic.stackRenderers.triangles;
 
     const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
 

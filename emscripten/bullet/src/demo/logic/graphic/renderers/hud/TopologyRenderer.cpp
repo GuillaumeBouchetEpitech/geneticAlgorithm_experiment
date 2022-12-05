@@ -30,8 +30,9 @@ void TopologyRenderer::render(
   const glm::vec4 redColor(1.0f,0.0f,0.0f,0.85f);
   const glm::vec4 blueColor(0.5f,0.5f,1.0f,0.85f);
 
-  graphic.stackRenderer.pushQuad(glm::vec3(position + size * 0.5f, -0.1f), size, glm::vec4(0,0,0, 0.75f));
-  graphic.stackRenderer.pushRectangle(position, size, whiteColor);
+  auto& stackRenderer = graphic.stackRenderers.triangles;
+  stackRenderer.pushQuad(glm::vec3(position + size * 0.5f, -0.1f), size, glm::vec4(0,0,0, 0.75f));
+  graphic.stackRenderers.wireframes.pushRectangle(position, size, whiteColor);
 
   std::vector<unsigned int> topologyArray;
   topologyArray.reserve(logic.annTopology.getInput() + logic.annTopology.getHiddens().size() + logic.annTopology.getOutput());
@@ -96,7 +97,7 @@ void TopologyRenderer::render(
       constexpr float thickness = 10.0f;
       const glm::vec4 color = glm::mix(redColor, glm::vec4(0,1,0,1), neuron.value);
 
-      graphic.stackRenderer.pushThickTriangle2dLine(
+      stackRenderer.pushThickTriangle2dLine(
         start,
         neuron.position,
         thickness,
@@ -116,7 +117,7 @@ void TopologyRenderer::render(
       if (neuron.value > 0.0f)
       {
         const float thickness = 2.0f + neuron.value * +10.0f;
-        graphic.stackRenderer.pushThickTriangle2dLine(
+        stackRenderer.pushThickTriangle2dLine(
           start,
           neuron.position,
           thickness,
@@ -128,7 +129,7 @@ void TopologyRenderer::render(
       else
       {
         const float thickness = 2.0f + neuron.value * -10.0f;
-        graphic.stackRenderer.pushThickTriangle2dLine(
+        stackRenderer.pushThickTriangle2dLine(
           start,
           neuron.position,
           thickness,
@@ -152,7 +153,7 @@ void TopologyRenderer::render(
         const float coef = glm::clamp(neuron.value, 0.0f, 1.0f);
         const float radius = 2.0f + coef * 2.0f;
 
-        graphic.stackRenderer.pushCircle(glm::vec3(neuron.position, +0.2f), radius, whiteColor);
+        stackRenderer.pushCircle(glm::vec3(neuron.position, +0.2f), radius, whiteColor);
       }
     }
 
@@ -170,10 +171,10 @@ void TopologyRenderer::render(
 
     std::array<ValueRange, 4> valueRanges
     {{
-      { min: 0.75f, max: 1.00f, alpha: 1.00f, depth: +0.4f },
-      { min: 0.50f, max: 0.75f, alpha: 0.85f, depth: +0.3f },
-      { min: 0.25f, max: 0.50f, alpha: 0.70f, depth: +0.2f },
-      { min: 0.00f, max: 0.25f, alpha: 0.55f, depth: +0.1f },
+      { 0.75f, 1.00f, 1.00f, +0.4f },
+      { 0.50f, 0.75f, 0.85f, +0.3f },
+      { 0.25f, 0.50f, 0.70f, +0.2f },
+      { 0.00f, 0.25f, 0.55f, +0.1f },
     }};
 
     DeterministicRng rng;
@@ -221,23 +222,22 @@ void TopologyRenderer::render(
 
             const glm::vec4 targetColor (weight > 0.0f ? positiveColor : negativeColor);
 
-            graphic.stackRenderer.pushThickTriangle2dLine(
+            stackRenderer.pushThickTriangle2dLine(
               prevNeuron.position,
               currNeuron.position,
               targetThickness,
               targetColor,
               range.depth);
 
-            // float tmpVal = _animationTime + rng.getRangedValue(0.0f, 1.0f);
-            float tmpVal = _animationTime + connectionValues.at(currConnectionIndex);
-            while (tmpVal > 1.0f)
-              tmpVal -= 1.0f;
+            float tmpCoef = _animationTime + connectionValues.at(currConnectionIndex);
+            while (tmpCoef > 1.0f)
+              tmpCoef -= 1.0f;
 
             const glm::vec2 diff = currNeuron.position - prevNeuron.position;
 
-            graphic.stackRenderer.pushThickTriangle2dLine(
-              prevNeuron.position + diff * (tmpVal - 0.05f),
-              prevNeuron.position + diff * (tmpVal + 0.05f),
+            stackRenderer.pushThickTriangle2dLine(
+              prevNeuron.position + diff * (tmpCoef - 0.05f),
+              prevNeuron.position + diff * (tmpCoef + 0.05f),
               targetThickness * 1.5f,
               targetColor,
               range.depth + 0.01f);

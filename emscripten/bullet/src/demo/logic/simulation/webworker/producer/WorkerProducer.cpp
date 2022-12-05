@@ -7,7 +7,10 @@
 
 #include "demo/defines.hpp"
 
-WorkerProducer::WorkerProducer(const Definition& def)
+WorkerProducer::WorkerProducer(const Definition& def, GeneticAlgorithm& geneticAlgorithm, uint32_t coreIndex)
+    : _def(def)
+    , _geneticAlgorithm(geneticAlgorithm)
+    , _coreIndex(coreIndex)
 {
     _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
 
@@ -76,8 +79,13 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
         {
             receivedMsg >> _coreState.delta >> _coreState.genomesAlive;
 
-            for (auto& car : _carsData)
+            std::vector<float> neuronsValues;
+
+            // for (auto& car : _carsData)
+            for (uint32_t carIndex = 0; carIndex < _carsData.size(); ++carIndex)
             {
+                auto& car = _carsData.at(carIndex);
+
                 receivedMsg
                     >> car.isAlive
                     >> car.life
@@ -126,6 +134,17 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize)
 
                 auto& output = car.neuralNetworkOutput;
                 receivedMsg >> output.steer >> output.speed;
+
+                std::size_t totalNeuronsValues;
+                receivedMsg >> totalNeuronsValues;
+                neuronsValues.clear();
+                neuronsValues.resize(totalNeuronsValues);
+                for (std::size_t neuronIndex = 0; neuronIndex < totalNeuronsValues; ++neuronIndex)
+                    receivedMsg >> neuronsValues.at(neuronIndex);
+
+                _geneticAlgorithm.getNeuralNetworks().at(_coreIndex * _def.genomesPerCore + carIndex)->setNeuronsValues(neuronsValues);
+
+                // TODO: neural network outputs here
             }
 
             _flags[asValue(Status::Updated)] = true;

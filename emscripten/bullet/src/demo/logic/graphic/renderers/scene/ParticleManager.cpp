@@ -263,7 +263,7 @@ void ParticleManager::render()
     }
 
     {
-        auto& stackRenderer = Context::get().graphic.stackRenderer;
+        auto& stackRenderer = Context::get().graphic.stackRenderers.triangles;
 
         for (auto& trailParticle : _trailParticles)
         {

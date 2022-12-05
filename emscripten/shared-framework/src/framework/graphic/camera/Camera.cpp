@@ -113,17 +113,33 @@ void Camera::setSize(int width, int height)
 
 const glm::vec2& Camera::getSize() const { return _viewportSize; }
 
-void Camera::setPerspective(const Perspective& perspective)
+void Camera::setPerspective(
+  float fovy,
+  float near,
+  float far)
 {
   _projectionType = ProjectionType::perspective;
-  _projectionData.perspective = perspective;
+  _projectionData.perspective.fovy = fovy;
+  _projectionData.perspective.near = near;
+  _projectionData.perspective.far = far;
   _dirtyProjectionMatrices = true;
 }
 
-void Camera::setOrthographic(const Orthographic& orthographic)
+void Camera::setOrthographic(
+  float left,
+  float right,
+  float bottom,
+  float top,
+  float near,
+  float far)
 {
   _projectionType = ProjectionType::orthographic;
-  _projectionData.orthographic = orthographic;
+  _projectionData.orthographic.left = left;
+  _projectionData.orthographic.right = right;
+  _projectionData.orthographic.bottom = bottom;
+  _projectionData.orthographic.top = top;
+  _projectionData.orthographic.near = near;
+  _projectionData.orthographic.far = far;
   _dirtyProjectionMatrices = true;
 }
 

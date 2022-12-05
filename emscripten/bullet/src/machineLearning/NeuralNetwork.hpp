@@ -41,6 +41,7 @@ public: // getter
     const NeuralNetworkTopology& getTopology() const;
 
     void getNeuronsValues(std::vector<float>& neuronsOutput);
+    void setNeuronsValues(const std::vector<float>& neuronsvalues);
 
 };
 

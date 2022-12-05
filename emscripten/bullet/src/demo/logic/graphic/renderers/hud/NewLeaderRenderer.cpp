@@ -44,12 +44,9 @@ void NewLeaderRenderer::renderWireframe()
   if (!_isVisible)
       return;
 
-  auto& context = Context::get();
-  auto& graphic = context.graphic;
-
   glm::vec2 textPos = { _screenCoord.x + 50, _screenCoord.y + 50 };
 
-  graphic.stackRenderer.pushLine(_screenCoord, textPos, {1, 1, 1});
+  Context::get().graphic.stackRenderers.wireframes.pushLine(_screenCoord, textPos, {1, 1, 1});
 }
 
 void NewLeaderRenderer::renderHudText()

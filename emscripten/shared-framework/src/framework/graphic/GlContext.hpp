@@ -143,4 +143,7 @@ public:
   // static void polygonModeAsLine();
   // static void polygonModeAsFill();
 
+
+  static int getMaxTextureSize();
+
 };

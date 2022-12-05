@@ -1,7 +1,9 @@
 
 #pragma once
 
-#include "graphic/renderers/StackRenderer.hpp"
+#include "graphic/renderers/WireframesStackRenderer.hpp"
+#include "graphic/renderers/TrianglesStackRenderer.hpp"
+
 #include "graphic/renderers/scene/ParticleManager.hpp"
 #include "graphic/renderers/scene/FloorRenderer.hpp"
 #include "graphic/renderers/scene/BackGroundCylindersRenderer.hpp"
@@ -103,7 +105,12 @@ public:
         }
         camera;
 
-        StackRenderer stackRenderer;
+        struct StackRenderers
+        {
+            WireframesStackRenderer wireframes;
+            TrianglesStackRenderer triangles;
+        }
+        stackRenderers;
         ParticleManager particleManager;
         FloorRenderer floorRenderer;
         BackGroundCylindersRenderer backGroundCylindersRenderer;

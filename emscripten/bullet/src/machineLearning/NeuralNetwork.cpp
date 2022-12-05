@@ -237,3 +237,11 @@ void NeuralNetwork::getNeuronsValues(std::vector<float>& neuronsOutput)
         for (auto& neuron : layer)
             neuronsOutput.push_back(neuron.value);
 }
+
+void NeuralNetwork::setNeuronsValues(const std::vector<float>& neuronsvalues)
+{
+    int valueIndex = 0;
+    for (auto& layer : _layers)
+        for (auto& neuron : layer)
+            neuron.value = neuronsvalues.at(valueIndex++);
+}

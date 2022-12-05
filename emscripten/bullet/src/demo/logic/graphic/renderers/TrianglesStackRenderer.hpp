@@ -11,7 +11,8 @@
 #include <vector>
 #include <memory>
 
-struct StackRenderer
+
+struct TrianglesStackRenderer
 {
 public:
     struct Vertex
@@ -27,8 +28,8 @@ public:
     using Vertices = std::vector<Vertex>;
 
 public:
-    StackRenderer() = default;
-    ~StackRenderer() = default;
+    TrianglesStackRenderer() = default;
+    ~TrianglesStackRenderer() = default;
 
 public:
     void initialise();
@@ -36,9 +37,6 @@ public:
 
 public:
     void push(const Vertex& vertex);
-    void pushLine(const glm::vec3& posA, const glm::vec3& posB, const glm::vec4& color);
-    void pushLine(const glm::vec3& posA, const glm::vec3& posB, const glm::vec3& color);
-    void pushCross(const glm::vec3& pos, const glm::vec3& color, float halfExtent);
 
     void pushTriangle(
         const glm::vec3& posA,
@@ -54,12 +52,7 @@ public:
         const glm::vec3& posC,
         const glm::vec4& color);
 
-    // 2d
-    void pushLine(const glm::vec2& posA, const glm::vec2& posB, const glm::vec4& color);
-    void pushLine(const glm::vec2& posA, const glm::vec2& posB, const glm::vec3& color);
-    void pushRectangle(const glm::vec2& pos, const glm::vec2& size, const glm::vec3& color);
-    // 2d
-
+public:
     void pushQuad(
         const glm::vec2& center,
         const glm::vec2& size,
@@ -70,6 +63,7 @@ public:
         const glm::vec2& size,
         const glm::vec4& color);
 
+public:
     void pushCircle(
         const glm::vec2& center,
         float radius,
@@ -124,24 +118,13 @@ public:
 
 public:
     void flush();
-    void flushLines();
-    void flushTriangles();
 
-    std::size_t getLinesCount() const;
     std::size_t getTrianglesCount() const;
 
 private:
     std::shared_ptr<ShaderProgram> _shader;
-
-    struct Geometries
-    {
-        Geometry lines;
-        Geometry triangles;
-    }
-    _geometries;
-
-    Vertices _lineVertices;
-    Vertices _triangleVertices;
+    Geometry _geometry;
+    Vertices _vertices;
 
     Camera::MatricesData _matricesData;
 

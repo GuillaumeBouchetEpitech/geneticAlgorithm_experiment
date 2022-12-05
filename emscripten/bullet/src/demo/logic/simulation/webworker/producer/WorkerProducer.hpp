@@ -39,6 +39,10 @@ public:
 private:
     worker_handle _workerHandle;
 
+    Definition _def;
+    GeneticAlgorithm& _geneticAlgorithm;
+    uint32_t _coreIndex;
+
     enum class Status : unsigned int
     {
         WebWorkerLoaded = 0,
@@ -56,7 +60,7 @@ private:
     MessageBuffer _message;
 
 public:
-    WorkerProducer(const Definition &def);
+    WorkerProducer(const Definition &def, GeneticAlgorithm& geneticAlgorithm, uint32_t coreIndex);
 
 private:
     static void _onMessageCallback(char* dataPointer, int dataSize, void* arg);

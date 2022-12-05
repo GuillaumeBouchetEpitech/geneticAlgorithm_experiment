@@ -1,5 +1,5 @@
 
-#include "StackRenderer.hpp"
+#include "TrianglesStackRenderer.hpp"
 
 #include "demo/logic/graphicIds.hpp"
 
@@ -9,12 +9,11 @@
 
 #include "framework/graphic/ResourceManager.hpp"
 
-// #include "framework/graphic/ShaderProgramBuilder.hpp"
 #include "framework/graphic/GeometryBuilder.hpp"
 
 #include "demo/logic/Context.hpp"
 
-void StackRenderer::initialise()
+void TrianglesStackRenderer::initialise()
 {
     _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::stackRenderer));
 
@@ -25,84 +24,31 @@ void StackRenderer::initialise()
         geometryBuilder
             .reset()
             .setShader(*_shader)
-            .setPrimitiveType(Geometry::PrimitiveType::lines)
+            .setPrimitiveType(Geometry::PrimitiveType::triangles)
             .addVbo()
             .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-            .addVboAttribute("a_color", Geometry::AttrType::Vec4f, 3);
+            .addVboAttribute("a_color", Geometry::AttrType::Vec4f, 3)
+            .build(_geometry);
 
-        geometryBuilder.build(_geometries.lines);
-
-        geometryBuilder
-            .setPrimitiveType(Geometry::PrimitiveType::triangles);
-
-        geometryBuilder.build(_geometries.triangles);
-
-        _geometries.lines.setPrimitiveCount(0);
-        _geometries.triangles.setPrimitiveCount(0);
+        _geometry.setPrimitiveCount(0);
 
     }
 
     constexpr std::size_t preAllocatedSize = 1024 * 32; // 32Ko
-    _lineVertices.reserve(preAllocatedSize);
-    _triangleVertices.reserve(preAllocatedSize);
+    _vertices.reserve(preAllocatedSize);
 }
 
-void StackRenderer::setMatricesData(const Camera::MatricesData& matricesData)
+void TrianglesStackRenderer::setMatricesData(const Camera::MatricesData& matricesData)
 {
     _matricesData = matricesData;
 }
 
-//
-
-void StackRenderer::pushLine(
-    const glm::vec3& posA,
-    const glm::vec3& posB,
-    const glm::vec4& color)
+std::size_t TrianglesStackRenderer::getTrianglesCount() const
 {
-    if (_lineVertices.size() + 2 >= _lineVertices.capacity())
-        flushLines();
-
-    _lineVertices.emplace_back(posA, color);
-    _lineVertices.emplace_back(posB, color);
+    return _vertices.size();
 }
 
-void StackRenderer::pushLine(
-    const glm::vec3& posA,
-    const glm::vec3& posB,
-    const glm::vec3& color)
-{
-    pushLine(posA, posB, glm::vec4(color, 1.0f));
-}
-
-void StackRenderer::pushCross(
-    const glm::vec3& pos,
-    const glm::vec3& color,
-    float halfExtent)
-{
-    if (halfExtent <= 0)
-        return;
-
-    std::array<std::array<glm::vec3, 2>, 3> vertices
-    {{
-        {{
-            { pos.x - halfExtent, pos.y, pos.z },
-            { pos.x + halfExtent, pos.y, pos.z }
-        }},
-        {{
-            { pos.x, pos.y - halfExtent, pos.z },
-            { pos.x, pos.y + halfExtent, pos.z }
-        }},
-        {{
-            { pos.x, pos.y, pos.z - halfExtent },
-            { pos.x, pos.y, pos.z + halfExtent }
-        }}
-    }};
-
-    for (const auto& elem : vertices)
-        pushLine(elem.at(0), elem.at(1), color);
-}
-
-void StackRenderer::pushTriangle(
+void TrianglesStackRenderer::pushTriangle(
     const glm::vec3& posA,
     const glm::vec3& posB,
     const glm::vec3& posC,
@@ -110,15 +56,15 @@ void StackRenderer::pushTriangle(
     const glm::vec4& colorB,
     const glm::vec4& colorC)
 {
-    if (_triangleVertices.size() + 3 >= _triangleVertices.capacity())
-        flushTriangles();
+    if (_vertices.size() + 3 >= _vertices.capacity())
+        flush();
 
-    _triangleVertices.emplace_back(posA, colorA);
-    _triangleVertices.emplace_back(posB, colorB);
-    _triangleVertices.emplace_back(posC, colorC);
+    _vertices.emplace_back(posA, colorA);
+    _vertices.emplace_back(posB, colorB);
+    _vertices.emplace_back(posC, colorC);
 }
 
-void StackRenderer::pushTriangle(
+void TrianglesStackRenderer::pushTriangle(
     const glm::vec3& posA,
     const glm::vec3& posB,
     const glm::vec3& posC,
@@ -134,7 +80,66 @@ void StackRenderer::pushTriangle(
     );
 }
 
-void StackRenderer::pushQuad(
+
+void TrianglesStackRenderer::flush()
+{
+    if (_vertices.empty())
+        return;
+
+    if (!_shader)
+        D_THROW(std::runtime_error, "shader not setup");
+
+    _shader->bind();
+    _shader->setUniform("u_composedMatrix", _matricesData.composed);
+
+    _geometry.updateBuffer(0, _vertices, true);
+    _geometry.setPrimitiveCount(uint32_t(_vertices.size()));
+    _geometry.render();
+
+    _vertices.clear();
+}
+
+void TrianglesStackRenderer::pushThickTriangle2dLine(
+    const glm::vec2& posA,
+    const glm::vec2& posB,
+    float thicknessA,
+    float thicknessB,
+    const glm::vec4& colorA,
+    const glm::vec4& colorB,
+    float z)
+{
+    const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
+
+    const glm::vec2 direction = { std::cos(angle), std::sin(angle) };
+    const glm::vec2 stepA = direction * thicknessA * 0.5f;
+    const glm::vec2 stepB = direction * thicknessB * 0.5f;
+
+    std::array<glm::vec3, 4> vertices
+    {{
+        { posA.x - stepA.x, posA.y - stepA.y, z },
+        { posA.x + stepA.x, posA.y + stepA.y, z },
+        { posB.x - stepB.x, posB.y - stepB.y, z },
+        { posB.x + stepB.x, posB.y + stepB.y, z },
+    }};
+
+    pushTriangle(
+        vertices.at(0),
+        vertices.at(3),
+        vertices.at(2),
+        colorA,
+        colorB,
+        colorB);
+
+    pushTriangle(
+        vertices.at(0),
+        vertices.at(1),
+        vertices.at(3),
+        colorA,
+        colorA,
+        colorB);
+}
+
+void TrianglesStackRenderer::pushQuad(
     const glm::vec2& center,
     const glm::vec2& size,
     const glm::vec4& color,
@@ -160,7 +165,7 @@ void StackRenderer::pushQuad(
         pushTriangle(vertices.at(index[0]), vertices.at(index[1]), vertices.at(index[2]), color);
 }
 
-void StackRenderer::pushQuad(
+void TrianglesStackRenderer::pushQuad(
     const glm::vec2& center,
     const glm::vec2& size,
     const glm::vec4& color)
@@ -168,7 +173,7 @@ void StackRenderer::pushQuad(
     pushQuad(center, size, color, 0.0f);
 }
 
-void StackRenderer::pushCircle(
+void TrianglesStackRenderer::pushCircle(
     const glm::vec2& center,
     float radius,
     const glm::vec4& color,
@@ -209,7 +214,7 @@ void StackRenderer::pushCircle(
     }
 }
 
-void StackRenderer::pushCircle(
+void TrianglesStackRenderer::pushCircle(
     const glm::vec2& center,
     float radius,
     const glm::vec4& color)
@@ -217,47 +222,7 @@ void StackRenderer::pushCircle(
     pushCircle(center, radius, color, 0.0f);
 }
 
-void StackRenderer::pushThickTriangle2dLine(
-    const glm::vec2& posA,
-    const glm::vec2& posB,
-    float thicknessA,
-    float thicknessB,
-    const glm::vec4& colorA,
-    const glm::vec4& colorB,
-    float z)
-{
-    const float angle = std::atan2(posB.y - posA.y, posB.x - posA.x) + math::hpi;
-
-    const glm::vec2 direction = { std::cos(angle), std::sin(angle) };
-    const glm::vec2 stepA = direction * thicknessA * 0.5f;
-    const glm::vec2 stepB = direction * thicknessB * 0.5f;
-
-    std::array<glm::vec3, 4> vertices
-    {{
-        { posA.x - stepA.x, posA.y - stepA.y, z },
-        { posA.x + stepA.x, posA.y + stepA.y, z },
-        { posB.x - stepB.x, posB.y - stepB.y, z },
-        { posB.x + stepB.x, posB.y + stepB.y, z },
-    }};
-
-    pushTriangle(
-        vertices.at(0),
-        vertices.at(3),
-        vertices.at(2),
-        colorA,
-        colorB,
-        colorB);
-
-    pushTriangle(
-        vertices.at(0),
-        vertices.at(1),
-        vertices.at(3),
-        colorA,
-        colorA,
-        colorB);
-}
-
-void StackRenderer::pushThickTriangle2dLine(
+void TrianglesStackRenderer::pushThickTriangle2dLine(
     const glm::vec2& posA,
     const glm::vec2& posB,
     float thicknessA,
@@ -268,7 +233,7 @@ void StackRenderer::pushThickTriangle2dLine(
     pushThickTriangle2dLine(posA, posB, thicknessA, thicknessB, colorA, colorB, 0.0f);
 }
 
-void StackRenderer::pushThickTriangle2dLine(
+void TrianglesStackRenderer::pushThickTriangle2dLine(
     const glm::vec2& posA,
     const glm::vec2& posB,
     float thickness,
@@ -278,7 +243,7 @@ void StackRenderer::pushThickTriangle2dLine(
     pushThickTriangle2dLine(posA, posB, thickness, thickness, color, color, z);
 }
 
-void StackRenderer::pushThickTriangle2dLine(
+void TrianglesStackRenderer::pushThickTriangle2dLine(
     const glm::vec2& posA,
     const glm::vec2& posB,
     float thickness,
@@ -287,7 +252,7 @@ void StackRenderer::pushThickTriangle2dLine(
     pushThickTriangle2dLine(posA, posB, thickness, thickness, color, color, 0.0f);
 }
 
-void StackRenderer::pushThickTriangle3dLine(
+void TrianglesStackRenderer::pushThickTriangle3dLine(
     const glm::vec3& posA,
     const glm::vec3& posB,
     float thicknessA,
@@ -382,7 +347,7 @@ void StackRenderer::pushThickTriangle3dLine(
                 quad.at(index[2]).color);
 }
 
-void StackRenderer::pushThickTriangle3dLine(
+void TrianglesStackRenderer::pushThickTriangle3dLine(
     const glm::vec3& posA,
     const glm::vec3& posB,
     float thickness,
@@ -395,84 +360,4 @@ void StackRenderer::pushThickTriangle3dLine(
         thickness,
         color,
         color);
-}
-
-void StackRenderer::pushLine(const glm::vec2& posA,
-                             const glm::vec2& posB,
-                             const glm::vec4& color)
-{
-    StackRenderer::pushLine({ posA.x, posA.y, 0 }, { posB.x, posB.y, 0 }, color);
-}
-
-void StackRenderer::pushLine(
-    const glm::vec2& posA,
-    const glm::vec2& posB,
-    const glm::vec3& color)
-{
-    StackRenderer::pushLine({ posA.x, posA.y, 0 }, { posB.x, posB.y, 0 }, glm::vec4(color, 1.0f));
-}
-
-
-void StackRenderer::pushRectangle(const glm::vec2& pos,
-                                  const glm::vec2& size,
-                                  const glm::vec3& color)
-{
-    const glm::vec2 farPos = pos + size;
-
-    StackRenderer::pushLine(pos, {farPos.x, pos.y}, color);
-    StackRenderer::pushLine({farPos.x, pos.y}, farPos, color);
-    StackRenderer::pushLine(farPos, {pos.x, farPos.y}, color);
-    StackRenderer::pushLine({pos.x, farPos.y}, pos, color);
-}
-
-void StackRenderer::flush()
-{
-    flushLines();
-    flushTriangles();
-}
-
-void StackRenderer::flushLines()
-{
-    if (_lineVertices.empty())
-        return;
-
-    if (!_shader)
-        D_THROW(std::runtime_error, "shader not setup");
-
-    _shader->bind();
-    _shader->setUniform("u_composedMatrix", _matricesData.composed);
-
-    _geometries.lines.updateBuffer(0, _lineVertices, true);
-    _geometries.lines.setPrimitiveCount(uint32_t(_lineVertices.size()));
-    _geometries.lines.render();
-
-    _lineVertices.clear();
-}
-
-void StackRenderer::flushTriangles()
-{
-    if (_triangleVertices.empty())
-        return;
-
-    if (!_shader)
-        D_THROW(std::runtime_error, "shader not setup");
-
-    _shader->bind();
-    _shader->setUniform("u_composedMatrix", _matricesData.composed);
-
-    _geometries.triangles.updateBuffer(0, _triangleVertices, true);
-    _geometries.triangles.setPrimitiveCount(uint32_t(_triangleVertices.size()));
-    _geometries.triangles.render();
-
-    _triangleVertices.clear();
-}
-
-std::size_t StackRenderer::getLinesCount() const
-{
-    return _lineVertices.size();
-}
-
-std::size_t StackRenderer::getTrianglesCount() const
-{
-    return _triangleVertices.size();
 }

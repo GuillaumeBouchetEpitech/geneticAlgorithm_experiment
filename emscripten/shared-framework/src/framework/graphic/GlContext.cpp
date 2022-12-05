@@ -738,3 +738,12 @@ void GlContext::clearDepth(float value)
 // {
 //   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 // }
+
+
+int GlContext::getMaxTextureSize()
+{
+  int maxTextureSize = 0;
+  glCheck(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize));
+  return maxTextureSize;
+}
+

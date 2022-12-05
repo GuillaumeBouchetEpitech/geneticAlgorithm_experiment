@@ -20,7 +20,7 @@ void CoreUsageRenderer::renderWireframe()
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  auto& stackRenderer = graphic.stackRenderer;
+  auto& stackRenderers = graphic.stackRenderers;
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
@@ -37,8 +37,8 @@ void CoreUsageRenderer::renderWireframe()
 
     const glm::vec4 bgColor = allTimeMaxDelta > k_slowdownDelta ? glm::vec4(1,0,0, 1.00f) : glm::vec4(0,0,0, 0.75f);
 
-    stackRenderer.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, bgColor);
-    stackRenderer.pushRectangle(borderPos, borderSize, whiteColor);
+    stackRenderers.triangles.pushQuad(glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, bgColor);
+    stackRenderers.wireframes.pushRectangle(borderPos, borderSize, whiteColor);
 
   } // background
 
@@ -51,7 +51,7 @@ void CoreUsageRenderer::renderWireframe()
     {
       const float ratio = currDivider / verticalSize;
 
-      stackRenderer.pushLine(
+      stackRenderers.wireframes.pushLine(
         borderPos + glm::vec2(0, borderSize.y * ratio),
         borderPos + glm::vec2(borderSize.x, borderSize.y * ratio),
         whiteColor);
@@ -75,7 +75,7 @@ void CoreUsageRenderer::renderWireframe()
         const float prevHeight = borderSize.y * prevDelta / verticalSize;
         const float currHeight = borderSize.y * currDelta / verticalSize;
 
-        stackRenderer.pushLine(
+        stackRenderers.wireframes.pushLine(
           borderPos + glm::vec2((statIndex + 0) * widthStep, prevHeight),
           borderPos + glm::vec2((statIndex + 1) * widthStep, currHeight),
           whiteColor);
@@ -83,7 +83,8 @@ void CoreUsageRenderer::renderWireframe()
 
   }
 
-  stackRenderer.flush();
+  stackRenderers.wireframes.flush();
+  stackRenderers.triangles.flush();
 }
 
 void CoreUsageRenderer::renderHudText()

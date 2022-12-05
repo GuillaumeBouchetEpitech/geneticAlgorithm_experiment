@@ -9,7 +9,7 @@ void renderLeaderEye(
 {
   auto& context = Context::get();
   auto& logic = context.logic;
-  auto& graphic = context.graphic;
+  auto& stackRenderers = context.graphic.stackRenderers;
 
   if (auto leaderData = logic.leaderCar.leaderData())
   {
@@ -17,7 +17,7 @@ void renderLeaderEye(
     const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
     const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-    graphic.stackRenderer.pushRectangle(position, size, whiteColor);
+    stackRenderers.wireframes.pushRectangle(position, size, whiteColor);
 
     //
     //
@@ -50,11 +50,11 @@ void renderLeaderEye(
     {
       const auto& position = allPositions.at(ii);
 
-      graphic.stackRenderer.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
+      stackRenderers.wireframes.pushRectangle(position - eyeSize * 0.5f, eyeSize, whiteColor);
 
       glm::vec3 color = glm::mix(redColor, greenColor, leaderData->eyeSensors.at(ii).value);
 
-      graphic.stackRenderer.pushQuad(position, eyeSize, glm::vec4(color, 1.0f));
+      stackRenderers.triangles.pushQuad(position, eyeSize, glm::vec4(color, 1.0f));
     }
   }
 }

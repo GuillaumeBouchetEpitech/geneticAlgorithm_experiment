@@ -239,6 +239,7 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
     _messageToSend << delta << genomesAlive;
 
     glm::mat4 transform;
+    std::vector<float> neuronsValues;
 
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
     {
@@ -294,6 +295,14 @@ void WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSte
 
         const auto& output = car.getNeuralNetworkOutput();
         _messageToSend << output.steer << output.speed;
+
+        neuronsValues.clear();
+        _neuralNetworks.at(ii)->getNeuronsValues(neuronsValues);
+        _messageToSend << neuronsValues.size();
+        for (const auto& currValue : neuronsValues)
+            _messageToSend << currValue;
+
+        // TODO: neural network outputs here
     }
 
     _sendBackToProducer();

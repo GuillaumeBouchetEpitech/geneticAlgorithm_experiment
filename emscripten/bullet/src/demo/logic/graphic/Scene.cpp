@@ -31,7 +31,8 @@ void Scene::renderSimple()
   { // scene
 
     const Camera& camInstance = graphic.camera.main.scene;
-    graphic.stackRenderer.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.wireframes.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.triangles.setMatricesData(camInstance.getMatricesData());
     graphic.particleManager.setMatricesData(camInstance.getMatricesData());
     graphic.animatedCircuitRenderer.setMatricesData(camInstance.getMatricesData());
 
@@ -44,7 +45,8 @@ void Scene::renderSimple()
   { // HUD
 
     const Camera& camInstance = graphic.camera.main.hud;
-    graphic.stackRenderer.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.wireframes.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.triangles.setMatricesData(camInstance.getMatricesData());
     graphic.particleManager.setMatricesData(camInstance.getMatricesData());
     graphic.textRenderer.setMatricesData(camInstance.getMatricesData());
 
@@ -69,7 +71,8 @@ void Scene::renderAll()
     const Camera& camInstance = camera.main.scene;
     const auto& matricesData = camInstance.getMatricesData();
 
-    graphic.stackRenderer.setMatricesData(matricesData);
+    graphic.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.stackRenderers.triangles.setMatricesData(matricesData);
     graphic.particleManager.setMatricesData(matricesData);
     graphic.floorRenderer.setMatricesData(matricesData);
     graphic.backGroundCylindersRenderer.setMatricesData(matricesData);
@@ -88,7 +91,8 @@ void Scene::renderAll()
 
     graphic.particleManager.render();
 
-    graphic.stackRenderer.flush();
+    graphic.stackRenderers.wireframes.flush();
+    graphic.stackRenderers.triangles.flush();
 
     graphic.modelsRenderer.render(camInstance);
     graphic.animatedCircuitRenderer.renderGround();
@@ -98,7 +102,8 @@ void Scene::renderAll()
   { // HUD
 
     const auto& matricesData = graphic.camera.main.hud.getMatricesData();
-    graphic.stackRenderer.setMatricesData(matricesData);
+    graphic.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.stackRenderers.triangles.setMatricesData(matricesData);
     graphic.particleManager.setMatricesData(matricesData);
     graphic.floorRenderer.setMatricesData(matricesData);
     graphic.backGroundCylindersRenderer.setMatricesData(matricesData);

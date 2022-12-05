@@ -62,8 +62,17 @@ public:
   void setSize(int width, int height);
   const glm::vec2& getSize() const;
 
-  void setPerspective(const Perspective& perspective);
-  void setOrthographic(const Orthographic& orthographic);
+  void setPerspective(
+    float fovy,
+    float near,
+    float far);
+  void setOrthographic(
+    float left,
+    float right,
+    float bottom,
+    float top,
+    float near,
+    float far);
   ProjectionType getProjectionType() const;
 
 public:

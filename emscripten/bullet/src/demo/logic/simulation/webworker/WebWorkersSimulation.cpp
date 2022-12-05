@@ -54,8 +54,8 @@ void WebWorkersSimulation::initialise(const Definition& def)
     workerDef.neuralNetworkTopology = def.neuralNetworkTopology;
 
     _workerProducers.reserve(_totalCores);
-    for (unsigned int ii = 0; ii < _totalCores; ++ii)
-        _workerProducers.emplace_back(std::make_shared<WorkerProducer>(workerDef));
+    for (uint32_t coreIndex = 0; coreIndex < _totalCores; ++coreIndex)
+        _workerProducers.emplace_back(std::make_shared<WorkerProducer>(workerDef, _geneticAlgorithm, coreIndex));
 
     _currentRequest = WorkerRequest::WorkersLoading;
 }

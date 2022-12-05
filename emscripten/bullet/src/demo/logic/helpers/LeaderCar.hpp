@@ -10,8 +10,8 @@
 class LeaderCar
 {
 private:
-  float _timeoutUntilNewLeader = 0;
-  int _index = -1;
+  float _countdownUntilNewLeader = 0;
+  int _carIndex = -1;
   float _totalTimeAsLeader = 0;
   glm::vec3 _carPosition = { 0, 0, 0 };
 

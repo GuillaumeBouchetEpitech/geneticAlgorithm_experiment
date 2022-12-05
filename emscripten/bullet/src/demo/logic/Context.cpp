@@ -32,25 +32,25 @@ void Context::initialise(unsigned int width, unsigned int height, unsigned int t
     {
         graphic.camera.viewportSize = { width, height };
 
-        graphic.camera.main.scene.setPerspective({ 70.0f, 0.1f, 1500.0f });
+        graphic.camera.main.scene.setPerspective(70.0f, 0.1f, 1500.0f);
 
-        graphic.camera.main.hud.setOrthographic({
+        graphic.camera.main.hud.setOrthographic(
             0.0f, float(width),
             0.0f, float(height),
-            -10.0f, +10.0f
-        });
+            -10.0f, +10.0f);
         graphic.camera.main.hud.lookAt(
             glm::vec3(0, 0, 1),
             glm::vec3(0, 0, 0),
             glm::vec3(0, 1, 0));
         graphic.camera.main.hud.computeMatrices();
 
-        graphic.camera.thirdPerson.scene.setPerspective({ 70.0f, 0.1f, 1500.0f });
+        graphic.camera.thirdPerson.scene.setPerspective(70.0f, 0.1f, 1500.0f);
     }
 
     initialiseGraphicResource();
 
-    graphic.stackRenderer.initialise();
+    graphic.stackRenderers.wireframes.initialise();
+    graphic.stackRenderers.triangles.initialise();
     graphic.particleManager.initialise();
     graphic.textRenderer.initialise();
     graphic.modelsRenderer.initialise();

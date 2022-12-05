@@ -5,6 +5,7 @@ echo "Build target?"
 echo "=> native:        1 (default)"
 echo "=> web (pthread): 2"
 echo "=> web (worker):  3"
+echo "=> full release:  4"
 echo ""
 
 read USER_INPUT_PLATFORM
@@ -21,6 +22,41 @@ case $USER_INPUT_PLATFORM in
     echo "selected target: web (worker)"
     echo ""
     selected_platform=web_worker
+    ;;
+4)
+    echo ""
+    echo "selected target: full release"
+    echo ""
+    selected_platform=full_release
+
+    echo ""
+    echo "=> cleanup"
+    echo ""
+    make build_platform="native_pthread" build_mode="release" fclean_ml
+    make build_platform="web_wasm_webworker" build_mode="release" fclean_ml
+
+    make build_platform="native_pthread" build_mode="release" fclean
+    make build_platform="web_wasm_pthread" build_mode="release" fclean
+    make build_platform="web_wasm_webworker" build_mode="release" fclean
+
+    echo ""
+    echo "=> building library/ies"
+    echo ""
+    make build_platform="native_pthread" build_mode="release" machine_learning -j4
+    make build_platform="web_wasm_webworker" build_mode="release" machine_learning -j4
+
+    echo ""
+    echo "=> building projects"
+    echo ""
+    make build_platform="native_pthread" build_mode="release" all -j4
+    make build_platform="web_wasm_pthread" build_mode="release" all -j4
+    make build_platform="web_wasm_webworker" build_mode="release" all -j4
+
+    echo ""
+    echo "=> building completed"
+    echo ""
+
+    exit 0;
     ;;
 *)
     echo ""

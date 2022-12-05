@@ -5,9 +5,9 @@
 
 void Scene::_renderLeadingCarSensors()
 {
-  auto&       context = Context::get();
+  auto& context = Context::get();
   const auto& leaderCar = context.logic.leaderCar;
-  auto&       stackRenderer = context.graphic.stackRenderer;
+  auto& stackRenderer = context.graphic.stackRenderers.wireframes;
 
   if (auto leaderCarData = leaderCar.leaderData())
   {

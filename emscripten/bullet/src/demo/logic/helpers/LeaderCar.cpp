@@ -8,38 +8,40 @@ void LeaderCar::update(float elapsedTime)
 {
   auto& simulation = *Context::get().logic.simulation;
 
-  if (_timeoutUntilNewLeader > 0)
-    _timeoutUntilNewLeader -= elapsedTime;
+  if (_countdownUntilNewLeader > 0.0f)
+    _countdownUntilNewLeader -= elapsedTime;
 
   _totalTimeAsLeader += elapsedTime;
 
   if (
     // no leader yet
-    _index == -1 ||
+    _carIndex == -1 ||
     // the current leader is dead
-    simulation.getCarResult(_index).isAlive == false ||
+    simulation.getCarResult(_carIndex).isAlive == false ||
+    // the current leader is not on the ground
+    simulation.getCarResult(_carIndex).groundSensor.value > 0.5f  ||
     // time to check for a potentially better leader
-    _timeoutUntilNewLeader <= 0.0f)
+    _countdownUntilNewLeader <= 0.0f)
   {
     // reset the timeout
-    _timeoutUntilNewLeader = 1.0f; // <= one second
+    _countdownUntilNewLeader = 1.0f; // <= one second
 
     // refresh the currently best car
 
     unsigned int totalCars = simulation.getTotalCars();
 
     float bestFitness = 0.0f;
-    int oldLeaderCarIndex = _index;
-    _index = -1;
-    for (unsigned int ii = 0; ii < totalCars; ++ii)
+    int oldLeaderCarIndex = _carIndex;
+    _carIndex = -1;
+    for (unsigned int carIndex = 0; carIndex < totalCars; ++carIndex)
     {
-      const auto& carData = simulation.getCarResult(ii);
+      const auto& carData = simulation.getCarResult(carIndex);
 
       if (!carData.isAlive)
         continue;
 
       if (
-        _index != -1 &&
+        _carIndex != -1 &&
         !(carData.fitness > bestFitness + 2.0f)
       )
       {
@@ -47,17 +49,17 @@ void LeaderCar::update(float elapsedTime)
       }
 
       bestFitness = carData.groundIndex;
-      _index = ii;
+      _carIndex = carIndex;
     }
 
-    if (_index >= 0 && _index != oldLeaderCarIndex)
+    if (_carIndex >= 0 && _carIndex != oldLeaderCarIndex)
       _totalTimeAsLeader = 0.0f; // new leader
   }
 
   // do we have a car to focus the camera on?
-  if (_index >= 0)
+  if (_carIndex >= 0)
   {
-    const auto& carResult = simulation.getCarResult(_index);
+    const auto& carResult = simulation.getCarResult(_carIndex);
 
     // this part elevate where the camera look along the up axis of the car
     // => without it the camera look at the ground
@@ -68,32 +70,32 @@ void LeaderCar::update(float elapsedTime)
 
 void LeaderCar::reset()
 {
-  _index = -1;
-  _timeoutUntilNewLeader = 0.0f;
+  _carIndex = -1;
+  _countdownUntilNewLeader = 0.0f;
   _totalTimeAsLeader = 0.0f;
 }
 
 bool LeaderCar::hasLeader() const
 {
-  return _index >= 0;
+  return _carIndex >= 0;
 }
 
 int LeaderCar::leaderIndex() const
 {
-  return _index;
+  return _carIndex;
 }
 
 std::optional<CarData> LeaderCar::leaderData() const
 {
-  if (_index < 0)
+  if (_carIndex < 0)
     return {};
 
-  return Context::get().logic.simulation->getCarResult(_index);
+  return Context::get().logic.simulation->getCarResult(_carIndex);
 }
 
 std::optional<glm::vec3> LeaderCar::leaderPosition() const
 {
-  if (_index < 0)
+  if (_carIndex < 0)
     return {};
 
   return _carPosition;
