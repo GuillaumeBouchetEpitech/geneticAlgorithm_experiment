@@ -3,8 +3,7 @@
 
 #include <random>
 
-class RandomNumberGenerator
-{
+class RandomNumberGenerator {
 private:
   static std::mt19937 _engine;
 

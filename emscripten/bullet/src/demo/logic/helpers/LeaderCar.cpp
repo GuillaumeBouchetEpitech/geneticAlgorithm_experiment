@@ -3,9 +3,7 @@
 
 #include "demo/logic/Context.hpp"
 
-
-void LeaderCar::update(float elapsedTime)
-{
+void LeaderCar::update(float elapsedTime) {
   auto& simulation = *Context::get().logic.simulation;
 
   if (_countdownUntilNewLeader > 0.0f)
@@ -19,10 +17,9 @@ void LeaderCar::update(float elapsedTime)
     // the current leader is dead
     simulation.getCarResult(_carIndex).isAlive == false ||
     // the current leader is not on the ground
-    simulation.getCarResult(_carIndex).groundSensor.value > 0.5f  ||
+    simulation.getCarResult(_carIndex).groundSensor.value > 0.5f ||
     // time to check for a potentially better leader
-    _countdownUntilNewLeader <= 0.0f)
-  {
+    _countdownUntilNewLeader <= 0.0f) {
     // reset the timeout
     _countdownUntilNewLeader = 1.0f; // <= one second
 
@@ -33,18 +30,13 @@ void LeaderCar::update(float elapsedTime)
     float bestFitness = 0.0f;
     int oldLeaderCarIndex = _carIndex;
     _carIndex = -1;
-    for (unsigned int carIndex = 0; carIndex < totalCars; ++carIndex)
-    {
+    for (unsigned int carIndex = 0; carIndex < totalCars; ++carIndex) {
       const auto& carData = simulation.getCarResult(carIndex);
 
       if (!carData.isAlive)
         continue;
 
-      if (
-        _carIndex != -1 &&
-        !(carData.fitness > bestFitness + 2.0f)
-      )
-      {
+      if (_carIndex != -1 && !(carData.fitness > bestFitness + 2.0f)) {
         continue;
       }
 
@@ -57,51 +49,39 @@ void LeaderCar::update(float elapsedTime)
   }
 
   // do we have a car to focus the camera on?
-  if (_carIndex >= 0)
-  {
+  if (_carIndex >= 0) {
     const auto& carResult = simulation.getCarResult(_carIndex);
 
     // this part elevate where the camera look along the up axis of the car
     // => without it the camera look at the ground
     // => mostly useful for a shoulder camera0
-    _carPosition = carResult.liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
+    _carPosition =
+      carResult.liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.0f, 1.0f);
   }
 }
 
-void LeaderCar::reset()
-{
+void LeaderCar::reset() {
   _carIndex = -1;
   _countdownUntilNewLeader = 0.0f;
   _totalTimeAsLeader = 0.0f;
 }
 
-bool LeaderCar::hasLeader() const
-{
-  return _carIndex >= 0;
-}
+bool LeaderCar::hasLeader() const { return _carIndex >= 0; }
 
-int LeaderCar::leaderIndex() const
-{
-  return _carIndex;
-}
+int LeaderCar::leaderIndex() const { return _carIndex; }
 
-std::optional<CarData> LeaderCar::leaderData() const
-{
+std::optional<CarData> LeaderCar::leaderData() const {
   if (_carIndex < 0)
     return {};
 
   return Context::get().logic.simulation->getCarResult(_carIndex);
 }
 
-std::optional<glm::vec3> LeaderCar::leaderPosition() const
-{
+std::optional<glm::vec3> LeaderCar::leaderPosition() const {
   if (_carIndex < 0)
     return {};
 
   return _carPosition;
 }
 
-float LeaderCar::totalTimeAsLeader() const
-{
-  return _totalTimeAsLeader;
-}
+float LeaderCar::totalTimeAsLeader() const { return _totalTimeAsLeader; }

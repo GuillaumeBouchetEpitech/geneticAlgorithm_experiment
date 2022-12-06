@@ -7,21 +7,18 @@
 
 namespace /* anonymous */
 {
-    WorkerConsumer* consumer = nullptr;
+WorkerConsumer* consumer = nullptr;
 };
 
-extern "C"
-{
+extern "C" {
 
 EMSCRIPTEN_KEEPALIVE
-void D_WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg)
-{
-    static_cast<void>(arg); // <= unused
+void D_WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg) {
+  static_cast<void>(arg); // <= unused
 
-    if (!consumer)
-        consumer = new WorkerConsumer();
+  if (!consumer)
+    consumer = new WorkerConsumer();
 
-    consumer->processMessage(dataPointer, dataSize);
+  consumer->processMessage(dataPointer, dataSize);
 }
-
 }

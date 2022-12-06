@@ -5,11 +5,9 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-class Camera
-{
+class Camera {
 public:
-  struct MatricesData
-  {
+  struct MatricesData {
     glm::mat4 projection;
     glm::mat4 view;
     glm::mat4 composed;
@@ -17,21 +15,18 @@ public:
   };
 
 public:
-  enum class ProjectionType
-  {
+  enum class ProjectionType {
     perspective,
     orthographic,
   };
 
-  struct Perspective
-  {
+  struct Perspective {
     float fovy;
     float near;
     float far;
   };
 
-  struct Orthographic
-  {
+  struct Orthographic {
     float left;
     float right;
     float bottom;
@@ -45,7 +40,8 @@ public:
   ~Camera() = default;
 
 public:
-  void lookAt(const glm::vec3& eye, const glm::vec3& target, const glm::vec3& up);
+  void lookAt(const glm::vec3& eye, const glm::vec3& target,
+              const glm::vec3& up);
   void computeMatrices();
 
   const IFrustumCulling& getFrustumCulling() const;
@@ -62,30 +58,22 @@ public:
   void setSize(int width, int height);
   const glm::vec2& getSize() const;
 
-  void setPerspective(
-    float fovy,
-    float near,
-    float far);
-  void setOrthographic(
-    float left,
-    float right,
-    float bottom,
-    float top,
-    float near,
-    float far);
+  void setPerspective(float fovy, float near, float far);
+  void setOrthographic(float left, float right, float bottom, float top,
+                       float near, float far);
   ProjectionType getProjectionType() const;
 
 public:
   const MatricesData& getMatricesData() const;
 
 private:
-  glm::vec2 _viewportSize = { 800.0f, 600.0f };
+  glm::vec2 _viewportSize = {800.0f, 600.0f};
 
-  glm::vec3 _eye = { 0.0f, 0.0f, 0.0f };
-  glm::vec3 _target = { 1.0f, 0.0f, 0.0f };
-  glm::vec3 _up = { 0.0f, 0.0f, 1.0f };
+  glm::vec3 _eye = {0.0f, 0.0f, 0.0f};
+  glm::vec3 _target = {1.0f, 0.0f, 0.0f};
+  glm::vec3 _up = {0.0f, 0.0f, 1.0f};
 
-  glm::vec3 _forwardAxis = { 1.0f, 0.0f, 0.0f };
+  glm::vec3 _forwardAxis = {1.0f, 0.0f, 0.0f};
 
   bool _dirtyProjectionMatrices = true;
 
@@ -93,13 +81,10 @@ private:
 
   ProjectionType _projectionType;
 
-  union ProjectionData
-  {
+  union ProjectionData {
     Perspective perspective;
     Orthographic orthographic;
-  }
-  _projectionData;
+  } _projectionData;
 
   FrustumCulling _frustumCulling;
-
 };

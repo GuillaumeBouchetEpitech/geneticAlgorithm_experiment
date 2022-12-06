@@ -13,8 +13,7 @@ class btDiscreteDynamicsWorld;
 class btDefaultVehicleRaycaster;
 class btRaycastVehicle;
 
-class AbstractPhysicVehicle
-{
+class AbstractPhysicVehicle {
 public:
   AbstractPhysicVehicle() = default;
   virtual ~AbstractPhysicVehicle() = default;
@@ -29,32 +28,29 @@ public:
 
 public:
   virtual int getNumWheels() const = 0;
-  virtual const glm::mat4& getWheelTransform(int index, glm::mat4& mat4x4) const = 0;
+  virtual const glm::mat4& getWheelTransform(int index,
+                                             glm::mat4& mat4x4) const = 0;
   virtual float getCurrentSpeedKmHour() const = 0;
   virtual PhysicBodyManager::BodyWeakRef getPhysicBody() = 0;
-
 };
 
-class PhysicVehicle
-  : public AbstractPhysicVehicle
-{
+class PhysicVehicle : public AbstractPhysicVehicle {
   friend PhysicWorld;
   friend PhysicVehicleManager;
 
 private:
-  struct Bullet
-  {
+  struct Bullet {
     btDefaultVehicleRaycaster* vehicleRayCaster = nullptr;
     btRaycastVehicle* vehicle = nullptr;
-  }
-  _bullet;
+  } _bullet;
 
   PhysicBodyManager::BodyWeakRef _body;
 
   bool _isAdded = false;
 
 public:
-  PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, const PhysicVehicleDef& def);
+  PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld,
+                const PhysicVehicleDef& def);
   virtual ~PhysicVehicle();
 
   PhysicVehicle(PhysicVehicle&& other);
@@ -68,8 +64,8 @@ public:
 
 public:
   virtual int getNumWheels() const override;
-  virtual const glm::mat4& getWheelTransform(int index, glm::mat4& mat4x4) const override;
+  virtual const glm::mat4& getWheelTransform(int index,
+                                             glm::mat4& mat4x4) const override;
   virtual float getCurrentSpeedKmHour() const override;
   virtual PhysicBodyManager::BodyWeakRef getPhysicBody() override;
-
 };

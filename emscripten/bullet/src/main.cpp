@@ -1,8 +1,8 @@
 
 #include "demo/Demo.hpp"
 
-#include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include <array>
 #include <sstream>
@@ -10,14 +10,11 @@
 #include <cstdint> // <= EXIT_SUCCESS
 #include <cstdlib> // <= EXIT_SUCCESS
 
-namespace
-{
+namespace {
 
-void processCommandLineArgs(Demo::Definition& def, int argc, char** argv)
-{
+void processCommandLineArgs(Demo::Definition& def, int argc, char** argv) {
   // array of pointers toward the demo definition arguments
-  std::array<uint32_t*, 4> arguments
-  {{
+  std::array<uint32_t*, 4> arguments{{
     &def.width,
     &def.height,
     &def.totalCores,
@@ -30,8 +27,7 @@ void processCommandLineArgs(Demo::Definition& def, int argc, char** argv)
     safeArgs.push_back(argv[ii]);
 
   const std::size_t safeSize = std::min(safeArgs.size(), arguments.size());
-  for (std::size_t ii = 0; ii < safeSize; ++ii)
-  {
+  for (std::size_t ii = 0; ii < safeSize; ++ii) {
     std::stringstream sstr;
     sstr << safeArgs.at(ii);
 
@@ -45,10 +41,9 @@ void processCommandLineArgs(Demo::Definition& def, int argc, char** argv)
   }
 }
 
-}
+} // namespace
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
   Demo::Definition def;
   def.width = 800;
   def.height = 600;

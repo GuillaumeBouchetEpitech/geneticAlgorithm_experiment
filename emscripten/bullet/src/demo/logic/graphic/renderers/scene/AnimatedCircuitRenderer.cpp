@@ -5,8 +5,8 @@
 
 #include "framework/asValue.hpp"
 
-#include "framework/graphic/ResourceManager.hpp"
 #include "framework/graphic/GeometryBuilder.hpp"
+#include "framework/graphic/ResourceManager.hpp"
 
 #include "framework/graphic/GlContext.hpp"
 
@@ -15,22 +15,22 @@
 #include "demo/logic/Context.hpp"
 
 void AnimatedCircuitRenderer::initialise(
-    const std::vector<glm::vec3>& skeletonVertices,
-    const AnimatedVertices& groundVertices,
-    const AnimatedVertices& wallsVertices,
-    float maxUpperValue)
-{
+  const std::vector<glm::vec3>& skeletonVertices,
+  const AnimatedVertices& groundVertices, const AnimatedVertices& wallsVertices,
+  float maxUpperValue) {
   _maxUpperValue = maxUpperValue;
-  _shaderWireframe = Context::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
-  _shaderCircuitLit = Context::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuitLit));
-  _shaderCircuit = Context::get().graphic.resourceManager.getShader(asValue(Shaders::animatedCircuit));
+  _shaderWireframe = Context::get().graphic.resourceManager.getShader(
+    asValue(Shaders::wireframes));
+  _shaderCircuitLit = Context::get().graphic.resourceManager.getShader(
+    asValue(Shaders::animatedCircuitLit));
+  _shaderCircuit = Context::get().graphic.resourceManager.getShader(
+    asValue(Shaders::animatedCircuit));
 
   GeometryBuilder geometryBuilder;
 
   { // compute circuit skeleton wireframe geometry
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shaderWireframe)
       .setPrimitiveType(Geometry::PrimitiveType::lines)
       .addVbo()
@@ -44,8 +44,7 @@ void AnimatedCircuitRenderer::initialise(
 
   { // compute circuit ground geometries
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shaderCircuitLit)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
@@ -63,8 +62,7 @@ void AnimatedCircuitRenderer::initialise(
 
   { // compute circuit walls geometries
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shaderCircuit)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
@@ -81,32 +79,26 @@ void AnimatedCircuitRenderer::initialise(
   } // compute circuit walls geometries
 
   _maxPrimitiveCount = groundVertices.size();
-
 }
 
-void AnimatedCircuitRenderer::setMatricesData(const Camera::MatricesData& matricesData)
-{
+void AnimatedCircuitRenderer::setMatricesData(
+  const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void AnimatedCircuitRenderer::update(float elapsedTime)
-{
+void AnimatedCircuitRenderer::update(float elapsedTime) {
   auto& logic = Context::get().logic;
   const auto& simulation = *logic.simulation;
 
-  if (logic.isAccelerated)
-  {
+  if (logic.isAccelerated) {
     _targetValue = _maxUpperValue;
     _lowerValue = _maxUpperValue;
     _upperValue = _maxUpperValue;
-  }
-  else
-  {
+  } else {
     _targetValue = 3.0f; // <= default value
 
     int bestGroundIndex = -1;
-    for (unsigned int ii = 0; ii < simulation.getTotalCars(); ++ii)
-    {
+    for (unsigned int ii = 0; ii < simulation.getTotalCars(); ++ii) {
       const auto& carData = simulation.getCarResult(ii);
 
       if (!carData.isAlive || bestGroundIndex > carData.groundIndex)
@@ -121,22 +113,17 @@ void AnimatedCircuitRenderer::update(float elapsedTime)
 
     // lower value, closest from the cars
 
-    if (_lowerValue > _targetValue + 10.0f)
-    {
+    if (_lowerValue > _targetValue + 10.0f) {
       // fall really quickly
       _lowerValue -= 60.0f * elapsedTime;
       if (_lowerValue < _targetValue)
         _lowerValue = _targetValue;
-    }
-    else if (_lowerValue > _targetValue)
-    {
+    } else if (_lowerValue > _targetValue) {
       // fall quickly
       _lowerValue -= 18.0f * elapsedTime;
       if (_lowerValue < _targetValue)
         _lowerValue = _targetValue;
-    }
-    else
-    {
+    } else {
       // rise slowly
       _lowerValue += 12.0f * elapsedTime;
       if (_lowerValue > _targetValue)
@@ -145,28 +132,22 @@ void AnimatedCircuitRenderer::update(float elapsedTime)
 
     // upper value, farthest from the cars
 
-    if (_upperValue > _targetValue + 10.0f)
-    {
+    if (_upperValue > _targetValue + 10.0f) {
       // fall really quickly
       _upperValue -= 36.0f * elapsedTime;
       if (_upperValue < _targetValue)
         _upperValue = _targetValue;
-    }
-    else if (_upperValue > _targetValue)
-    {
+    } else if (_upperValue > _targetValue) {
       // fall slowly
       _upperValue -= 6.0f * elapsedTime;
       if (_upperValue < _targetValue)
         _upperValue = _targetValue;
-    }
-    else
-    {
+    } else {
       // rise really quickly
       _upperValue += 60.0f * elapsedTime;
       if (_upperValue > _targetValue)
         _upperValue = _targetValue;
     }
-
   }
 
   const unsigned int verticesLength = 36; // <= 3 * 12 triangles
@@ -178,8 +159,7 @@ void AnimatedCircuitRenderer::update(float elapsedTime)
   _geometries.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
 }
 
-void AnimatedCircuitRenderer::renderWireframe()
-{
+void AnimatedCircuitRenderer::renderWireframe() {
   if (!_shaderWireframe)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -190,8 +170,7 @@ void AnimatedCircuitRenderer::renderWireframe()
   _geometries.skeleton.render();
 }
 
-void AnimatedCircuitRenderer::renderWalls()
-{
+void AnimatedCircuitRenderer::renderWalls() {
   if (!_shaderCircuit)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -210,8 +189,7 @@ void AnimatedCircuitRenderer::renderWalls()
   GlContext::enable(GlContext::States::depthTest);
 }
 
-void AnimatedCircuitRenderer::renderGround()
-{
+void AnimatedCircuitRenderer::renderGround() {
   if (!_shaderCircuit)
     D_THROW(std::runtime_error, "shader not setup");
 

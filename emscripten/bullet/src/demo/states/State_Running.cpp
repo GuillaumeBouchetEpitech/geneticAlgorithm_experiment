@@ -11,88 +11,81 @@
 
 #include "framework/helpers/GLMath.hpp"
 
+#include <cmath>  // std::ceil
 #include <limits> // std::numeric_limits<T>::max();
-#include <cmath> // std::ceil
 
-void State_Running::update(int deltaTime)
-{
-    State_AbstractSimulation::update(deltaTime);
+void State_Running::update(int deltaTime) {
+  State_AbstractSimulation::update(deltaTime);
 
-    float elapsedTime = float(deltaTime) / 1000.0f;
+  float elapsedTime = float(deltaTime) / 1000.0f;
 
-    auto& context = Context::get();
-    auto& logic = context.logic;
-    auto& simulation = *logic.simulation;
-    auto& graphic = context.graphic;
-    auto& camera = graphic.camera;
+  auto& context = Context::get();
+  auto& logic = context.logic;
+  auto& simulation = *logic.simulation;
+  auto& graphic = context.graphic;
+  auto& camera = graphic.camera;
 
-    { // simulation update
+  { // simulation update
 
-        if (!simulation.isGenerationComplete())
-        {
-            constexpr float fakeElapsedTime = 1.0f / 30.0f; // TODO: hardcoded
-            const unsigned int totalSteps = (logic.isAccelerated ? 50 : 1);
+    if (!simulation.isGenerationComplete()) {
+      constexpr float fakeElapsedTime = 1.0f / 30.0f; // TODO: hardcoded
+      const unsigned int totalSteps = (logic.isAccelerated ? 50 : 1);
 
-            simulation.update(fakeElapsedTime, totalSteps);
-        }
-        else
-        {
-            simulation.breed();
-        }
-
-    } // simulation update
-
-
-    Scene::updateMatrices(elapsedTime);
-
-    // done to avoid a spurious change of camera
-    // -> true when changing states: Running -> EndGeneration
-    if (StateManager::get()->getState() == StateManager::States::Running)
-    {
-
-        { // camera tracking
-
-            glm::vec3   cameraNextCenter = logic.circuitDimension.center;
-            float       cameraNextDistance = 200.0f;
-
-            //
-            //
-
-            auto& leaderCar = logic.leaderCar;
-
-            if (logic.isAccelerated)
-            {
-                leaderCar.reset();
-            }
-            else
-            {
-                cameraNextDistance = 40.0f;
-
-                leaderCar.update(elapsedTime);
-
-                if (auto leaderPos = leaderCar.leaderPosition())
-                    cameraNextCenter = *leaderPos;
-            }
-
-            //
-            //
-
-            {
-                const float lerpRatio = 6.0f * elapsedTime;
-
-                camera.main.center += (cameraNextCenter - camera.main.center) * lerpRatio;
-                camera.main.distance += (cameraNextDistance - camera.main.distance) * lerpRatio;
-            }
-
-        } // camera tracking
-
-        {
-            graphic.particleManager.update(elapsedTime);
-            graphic.backGroundCylindersRenderer.update(elapsedTime);
-            graphic.animatedCircuitRenderer.update(elapsedTime);
-            graphic.flockingManager.update();
-            graphic.topologyRenderer.update(elapsedTime);
-            graphic.postProcess.update(elapsedTime);
-        }
+      simulation.update(fakeElapsedTime, totalSteps);
+    } else {
+      simulation.breed();
     }
+
+  } // simulation update
+
+  Scene::updateMatrices(elapsedTime);
+
+  // done to avoid a spurious change of camera
+  // -> true when changing states: Running -> EndGeneration
+  if (StateManager::get()->getState() == StateManager::States::Running) {
+
+    { // camera tracking
+
+      glm::vec3 cameraNextCenter = logic.circuitDimension.center;
+      float cameraNextDistance = 200.0f;
+
+      //
+      //
+
+      auto& leaderCar = logic.leaderCar;
+
+      if (logic.isAccelerated) {
+        leaderCar.reset();
+      } else {
+        cameraNextDistance = 40.0f;
+
+        leaderCar.update(elapsedTime);
+
+        if (auto leaderPos = leaderCar.leaderPosition())
+          cameraNextCenter = *leaderPos;
+      }
+
+      //
+      //
+
+      {
+        const float lerpRatio = 6.0f * elapsedTime;
+
+        camera.main.center +=
+          (cameraNextCenter - camera.main.center) * lerpRatio;
+        camera.main.distance +=
+          (cameraNextDistance - camera.main.distance) * lerpRatio;
+      }
+
+    } // camera tracking
+
+    {
+      graphic.particleManager.update(elapsedTime);
+      graphic.backGroundCylindersRenderer.update(elapsedTime);
+      graphic.animatedCircuitRenderer.update(elapsedTime);
+      graphic.flockingManager.update();
+      graphic.topologyRenderer.update(elapsedTime);
+      graphic.postProcess.update(elapsedTime);
+    }
+  }
 }

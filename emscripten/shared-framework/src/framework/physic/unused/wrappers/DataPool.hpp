@@ -8,13 +8,9 @@
  *
  * simple and fast contiguous/aligned memory pool of objects
  */
-template<typename DataType>
-class DataPool
-{
+template <typename DataType> class DataPool {
 private:
-  struct InternalData
-    : public DataType
-  {
+  struct InternalData : public DataType {
   public:
     unsigned int _index;
   };
@@ -24,16 +20,14 @@ private:
   std::vector<int> _unusedIndices;
 
 public:
-  DataPool(std::size_t poolSize = 128)
-  {
+  DataPool(std::size_t poolSize = 128) {
     _allItems.resize(poolSize);
     _unusedIndices.reserve(poolSize);
     for (std::size_t ii = 0; ii < poolSize; ++ii)
       _unusedIndices.push_back(ii);
   }
 
-  void grow(std::size_t extraSize)
-  {
+  void grow(std::size_t extraSize) {
     // make the pool grow here
     const std::size_t currSize = _allItems.size();
     const std::size_t nextSize = currSize + extraSize;
@@ -47,8 +41,7 @@ public:
       _unusedIndices.push_back(ii);
   }
 
-  DataType* pop()
-  {
+  DataType* pop() {
     if (_unusedIndices.empty())
       grow(_allItems.size() * 2);
 
@@ -59,18 +52,13 @@ public:
     return pData;
   }
 
-  inline DataType*	get(unsigned int index)
-  {
+  inline DataType* get(unsigned int index) {
     return reinterpret_cast<DataType*>(&_allItems[index]);
   }
 
-  inline unsigned int	getIndex(DataType* pTarget) const
-  {
+  inline unsigned int getIndex(DataType* pTarget) const {
     return reinterpret_cast<InternalData*>(pTarget)->_index;
   }
 
-  inline void	release(unsigned int index)
-  {
-    _unusedIndices.push_back(index);
-  }
+  inline void release(unsigned int index) { _unusedIndices.push_back(index); }
 };

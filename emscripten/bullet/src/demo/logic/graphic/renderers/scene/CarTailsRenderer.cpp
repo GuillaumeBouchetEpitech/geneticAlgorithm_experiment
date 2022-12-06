@@ -7,19 +7,18 @@
 
 #include "framework/asValue.hpp"
 
-#include "framework/graphic/ResourceManager.hpp"
 #include "framework/graphic/GeometryBuilder.hpp"
+#include "framework/graphic/ResourceManager.hpp"
 
-void CarTailsRenderer::initialise()
-{
-  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::wireframes));
+void CarTailsRenderer::initialise() {
+  _shader = Context::get().graphic.resourceManager.getShader(
+    asValue(Shaders::wireframes));
 
   {
 
     GeometryBuilder geometryBuilder;
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shader)
       .setPrimitiveType(Geometry::PrimitiveType::line_strip)
       .addVbo()
@@ -30,39 +29,38 @@ void CarTailsRenderer::initialise()
         geometryBuilder.build(wheel);
 
     geometryBuilder.build(_geometries.leaderCarTrail);
-
   }
-
 }
 
-void CarTailsRenderer::setMatricesData(const Camera::MatricesData& matricesData)
-{
+void CarTailsRenderer::setMatricesData(
+  const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void CarTailsRenderer::updateLatestTrail()
-{
+void CarTailsRenderer::updateLatestTrail() {
   auto& context = Context::get();
   auto& logic = context.logic;
 
   const auto& bestGenome = logic.simulation->getBestGenome();
 
-  const auto& bestWheelsTrailData = logic.carWheelsTrails.getTrailById(bestGenome.id);
+  const auto& bestWheelsTrailData =
+    logic.carWheelsTrails.getTrailById(bestGenome.id);
 
   auto& currCarNewTrail = _geometries.bestNewCarsTrails.at(_currentTrailIndex);
 
-  for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii)
-  {
-    currCarNewTrail.wheels.at(ii).updateBuffer(0, bestWheelsTrailData.wheels.at(ii));
-    currCarNewTrail.wheels.at(ii).setPrimitiveCount(bestWheelsTrailData.wheels.at(ii).size());
+  for (std::size_t ii = 0; ii < currCarNewTrail.wheels.size(); ++ii) {
+    currCarNewTrail.wheels.at(ii).updateBuffer(
+      0, bestWheelsTrailData.wheels.at(ii));
+    currCarNewTrail.wheels.at(ii).setPrimitiveCount(
+      bestWheelsTrailData.wheels.at(ii).size());
   }
 
   // increase the currently used trail index (loop if too high)
-  _currentTrailIndex = (_currentTrailIndex + 1) % _geometries.bestNewCarsTrails.size();
+  _currentTrailIndex =
+    (_currentTrailIndex + 1) % _geometries.bestNewCarsTrails.size();
 }
 
-void CarTailsRenderer::render()
-{
+void CarTailsRenderer::render() {
 
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
@@ -83,15 +81,14 @@ void CarTailsRenderer::render()
 
   { // leader trail
 
-    if (logic.leaderCar.hasLeader())
-    {
-      const auto& trailData = logic.carWheelsTrails.getTrailByIndex(logic.leaderCar.leaderIndex());
+    if (logic.leaderCar.hasLeader()) {
+      const auto& trailData =
+        logic.carWheelsTrails.getTrailByIndex(logic.leaderCar.leaderIndex());
 
       // rely on only the 30 last positions recorded
       constexpr int maxSize = 30;
 
-      for (const auto& currWheel : trailData.wheels)
-      {
+      for (const auto& currWheel : trailData.wheels) {
         if (currWheel.empty())
           continue;
 

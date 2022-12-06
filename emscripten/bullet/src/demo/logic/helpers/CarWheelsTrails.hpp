@@ -3,19 +3,17 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <unordered_map>
 #include <array>
+#include <unordered_map>
 #include <vector>
 
 class AbstactSimulation;
 
-class CarWheelsTrails
-{
+class CarWheelsTrails {
 private:
   std::unordered_map<unsigned int, unsigned int> _genomeIndexMap;
 
-  struct WheelsTrail
-  {
+  struct WheelsTrail {
     std::array<std::vector<glm::vec3>, 4> wheels;
   };
   std::vector<WheelsTrail> _allWheelsTrails;
@@ -29,5 +27,4 @@ public:
 public:
   const WheelsTrail& getTrailByIndex(int index) const;
   const WheelsTrail& getTrailById(int id) const;
-
 };

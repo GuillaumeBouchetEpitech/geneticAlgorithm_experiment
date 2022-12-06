@@ -3,8 +3,7 @@
 
 #include <cstdint>
 
-enum class Shaders : uint32_t
-{
+enum class Shaders : uint32_t {
   stackRenderer = 0,
   particles = 1,
   simpleTexture = 2,
@@ -16,8 +15,7 @@ enum class Shaders : uint32_t
   models = 8,
 };
 
-enum class Geometries : uint32_t
-{
+enum class Geometries : uint32_t {
   stackRenderer = 0,
   particles = 1,
   simpleTexture = 2,

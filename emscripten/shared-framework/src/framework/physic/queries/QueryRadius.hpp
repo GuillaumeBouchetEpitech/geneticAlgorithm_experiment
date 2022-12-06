@@ -8,8 +8,7 @@
 class PhysicWorld;
 class PhysicBody;
 
-class QueryRadius
-{
+class QueryRadius {
   friend PhysicWorld;
 
 private:
@@ -20,20 +19,16 @@ private:
   ~QueryRadius() = default;
 
 public:
-  struct QueryRadiusParams
-  {
+  struct QueryRadiusParams {
     glm::vec3 position;
     float radius;
 
-
     // TODO: "to ignore" parameter
-
 
     short collisionGroup;
     short collisionMask;
 
-    struct ResultRaw
-    {
+    struct ResultRaw {
       bool hasHit = false;
 
       PhysicBody** allBodiesData;
@@ -41,35 +36,27 @@ public:
       std::size_t allBodiesTotal;
     };
 
-    template<std::size_t N>
-    struct ResultArray
-    {
+    template <std::size_t N> struct ResultArray {
       bool hasHit = false;
 
       std::array<PhysicBody*, N> allBodiesData;
       std::size_t allBodiesTotal;
     };
 
-    QueryRadiusParams(
-      const glm::vec3& inPosition,
-      float inRadius = 0.0f,
-      short inGroup = -1,
-      short inMask = -1)
-      : position(inPosition)
-      , radius(inRadius)
-      , collisionGroup(inGroup)
-      , collisionMask(inMask)
-    {}
+    QueryRadiusParams(const glm::vec3& inPosition, float inRadius = 0.0f,
+                      short inGroup = -1, short inMask = -1)
+      : position(inPosition), radius(inRadius), collisionGroup(inGroup),
+        collisionMask(inMask) {}
   };
 
-
 private:
-  bool _queryRadius(QueryRadiusParams& params, QueryRadiusParams::ResultRaw& result);
+  bool _queryRadius(QueryRadiusParams& params,
+                    QueryRadiusParams::ResultRaw& result);
 
 public:
-  template<std::size_t N>
-  bool queryRadius(QueryRadiusParams& params, QueryRadiusParams::ResultArray<N>& resultArray)
-  {
+  template <std::size_t N>
+  bool queryRadius(QueryRadiusParams& params,
+                   QueryRadiusParams::ResultArray<N>& resultArray) {
     QueryRadiusParams::ResultRaw resultRaw;
     resultRaw.allBodiesData = resultArray.allBodiesData.data();
     resultRaw.allBodiesMaxSize = resultArray.allBodiesData.size();
@@ -81,5 +68,4 @@ public:
 
     return hasHit;
   }
-
 };

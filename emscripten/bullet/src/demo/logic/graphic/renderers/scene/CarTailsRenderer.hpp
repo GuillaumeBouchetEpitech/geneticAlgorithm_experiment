@@ -3,34 +3,29 @@
 
 #include "framework/graphic/camera/Camera.hpp"
 
-#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <memory>
 #include <array>
+#include <memory>
 
-class CarTailsRenderer
-{
+class CarTailsRenderer {
 private:
-
   std::shared_ptr<ShaderProgram> _shader;
 
   Camera::MatricesData _matricesData;
 
-  struct Geometries
-  {
-    struct WheelsTrail
-    {
+  struct Geometries {
+    struct WheelsTrail {
       std::array<Geometry, 4> wheels;
     };
 
     std::array<WheelsTrail, 5> bestNewCarsTrails;
 
     Geometry leaderCarTrail;
-  }
-  _geometries;
+  } _geometries;
 
   unsigned int _currentTrailIndex = 0;
 
@@ -47,5 +42,4 @@ public:
 
 public:
   void render();
-
 };

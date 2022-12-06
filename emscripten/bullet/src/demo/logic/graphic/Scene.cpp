@@ -11,19 +11,18 @@
 
 #include "framework/graphic/GlContext.hpp"
 
-void Scene::initialise()
-{
+void Scene::initialise() {
   GlContext::enable(GlContext::States::depthTest);
   GlContext::setDepthFunc(GlContext::DepthFuncs::less);
 
   GlContext::enable(GlContext::States::blend);
-  GlContext::setBlendFunc(GlContext::BlendFuncs::srcAlpha, GlContext::BlendFuncs::oneMinuxSrcAlpha);
+  GlContext::setBlendFunc(GlContext::BlendFuncs::srcAlpha,
+                          GlContext::BlendFuncs::oneMinuxSrcAlpha);
 
   GlContext::disable(GlContext::States::cullFace);
 }
 
-void Scene::renderSimple()
-{
+void Scene::renderSimple() {
   Scene::_clear();
 
   auto& graphic = Context::get().graphic;
@@ -31,10 +30,13 @@ void Scene::renderSimple()
   { // scene
 
     const Camera& camInstance = graphic.camera.main.scene;
-    graphic.stackRenderers.wireframes.setMatricesData(camInstance.getMatricesData());
-    graphic.stackRenderers.triangles.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.wireframes.setMatricesData(
+      camInstance.getMatricesData());
+    graphic.stackRenderers.triangles.setMatricesData(
+      camInstance.getMatricesData());
     graphic.particleManager.setMatricesData(camInstance.getMatricesData());
-    graphic.animatedCircuitRenderer.setMatricesData(camInstance.getMatricesData());
+    graphic.animatedCircuitRenderer.setMatricesData(
+      camInstance.getMatricesData());
 
     Scene::_renderFloor(camInstance);
     graphic.animatedCircuitRenderer.renderWireframe();
@@ -45,8 +47,10 @@ void Scene::renderSimple()
   { // HUD
 
     const Camera& camInstance = graphic.camera.main.hud;
-    graphic.stackRenderers.wireframes.setMatricesData(camInstance.getMatricesData());
-    graphic.stackRenderers.triangles.setMatricesData(camInstance.getMatricesData());
+    graphic.stackRenderers.wireframes.setMatricesData(
+      camInstance.getMatricesData());
+    graphic.stackRenderers.triangles.setMatricesData(
+      camInstance.getMatricesData());
     graphic.particleManager.setMatricesData(camInstance.getMatricesData());
     graphic.textRenderer.setMatricesData(camInstance.getMatricesData());
 
@@ -56,8 +60,7 @@ void Scene::renderSimple()
   ShaderProgram::unbind();
 }
 
-void Scene::renderAll()
-{
+void Scene::renderAll() {
   Scene::_clear();
 
   auto& context = Context::get();
@@ -115,8 +118,7 @@ void Scene::renderAll()
   ShaderProgram::unbind();
 }
 
-void Scene::updateMatrices(float elapsedTime)
-{
+void Scene::updateMatrices(float elapsedTime) {
   auto& context = Context::get();
   const auto& logic = context.logic;
   auto& graphic = context.graphic;
@@ -130,13 +132,13 @@ void Scene::updateMatrices(float elapsedTime)
     rotations.phi = glm::clamp(rotations.phi, -verticalLimit, verticalLimit);
 
     const float cosPhi = std::cos(rotations.phi);
-    const glm::vec3 eye =
-    {
-      camera.main.center.x + camera.main.distance * cosPhi * std::cos(rotations.theta),
-      camera.main.center.y + camera.main.distance * cosPhi * std::sin(rotations.theta),
-      camera.main.center.z + camera.main.distance * std::sin(rotations.phi)
-    };
-    const glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
+    const glm::vec3 eye = {
+      camera.main.center.x +
+        camera.main.distance * cosPhi * std::cos(rotations.theta),
+      camera.main.center.y +
+        camera.main.distance * cosPhi * std::sin(rotations.theta),
+      camera.main.center.z + camera.main.distance * std::sin(rotations.phi)};
+    const glm::vec3 upAxis = {0.0f, 0.0f, 1.0f};
 
     camera.main.scene.setSize(camera.viewportSize.x, camera.viewportSize.y);
     camera.main.scene.lookAt(eye, camera.main.center, upAxis);
@@ -148,45 +150,47 @@ void Scene::updateMatrices(float elapsedTime)
 
   { // third person
 
-    if (auto leaderData = logic.leaderCar.leaderData())
-    {
-      const glm::vec3 carOrigin = leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
-      const glm::vec3 carUpAxis = leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+    if (auto leaderData = logic.leaderCar.leaderData()) {
+      const glm::vec3 carOrigin =
+        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+      const glm::vec3 carUpAxis =
+        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
 
       const StateManager::States currentState = StateManager::get()->getState();
 
       if (
         // do not update the third person camera if not in a correct state
         (currentState == StateManager::States::Running ||
-          currentState == StateManager::States::StartGeneration) &&
+         currentState == StateManager::States::StartGeneration) &&
         // do not update the third person camera if too close from the target
-        glm::distance(carOrigin, camera.thirdPerson.eye) > 0.25f
-      ) {
+        glm::distance(carOrigin, camera.thirdPerson.eye) > 0.25f) {
         // simple lerp to setup the third person camera
         const float lerpRatio = 0.1f * 60.0f * elapsedTime;
-        camera.thirdPerson.eye += (carOrigin - camera.thirdPerson.eye) * lerpRatio;
-        camera.thirdPerson.upAxis += (carUpAxis - camera.thirdPerson.upAxis) * lerpRatio;
+        camera.thirdPerson.eye +=
+          (carOrigin - camera.thirdPerson.eye) * lerpRatio;
+        camera.thirdPerson.upAxis +=
+          (carUpAxis - camera.thirdPerson.upAxis) * lerpRatio;
       }
 
       const glm::vec3 eye = camera.thirdPerson.eye;
       const glm::vec3 target = carOrigin;
       const glm::vec3 upAxis = camera.thirdPerson.upAxis;
 
-      camera.thirdPerson.scene.setSize(scene::thirdPViewportWidth, scene::thirdPViewportHeight);
+      camera.thirdPerson.scene.setSize(scene::thirdPViewportWidth,
+                                       scene::thirdPViewportHeight);
       camera.thirdPerson.scene.lookAt(eye, target, upAxis);
       camera.thirdPerson.scene.computeMatrices();
     }
 
   } // third person
-
 }
 
-void Scene::_clear()
-{
+void Scene::_clear() {
   const auto& viewportSize = Context::get().graphic.camera.viewportSize;
 
   GlContext::setViewport(0, 0, viewportSize.x, viewportSize.y);
 
   GlContext::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
-  GlContext::clear(asValue(GlContext::Buffers::color) | asValue(GlContext::Buffers::depth));
+  GlContext::clear(asValue(GlContext::Buffers::color) |
+                   asValue(GlContext::Buffers::depth));
 }

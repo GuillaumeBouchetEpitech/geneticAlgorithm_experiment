@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Texture.hpp"
 
 #include "framework/graphic/camera/Camera.hpp"
@@ -10,8 +10,7 @@
 #include <array>
 #include <memory>
 
-class BackGroundCylindersRenderer
-{
+class BackGroundCylindersRenderer {
 public:
   BackGroundCylindersRenderer() = default;
   ~BackGroundCylindersRenderer() = default;
@@ -33,5 +32,4 @@ private:
   Camera::MatricesData _matricesData;
 
   float _cylinderAnimationTime = 0.0f;
-
 };

@@ -1,59 +1,59 @@
 
-# above the first straight of the crcuit
-START_TRANSFORM_POSITION    10.0 10.0 5.3
 
+
+# above the first straight of the crcuit
 # cars are facing Y+ axis, rotate car toward X+ axis
-START_TRANSFORM_QUATERNION  0.0 0.0 1.0 -1.0
+AGENTS_START_TRANSFORM    position="10.0,10.0,5.3"     quaternion="0.0,0.0,1.0,-1.0"
+
 
 #
 #
 # departure straight
 
 # starting rewards
-KNOTS_SIZE   2
+NEXT_KNOTS_STATES   size="2" color="0.25,0.25,0.75"
 
-KNOTS_COLOR 0.25 0.25 0.75
 
-KNOTS_DUAL   5  15  5       5   5  5
-KNOTS_DUAL  90   0  0      90   0  0
+PUSH_KNOTS  left=" 5,15, 5"   right=" 5, 5, 5"
+PUSH_KNOTS  left="90, 0, 0"   right="90, 0, 0"
 
 # decrease rewards
-KNOTS_SIZE   4
+NEXT_KNOTS_STATES   size="4"
 
 # departure straight
 #
 #
 
-KNOTS_COLOR 0.15 0.15 0.15
+NEXT_KNOTS_STATES   color="0.15,0.15,0.15"
 
 
 # twist the road (straight to left)
-KNOTS_DUAL 30 0 0     30 0 7
+PUSH_KNOTS left="30,0,0"     right="30,0,7"
 
 
 #
 #
 # horizontal loop (left)
 
-    KNOTS_COLOR 0.25 0.75 0.25
+    NEXT_KNOTS_STATES   color="0.25,0.75,0.25"
 
-    KNOTS_DUAL  50 50 6     60 60 6
-    KNOTS_DUAL  -50 50 6    -60 60 6
+    PUSH_KNOTS  left="50,50,6"     right="60,60,6"
+    PUSH_KNOTS  left="-50,50,6"    right="-60,60,6"
 
-    KNOTS_DUAL  -50 -50 6   -60 -60 6
-    KNOTS_DUAL  50 -50 6    60 -60 6
+    PUSH_KNOTS  left="-50,-50,6"   right="-60,-60,6"
+    PUSH_KNOTS  left="50,-50,6"    right="60,-60,6"
 
 # /horizontal loop (left)
 #
 #
 
 
-KNOTS_COLOR 0.15 0.15 0.15
+NEXT_KNOTS_STATES   color="0.15,0.15,0.15"
 
 # twist the road (left to right)
-KNOTS_DUAL 40 0 7     40 0 0
-KNOTS_DUAL 80 0 0     80 0 0
-KNOTS_DUAL 40 0 7     40 0 0
+PUSH_KNOTS       left="40,0,7"     right="40,0,0"
+PUSH_KNOTS       left="80,0,0"     right="80,0,0"
+PUSH_KNOTS       left="40,0,7"     right="40,0,0"
 
 
 #
@@ -61,18 +61,18 @@ KNOTS_DUAL 40 0 7     40 0 0
 # horizontal loop (right)
 
 # increase rewards
-KNOTS_SIZE   1.5
+NEXT_KNOTS_STATES   size="2.5"
 
-    KNOTS_COLOR 0.75 0.25 0.75
+    NEXT_KNOTS_STATES   color="0.75,0.25,0.75"
 
-    KNOTS_DUAL  60 -60 6    50 -50 6
-    KNOTS_DUAL  -60 -60 6   -50 -50 6
+    PUSH_KNOTS  left="60,-60,6"    right="50,-50,6"
+    PUSH_KNOTS  left="-60,-60,6"   right="-50,-50,6"
 
 # decrease rewards
-KNOTS_SIZE   4
+NEXT_KNOTS_STATES   size="4"
 
-    KNOTS_DUAL  -60 60 6    -50 50 6
-    KNOTS_DUAL  60 60 6     50 50 6
+    PUSH_KNOTS  left="-60,60,6"    right="-50,50,6"
+    PUSH_KNOTS  left="60,60,6"     right="50,50,6"
 
 # /horizontal loop (right)
 #
@@ -80,17 +80,17 @@ KNOTS_SIZE   4
 
 
 
-KNOTS_COLOR 0.15 0.15 0.15
+NEXT_KNOTS_STATES   color="0.15,0.15,0.15"
 
 # twist the road (right to straight)
-KNOTS_DUAL  30 0 -7     30 0 0
+PUSH_KNOTS  left="30,0,-7"     right="30,0,0"
 
 
 
-KNOTS_COLOR 0.25 0.25 0.75
+NEXT_KNOTS_STATES   color="0.25,0.25,0.75"
 
 # straight
-KNOTS_DUAL 90 0 0     90 0 0
+PUSH_KNOTS   left="90,0,0"     right="90,0,0"
 
 
 
@@ -98,16 +98,16 @@ KNOTS_DUAL 90 0 0     90 0 0
 #
 # twisted looping
 
-    KNOTS_COLOR 0.75 0.25 0.25
+    NEXT_KNOTS_STATES   color="0.75,0.25,0.25"
 
-	KNOTS_DUAL 45 0 60     45 0 60
-	KNOTS_DUAL -45 0 55   -45 0 50
+	PUSH_KNOTS  left="45,0,60"     right="45,0,60"
+	PUSH_KNOTS  left="-45,0,55"   right="-45,0,50"
 
-	KNOTS_DUAL  -40 30 -5    -40 40 -15
-	KNOTS_DUAL  0 40 -10    20 40 0
+	PUSH_KNOTS  left="-40,30,-5"    right="-40,40,-15"
+	PUSH_KNOTS  left="0,40,-10"    right="20,40,0"
 
-	KNOTS_DUAL  35 30 0     20 20 5
-	KNOTS_DUAL  45 0 0      40 0 0
+	PUSH_KNOTS  left="35,30,0"     right="20,20,5"
+	PUSH_KNOTS  left="45,0,0"      right="40,0,0"
 
 # /twisted looping
 #
@@ -115,10 +115,10 @@ KNOTS_DUAL 90 0 0     90 0 0
 
 
 
-KNOTS_COLOR 0.25 0.25 0.75
+NEXT_KNOTS_STATES   color="0.25,0.25,0.75"
 
 # straight
-KNOTS_DUAL 30 0 0     30 0 0
+PUSH_KNOTS left="30,0,0"     right="30,0,0"
 
 
 
@@ -126,15 +126,16 @@ KNOTS_DUAL 30 0 0     30 0 0
 #
 # classic looping
 
-    KNOTS_COLOR 0.75 0.25 0.25
-    KNOTS_DUAL  60   0   0      60   0   0
-    KNOTS_DUAL  60 -20  60      60 -20  60
-    KNOTS_DUAL -60 -20  60     -60 -20  60
-    KNOTS_DUAL -60 -20 -60     -60 -20 -60
-    KNOTS_DUAL  60 -20 -60      60 -20 -60
-    KNOTS_DUAL  60   0   0      60   0   0
+    NEXT_KNOTS_STATES   color="0.75,0.25,0.25"
 
-    KNOTS_DUAL 20 0 0     20 0 0
+    PUSH_KNOTS    left=" 60,  0,  0"     right=" 60,  0,  0"
+    PUSH_KNOTS    left="-60,-20, 60"     right=" 60,-20, 60"
+    PUSH_KNOTS    left="-60,-20, 60"     right="-60,-20, 60"
+    PUSH_KNOTS    left="-60,-20,-60"     right="-60,-20,-60"
+    PUSH_KNOTS    left=" 60,-20,-60"     right=" 60,-20,-60"
+    PUSH_KNOTS    left=" 60,  0,  0"     right=" 60,  0,  0"
+
+    PUSH_KNOTS    left="20,0,0"     right="20,0,0"
 
 # /classic looping
 #
@@ -142,11 +143,11 @@ KNOTS_DUAL 30 0 0     30 0 0
 
 
 
-KNOTS_COLOR 0.25 0.25 0.75
+NEXT_KNOTS_STATES   color="0.25,0.25,0.75"
 
 # straight
-KNOTS_DUAL 30 0 0     30 0 0
-KNOTS_DUAL 30 0 0     30 0 0
+PUSH_KNOTS    left="30,0,0"     right="30,0,0"
+PUSH_KNOTS    left="30,0,0"     right="30,0,0"
 
 
 
@@ -154,19 +155,20 @@ KNOTS_DUAL 30 0 0     30 0 0
 #
 # final looping
 
-    KNOTS_COLOR 0.25 0.75 0.25
-    KNOTS_DUAL  85   0   0      85   0   0
-    KNOTS_DUAL  85 +10  85      85 +10  85
-    KNOTS_DUAL -85 +10  85     -85 +10  85
-    KNOTS_DUAL -85 +10 -85     -85 +10 -85
-    KNOTS_DUAL   0   0 -75       0   0 -75
-    KNOTS_DUAL   0   0 -75       0   0 -75
-    KNOTS_DUAL  85 +10 -85      85 +10 -85
-    KNOTS_DUAL  85   0   0      85   0   0
-    KNOTS_DUAL  85   0   0      85   0   0
+    NEXT_KNOTS_STATES   color="0.25,0.75,0.25"
+
+    PUSH_KNOTS    left=" 85,   0,   0"     right=" 85,   0,   0"
+    PUSH_KNOTS    left=" 85, +10,  85"     right=" 85, +10,  85"
+    PUSH_KNOTS    left="-85, +10,  85"     right="-85, +10,  85"
+    PUSH_KNOTS    left="-85, +10, -85"     right="-85, +10, -85"
+    PUSH_KNOTS    left="  0,   0, -75"     right="  0,   0, -75"
+    PUSH_KNOTS    left="  0,   0, -75"     right="  0,   0, -75"
+    PUSH_KNOTS    left=" 85, +10, -85"     right=" 85, +10, -85"
+    PUSH_KNOTS    left=" 85,   0,   0"     right=" 85,   0,   0"
+    PUSH_KNOTS    left=" 85,   0,   0"     right=" 85,   0,   0"
 
     # small straight runway
-    KNOTS_DUAL  10   0   0      10   0   0
+    PUSH_KNOTS    left="10,0,0"     right="10,0,0"
 
 # final looping
 #

@@ -5,8 +5,7 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-class Scene
-{
+class Scene {
 public:
   static void initialise();
   static void renderSimple();
@@ -22,5 +21,4 @@ private:
   static void _renderHUD_ortho();
   static void _renderHUD_thirdPerson();
   static void _renderHUD();
-
 };

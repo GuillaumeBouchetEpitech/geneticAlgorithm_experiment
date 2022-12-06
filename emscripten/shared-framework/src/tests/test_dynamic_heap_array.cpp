@@ -5,8 +5,8 @@
 
 #include "common.hpp"
 
-#include <vector>
 #include <functional>
+#include <vector>
 // #include <iostream>
 
 // #include <cstring> // <= memset
@@ -14,11 +14,10 @@
 
 #include <cassert>
 
-template<typename T>
+template <typename T>
 using empty_heap_array = dynamic_heap_array<T, std::allocator<T>, 0>;
 
-void test_dynamic_heap_array()
-{
+void test_dynamic_heap_array() {
   D_MYLOG("test_dynamic_heap_array()");
 
   {
@@ -148,12 +147,10 @@ void test_dynamic_heap_array()
 
     // std::cout << "SCOPE END" << std::endl;
 
-
     // std::cout << " => totalCtor=     " << totalCtor << std::endl;
     // std::cout << " => totalCopyCtor= " << totalCopyCtor << std::endl;
     // std::cout << " => totalMoveCtor= " << totalMoveCtor << std::endl;
     // std::cout << " => totalDtor=     " << totalDtor << std::endl;
-
   }
 
   common::disableLogs();
@@ -222,8 +219,7 @@ void test_dynamic_heap_array()
 
     {
       int index = 0;
-      for (volatile auto& test : vertices)
-      {
+      for (volatile auto& test : vertices) {
         assert(test.value == ((index++) + 1));
       }
     }
@@ -231,11 +227,9 @@ void test_dynamic_heap_array()
     {
       int index = 0;
       empty_heap_array<common::Test>& cvertices = vertices;
-      for (volatile const auto& test : cvertices)
-      {
+      for (volatile const auto& test : cvertices) {
         assert(test.value == ((index++) + 1));
       }
-
     }
 
     // print();
@@ -260,9 +254,7 @@ void test_dynamic_heap_array()
     D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
 
     // my_string
-
   }
-
 
   {
 
@@ -285,9 +277,7 @@ void test_dynamic_heap_array()
     D_MYLOG("vertices[1].my_string " << vertices[1].my_string);
 
     // my_string
-
   }
-
 
   {
 
@@ -305,7 +295,6 @@ void test_dynamic_heap_array()
     assert(test1.my_string.empty());
     assert(!vertices[0].my_string.empty());
     assert(vertices[0].my_string == "666");
-
   }
 
   {
@@ -329,9 +318,7 @@ void test_dynamic_heap_array()
     assert(vertices2.size() == 2);
     assert(vertices2[0].value == 111);
     assert(vertices2[1].value == 222);
-
   }
-
 
   {
 
@@ -390,10 +377,7 @@ void test_dynamic_heap_array()
         assert(item.value == index++);
       assert(index == int(vertices.size()));
     }
-
   }
-
-
 
   D_MYLOG(" => DONE");
 }

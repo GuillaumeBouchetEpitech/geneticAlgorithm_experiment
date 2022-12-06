@@ -3,31 +3,28 @@
 
 #include "framework/ErrorHandler.hpp"
 
-#include <memory> // <= std::make_unique
 #include <cstring> // <= std::memcpy
+#include <memory>  // <= std::make_unique
 
 MessageView::MessageView(const char* dataPointer, unsigned int dataSize)
-  : AbstractMessage(dataPointer, dataSize)
-{}
+  : AbstractMessage(dataPointer, dataSize) {}
 
 //
 
-void MessageView::clear()
-{
+void MessageView::clear() {
   AbstractMessage::clear();
   _readIndex = 0;
 }
 
 //
 
-MessageView& MessageView::read(void* dataPointer, unsigned int dataSize)
-{
+MessageView& MessageView::read(void* dataPointer, unsigned int dataSize) {
   // verify size left
   if (_readIndex + dataSize > _dataSize)
     D_THROW(std::runtime_error, "can't read, not enough size left"
-                                << ", current index=" << _readIndex
-                                << ", next index=" << (_readIndex + dataSize)
-                                << ", data size=" << _dataSize);
+                                  << ", current index=" << _readIndex
+                                  << ", next index=" << (_readIndex + dataSize)
+                                  << ", data size=" << _dataSize);
 
   std::memcpy(dataPointer, _dataPointer + _readIndex, dataSize);
   _readIndex += dataSize;
@@ -36,66 +33,54 @@ MessageView& MessageView::read(void* dataPointer, unsigned int dataSize)
 
 //
 
-MessageView& MessageView::operator >>(bool& data)
-{
+MessageView& MessageView::operator>>(bool& data) {
   char value = 0;
   read(&value, sizeof(char)); // <= read like a char
   data = (value != 0);
   return *this;
 }
 
-MessageView& MessageView::operator >>(char& data)
-{
+MessageView& MessageView::operator>>(char& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(unsigned char& data)
-{
+MessageView& MessageView::operator>>(unsigned char& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(short& data)
-{
+MessageView& MessageView::operator>>(short& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(unsigned short& data)
-{
+MessageView& MessageView::operator>>(unsigned short& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(int& data)
-{
+MessageView& MessageView::operator>>(int& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(unsigned int& data)
-{
+MessageView& MessageView::operator>>(unsigned int& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(long& data)
-{
+MessageView& MessageView::operator>>(long& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(unsigned long& data)
-{
+MessageView& MessageView::operator>>(unsigned long& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(float& data)
-{
+MessageView& MessageView::operator>>(float& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(double& data)
-{
+MessageView& MessageView::operator>>(double& data) {
   return read(&data, sizeof(data));
 }
 
-MessageView& MessageView::operator >>(std::string& data)
-{
+MessageView& MessageView::operator>>(std::string& data) {
   // read string length
   unsigned int stringLength = 0;
   read(&stringLength, sizeof(stringLength));
@@ -111,17 +96,14 @@ MessageView& MessageView::operator >>(std::string& data)
   return *this;
 }
 
-MessageView& MessageView::operator >>(glm::vec3& data)
-{
+MessageView& MessageView::operator>>(glm::vec3& data) {
   return read(&data.x, sizeof(glm::vec3));
 }
 
-MessageView& MessageView::operator >>(glm::vec4& data)
-{
+MessageView& MessageView::operator>>(glm::vec4& data) {
   return read(&data.x, sizeof(glm::vec4));
 }
 
-MessageView& MessageView::operator >>(glm::mat4& data)
-{
+MessageView& MessageView::operator>>(glm::mat4& data) {
   return read(glm::value_ptr(data), sizeof(glm::mat4));
 }

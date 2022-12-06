@@ -5,16 +5,13 @@
 
 class btCollisionShape;
 
-class PhysicShape
-{
+class PhysicShape {
 protected:
   PhysicShapeDef::Type _type;
 
-  struct Bullet
-  {
+  struct Bullet {
     btCollisionShape* shape = nullptr;
-  }
-  _bullet;
+  } _bullet;
 
 protected:
   PhysicShape(const PhysicShapeDef& def);
@@ -27,16 +24,13 @@ public:
 
 public:
   btCollisionShape* getRawShape();
-
 };
 
 //
 //
 //
 
-class CapsuleShape
-  : public PhysicShape
-{
+class CapsuleShape : public PhysicShape {
   friend PhysicShape;
 
 protected:
@@ -47,9 +41,7 @@ protected:
 //
 //
 
-class BoxShape
-  : public PhysicShape
-{
+class BoxShape : public PhysicShape {
   friend PhysicShape;
 
 protected:
@@ -60,9 +52,7 @@ protected:
 //
 //
 
-class SphereShape
-  : public PhysicShape
-{
+class SphereShape : public PhysicShape {
   friend PhysicShape;
 
 protected:
@@ -73,9 +63,7 @@ protected:
 //
 //
 
-class StaticMeshShape
-  : public PhysicShape
-{
+class StaticMeshShape : public PhysicShape {
   friend PhysicShape;
 
 private:
@@ -91,14 +79,10 @@ protected:
 //
 //
 
-class CompoundShape
-  : public PhysicShape
-{
+class CompoundShape : public PhysicShape {
   friend PhysicShape;
 
 protected:
   CompoundShape(const PhysicShapeDef& def, bool isDynamic);
   ~CompoundShape();
 };
-
-

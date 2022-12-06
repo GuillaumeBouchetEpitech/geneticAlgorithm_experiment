@@ -5,8 +5,7 @@
 
 #include <memory>
 
-class ShaderProgramBuilder
-{
+class ShaderProgramBuilder {
 private:
   ShaderProgram::Definition _def;
 

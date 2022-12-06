@@ -9,25 +9,22 @@
 class FrameBuffer;
 class Image;
 
-class Texture
-{
+class Texture {
   friend FrameBuffer; // required by FrameBuffer::attachColorTexture()
 
 private:
   unsigned int _textureId = 0;
-  glm::uvec2 _size = { 0, 0 };
+  glm::uvec2 _size = {0, 0};
 
 public:
   Texture() = default;
   ~Texture();
 
 public:
-  void setFromImage(const Image& image, bool pixelated = false, bool repeat = false);
-  void allocateBlank(
-    const glm::uvec2& size,
-    bool pixelated = false,
-    bool repeat = false,
-    const void* pixels = nullptr);
+  void setFromImage(const Image& image, bool pixelated = false,
+                    bool repeat = false);
+  void allocateBlank(const glm::uvec2& size, bool pixelated = false,
+                     bool repeat = false, const void* pixels = nullptr);
   void allocateDepth(const glm::uvec2& size);
   void dispose();
 
@@ -42,5 +39,4 @@ public:
 
 public:
   static void unbind();
-
 };

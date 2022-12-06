@@ -3,36 +3,30 @@
 
 #include "framework/graphic/camera/Camera.hpp"
 
-#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <vector>
 #include <array>
 #include <memory>
+#include <vector>
 
-class ModelsRenderer
-{
+class ModelsRenderer {
 private:
   std::shared_ptr<ShaderProgram> _shader;
 
-  struct Geometries
-  {
+  struct Geometries {
     Geometry cars;
     Geometry wheels;
-  }
-  _geometries;
+  } _geometries;
 
-  struct Attributes
-  {
+  struct Attributes {
     glm::mat4 tranform;
     glm::vec3 color;
 
     Attributes(const glm::mat4& tranform, const glm::vec3& color)
-      : tranform(tranform)
-      , color(color)
-    {}
+      : tranform(tranform), color(color) {}
   };
 
   std::vector<Attributes> _modelsChassisMatrices;
@@ -45,5 +39,5 @@ public:
   void initialise();
 
 public:
-  void render(const Camera &cameraInstance);
+  void render(const Camera& cameraInstance);
 };

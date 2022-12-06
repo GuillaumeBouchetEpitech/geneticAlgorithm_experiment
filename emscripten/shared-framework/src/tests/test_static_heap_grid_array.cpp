@@ -5,8 +5,8 @@
 
 #include "common.hpp"
 
-#include <vector>
 #include <functional>
+#include <vector>
 // #include <iostream>
 
 // #include <cstring> // <= memset
@@ -14,8 +14,7 @@
 
 #include <cassert>
 
-void test_static_heap_grid_array()
-{
+void test_static_heap_grid_array() {
   D_MYLOG("test_static_heap_grid_array()");
 
   {
@@ -27,8 +26,8 @@ void test_static_heap_grid_array()
     staticGrid.allocate(k_height, k_width);
 
     for (std::size_t yy = 0; yy < staticGrid.height(); ++yy)
-    for (std::size_t xx = 0; xx < staticGrid.witdh(); ++xx)
-      staticGrid(yy, xx).value = int(1 + yy * k_width + xx);
+      for (std::size_t xx = 0; xx < staticGrid.witdh(); ++xx)
+        staticGrid(yy, xx).value = int(1 + yy * k_width + xx);
 
     for (std::size_t ii = 0; ii < staticGrid.size(); ++ii)
       assert(staticGrid[ii].value == int(ii + 1));
@@ -41,12 +40,13 @@ void test_static_heap_grid_array()
 
     {
       int tmpRowIndex = 0;
-      for (auto itRow = staticGrid.beginRow(); itRow != staticGrid.endRow(); ++itRow)
-      {
+      for (auto itRow = staticGrid.beginRow(); itRow != staticGrid.endRow();
+           ++itRow) {
         assert(itRow->value == tmpRowIndex + 1);
 
         int tmpColumnIndex = tmpRowIndex + 1;
-        for (auto itColumn = itRow.beginColumns(); itColumn != itRow.endColumns(); ++itColumn)
+        for (auto itColumn = itRow.beginColumns();
+             itColumn != itRow.endColumns(); ++itColumn)
           assert(itColumn->value == tmpColumnIndex++);
 
         tmpRowIndex += int(staticGrid.witdh());
@@ -54,14 +54,13 @@ void test_static_heap_grid_array()
     }
 
     {
-      for (std::size_t row = 0; row < staticGrid.height(); ++row)
-      {
+      for (std::size_t row = 0; row < staticGrid.height(); ++row) {
         int tmpColumnIndex = int(row * staticGrid.witdh()) + 1;
-        for (auto itColumn = staticGrid.beginColumns(row); itColumn != staticGrid.endColumns(row); ++itColumn)
+        for (auto itColumn = staticGrid.beginColumns(row);
+             itColumn != staticGrid.endColumns(row); ++itColumn)
           assert(itColumn->value == tmpColumnIndex++);
       }
     }
-
   }
 
   D_MYLOG(" => DONE");

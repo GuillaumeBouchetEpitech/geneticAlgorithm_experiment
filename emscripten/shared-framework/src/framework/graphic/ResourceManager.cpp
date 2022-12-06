@@ -5,20 +5,20 @@
 
 #include "framework/asValue.hpp"
 
-#include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include <sstream>
 
-std::shared_ptr<ShaderProgram> ResourceManager::createShader(int aliasCode, const ShaderProgram::Definition def)
-{
+std::shared_ptr<ShaderProgram>
+ResourceManager::createShader(int aliasCode,
+                              const ShaderProgram::Definition def) {
   std::stringstream sstr;
   sstr << def.filenames.vertex << "-" << def.filenames.fragment;
   std::string shaderUniqueName = sstr.str();
 
   auto itDef = _shaderDefsMap.find(shaderUniqueName);
-  if (itDef != _shaderDefsMap.end())
-  {
+  if (itDef != _shaderDefsMap.end()) {
     auto itShader = _shadersMap.find(itDef->second);
     if (itShader == _shadersMap.end())
       D_THROW(std::runtime_error, "resource manager shader map corrupted");
@@ -28,7 +28,9 @@ std::shared_ptr<ShaderProgram> ResourceManager::createShader(int aliasCode, cons
   }
 
   if (_shadersMap.count(aliasCode) > 0)
-    D_THROW(std::runtime_error, "resource manager new shader alias is duplicated, aliasCode=" << aliasCode);
+    D_THROW(std::runtime_error,
+            "resource manager new shader alias is duplicated, aliasCode="
+              << aliasCode);
 
   auto newShader = std::make_shared<ShaderProgram>(def);
   _shadersMap[aliasCode] = newShader;
@@ -36,11 +38,11 @@ std::shared_ptr<ShaderProgram> ResourceManager::createShader(int aliasCode, cons
   return newShader;
 }
 
-std::shared_ptr<ShaderProgram> ResourceManager::getShader(int aliasCode)
-{
+std::shared_ptr<ShaderProgram> ResourceManager::getShader(int aliasCode) {
   auto it = _shadersMap.find(aliasCode);
   if (it == _shadersMap.end())
-    D_THROW(std::runtime_error, "resource manager shader does not exist, aliasCode=" << aliasCode);
+    D_THROW(std::runtime_error,
+            "resource manager shader does not exist, aliasCode=" << aliasCode);
 
   return it->second;
 }
@@ -49,15 +51,16 @@ std::shared_ptr<ShaderProgram> ResourceManager::getShader(int aliasCode)
 //
 //
 
-std::shared_ptr<Texture> ResourceManager::createTexture(int aliasCode, const std::string& filename, bool pixelated /* = false */, bool repeat /* = false */)
-{
+std::shared_ptr<Texture>
+ResourceManager::createTexture(int aliasCode, const std::string& filename,
+                               bool pixelated /* = false */,
+                               bool repeat /* = false */) {
   std::stringstream sstr;
   sstr << filename << "-pixelated=" << pixelated << "-repeat=" << repeat;
   std::string textureUniqueName = sstr.str();
 
   auto itDef = _textureDefsMap.find(textureUniqueName);
-  if (itDef != _textureDefsMap.end())
-  {
+  if (itDef != _textureDefsMap.end()) {
     auto itTexture = _texturesMap.find(itDef->second);
     if (itTexture == _texturesMap.end())
       D_THROW(std::runtime_error, "resource manager texture map corrupted");
@@ -67,7 +70,9 @@ std::shared_ptr<Texture> ResourceManager::createTexture(int aliasCode, const std
   }
 
   if (_texturesMap.count(aliasCode) > 0)
-    D_THROW(std::runtime_error, "resource manager new texture alias is duplicated, aliasCode=" << aliasCode);
+    D_THROW(std::runtime_error,
+            "resource manager new texture alias is duplicated, aliasCode="
+              << aliasCode);
 
   auto newTexture = std::make_shared<Texture>();
 
@@ -80,11 +85,11 @@ std::shared_ptr<Texture> ResourceManager::createTexture(int aliasCode, const std
   return newTexture;
 }
 
-std::shared_ptr<Texture> ResourceManager::getTexture(int aliasCode)
-{
+std::shared_ptr<Texture> ResourceManager::getTexture(int aliasCode) {
   auto it = _texturesMap.find(aliasCode);
   if (it == _texturesMap.end())
-    D_THROW(std::runtime_error, "resource manager texture does not exist, aliasCode=" << aliasCode);
+    D_THROW(std::runtime_error,
+            "resource manager texture does not exist, aliasCode=" << aliasCode);
 
   return it->second;
 }
@@ -93,18 +98,17 @@ std::shared_ptr<Texture> ResourceManager::getTexture(int aliasCode)
 //
 //
 
-const Geometry::Definition& ResourceManager::createGeometryDefinition(int aliasCode, const Geometry::Definition& def)
-{
+const Geometry::Definition&
+ResourceManager::createGeometryDefinition(int aliasCode,
+                                          const Geometry::Definition& def) {
   std::stringstream sstr;
 
   sstr << asValue(def.primitiveType) << "-" << def.vbos.size();
-  for (const auto& vbo : def.vbos)
-  {
+  for (const auto& vbo : def.vbos) {
     sstr << "-" << vbo.instanced;
     sstr << "-" << vbo.stride;
     sstr << "-" << vbo.attrs.size();
-    for (const auto& attr : vbo.attrs)
-    {
+    for (const auto& attr : vbo.attrs) {
       sstr << "-" << attr.index;
       sstr << "-" << attr.name;
       sstr << "-" << asValue(attr.type);
@@ -114,31 +118,34 @@ const Geometry::Definition& ResourceManager::createGeometryDefinition(int aliasC
   std::string geoDefUniqueName = sstr.str();
 
   auto itDef = _geometryDefsMap.find(geoDefUniqueName);
-  if (itDef != _geometryDefsMap.end())
-  {
+  if (itDef != _geometryDefsMap.end()) {
     auto itGeoDef = _geometriesMap.find(itDef->second);
     if (itGeoDef == _geometriesMap.end())
-      D_THROW(std::runtime_error, "resource manager geometry definition map corrupted");
+      D_THROW(std::runtime_error,
+              "resource manager geometry definition map corrupted");
 
     _geometriesMap[aliasCode] = itGeoDef->second; // save same under new alias
     return itGeoDef->second;
   }
 
   if (_geometriesMap.count(aliasCode) > 0)
-    D_THROW(std::runtime_error, "resource manager new geometry definition alias is duplicated, aliasCode=" << aliasCode);
+    D_THROW(
+      std::runtime_error,
+      "resource manager new geometry definition alias is duplicated, aliasCode="
+        << aliasCode);
 
   _geometriesMap[aliasCode] = def; // hard copy
   _geometryDefsMap[geoDefUniqueName] = aliasCode;
   return def;
 }
 
-const Geometry::Definition& ResourceManager::getGeometryDefinition(int aliasCode)
-{
+const Geometry::Definition&
+ResourceManager::getGeometryDefinition(int aliasCode) {
   auto it = _geometriesMap.find(aliasCode);
   if (it == _geometriesMap.end())
-    D_THROW(std::runtime_error, "resource manager geometry definition does not exist, aliasCode=" << aliasCode);
+    D_THROW(std::runtime_error,
+            "resource manager geometry definition does not exist, aliasCode="
+              << aliasCode);
 
   return it->second;
 }
-
-

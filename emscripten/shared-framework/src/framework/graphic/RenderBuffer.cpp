@@ -5,15 +5,11 @@
 
 #include "framework/ErrorHandler.hpp"
 
-RenderBuffer::~RenderBuffer()
-{
-  dispose();
-}
+RenderBuffer::~RenderBuffer() { dispose(); }
 
 //
 
-void RenderBuffer::allocateDepth(const glm::ivec2& size)
-{
+void RenderBuffer::allocateDepth(const glm::ivec2& size) {
   _size = size;
 
   if (_size.x < 1 || _size.y < 1)
@@ -27,8 +23,7 @@ void RenderBuffer::allocateDepth(const glm::ivec2& size)
   GlContext::bindRenderbuffer(0);
 }
 
-void RenderBuffer::dispose()
-{
+void RenderBuffer::dispose() {
   if (_bufferId == 0)
     return;
 
@@ -36,22 +31,15 @@ void RenderBuffer::dispose()
   _bufferId = 0;
 }
 
-const glm::ivec2& RenderBuffer::getSize() const
-{
-  return _size;
-}
+const glm::ivec2& RenderBuffer::getSize() const { return _size; }
 
 //
 
-void RenderBuffer::bind() const
-{
+void RenderBuffer::bind() const {
   if (_bufferId == 0)
     D_THROW(std::runtime_error, "not allocated");
 
   GlContext::bindRenderbuffer(_bufferId);
 }
 
-void RenderBuffer::unbind()
-{
-  GlContext::bindRenderbuffer(0);
-}
+void RenderBuffer::unbind() { GlContext::bindRenderbuffer(0); }

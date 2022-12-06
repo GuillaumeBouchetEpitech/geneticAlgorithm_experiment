@@ -1,36 +1,29 @@
 
 #include "Texture.hpp"
 
-#include "Image.hpp"
 #include "FrameBuffer.hpp"
+#include "Image.hpp"
 
 #include "GlContext.hpp"
 
 #include "framework/ErrorHandler.hpp"
 
-Texture::~Texture()
-{
-  dispose();
-}
+Texture::~Texture() { dispose(); }
 
 //
 
-void Texture::setFromImage(
-  const Image& image,
-  bool pixelated /*= false*/,
-  bool repeat  /*= false*/)
-{
+void Texture::setFromImage(const Image& image, bool pixelated /*= false*/,
+                           bool repeat /*= false*/) {
   allocateBlank(image.getSize(), pixelated, repeat, image.getPixels());
 }
 
-void Texture::allocateBlank(
-  const glm::uvec2& size,
-  bool pixelated /*= false*/,
-  bool repeat /*= false*/,
-  const void* pixels /*= nullptr*/)
-{
+void Texture::allocateBlank(const glm::uvec2& size, bool pixelated /*= false*/,
+                            bool repeat /*= false*/,
+                            const void* pixels /*= nullptr*/) {
   if (size.x == 0 || size.y == 0)
-    D_THROW(std::runtime_error, "texture allocated with incorrect size, size.x: " << size.x << ", size.y: " << size.y);
+    D_THROW(std::runtime_error,
+            "texture allocated with incorrect size, size.x: "
+              << size.x << ", size.y: " << size.y);
 
   // TODO: check max texture size
   // if (_size.x < 1 || _size.y < 1)
@@ -47,20 +40,16 @@ void Texture::allocateBlank(
 
   GlContext::setTextureAsRepeat(repeat);
 
-  if (pixelated)
-  {
+  if (pixelated) {
     GlContext::setTextureAsPixelated();
-  }
-  else
-  {
+  } else {
     GlContext::setTextureAsSmoothed(true);
   }
 
   GlContext::bindTexture(0);
 }
 
-void Texture::allocateDepth(const glm::uvec2& size)
-{
+void Texture::allocateDepth(const glm::uvec2& size) {
   _size = size;
 
   // TODO: check max texture size
@@ -75,8 +64,7 @@ void Texture::allocateDepth(const glm::uvec2& size)
   GlContext::bindTexture(0);
 }
 
-void Texture::dispose()
-{
+void Texture::dispose() {
   if (!isValid())
     return;
 
@@ -86,42 +74,33 @@ void Texture::dispose()
   _textureId = 0;
 }
 
-void Texture::getAsImage(Image& image)
-{
+void Texture::getAsImage(Image& image) {
   if (!isValid())
     D_THROW(std::runtime_error, "texture not valid");
 
   image.dispose();
 
   FrameBuffer::Definition def;
-  def.colorTextures.push_back({ 0, this });
+  def.colorTextures.push_back({0, this});
 
   FrameBuffer tmpFrameBuffer;
   tmpFrameBuffer.initialise(def);
   tmpFrameBuffer.getAsImage(image, 0, 0, _size.x, _size.y);
 }
 
-const glm::uvec2& Texture::getSize() const
-{
-  return _size;
-}
+const glm::uvec2& Texture::getSize() const { return _size; }
 
-bool Texture::isValid() const
-{
+bool Texture::isValid() const {
   return _size.x > 0 && _size.x > 0 && _textureId != 0;
 }
 
 //
 
-void Texture::bind() const
-{
+void Texture::bind() const {
   if (_textureId == 0)
     D_THROW(std::runtime_error, "not allocated");
 
   GlContext::bindTexture(_textureId);
 }
 
-void Texture::unbind()
-{
-  GlContext::bindTexture(0);
-}
+void Texture::unbind() { GlContext::bindTexture(0); }

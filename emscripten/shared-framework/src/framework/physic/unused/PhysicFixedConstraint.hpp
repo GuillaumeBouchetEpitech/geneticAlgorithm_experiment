@@ -7,17 +7,14 @@ class btFixedConstraint;
 
 class PhysicWorld;
 
-class PhysicFixedConstraint
-{
+class PhysicFixedConstraint {
 private:
   friend PhysicWorld;
 
 private:
-  struct bullet
-  {
+  struct bullet {
     btFixedConstraint* constraint = nullptr;
-  }
-  _bullet;
+  } _bullet;
 
 public:
   PhysicFixedConstraint(const PhysicFixedConstraintDef& def);

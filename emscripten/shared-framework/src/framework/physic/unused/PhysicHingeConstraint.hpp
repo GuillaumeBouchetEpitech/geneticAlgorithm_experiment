@@ -7,17 +7,14 @@ class btHingeConstraint;
 
 class PhysicWorld;
 
-class PhysicHingeConstraint
-{
+class PhysicHingeConstraint {
 private:
   friend PhysicWorld;
 
 private:
-  struct bullet
-  {
+  struct bullet {
     btHingeConstraint* constraint = nullptr;
-  }
-  _bullet;
+  } _bullet;
 
 public:
   PhysicHingeConstraint(const PhysicHingeConstraintDef& def);

@@ -3,17 +3,17 @@
 
 #include "framework/containers/weak_ref_data_pool.hpp"
 
-#include "PhysicVehicleDef.hpp"
 #include "PhysicVehicle.hpp"
+#include "PhysicVehicleDef.hpp"
 
 class PhysicWorld;
 
-class PhysicVehicleManager
-{
+class PhysicVehicleManager {
   friend PhysicWorld;
 
 public:
-  using VehiclesPool = weak_ref_data_pool<PhysicVehicle, AbstractPhysicVehicle, 256, false>;
+  using VehiclesPool =
+    weak_ref_data_pool<PhysicVehicle, AbstractPhysicVehicle, 256, false>;
   using VehicleWeakRef = VehiclesPool::weak_ref;
 
 private:
@@ -39,5 +39,4 @@ public:
   const VehicleWeakRef getVehicle(unsigned int index) const;
   std::size_t vehicleSize() const;
   bool vehicleEmpty() const;
-
 };

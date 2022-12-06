@@ -7,13 +7,12 @@
 
 #include <optional>
 
-class LeaderCar
-{
+class LeaderCar {
 private:
   float _countdownUntilNewLeader = 0;
   int _carIndex = -1;
   float _totalTimeAsLeader = 0;
-  glm::vec3 _carPosition = { 0, 0, 0 };
+  glm::vec3 _carPosition = {0, 0, 0};
 
 public:
   LeaderCar() = default;
@@ -29,6 +28,4 @@ public:
   std::optional<glm::vec3> leaderPosition() const;
   std::optional<CarData> leaderData() const;
   float totalTimeAsLeader() const;
-
 };
-

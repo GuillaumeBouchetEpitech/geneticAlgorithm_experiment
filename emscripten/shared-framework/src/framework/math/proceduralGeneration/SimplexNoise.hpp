@@ -9,14 +9,13 @@
  */
 #pragma once
 
-#include <cstddef>  // size_t
 #include <array>
+#include <cstddef> // size_t
 
 /**
  * @brief A Perlin Simplex Noise C++ Implementation (1D, 2D, 3D, 4D).
  */
-class SimplexNoise
-{
+class SimplexNoise {
 public:
   // 1D Perlin simplex noise
   float noise(float x) const;
@@ -33,24 +32,30 @@ public:
   /**
    * Constructor of to initialize a fractal noise summation
    *
-   * @param[in] frequency    Frequency ("width") of the first octave of noise (default to 1.0)
-   * @param[in] amplitude    Amplitude ("height") of the first octave of noise (default to 1.0)
-   * @param[in] lacunarity   Lacunarity specifies the frequency multiplier between successive octaves (default to 2.0).
-   * @param[in] persistence  Persistence is the loss of amplitude between successive octaves (usually 1/lacunarity)
+   * @param[in] frequency    Frequency ("width") of the first octave of noise
+   * (default to 1.0)
+   * @param[in] amplitude    Amplitude ("height") of the first octave of noise
+   * (default to 1.0)
+   * @param[in] lacunarity   Lacunarity specifies the frequency multiplier
+   * between successive octaves (default to 2.0).
+   * @param[in] persistence  Persistence is the loss of amplitude between
+   * successive octaves (usually 1/lacunarity)
    */
-  explicit SimplexNoise(
-    float frequency = 1.0f,
-    float amplitude = 1.0f,
-    float lacunarity = 2.0f,
-    float persistence = 0.5f,
-    int seed = 0);
+  explicit SimplexNoise(float frequency = 1.0f, float amplitude = 1.0f,
+                        float lacunarity = 2.0f, float persistence = 0.5f,
+                        int seed = 0);
 
 private:
-  // Parameters of Fractional Brownian Motion (fBm) : sum of N "octaves" of noise
-  float _frequency;   ///< Frequency ("width") of the first octave of noise (default to 1.0)
-  float _amplitude;   ///< Amplitude ("height") of the first octave of noise (default to 1.0)
-  float _lacunarity;  ///< Lacunarity specifies the frequency multiplier between successive octaves (default to 2.0).
-  float _persistence; ///< Persistence is the loss of amplitude between successive octaves (usually 1/lacunarity)
+  // Parameters of Fractional Brownian Motion (fBm) : sum of N "octaves" of
+  // noise
+  float _frequency;   ///< Frequency ("width") of the first octave of noise
+                      ///< (default to 1.0)
+  float _amplitude;   ///< Amplitude ("height") of the first octave of noise
+                      ///< (default to 1.0)
+  float _lacunarity;  ///< Lacunarity specifies the frequency multiplier between
+                      ///< successive octaves (default to 2.0).
+  float _persistence; ///< Persistence is the loss of amplitude between
+                      ///< successive octaves (usually 1/lacunarity)
 
   uint8_t hash(int32_t i) const;
 

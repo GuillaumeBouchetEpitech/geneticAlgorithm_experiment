@@ -3,15 +3,14 @@
 
 #include "framework/helpers/GLMath.hpp"
 
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 #include <AL/al.h>
 #include <AL/alc.h>
 
-class OpenALSoundManager
-{
+class OpenALSoundManager {
 private:
   bool _enabled = true;
 
@@ -23,7 +22,7 @@ private:
   unsigned int _currentSource_2 = 0; // hacky
 
   std::unordered_map<std::string, ALuint> _bufferExplosionMap;
-  std::vector<std::string>                _buffersExplosionNames;
+  std::vector<std::string> _buffersExplosionNames;
 
   ALuint _bufferCarEngine;
 
@@ -45,10 +44,6 @@ public:
   void playCarEngine(const glm::vec3& pos, float pitch);
 
 public:
-  void setListener(
-    const glm::vec3& pos,
-    const glm::vec3& front,
-    const glm::vec3& up);
-
-
+  void setListener(const glm::vec3& pos, const glm::vec3& front,
+                   const glm::vec3& up);
 };

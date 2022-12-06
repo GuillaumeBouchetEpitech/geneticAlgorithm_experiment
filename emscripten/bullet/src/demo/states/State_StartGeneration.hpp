@@ -3,15 +3,13 @@
 
 #include "State_AbstractSimulation.hpp"
 
-class State_StartGeneration
-    : public State_AbstractSimulation
-{
+class State_StartGeneration : public State_AbstractSimulation {
 private:
-    int _countdownUntilNextState = 0;
+  int _countdownUntilNextState = 0;
 
 public:
-    virtual void enter() override;
+  virtual void enter() override;
 
 public:
-    virtual void update(int) override;
+  virtual void update(int) override;
 };

@@ -3,15 +3,14 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <sstream> // <= std::stringstream
 #include <cstring> // <= strrchr()
+#include <sstream> // <= std::stringstream
 
+#include <cstdint>
 #include <ostream>
 #include <vector>
-#include <cstdint>
 
-class TraceLogger
-{
+class TraceLogger {
 public:
   static std::string getTime();
 
@@ -26,47 +25,36 @@ public:
   std::string getData() const;
 
 public:
-  template<typename T>
-  TraceLogger& operator <<(T data)
-  {
+  template <typename T> TraceLogger& operator<<(T data) {
     _sstr << data;
     return *this;
   }
-
 };
 
-template<>
-TraceLogger& TraceLogger::operator << <bool>(bool data);
+template <> TraceLogger& TraceLogger::operator<<<bool>(bool data);
 
-template<>
-TraceLogger& TraceLogger::operator << <float>(float data);
+template <> TraceLogger& TraceLogger::operator<<<float>(float data);
 
-template<>
-TraceLogger& TraceLogger::operator << <double>(double data);
+template <> TraceLogger& TraceLogger::operator<<<double>(double data);
 
-template<>
-TraceLogger& TraceLogger::operator << <glm::vec3>(glm::vec3 data);
-
-
-
+template <> TraceLogger& TraceLogger::operator<<<glm::vec3>(glm::vec3 data);
 
 // this will reduce the "__FILE__" macro to it's filename -> friendlier to read
-#define D_MYLOG_FILENAME (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define D_MYLOG_FILENAME                                                       \
+  (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 // this is just to make the "D_MYLOG" macro source code easier to read
 #define D_MYLOG_STACK D_MYLOG_FILENAME << "|" << __func__ << "|" << __LINE__
 
-#define D_MYLOG_PREFIX "MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
+#define D_MYLOG_PREFIX                                                         \
+  "MYLOG [" << TraceLogger::getTime() << "] (" << D_MYLOG_STACK << ") -> "
 
 // one line logging macro
-#define D_MYLOG(streamMsg) \
-{ \
-  TraceLogger logger; \
-  logger << D_MYLOG_PREFIX << streamMsg; \
-  logger.dump(); \
-}
-
+#define D_MYLOG(streamMsg)                                                     \
+  {                                                                            \
+    TraceLogger logger;                                                        \
+    logger << D_MYLOG_PREFIX << streamMsg;                                     \
+    logger.dump();                                                             \
+  }
 
 // TODO: std::ostream
-
-

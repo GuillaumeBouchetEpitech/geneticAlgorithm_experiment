@@ -3,8 +3,7 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-struct CoreUsageRenderer
-{
+struct CoreUsageRenderer {
   glm::vec2 position;
   glm::vec2 size;
 

@@ -3,8 +3,7 @@
 
 #include "framework/containers/static_stack_array.hpp"
 
-class FitnessStats
-{
+class FitnessStats {
 private:
   std::size_t _index = 0;
   static_stack_array<float, 10> _allFitnesses;
@@ -21,5 +20,4 @@ public:
   float get(int index) const;
   std::size_t size() const;
   float max() const;
-
 };

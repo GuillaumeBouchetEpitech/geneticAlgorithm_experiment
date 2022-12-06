@@ -3,8 +3,7 @@
 
 #include <vector>
 
-class VertexArrayObject
-{
+class VertexArrayObject {
 private:
   std::vector<unsigned int> _vaoIds;
 

@@ -7,46 +7,40 @@
 
 #include "framework/asValue.hpp"
 
-#include "framework/graphic/ResourceManager.hpp"
 #include "framework/graphic/GeometryBuilder.hpp"
+#include "framework/graphic/ResourceManager.hpp"
 
 #include "framework/graphic/loaders/loadObjModel.hpp"
 
 #include "framework/math/RandomNumberGenerator.hpp"
 
+namespace {
 
-namespace
-{
+void updateVerticesNormals(loader::ModelVertices& vertices) {
+  for (std::size_t index = 0; index < vertices.size(); index += 3) {
+    loader::ModelVertex& vertexA = vertices.at(index + 0);
+    loader::ModelVertex& vertexB = vertices.at(index + 1);
+    loader::ModelVertex& vertexC = vertices.at(index + 2);
 
-  void updateVerticesNormals(loader::ModelVertices& vertices)
-  {
-    for (std::size_t index = 0; index < vertices.size(); index += 3)
-    {
-      loader::ModelVertex& vertexA = vertices.at(index + 0);
-      loader::ModelVertex& vertexB = vertices.at(index + 1);
-      loader::ModelVertex& vertexC = vertices.at(index + 2);
+    const glm::vec3 normal = glm::cross(vertexA.position - vertexB.position,
+                                        vertexA.position - vertexC.position);
 
-      const glm::vec3 normal = glm::cross(
-        vertexA.position - vertexB.position,
-        vertexA.position - vertexC.position);
-
-      vertexA.normal = normal;
-      vertexB.normal = normal;
-      vertexC.normal = normal;
-    }
+    vertexA.normal = normal;
+    vertexB.normal = normal;
+    vertexC.normal = normal;
   }
-
 }
 
-void ModelsRenderer::initialise()
-{
-  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::models));
+} // namespace
+
+void ModelsRenderer::initialise() {
+  _shader =
+    Context::get().graphic.resourceManager.getShader(asValue(Shaders::models));
 
   {
     GeometryBuilder geometryBuilder;
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
@@ -64,10 +58,8 @@ void ModelsRenderer::initialise()
     { // chassis geometry (instanced)
 
       loader::ModelVertices modelVertices;
-      loader::loadObjModel(
-        "./assets/model/CarNoWheels.obj",
-        "./assets/model/",
-        modelVertices);
+      loader::loadObjModel("./assets/model/CarNoWheels.obj", "./assets/model/",
+                           modelVertices);
 
       updateVerticesNormals(modelVertices);
 
@@ -78,22 +70,18 @@ void ModelsRenderer::initialise()
     { // wheel geometry (instanced)
 
       loader::ModelVertices modelVertices;
-      loader::loadObjModel(
-        "./assets/model/CarWheel.obj",
-        "./assets/model/",
-        modelVertices);
+      loader::loadObjModel("./assets/model/CarWheel.obj", "./assets/model/",
+                           modelVertices);
 
       updateVerticesNormals(modelVertices);
 
       _geometries.wheels.updateBuffer(0, modelVertices);
       _geometries.wheels.setPrimitiveCount(modelVertices.size());
     }
-
   }
 }
 
-void ModelsRenderer::render(const Camera &cameraInstance)
-{
+void ModelsRenderer::render(const Camera& cameraInstance) {
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -114,7 +102,7 @@ void ModelsRenderer::render(const Camera &cameraInstance)
 
   _modelsChassisMatrices.clear();
   _modelWheelsMatrices.clear();
-  _modelsChassisMatrices.reserve(totalCars); // pre-allocate
+  _modelsChassisMatrices.reserve(totalCars);   // pre-allocate
   _modelWheelsMatrices.reserve(totalCars * 4); // pre-allocate
 
   const glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
@@ -126,8 +114,7 @@ void ModelsRenderer::render(const Camera &cameraInstance)
   const glm::vec3& lifeColor = greenColor;
   const glm::vec3& deathColor = redColor;
 
-  for (unsigned int ii = 0; ii < totalCars; ++ii)
-  {
+  for (unsigned int ii = 0; ii < totalCars; ++ii) {
     const auto& carData = simulation.getCarResult(ii);
 
     if (!carData.isAlive)
@@ -136,8 +123,10 @@ void ModelsRenderer::render(const Camera &cameraInstance)
     //
     // 3d clipping
 
-    const glm::mat4 chassisTransform = glm::translate(carData.liveTransforms.chassis, modelHeight);
-    const glm::vec4 carOrigin = chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    const glm::mat4 chassisTransform =
+      glm::translate(carData.liveTransforms.chassis, modelHeight);
+    const glm::vec4 carOrigin =
+      chassisTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     if (!frustumCulling.sphereInFrustum(carOrigin, 5.0f))
       continue;
@@ -157,15 +146,13 @@ void ModelsRenderer::render(const Camera &cameraInstance)
       _modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
   }
 
-  if (!_modelsChassisMatrices.empty())
-  {
+  if (!_modelsChassisMatrices.empty()) {
     _geometries.cars.updateBuffer(1, _modelsChassisMatrices);
     _geometries.cars.setInstancedCount(_modelsChassisMatrices.size());
     _geometries.cars.render();
   }
 
-  if (!_modelWheelsMatrices.empty())
-  {
+  if (!_modelWheelsMatrices.empty()) {
     _geometries.wheels.updateBuffer(1, _modelWheelsMatrices);
     _geometries.wheels.setInstancedCount(_modelWheelsMatrices.size());
     _geometries.wheels.render();

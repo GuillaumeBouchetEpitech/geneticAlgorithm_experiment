@@ -11,9 +11,9 @@
 #include "framework/helpers/GLMath.hpp"
 
 // #include <vector>
-#include <memory>
-#include <functional>
 #include <cstdint>
+#include <functional>
+#include <memory>
 
 class btDefaultMotionState;
 class btRigidBody;
@@ -24,8 +24,7 @@ class PhysicVehicle;
 // class PhysicHingeConstraint;
 // class PhysicFixedConstraint;
 
-class AbstractPhysicBody
-{
+class AbstractPhysicBody {
 public:
   AbstractPhysicBody() = default;
   virtual ~AbstractPhysicBody() = default;
@@ -73,7 +72,8 @@ public:
   virtual void* getUserData() = 0;
 
   virtual void applyCentralImpulse(const glm::vec3& acc) = 0;
-  virtual void applyImpulse(const glm::vec3& force, const glm::vec3& rel_pos) = 0;
+  virtual void applyImpulse(const glm::vec3& force,
+                            const glm::vec3& rel_pos) = 0;
   virtual void applyCentralForce(const glm::vec3& force) = 0;
   virtual void applyForce(const glm::vec3& force, const glm::vec3& rel_pos) = 0;
   virtual void disableSleep() = 0;
@@ -81,13 +81,10 @@ public:
 
   virtual void disableContactResponse() = 0;
   virtual void enableContactResponse() = 0;
-
 };
 
-class PhysicBody
-  : public AbstractPhysicBody
-{
-// private:
+class PhysicBody : public AbstractPhysicBody {
+  // private:
   friend PhysicWorld;
   friend PhysicBodyManager;
   friend PhysicVehicle;
@@ -101,14 +98,12 @@ class PhysicBody
   // friend PhysicFixedConstraint;
 
 private:
-  struct Bullet
-  {
+  struct Bullet {
     btDefaultMotionState* motionState = nullptr;
     btRigidBody* body = nullptr;
-  }
-  _bullet;
+  } _bullet;
 
-  PhysicShape* _shape{ nullptr };
+  PhysicShape* _shape{nullptr};
 
   float _mass = 0.0f;
 
@@ -120,7 +115,7 @@ private:
 
   bool _isAdded = false;
 
-// private:
+  // private:
 public:
   PhysicBody(const PhysicBodyDef& def);
   virtual ~PhysicBody();
@@ -130,8 +125,9 @@ public:
   // PhysicBody& operator=(const PhysicBody& other) = delete;
   PhysicBody& operator=(PhysicBody&& other);
 
-// private:
-//   void _onContactChange(ContactEvent event, PhysicContactData* contactData, bool isB);
+  // private:
+  //   void _onContactChange(ContactEvent event, PhysicContactData* contactData,
+  //   bool isB);
 
 public:
   virtual bool isDynamic() const override;
@@ -174,9 +170,11 @@ public:
   virtual void* getUserData() override;
 
   virtual void applyCentralImpulse(const glm::vec3& acc) override;
-  virtual void applyImpulse(const glm::vec3& force, const glm::vec3& rel_pos) override;
+  virtual void applyImpulse(const glm::vec3& force,
+                            const glm::vec3& rel_pos) override;
   virtual void applyCentralForce(const glm::vec3& force) override;
-  virtual void applyForce(const glm::vec3& force, const glm::vec3& rel_pos) override;
+  virtual void applyForce(const glm::vec3& force,
+                          const glm::vec3& rel_pos) override;
   virtual void disableSleep() override;
   virtual void forceActivate() override;
 
@@ -185,5 +183,4 @@ public:
 
   // const std::vector<ContactPoint>& getContacts() const;
   // void setContactCallback(const std::function<void()>& callback);
-
 };

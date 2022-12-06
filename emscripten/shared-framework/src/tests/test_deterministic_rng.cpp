@@ -5,8 +5,7 @@
 
 #include <unordered_set>
 
-void test_deterministic_rng()
-{
+void test_deterministic_rng() {
   D_MYLOG("test_deterministic_rng()");
 
   {
@@ -15,8 +14,7 @@ void test_deterministic_rng()
     constexpr int testSize = 10000;
 
     std::unordered_set<int> allValues;
-    for (int index = 0; index < testSize; ++index)
-    {
+    for (int index = 0; index < testSize; ++index) {
       const int value = rng.getValue();
 
       assert(allValues.count(value) == 0);
@@ -33,8 +31,7 @@ void test_deterministic_rng()
 
     constexpr int testSize = 10000;
 
-    for (int index = 0; index < testSize; ++index)
-    {
+    for (int index = 0; index < testSize; ++index) {
       const float value = rng.getNormalisedValue();
       assert(value >= 0.0f && value < 1.0f);
     }
@@ -45,8 +42,7 @@ void test_deterministic_rng()
 
     constexpr int testSize = 10000;
 
-    for (int index = 0; index < testSize; ++index)
-    {
+    for (int index = 0; index < testSize; ++index) {
       const int valuei = rng.getRangedValue(150, 950);
       assert(valuei >= 150 && valuei <= 950);
 

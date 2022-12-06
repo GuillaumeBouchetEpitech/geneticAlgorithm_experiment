@@ -7,8 +7,7 @@
 
 #include "common.hpp"
 
-void test_weak_ref_data_pool()
-{
+void test_weak_ref_data_pool() {
   D_MYLOG("test_weak_ref_data_pool()");
 
   {
@@ -73,10 +72,12 @@ void test_weak_ref_data_pool()
     assert(ref1C->value == 666);
     assert(ref1E->value == 666);
 
-    // std::cout << "ref1A=" << ref1A->value << ", " << ref1A << ", " << ref1A.is_active() << std::endl;
-    // std::cout << "ref1B=" << ref1B->value << ", " << ref1B << ", " << ref1B.is_active() << std::endl;
-    // std::cout << "ref1C=" << ref1C->value << ", " << ref1C << ", " << ref1C.is_active() << std::endl;
-    // std::cout << "ref1E=" << ref1E->value << ", " << ref1E << ", " << ref1E.is_active() << std::endl;
+    // std::cout << "ref1A=" << ref1A->value << ", " << ref1A << ", " <<
+    // ref1A.is_active() << std::endl; std::cout << "ref1B=" << ref1B->value <<
+    // ", " << ref1B << ", " << ref1B.is_active() << std::endl; std::cout <<
+    // "ref1C=" << ref1C->value << ", " << ref1C << ", " << ref1C.is_active() <<
+    // std::endl; std::cout << "ref1E=" << ref1E->value << ", " << ref1E << ", "
+    // << ref1E.is_active() << std::endl;
 
     // std::cout << "RELEASE REF1A" << std::endl;
 
@@ -125,10 +126,9 @@ void test_weak_ref_data_pool()
 
       assert(myPool.size() == 10);
 
-      myPool.filter([](common::Test& item)
-      {
-
-        // std::cout << " (" << item.value << " % 2)=" << ((item.value % 2) == 0) << std::endl;
+      myPool.filter([](common::Test& item) {
+        // std::cout << " (" << item.value << " % 2)=" << ((item.value % 2) ==
+        // 0) << std::endl;
 
         return ((item.value % 2) == 0); // keep only the even values
       });
@@ -150,9 +150,7 @@ void test_weak_ref_data_pool()
       assert(common::getTotalCopyCtor() == 0);
       assert(common::getTotalMoveCtor() == 4);
       assert(common::getTotalDtor() == 5);
-
     }
-
 
     // std::cout << "myPool.size()=" << myPool.size() << std::endl;
 
@@ -201,13 +199,13 @@ void test_weak_ref_data_pool()
     assert(ref10->value == 10);
 
     assert(myPool1.size() == 20);
-    assert(myPool2.size() ==  0);
+    assert(myPool2.size() == 0);
 
     myPool2 = std::move(myPool1);
 
     assert(ref10->value == 10);
 
-    assert(myPool1.size() ==  0);
+    assert(myPool1.size() == 0);
     assert(myPool2.size() == 20);
   }
 

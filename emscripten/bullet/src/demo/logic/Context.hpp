@@ -1,28 +1,28 @@
 
 #pragma once
 
-#include "graphic/renderers/WireframesStackRenderer.hpp"
 #include "graphic/renderers/TrianglesStackRenderer.hpp"
+#include "graphic/renderers/WireframesStackRenderer.hpp"
 
-#include "graphic/renderers/scene/ParticleManager.hpp"
-#include "graphic/renderers/scene/FloorRenderer.hpp"
-#include "graphic/renderers/scene/BackGroundCylindersRenderer.hpp"
-#include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
-#include "graphic/renderers/scene/FlockingManager.hpp"
-#include "graphic/renderers/scene/ModelsRenderer.hpp"
-#include "graphic/renderers/scene/CarTailsRenderer.hpp"
+#include "graphic/postProcess/PostProcess.hpp"
 #include "graphic/renderers/hud/TextRenderer.hpp"
 #include "graphic/renderers/hud/TopologyRenderer.hpp"
-#include "graphic/postProcess/PostProcess.hpp"
+#include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
+#include "graphic/renderers/scene/BackGroundCylindersRenderer.hpp"
+#include "graphic/renderers/scene/CarTailsRenderer.hpp"
+#include "graphic/renderers/scene/FlockingManager.hpp"
+#include "graphic/renderers/scene/FloorRenderer.hpp"
+#include "graphic/renderers/scene/ModelsRenderer.hpp"
+#include "graphic/renderers/scene/ParticleManager.hpp"
 
 #include "framework/graphic/camera/Camera.hpp"
 
 #include "framework/graphic/ResourceManager.hpp"
 
 #include "helpers/CarWheelsTrails.hpp"
-#include "helpers/ProfileData.hpp"
 #include "helpers/FitnessStats.hpp"
 #include "helpers/LeaderCar.hpp"
+#include "helpers/ProfileData.hpp"
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
@@ -32,161 +32,136 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <string>
-#include <list>
-#include <unordered_map>
 #include <array>
+#include <list>
 #include <memory> // <= unique_ptr / make_unique
+#include <string>
+#include <unordered_map>
 
-class Context
-    : public NonCopyable
-{
+class Context : public NonCopyable {
 
-    //
-    //
-    // singleton
+  //
+  //
+  // singleton
 
 private:
-    static Context* _instance;
+  static Context* _instance;
 
-    Context() = default;
-    ~Context();
+  Context() = default;
+  ~Context();
+
 private:
-    void initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
+  void initialise(unsigned int width, unsigned int height,
+                  unsigned int totalCores, unsigned int genomesPerCore);
 
 public:
-    static void create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore);
-    static void destroy();
-    static Context& get();
+  static void create(unsigned int width, unsigned int height,
+                     unsigned int totalCores, unsigned int genomesPerCore);
+  static void destroy();
+  static Context& get();
 
-    // singleton
-    //
-    //
+  // singleton
+  //
+  //
 
 private:
-    void initialiseGraphicResource();
-    void initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore);
-    void initialiseSimulationCallbacks();
+  void initialiseGraphicResource();
+  void initialiseSimulation(unsigned int totalCores,
+                            unsigned int genomesPerCore);
+  void initialiseSimulationCallbacks();
 
 public:
+  struct Graphic {
+    // TODO: move in a class
+    struct CameraData {
+      glm::vec2 viewportSize = {800.0f, 600.0f};
 
-    struct Graphic
-    {
-        // TODO: move in a class
-        struct CameraData
-        {
-            glm::vec2 viewportSize = { 800.0f, 600.0f };
+      struct SceneData {
+        struct Rotations {
+          float theta = -2.5f;
+          float phi = 0.5f;
+        } rotations;
 
-            struct SceneData
-            {
-                struct Rotations
-                {
-                    float theta = -2.5f;
-                    float phi = 0.5f;
-                }
-                rotations;
+        glm::vec3 center = {0.0f, 0.0f, 0.0f};
+        float distance = 0.0f;
 
-                glm::vec3 center = { 0.0f, 0.0f, 0.0f };
-                float distance = 0.0f;
+        Camera scene;
+        Camera hud;
+      } main;
 
-                Camera scene;
-                Camera hud;
-            }
-            main;
+      struct ThirdPersonData {
+        glm::vec3 eye = {0.0f, 0.0f, 0.0f};
+        glm::vec3 upAxis = {0.0f, 0.0f, 1.0f};
 
-            struct ThirdPersonData
-            {
-                glm::vec3 eye = { 0.0f, 0.0f, 0.0f };
-                glm::vec3 upAxis = { 0.0f, 0.0f, 1.0f };
+        Camera scene;
+      } thirdPerson;
+    } camera;
 
-                Camera scene;
-            }
-            thirdPerson;
-        }
-        camera;
+    struct StackRenderers {
+      WireframesStackRenderer wireframes;
+      TrianglesStackRenderer triangles;
+    } stackRenderers;
+    ParticleManager particleManager;
+    FloorRenderer floorRenderer;
+    BackGroundCylindersRenderer backGroundCylindersRenderer;
+    AnimatedCircuitRenderer animatedCircuitRenderer;
+    TextRenderer textRenderer;
+    ModelsRenderer modelsRenderer;
+    FlockingManager flockingManager;
+    CarTailsRenderer carTailsRenderer;
+    TopologyRenderer topologyRenderer;
+    PostProcess postProcess;
 
-        struct StackRenderers
-        {
-            WireframesStackRenderer wireframes;
-            TrianglesStackRenderer triangles;
-        }
-        stackRenderers;
-        ParticleManager particleManager;
-        FloorRenderer floorRenderer;
-        BackGroundCylindersRenderer backGroundCylindersRenderer;
-        AnimatedCircuitRenderer animatedCircuitRenderer;
-        TextRenderer textRenderer;
-        ModelsRenderer modelsRenderer;
-        FlockingManager flockingManager;
-        CarTailsRenderer carTailsRenderer;
-        TopologyRenderer topologyRenderer;
-        PostProcess postProcess;
+    ResourceManager resourceManager;
+  } graphic;
 
-        ResourceManager resourceManager;
-    }
-    graphic;
+  //
 
-    //
+  struct Logic {
+    struct Metrics {
+      unsigned int updateTime = 0;
+      unsigned int renderTime = 0;
+    } metrics;
 
-    struct Logic
-    {
-        struct Metrics
-        {
-            unsigned int updateTime = 0;
-            unsigned int renderTime = 0;
-        }
-        metrics;
+    NeuralNetworkTopology annTopology;
 
-        NeuralNetworkTopology annTopology;
+    std::unique_ptr<AbstactSimulation> simulation = nullptr;
 
-        std::unique_ptr<AbstactSimulation> simulation = nullptr;
+    struct Cores {
+      ProfileData profileData;
 
-        struct Cores
-        {
-            ProfileData profileData;
+      unsigned int genomesPerCore = 0;
+      unsigned int totalCores = 0;
+      unsigned int totalCars = 0;
+    } cores;
 
-            unsigned int genomesPerCore = 0;
-            unsigned int totalCores = 0;
-            unsigned int totalCars = 0;
-        }
-        cores;
+    bool isAccelerated = false;
+    float timeSinceLastFrame = 0.0f;
 
-        bool isAccelerated = false;
-        float timeSinceLastFrame = 0.0f;
+    LeaderCar leaderCar;
 
-        LeaderCar leaderCar;
+    CarWheelsTrails carWheelsTrails;
 
-        CarWheelsTrails carWheelsTrails;
+    struct CircuitDimension {
+      glm::vec3 min;
+      glm::vec3 max;
+      glm::vec3 center;
+    } circuitDimension;
 
-        struct CircuitDimension
-        {
-            glm::vec3 min;
-            glm::vec3 max;
-            glm::vec3 center;
-        }
-        circuitDimension;
+    struct HudText {
+      std::string header;
+    } hudText;
 
-        struct HudText
-        {
-            std::string header;
-        }
-        hudText;
+    FitnessStats fitnessStats;
+  } logic;
 
-        FitnessStats fitnessStats;
-    }
-    logic;
+  struct Input {
+    std::unordered_map<int, bool> keys;
 
-    struct Input
-    {
-        std::unordered_map<int, bool> keys;
-
-        struct Mouse
-        {
-            glm::vec2 position = {0, 0};
-            glm::vec2 delta = {0, 0};
-            bool tracking = false;
-        }
-        mouse;
-    }
-    inputs;
+    struct Mouse {
+      glm::vec2 position = {0, 0};
+      glm::vec2 delta = {0, 0};
+      bool tracking = false;
+    } mouse;
+  } inputs;
 };

@@ -5,8 +5,7 @@
 
 #include <vector>
 
-class ProfileData
-{
+class ProfileData {
 private:
   using StatesData = std::vector<AbstactSimulation::CoreState>;
   using StatesHistory = std::vector<StatesData>;
@@ -34,9 +33,9 @@ public:
 
 public:
   const AbstactSimulation::CoreState& getCoreData(unsigned int index) const;
-  const AbstactSimulation::CoreState& getCoreHistoryData(unsigned int coreIndex, unsigned int dataIndex) const;
+  const AbstactSimulation::CoreState&
+  getCoreHistoryData(unsigned int coreIndex, unsigned int dataIndex) const;
 
   unsigned int getLatestTotalDelta() const;
   unsigned int getAllTimeMaxDelta() const;
-
 };

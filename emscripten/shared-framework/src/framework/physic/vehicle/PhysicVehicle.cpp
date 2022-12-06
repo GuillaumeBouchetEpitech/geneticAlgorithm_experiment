@@ -4,66 +4,57 @@
 #include "framework/physic/PhysicWorld.hpp"
 #include "framework/physic/body/PhysicBody.hpp"
 
-#include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include "framework/helpers/internals/BulletPhysics.hpp"
 
-namespace
-{
+namespace {
 
-  class CustomVehicleRaycaster
-    : public btDefaultVehicleRaycaster
-  {
-  private:
+class CustomVehicleRaycaster : public btDefaultVehicleRaycaster {
+private:
+  // must keep it as btDefaultVehicleRaycaster::m_dynamicsWorld is private
+  // => that a design flaw from bullet3, kind of sad (;_;)
+  btDynamicsWorld& _dynamicsWorld;
 
-    // must keep it as btDefaultVehicleRaycaster::m_dynamicsWorld is private
-    // => that a design flaw from bullet3, kind of sad (;_;)
-    btDynamicsWorld& _dynamicsWorld;
+  short _group;
+  short _mask;
 
-    short _group;
-    short _mask;
+public:
+  CustomVehicleRaycaster(btDynamicsWorld& world, short group, short mask)
+    : btDefaultVehicleRaycaster(&world), _dynamicsWorld(world), _group(group),
+      _mask(mask) {}
 
-  public:
-    CustomVehicleRaycaster(btDynamicsWorld& world, short group, short mask)
-      : btDefaultVehicleRaycaster(&world)
-      , _dynamicsWorld(world)
-      , _group(group)
-      , _mask(mask)
-    {}
+  virtual void* castRay(const btVector3& from, const btVector3& to,
+                        btVehicleRaycasterResult& result) override {
+    btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
 
-    virtual void* castRay(
-      const btVector3& from,
-      const btVector3& to,
-      btVehicleRaycasterResult& result) override
-    {
-      btCollisionWorld::ClosestRayResultCallback rayCallback(from, to);
+    // added value => we can specify the group/mask
+    rayCallback.m_collisionFilterGroup = _group;
+    rayCallback.m_collisionFilterMask = _mask;
 
-      // added value => we can specify the group/mask
-      rayCallback.m_collisionFilterGroup = _group;
-      rayCallback.m_collisionFilterMask = _mask;
+    _dynamicsWorld.rayTest(from, to, rayCallback);
 
-      _dynamicsWorld.rayTest(from, to, rayCallback);
+    if (!rayCallback.hasHit())
+      return nullptr;
 
-      if (!rayCallback.hasHit())
-        return nullptr;
+    const btRigidBody* body =
+      btRigidBody::upcast(rayCallback.m_collisionObject);
+    if (!body || !body->hasContactResponse())
+      return nullptr;
 
-      const btRigidBody* body = btRigidBody::upcast(rayCallback.m_collisionObject);
-      if (!body || !body->hasContactResponse())
-        return nullptr;
+    result.m_hitPointInWorld = rayCallback.m_hitPointWorld;
+    result.m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
+    result.m_hitNormalInWorld.normalize();
+    result.m_distFraction = rayCallback.m_closestHitFraction;
+    return static_cast<void*>(const_cast<btRigidBody*>(body));
+  }
+};
 
-      result.m_hitPointInWorld = rayCallback.m_hitPointWorld;
-      result.m_hitNormalInWorld = rayCallback.m_hitNormalWorld;
-      result.m_hitNormalInWorld.normalize();
-      result.m_distFraction = rayCallback.m_closestHitFraction;
-      return static_cast<void*>(const_cast<btRigidBody*>(body));
-    }
-  };
+} // namespace
 
-}
-
-PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, const PhysicVehicleDef& def)
-{
+PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld,
+                             const PhysicVehicleDef& def) {
   if (!def.body)
     D_THROW(std::runtime_error, "physic vehicle need a physic body");
 
@@ -71,20 +62,15 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, const Physi
 
   btRaycastVehicle::btVehicleTuning tuning;
   _bullet.vehicleRayCaster = new CustomVehicleRaycaster(
-    dynamicsWorld,
-    def.wheelsCollisionGroup,
-    def.wheelsCollisionMask);
+    dynamicsWorld, def.wheelsCollisionGroup, def.wheelsCollisionMask);
 
   PhysicBody* implementation = reinterpret_cast<PhysicBody*>(_body.get());
 
-  _bullet.vehicle = new btRaycastVehicle(
-    tuning,
-    implementation->_bullet.body,
-    _bullet.vehicleRayCaster);
+  _bullet.vehicle = new btRaycastVehicle(tuning, implementation->_bullet.body,
+                                         _bullet.vehicleRayCaster);
 
   // // never allow the deactivation (sleep) state of the vehicle
   // _bullet.carChassis->setActivationState(DISABLE_DEACTIVATION);
-
 
   //
   //
@@ -93,19 +79,19 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, const Physi
   // float connectionHeight = 0.5f;
 
   // choose coordinate system
-  _bullet.vehicle->setCoordinateSystem(def.coordinateSystem.x, def.coordinateSystem.y, def.coordinateSystem.z);
+  _bullet.vehicle->setCoordinateSystem(
+    def.coordinateSystem.x, def.coordinateSystem.y, def.coordinateSystem.z);
 
-  for (const auto& wheelStats : def.allWheelStats)
-  {
+  for (const auto& wheelStats : def.allWheelStats) {
     btWheelInfo& wheelInfo = _bullet.vehicle->addWheel(
-      btVector3(wheelStats.connectionPoint.x, wheelStats.connectionPoint.y, wheelStats.connectionPoint.z),
-      btVector3(wheelStats.wheelDirectionCS0.x, wheelStats.wheelDirectionCS0.y, wheelStats.wheelDirectionCS0.z),
-      btVector3(wheelStats.wheelAxleCS.x, wheelStats.wheelAxleCS.y, wheelStats.wheelAxleCS.z),
-      wheelStats.suspensionRestLength,
-      wheelStats.wheelRadius,
-      tuning,
-      wheelStats.isFrontWheel
-    );
+      btVector3(wheelStats.connectionPoint.x, wheelStats.connectionPoint.y,
+                wheelStats.connectionPoint.z),
+      btVector3(wheelStats.wheelDirectionCS0.x, wheelStats.wheelDirectionCS0.y,
+                wheelStats.wheelDirectionCS0.z),
+      btVector3(wheelStats.wheelAxleCS.x, wheelStats.wheelAxleCS.y,
+                wheelStats.wheelAxleCS.z),
+      wheelStats.suspensionRestLength, wheelStats.wheelRadius, tuning,
+      wheelStats.isFrontWheel);
 
     wheelInfo.m_suspensionStiffness = wheelStats.suspensionStiffness;
     wheelInfo.m_maxSuspensionTravelCm = wheelStats.maxSuspensionTravelCm;
@@ -116,21 +102,18 @@ PhysicVehicle::PhysicVehicle(btDiscreteDynamicsWorld& dynamicsWorld, const Physi
   }
 }
 
-PhysicVehicle::~PhysicVehicle()
-{
+PhysicVehicle::~PhysicVehicle() {
   delete _bullet.vehicle;
   delete _bullet.vehicleRayCaster;
 }
 
-PhysicVehicle::PhysicVehicle(PhysicVehicle&& other)
-{
+PhysicVehicle::PhysicVehicle(PhysicVehicle&& other) {
   std::swap(_bullet.vehicleRayCaster, other._bullet.vehicleRayCaster);
   std::swap(_bullet.vehicle, other._bullet.vehicle);
   std::swap(_body, other._body);
 }
 
-PhysicVehicle& PhysicVehicle::operator=(PhysicVehicle&& other)
-{
+PhysicVehicle& PhysicVehicle::operator=(PhysicVehicle&& other) {
   if (this == &other)
     return *this;
 
@@ -146,24 +129,19 @@ PhysicVehicle& PhysicVehicle::operator=(PhysicVehicle&& other)
 //
 //
 
-void PhysicVehicle::applyEngineForce(int index, float force)
-{
+void PhysicVehicle::applyEngineForce(int index, float force) {
   _bullet.vehicle->applyEngineForce(force, index);
 }
 
-void PhysicVehicle::applyBrake(int index, float force)
-{
+void PhysicVehicle::applyBrake(int index, float force) {
   _bullet.vehicle->setBrake(force, index);
 }
 
-void PhysicVehicle::setSteeringValue(int index, float steering)
-{
+void PhysicVehicle::setSteeringValue(int index, float steering) {
   _bullet.vehicle->setSteeringValue(steering, index);
 }
 
-
-void PhysicVehicle::reset()
-{
+void PhysicVehicle::reset() {
   _body->clearForces();
   _body->setLinearVelocity(0, 0, 0);
   _body->setAngularVelocity(0, 0, 0);
@@ -179,24 +157,19 @@ void PhysicVehicle::reset()
     applyBrake(ii, 0);
 }
 
-int PhysicVehicle::getNumWheels() const
-{
+int PhysicVehicle::getNumWheels() const {
   return _bullet.vehicle->getNumWheels();
 }
 
-const glm::mat4& PhysicVehicle::getWheelTransform(int index, glm::mat4& mat4x4) const
-{
-  _bullet.vehicle->getWheelTransformWS(index).getOpenGLMatrix(glm::value_ptr(mat4x4));
+const glm::mat4& PhysicVehicle::getWheelTransform(int index,
+                                                  glm::mat4& mat4x4) const {
+  _bullet.vehicle->getWheelTransformWS(index).getOpenGLMatrix(
+    glm::value_ptr(mat4x4));
   return mat4x4;
 }
 
-float PhysicVehicle::getCurrentSpeedKmHour() const
-{
+float PhysicVehicle::getCurrentSpeedKmHour() const {
   return _bullet.vehicle->getCurrentSpeedKmHour();
 }
 
-PhysicBodyManager::BodyWeakRef PhysicVehicle::getPhysicBody()
-{
-  return _body;
-}
-
+PhysicBodyManager::BodyWeakRef PhysicVehicle::getPhysicBody() { return _body; }

@@ -8,8 +8,7 @@
 class PhysicWorld;
 class PhysicBody;
 
-class Raycaster
-{
+class Raycaster {
   friend PhysicWorld;
 
 private:
@@ -20,8 +19,7 @@ private:
   ~Raycaster() = default;
 
 public:
-  struct RaycastParams
-  {
+  struct RaycastParams {
     glm::vec3 from;
     glm::vec3 to;
     float radius;
@@ -29,8 +27,7 @@ public:
     short collisionGroup;
     short collisionMask;
 
-    enum Type
-    {
+    enum Type {
       closest = 0,
       everything,
     };
@@ -38,15 +35,13 @@ public:
 
     void* toIgnore = nullptr;
 
-    struct ResultImpact
-    {
+    struct ResultImpact {
       glm::vec3 impactPoint;
       glm::vec3 impactNormal;
       PhysicBody* body = nullptr;
     };
 
-    struct ResultRaw
-    {
+    struct ResultRaw {
       bool hasHit = false;
 
       ResultImpact* allImpactsData;
@@ -54,27 +49,17 @@ public:
       std::size_t allImpactsTotal;
     };
 
-    template<std::size_t N>
-    struct ResultArray
-    {
+    template <std::size_t N> struct ResultArray {
       bool hasHit = false;
 
       std::array<ResultImpact, N> allImpactsData;
       std::size_t allImpactsTotal;
     };
 
-    RaycastParams(
-      const glm::vec3& rayFrom,
-      const glm::vec3& rayTo,
-      float sweepRadius = 0.0f,
-      short group = -1,
-      short mask = -1)
-      : from(rayFrom)
-      , to(rayTo)
-      , radius(sweepRadius)
-      , collisionGroup(group)
-      , collisionMask(mask)
-    {}
+    RaycastParams(const glm::vec3& rayFrom, const glm::vec3& rayTo,
+                  float sweepRadius = 0.0f, short group = -1, short mask = -1)
+      : from(rayFrom), to(rayTo), radius(sweepRadius), collisionGroup(group),
+        collisionMask(mask) {}
   };
 
 private:
@@ -83,9 +68,9 @@ private:
   bool _raycast(RaycastParams& params, RaycastParams::ResultRaw& result);
 
 public:
-  template<std::size_t N>
-  bool raycast(RaycastParams& params, RaycastParams::ResultArray<N>& resultArray)
-  {
+  template <std::size_t N>
+  bool raycast(RaycastParams& params,
+               RaycastParams::ResultArray<N>& resultArray) {
 
     RaycastParams::ResultRaw resultRaw;
     resultRaw.allImpactsData = resultArray.allImpactsData.data();
@@ -98,5 +83,4 @@ public:
 
     return hasHit;
   }
-
 };

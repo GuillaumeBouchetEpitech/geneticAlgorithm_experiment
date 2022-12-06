@@ -1,20 +1,19 @@
 
 #pragma once
 
-#include "framework/graphic/Texture.hpp"
-#include "framework/graphic/RenderBuffer.hpp"
 #include "framework/graphic/FrameBuffer.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/RenderBuffer.hpp"
 #include "framework/graphic/ShaderProgram.hpp"
+#include "framework/graphic/Texture.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
 #include <memory>
 
-class PostProcess
-{
+class PostProcess {
 private:
-  glm::uvec2 _frameSize = { 800, 600 };
+  glm::uvec2 _frameSize = {800, 600};
 
   Texture _colorTexture;
   Texture _depthTexture;
@@ -24,12 +23,10 @@ private:
   std::shared_ptr<ShaderProgram> _shader = nullptr;
   Geometry _screenQuad;
 
-  struct Animation
-  {
+  struct Animation {
     float duration = 1.0f;
     float timeLeft = 0.0f;
-  }
-  _animation;
+  } _animation;
 
 public:
   PostProcess() = default;
@@ -45,4 +42,3 @@ public:
   void update(float elapsedTime);
   void animate();
 };
-

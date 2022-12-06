@@ -3,26 +3,23 @@
 
 #include "framework/graphic/GlContext.hpp"
 
-#include "framework/asValue.hpp"
 #include "framework/ErrorHandler.hpp"
+#include "framework/asValue.hpp"
 
 #include <stdexcept>
 
 #if defined __EMSCRIPTEN__
-#   include <emscripten.h>
+#include <emscripten.h>
 #endif
 
-SDLWindowWrapper::SDLWindowWrapper(
-  const char* name,
-  uint32_t width,
-  uint32_t height,
-  uint32_t framesPerSecond,
-  OpenGlEsVersion openGlEsVersion)
-{
+SDLWindowWrapper::SDLWindowWrapper(const char* name, uint32_t width,
+                                   uint32_t height, uint32_t framesPerSecond,
+                                   OpenGlEsVersion openGlEsVersion) {
   _framesPerSecond = framesPerSecond;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    D_THROW(std::runtime_error, "Could not initialise SDL, error: " << SDL_GetError());
+    D_THROW(std::runtime_error,
+            "Could not initialise SDL, error: " << SDL_GetError());
 
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, asValue(openGlEsVersion));
@@ -38,28 +35,25 @@ SDLWindowWrapper::SDLWindowWrapper(
   _window = SDL_CreateWindow(name, posX, posY, int(width), int(height), flags);
 
   if (!_window)
-    D_THROW(std::runtime_error, "Could not create the window: " << SDL_GetError());
+    D_THROW(std::runtime_error,
+            "Could not create the window: " << SDL_GetError());
 
-  try
-  {
+  try {
     _glContextId = SDL_GL_CreateContext(_window);
     if (!_glContextId)
-      D_THROW(std::runtime_error, "Failed to create GL context: " << SDL_GetError());
+      D_THROW(std::runtime_error,
+              "Failed to create GL context: " << SDL_GetError());
 
-    try
-    {
+    try {
       if (SDL_GL_MakeCurrent(_window, _glContextId) < 0)
-        D_THROW(std::runtime_error, "Failed to make GL context current: " << SDL_GetError());
-    }
-    catch (const std::exception& error)
-    {
+        D_THROW(std::runtime_error,
+                "Failed to make GL context current: " << SDL_GetError());
+    } catch (const std::exception& error) {
       SDL_GL_DeleteContext(_glContextId);
 
       throw error;
     }
-  }
-  catch (const std::exception& error)
-  {
+  } catch (const std::exception& error) {
     SDL_DestroyWindow(_window);
     SDL_Quit();
 
@@ -73,8 +67,7 @@ SDLWindowWrapper::SDLWindowWrapper(
   GlContext::setDepthFunc(GlContext::DepthFuncs::less);
 }
 
-SDLWindowWrapper::~SDLWindowWrapper()
-{
+SDLWindowWrapper::~SDLWindowWrapper() {
   stop();
 
   if (_glContextId)
@@ -90,8 +83,7 @@ SDLWindowWrapper::~SDLWindowWrapper()
 
 #if defined __EMSCRIPTEN__
 
-void SDLWindowWrapper::_webStep(void* pData)
-{
+void SDLWindowWrapper::_webStep(void* pData) {
   SDLWindowWrapper* self = static_cast<SDLWindowWrapper*>(pData);
 
   const uint32_t currentTime = SDL_GetTicks(); // in millisecond
@@ -104,17 +96,18 @@ void SDLWindowWrapper::_webStep(void* pData)
 
 #endif
 
-void SDLWindowWrapper::run()
-{
+void SDLWindowWrapper::run() {
   if (_running)
     return;
   _running = true;
 
 #if defined __EMSCRIPTEN__
 
-  // emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 0, true);
-  // emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 60, true);
-  emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, int32_t(_framesPerSecond), true);
+  // emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this, 0,
+  // true); emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep,
+  // (void*)this, 60, true);
+  emscripten_set_main_loop_arg(SDLWindowWrapper::_webStep, (void*)this,
+                               int32_t(_framesPerSecond), true);
 
   // unreachable <= "emscripten_set_main_loop_arg" does that
 
@@ -122,8 +115,7 @@ void SDLWindowWrapper::run()
 
   const int32_t frameDelay = 1000 / int32_t(_framesPerSecond);
 
-  while (_running)
-  {
+  while (_running) {
     const uint32_t startFrameTime = SDL_GetTicks(); // in millisecond
     const uint32_t delta = startFrameTime - _startTime;
 
@@ -142,8 +134,7 @@ void SDLWindowWrapper::run()
 #endif
 }
 
-void SDLWindowWrapper::stop()
-{
+void SDLWindowWrapper::stop() {
   if (!_running)
     return;
   _running = false;
@@ -157,63 +148,53 @@ void SDLWindowWrapper::stop()
 
 //
 
-void SDLWindowWrapper::process(uint32_t deltaTime)
-{
+void SDLWindowWrapper::process(uint32_t deltaTime) {
   SDL_Event event;
-  while (SDL_PollEvent(&event))
-  {
+  while (SDL_PollEvent(&event)) {
 
-    switch (event.type)
-    {
+    switch (event.type) {
 
 #if not defined __EMSCRIPTEN__
 
-      case SDL_QUIT:
-      {
+    case SDL_QUIT: {
+      return stop();
+    }
+    case SDL_KEYUP: {
+      int symbol = event.key.keysym.sym;
+      if (symbol == SDLK_ESCAPE)
         return stop();
-      }
-      case SDL_KEYUP:
-      {
-        int symbol = event.key.keysym.sym;
-        if (symbol == SDLK_ESCAPE)
-          return stop();
-        break;
-      }
+      break;
+    }
 
 #endif
 
-      case SDL_WINDOWEVENT:
-      {
-        switch (event.window.event)
-        {
-          case SDL_WINDOWEVENT_SIZE_CHANGED:
-          {
-            int width = 0;
-            int height = 0;
-            SDL_GL_GetDrawableSize(_window, &width, &height);
-            if (width == 0 || height == 0)
-              SDL_GetWindowSize(_window, &width, &height);
+    case SDL_WINDOWEVENT: {
+      switch (event.window.event) {
+      case SDL_WINDOWEVENT_SIZE_CHANGED: {
+        int width = 0;
+        int height = 0;
+        SDL_GL_GetDrawableSize(_window, &width, &height);
+        if (width == 0 || height == 0)
+          SDL_GetWindowSize(_window, &width, &height);
 
-            if (width <= 0)
-              width = 1;
-            if (height <= 0)
-              height = 1;
+        if (width <= 0)
+          width = 1;
+        if (height <= 0)
+          height = 1;
 
-            _onResize(uint32_t(width), uint32_t(height));
-            break;
-          }
-          case SDL_WINDOWEVENT_SHOWN:
-          {
-            _onVisibilityChange(_visible = true);
-            break;
-          }
-          case SDL_WINDOWEVENT_HIDDEN:
-          {
-            _onVisibilityChange(_visible = false);
-            break;
-          }
-        }
+        _onResize(uint32_t(width), uint32_t(height));
+        break;
       }
+      case SDL_WINDOWEVENT_SHOWN: {
+        _onVisibilityChange(_visible = true);
+        break;
+      }
+      case SDL_WINDOWEVENT_HIDDEN: {
+        _onVisibilityChange(_visible = false);
+        break;
+      }
+      }
+    }
     }
 
     _onEvent(event);

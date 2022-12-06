@@ -1,8 +1,7 @@
 
 #pragma once
 
-namespace easing
-{
+namespace easing {
 
 float easeInSine(float t);
 float easeOutSine(float t);
@@ -35,4 +34,4 @@ float easeInBounce(float t);
 float easeOutBounce(float t);
 float easeInOutBounce(float t);
 
-}
+} // namespace easing

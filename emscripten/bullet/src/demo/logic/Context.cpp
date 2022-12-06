@@ -1,8 +1,8 @@
 
 #include "Context.hpp"
 
-#include "framework/TraceLogger.hpp"
 #include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include "demo/defines.hpp"
 
@@ -23,119 +23,111 @@
 
 Context* Context::_instance = nullptr;
 
-Context::~Context()
-{
-}
+Context::~Context() {}
 
-void Context::initialise(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
-{
-    {
-        graphic.camera.viewportSize = { width, height };
+void Context::initialise(unsigned int width, unsigned int height,
+                         unsigned int totalCores, unsigned int genomesPerCore) {
+  {
+    graphic.camera.viewportSize = {width, height};
 
-        graphic.camera.main.scene.setPerspective(70.0f, 0.1f, 1500.0f);
+    graphic.camera.main.scene.setPerspective(70.0f, 0.1f, 1500.0f);
 
-        graphic.camera.main.hud.setOrthographic(
-            0.0f, float(width),
-            0.0f, float(height),
-            -10.0f, +10.0f);
-        graphic.camera.main.hud.lookAt(
-            glm::vec3(0, 0, 1),
-            glm::vec3(0, 0, 0),
-            glm::vec3(0, 1, 0));
-        graphic.camera.main.hud.computeMatrices();
+    graphic.camera.main.hud.setOrthographic(0.0f, float(width), 0.0f,
+                                            float(height), -10.0f, +10.0f);
+    graphic.camera.main.hud.lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0),
+                                   glm::vec3(0, 1, 0));
+    graphic.camera.main.hud.computeMatrices();
 
-        graphic.camera.thirdPerson.scene.setPerspective(70.0f, 0.1f, 1500.0f);
-    }
+    graphic.camera.thirdPerson.scene.setPerspective(70.0f, 0.1f, 1500.0f);
+  }
 
-    initialiseGraphicResource();
+  initialiseGraphicResource();
 
-    graphic.stackRenderers.wireframes.initialise();
-    graphic.stackRenderers.triangles.initialise();
-    graphic.particleManager.initialise();
-    graphic.textRenderer.initialise();
-    graphic.modelsRenderer.initialise();
-    graphic.flockingManager.initialise();
-    graphic.carTailsRenderer.initialise();
+  graphic.stackRenderers.wireframes.initialise();
+  graphic.stackRenderers.triangles.initialise();
+  graphic.particleManager.initialise();
+  graphic.textRenderer.initialise();
+  graphic.modelsRenderer.initialise();
+  graphic.flockingManager.initialise();
+  graphic.carTailsRenderer.initialise();
 
-    graphic.postProcess.initialise({ width, height });
+  graphic.postProcess.initialise({width, height});
 
-    //
-    //
-    //
+  //
+  //
+  //
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-    logic.simulation = std::make_unique<WebWorkersSimulation>();
+  logic.simulation = std::make_unique<WebWorkersSimulation>();
 
 #else
 
-    logic.simulation = std::make_unique<PthreadSimulation>();
+  logic.simulation = std::make_unique<PthreadSimulation>();
 
 #endif
 
-    initialiseSimulationCallbacks();
-    initialiseSimulation(totalCores, genomesPerCore);
+  initialiseSimulationCallbacks();
+  initialiseSimulation(totalCores, genomesPerCore);
 
-    { // compute the top left HUD text
+  { // compute the top left HUD text
 
-        std::string glVersion = GlContext::getVersion();
-        if (glVersion.empty())
-            glVersion = "unknown";
+    std::string glVersion = GlContext::getVersion();
+    if (glVersion.empty())
+      glVersion = "unknown";
 
-        std::stringstream sstr;
-        sstr << "Graphic: " << glVersion << std::endl;
+    std::stringstream sstr;
+    sstr << "Graphic: " << glVersion << std::endl;
 
 #if defined D_WEB_BUILD
 
-        sstr << "Type: C++ (WebAssembly Build)" << std::endl;
+    sstr << "Type: C++ (WebAssembly Build)" << std::endl;
 
-#  if defined D_WEB_PTHREAD_BUILD
+#if defined D_WEB_PTHREAD_BUILD
 
-        sstr << "Mode: pthread";
-
-#  else
-
-        sstr << "Mode: webworker (as a fallback)";
-
-#  endif
+    sstr << "Mode: pthread";
 
 #else
 
-        sstr << "Type: C++ (Native Build)" << std::endl;
-        sstr << "Mode: pthread";
+    sstr << "Mode: webworker (as a fallback)";
 
 #endif
 
-        logic.hudText.header = sstr.str();
+#else
 
-    } // compute the top left HUD text
+    sstr << "Type: C++ (Native Build)" << std::endl;
+    sstr << "Mode: pthread";
+
+#endif
+
+    logic.hudText.header = sstr.str();
+
+  } // compute the top left HUD text
 }
 
 //
 
-void Context::create(unsigned int width, unsigned int height, unsigned int totalCores, unsigned int genomesPerCore)
-{
-    if (_instance)
-        D_THROW(std::runtime_error, "Context singleton already initialised");
+void Context::create(unsigned int width, unsigned int height,
+                     unsigned int totalCores, unsigned int genomesPerCore) {
+  if (_instance)
+    D_THROW(std::runtime_error, "Context singleton already initialised");
 
-    _instance = new Context();
-    _instance->initialise(width, height, totalCores, genomesPerCore);
+  _instance = new Context();
+  _instance->initialise(width, height, totalCores, genomesPerCore);
 }
 
-void Context::destroy()
-{
-    if (!_instance)
-        D_THROW(std::runtime_error, "Context singleton already destroyed");
+void Context::destroy() {
+  if (!_instance)
+    D_THROW(std::runtime_error, "Context singleton already destroyed");
 
-    delete _instance, _instance = nullptr;
+  delete _instance, _instance = nullptr;
 }
 
-Context& Context::get()
-{
-    if (!_instance)
-        D_THROW(std::runtime_error, "Context singleton not initialised");
+Context& Context::get() {
+  if (!_instance)
+    D_THROW(std::runtime_error, "Context singleton not initialised");
 
-    return *_instance;
+  return *_instance;
 }
 
 // singleton

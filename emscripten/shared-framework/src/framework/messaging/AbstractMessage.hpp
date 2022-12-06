@@ -3,11 +3,10 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <string>
 #include <cstdint>
+#include <string>
 
-class AbstractMessage
-{
+class AbstractMessage {
 protected:
   char* _dataPointer = nullptr;
   uint32_t _dataSize = 0;
@@ -23,5 +22,4 @@ public:
 public:
   const char* getData() const;
   uint32_t getSize() const;
-
 };

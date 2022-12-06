@@ -4,14 +4,11 @@
 
 #include "framework/TraceLogger.hpp"
 
-void test_math()
-{
+void test_math() {
 
   D_MYLOG("#");
   D_MYLOG("##");
   D_MYLOG("###");
-
-
 
   Circle c1;
   c1.center.x = 0;
@@ -44,8 +41,7 @@ void test_math()
 
   assert(result == true);
 
-  auto callback = [&c1, &c2](const glm::vec2& currRes)
-  {
+  auto callback = [&c1, &c2](const glm::vec2& currRes) {
     D_MYLOG("currRes " << currRes.x << " / " << currRes.y);
 
     const glm::vec2 parent = currRes - c1.center;
@@ -56,10 +52,12 @@ void test_math()
     const float child_angle = std::atan2(child.y, child.x) - parent_angle;
 
     D_MYLOG("parent " << parent.x << " / " << parent.y);
-    D_MYLOG("parent_angle " << parent_angle << "   (" << glm::degrees(parent_angle) << ")");
+    D_MYLOG("parent_angle " << parent_angle << "   ("
+                            << glm::degrees(parent_angle) << ")");
 
     D_MYLOG("child " << child.x << " / " << child.y);
-    D_MYLOG("child_angle  " << child_angle << "   (" << glm::degrees(child_angle) << ")");
+    D_MYLOG("child_angle  " << child_angle << "   ("
+                            << glm::degrees(child_angle) << ")");
   };
 
   D_MYLOG("====================");
@@ -70,12 +68,7 @@ void test_math()
   D_MYLOG("res2");
   callback(res2);
 
-
-
   D_MYLOG("###");
   D_MYLOG("##");
   D_MYLOG("#");
-
-
 }
-

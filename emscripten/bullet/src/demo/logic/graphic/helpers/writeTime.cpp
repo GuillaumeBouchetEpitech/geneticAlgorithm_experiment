@@ -1,10 +1,9 @@
 
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
-std::string writeTime(unsigned int time)
-{
+std::string writeTime(unsigned int time) {
   std::stringstream sstr;
   sstr << std::setw(5) << std::fixed << std::setprecision(1);
 
@@ -13,12 +12,9 @@ std::string writeTime(unsigned int time)
   //     sstr << time << "us";
   // }
   // else
-  if (time < 1000000)
-  {
+  if (time < 1000000) {
     sstr << (float(time) / 1000) << "ms";
-  }
-  else
-  {
+  } else {
     sstr << (float(time) / 1000000) << "s";
   }
 

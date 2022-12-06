@@ -3,8 +3,7 @@
 
 #include "framework/physic/shape/PhysicShapeDef.hpp"
 
-struct PhysicBodyDef
-{
+struct PhysicBodyDef {
   PhysicShapeDef shape;
 
   float mass = 0.0f;

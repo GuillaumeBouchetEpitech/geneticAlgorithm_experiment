@@ -7,8 +7,7 @@
 
 #include <cstdlib> // <= EXIT_SUCCESS
 
-int main()
-{
+int main() {
   // D_MYLOG("test " << glm::vec3(1,2,3));
   // D_MYLOG("test " << true);
 

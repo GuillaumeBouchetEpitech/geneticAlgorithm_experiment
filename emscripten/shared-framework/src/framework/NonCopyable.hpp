@@ -1,8 +1,7 @@
 
 #pragma once
 
-class NonCopyable
-{
+class NonCopyable {
 public:
   NonCopyable() = default;
   virtual ~NonCopyable() = default;
@@ -12,6 +11,6 @@ public:
   NonCopyable(NonCopyable&&) = delete;
 
   // disallow assignment operator
-  NonCopyable& operator = (const NonCopyable&) = delete;
-  NonCopyable& operator = (NonCopyable&&) = delete;
+  NonCopyable& operator=(const NonCopyable&) = delete;
+  NonCopyable& operator=(NonCopyable&&) = delete;
 };

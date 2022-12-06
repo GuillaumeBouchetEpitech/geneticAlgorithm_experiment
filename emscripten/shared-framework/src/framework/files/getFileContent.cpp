@@ -2,22 +2,20 @@
 #include <fstream>
 #include <sstream>
 
-namespace FileUtils
-{
-  bool getFileContent(const std::string& filename, std::string& source)
-  {
-    std::ifstream istr(filename);
+namespace FileUtils {
+bool getFileContent(const std::string& filename, std::string& source) {
+  std::ifstream istr(filename);
 
-    if (istr.fail())
-      return false;
+  if (istr.fail())
+    return false;
 
-    std::stringstream sstr;
-    sstr << istr.rdbuf();
+  std::stringstream sstr;
+  sstr << istr.rdbuf();
 
-    source.clear();
+  source.clear();
 
-    source += sstr.str();
+  source += sstr.str();
 
-    return true;
-  }
+  return true;
 }
+} // namespace FileUtils

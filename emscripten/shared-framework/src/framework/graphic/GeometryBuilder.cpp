@@ -3,15 +3,11 @@
 
 #include "ShaderProgram.hpp"
 
-GeometryBuilder::GeometryBuilder()
-{
-  reset();
-}
+GeometryBuilder::GeometryBuilder() { reset(); }
 
 //
 
-GeometryBuilder& GeometryBuilder::reset()
-{
+GeometryBuilder& GeometryBuilder::reset() {
   _shader = nullptr;
   _def.primitiveType = Geometry::PrimitiveType::triangles;
   _def.vbos.clear();
@@ -19,29 +15,26 @@ GeometryBuilder& GeometryBuilder::reset()
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setShader(ShaderProgram& shader)
-{
+GeometryBuilder& GeometryBuilder::setShader(ShaderProgram& shader) {
   _shader = &shader;
 
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setPrimitiveType(Geometry::PrimitiveType primitiveType)
-{
+GeometryBuilder&
+GeometryBuilder::setPrimitiveType(Geometry::PrimitiveType primitiveType) {
   _def.primitiveType = primitiveType;
 
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::addVbo()
-{
+GeometryBuilder& GeometryBuilder::addVbo() {
   _def.vbos.push_back(Geometry::Definition::Vbo());
 
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setVboAsInstanced()
-{
+GeometryBuilder& GeometryBuilder::setVboAsInstanced() {
   if (_def.vbos.empty())
     D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
@@ -51,9 +44,8 @@ GeometryBuilder& GeometryBuilder::setVboAsInstanced()
 }
 
 GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
-                          Geometry::AttrType type,
-                          std::size_t index /*= 0*/)
-{
+                                                  Geometry::AttrType type,
+                                                  std::size_t index /*= 0*/) {
   if (_def.vbos.empty())
     D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
@@ -62,8 +54,7 @@ GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::setVboStride(unsigned int stride)
-{
+GeometryBuilder& GeometryBuilder::setVboStride(unsigned int stride) {
   if (_def.vbos.empty())
     D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
@@ -72,8 +63,7 @@ GeometryBuilder& GeometryBuilder::setVboStride(unsigned int stride)
   return *this;
 }
 
-GeometryBuilder& GeometryBuilder::validate()
-{
+GeometryBuilder& GeometryBuilder::validate() {
   if (!_shader)
     D_THROW(std::runtime_error, "cannot build without a shader");
 
@@ -87,15 +77,13 @@ GeometryBuilder& GeometryBuilder::validate()
   return *this;
 }
 
-Geometry& GeometryBuilder::build(Geometry& geometry)
-{
+Geometry& GeometryBuilder::build(Geometry& geometry) {
   validate();
   geometry.initialise(*_shader, _def);
   return geometry;
 }
 
-Geometry::Definition GeometryBuilder::getDefinition()
-{
+Geometry::Definition GeometryBuilder::getDefinition() {
   validate();
   return _def;
 }

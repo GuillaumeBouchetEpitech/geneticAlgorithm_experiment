@@ -4,25 +4,21 @@
 #include "framework/helpers/GLMath.hpp"
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 class UniformBufferObject;
 
-class ShaderProgram
-{
+class ShaderProgram {
 private:
   friend UniformBufferObject;
 
 public:
-  struct Definition
-  {
-    struct Filenames
-    {
+  struct Definition {
+    struct Filenames {
       std::string vertex;
       std::string fragment;
-    }
-    filenames;
+    } filenames;
 
     std::vector<std::string> attributes;
     std::vector<std::string> uniforms;

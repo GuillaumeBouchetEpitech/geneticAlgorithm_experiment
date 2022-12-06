@@ -3,44 +3,41 @@
 
 #include <string>
 
-namespace common
-{
+namespace common {
 
-  void reset();
+void reset();
 
-  int getTotalCtor();
-  int getTotalCopyCtor();
-  int getTotalMoveCtor();
-  int getTotalDtor();
-  void enableLogs();
-  void disableLogs();
+int getTotalCtor();
+int getTotalCopyCtor();
+int getTotalMoveCtor();
+int getTotalDtor();
+void enableLogs();
+void disableLogs();
 
-  // void print();
+// void print();
 
-  struct Test
-  {
-    int value;
+struct Test {
+  int value;
 
-    std::string my_string;
+  std::string my_string;
 
-    Test(int inValue = 0);
-    ~Test();
-    Test(const Test& other);
-    Test(Test&& other);
-    Test& operator=(const Test& other);
-    Test& operator=(Test&& other);
-  };
+  Test(int inValue = 0);
+  ~Test();
+  Test(const Test& other);
+  Test(Test&& other);
+  Test& operator=(const Test& other);
+  Test& operator=(Test&& other);
+};
 
-  struct Test2
-  {
-    int value;
+struct Test2 {
+  int value;
 
-    std::string my_string;
+  std::string my_string;
 
-    Test2() = default;
+  Test2() = default;
 
-    Test2(Test2&& other);
-    Test2& operator=(Test2&& other);
-  };
+  Test2(Test2&& other);
+  Test2& operator=(Test2&& other);
+};
 
-}
+} // namespace common

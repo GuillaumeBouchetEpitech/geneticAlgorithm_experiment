@@ -3,14 +3,12 @@
 
 #include "framework/graphic/GlContext.hpp"
 
-void Scene::_renderLeadingCarSensors()
-{
+void Scene::_renderLeadingCarSensors() {
   auto& context = Context::get();
   const auto& leaderCar = context.logic.leaderCar;
   auto& stackRenderer = context.graphic.stackRenderers.wireframes;
 
-  if (auto leaderCarData = leaderCar.leaderData())
-  {
+  if (auto leaderCarData = leaderCar.leaderData()) {
     // leading car alive?
     if (!leaderCarData->isAlive)
       return;
@@ -26,8 +24,7 @@ void Scene::_renderLeadingCarSensors()
     const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
     // eye sensors
-    for (const auto& sensor : leaderCarData->eyeSensors)
-    {
+    for (const auto& sensor : leaderCarData->eyeSensors) {
       constexpr float redThreshold = 1.0f / 8.0f;
       constexpr float orangeThreshold = 1.0f / 4.0f;
       constexpr float yellowThreshold = 1.0f / 2.0f;
@@ -51,8 +48,7 @@ void Scene::_renderLeadingCarSensors()
   }
 }
 
-void Scene::_renderFloor(const Camera& camera)
-{
+void Scene::_renderFloor(const Camera& camera) {
   auto& graphic = Context::get().graphic;
 
   // hide the floor if the camera is looking from beneath it

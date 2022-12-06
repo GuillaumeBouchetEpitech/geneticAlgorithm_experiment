@@ -3,25 +3,23 @@
 
 #include "framework/graphic/camera/Camera.hpp"
 
-#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <vector>
 #include <array>
 #include <memory>
+#include <vector>
 
 constexpr std::size_t k_trailSize = 15;
 
-class FlockingManager
-{
+class FlockingManager {
 private:
-  struct Boid
-  {
-    glm::vec3   position;
-    glm::vec3   velocity;
-    glm::vec3   acceleration;
+  struct Boid {
+    glm::vec3 position;
+    glm::vec3 velocity;
+    glm::vec3 acceleration;
 
     std::array<glm::vec3, k_trailSize> trail;
 
@@ -42,17 +40,13 @@ private:
   Boids _boids;
 
 private:
-  struct BufferAttr
-  {
-    glm::vec3   position;
-    float       scale;
-    glm::vec3   color;
+  struct BufferAttr {
+    glm::vec3 position;
+    float scale;
+    glm::vec3 color;
 
     BufferAttr(const glm::vec3& position, float scale, const glm::vec3& color)
-      : position(position)
-      , scale(scale)
-      , color(color)
-    {}
+      : position(position), scale(scale), color(color) {}
   };
 
   std::vector<BufferAttr> _particlesInstances;
@@ -76,5 +70,4 @@ public:
 
 public:
   void render();
-
 };

@@ -3,14 +3,12 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <string>
 #include <cstdint>
+#include <string>
 
-class GlContext
-{
+class GlContext {
 public:
-  enum class Primitives
-  {
+  enum class Primitives {
     lines,
     triangles,
     line_strip,
@@ -30,11 +28,15 @@ public:
 
 public:
   static void enableVertexAttribArray(uint32_t attrId);
-  static void vertexAttribPointer(uint32_t attrId, uint32_t rowSize, uint32_t stride, uint32_t rowIndex);
+  static void vertexAttribPointer(uint32_t attrId, uint32_t rowSize,
+                                  uint32_t stride, uint32_t rowIndex);
   static void enableVertexAttribDivisor(uint32_t attrId);
   static void bufferData(const void* data, uint32_t dataSize, bool dynamic);
-  static void drawArrays(Primitives primitive, uint32_t primitiveStart, uint32_t primitiveCount);
-  static void drawArraysInstanced(Primitives primitive, uint32_t primitiveStart, uint32_t primitiveCount, uint32_t instanceCount);
+  static void drawArrays(Primitives primitive, uint32_t primitiveStart,
+                         uint32_t primitiveCount);
+  static void drawArraysInstanced(Primitives primitive, uint32_t primitiveStart,
+                                  uint32_t primitiveCount,
+                                  uint32_t instanceCount);
 
 public:
   static void genRenderbuffers(uint32_t total, uint32_t* buffers);
@@ -49,7 +51,8 @@ public:
   static uint32_t loadFragmentShader(const std::string& source);
   static uint32_t createProgram();
   static void deleteProgram(uint32_t programId);
-  static bool linkProgram(uint32_t programId, uint32_t vertexShader, uint32_t fragmentShader);
+  static bool linkProgram(uint32_t programId, uint32_t vertexShader,
+                          uint32_t fragmentShader);
   static int getAttribLocation(uint32_t programId, const char* name);
   static int getUniformLocation(uint32_t programId, const char* name);
   static void useProgram(uint32_t programId);
@@ -70,7 +73,8 @@ public:
   static void activeTexture(uint32_t index);
   static void bindTexture(uint32_t textureId);
   static void uploadPixels(uint32_t width, uint32_t height, const void* pixels);
-  static void downloadPixels(uint32_t posX, uint32_t posY, uint32_t width, uint32_t height, void* pixels);
+  static void downloadPixels(uint32_t posX, uint32_t posY, uint32_t width,
+                             uint32_t height, void* pixels);
   static void setAsDepthTexture(uint32_t width, uint32_t height);
   static void setTextureAsRepeat(bool repeat);
   static void setTextureAsPixelated();
@@ -91,8 +95,7 @@ public:
   static void setViewport(int x, int y, uint32_t width, uint32_t height);
   static void setScissor(int x, int y, uint32_t width, uint32_t height);
 
-  enum class DepthFuncs
-  {
+  enum class DepthFuncs {
     never,
     less,
     equal,
@@ -104,16 +107,13 @@ public:
   };
   static void setDepthFunc(DepthFuncs func);
 
-  enum class BlendFuncs
-  {
+  enum class BlendFuncs {
     srcAlpha,
     oneMinuxSrcAlpha,
   };
   static void setBlendFunc(BlendFuncs sfactor, BlendFuncs dfactor);
 
-
-  enum class States
-  {
+  enum class States {
     cullFace,
     depthTest,
     blend,
@@ -122,16 +122,13 @@ public:
   static void enable(States state);
   static void disable(States state);
 
-  enum class BackFaceCullingDirection
-  {
+  enum class BackFaceCullingDirection {
     clockWise,
     counterClockWise,
   };
   static void setBackFaceCullingDirection(BackFaceCullingDirection direction);
 
-
-  enum class Buffers : int
-  {
+  enum class Buffers : int {
     color = 1 << 0,
     depth = 1 << 1,
   };
@@ -143,7 +140,5 @@ public:
   // static void polygonModeAsLine();
   // static void polygonModeAsFill();
 
-
   static int getMaxTextureSize();
-
 };

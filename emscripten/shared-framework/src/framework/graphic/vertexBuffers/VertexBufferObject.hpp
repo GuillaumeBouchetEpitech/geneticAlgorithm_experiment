@@ -3,8 +3,7 @@
 
 #include <vector>
 
-class VertexBufferObject
-{
+class VertexBufferObject {
 private:
   std::vector<unsigned int> _ids;
 

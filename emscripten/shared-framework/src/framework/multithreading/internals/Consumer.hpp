@@ -10,36 +10,33 @@
 
 #include <thread>
 
-namespace multithreading
-{
+namespace multithreading {
 
-  class Consumer
-    : public NonCopyable
-  {
-  private:
-    std::thread _thread;
-    ThreadSynchroniser _waitProducer;
+class Consumer : public NonCopyable {
+private:
+  std::thread _thread;
+  ThreadSynchroniser _waitProducer;
 
-    bool _running = false;
+  bool _running = false;
 
-    WorkCallback _work;
+  WorkCallback _work;
 
-    IProducer& _producer;
+  IProducer& _producer;
 
-  public:
-    explicit Consumer(IProducer& producer);
-    ~Consumer();
+public:
+  explicit Consumer(IProducer& producer);
+  ~Consumer();
 
-  public:
-    void execute(const WorkCallback& work);
-    void quit();
+public:
+  void execute(const WorkCallback& work);
+  void quit();
 
-  public:
-    bool isRunning() const;
-    bool isAvailable() const;
+public:
+  bool isRunning() const;
+  bool isAvailable() const;
 
-  private:
-    void _threadedMethod();
-  };
+private:
+  void _threadedMethod();
+};
 
-}
+} // namespace multithreading

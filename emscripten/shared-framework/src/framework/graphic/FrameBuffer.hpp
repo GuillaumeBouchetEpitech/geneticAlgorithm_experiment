@@ -1,23 +1,20 @@
 
 #pragma once
 
-#include "Texture.hpp"
 #include "RenderBuffer.hpp"
+#include "Texture.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 class Image;
 
-class FrameBuffer
-{
+class FrameBuffer {
 public:
-  struct Definition
-  {
-    struct ColorTexture
-    {
+  struct Definition {
+    struct ColorTexture {
       uint32_t index = 0;
       Texture* texture = nullptr;
     };
@@ -54,6 +51,6 @@ public:
   bool isValid() const;
 
 public:
-  void getAsImage(Image& image, uint32_t posX, uint32_t posY, uint32_t width, uint32_t height) const;
-
+  void getAsImage(Image& image, uint32_t posX, uint32_t posY, uint32_t width,
+                  uint32_t height) const;
 };

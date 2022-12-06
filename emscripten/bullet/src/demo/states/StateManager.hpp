@@ -11,60 +11,57 @@
 
 #include <array>
 
-class StateManager
-    : public NonCopyable
-{
-    //
-    //
-    // singleton
+class StateManager : public NonCopyable {
+  //
+  //
+  // singleton
 
 private:
-    static StateManager* _instance;
+  static StateManager* _instance;
 
-    StateManager();
-    ~StateManager();
-
-public:
-    static void create();
-    static void destroy();
-    static StateManager* get();
-
-    // singleton
-    //
-    //
+  StateManager();
+  ~StateManager();
 
 public:
-    enum class States : int
-    {
+  static void create();
+  static void destroy();
+  static StateManager* get();
+
+  // singleton
+  //
+  //
+
+public:
+  enum class States : int {
 #if defined D_WEB_WEBWORKER_BUILD
-        WorkersLoading = 0,
-        Running,
+    WorkersLoading = 0,
+    Running,
 #else
-        Running = 0,
+    Running = 0,
 #endif
-        Paused,
-        StartGeneration,
-        EndGeneration,
+    Paused,
+    StartGeneration,
+    EndGeneration,
 
-        Total
-    };
+    Total
+  };
 
 private:
-    using StateInstances = std::array<IState*, asValue(States::Total)>;
-    StateInstances _states;
+  using StateInstances = std::array<IState*, asValue(States::Total)>;
+  StateInstances _states;
 
-    States _currentState;
-    States _previousState;
-
-public:
-    void changeState(States nextState);
-    void returnToPreviousState();
-    States getState() const;
+  States _currentState;
+  States _previousState;
 
 public:
-    void handleEvent(const SDL_Event&);
-    void update(int);
-    void render(const SDL_Window&);
-    void resize(int, int);
-    void visibility(bool);
+  void changeState(States nextState);
+  void returnToPreviousState();
+  States getState() const;
+
+public:
+  void handleEvent(const SDL_Event&);
+  void update(int);
+  void render(const SDL_Window&);
+  void resize(int, int);
+  void visibility(bool);
 };

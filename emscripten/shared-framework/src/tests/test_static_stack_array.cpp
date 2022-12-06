@@ -5,8 +5,8 @@
 
 #include "common.hpp"
 
-#include <vector>
 #include <functional>
+#include <vector>
 // #include <iostream>
 
 // #include <cstring> // <= memset
@@ -17,9 +17,7 @@
 // template<typename T>
 // using empty_heap_array = dynamic_heap_array<T, std::allocator<T>, 0>;
 
-
-void test_static_stack_array()
-{
+void test_static_stack_array() {
   D_MYLOG("test_static_stack_array()");
 
   {
@@ -93,9 +91,7 @@ void test_static_stack_array()
     assert(myArray[7] == 2);
     assert(myArray[8] == 3);
     assert(myArray[9] == 4);
-
   }
 
   D_MYLOG(" => DONE");
 }
-

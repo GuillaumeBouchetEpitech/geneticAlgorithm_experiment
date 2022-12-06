@@ -5,17 +5,17 @@
 
 // #include "framework/helpers/GLMath.hpp"
 
-#include "PhysicBodyDef.hpp"
 #include "PhysicBody.hpp"
+#include "PhysicBodyDef.hpp"
 
 class PhysicWorld;
 
-class PhysicBodyManager
-{
+class PhysicBodyManager {
   friend PhysicWorld;
 
 public:
-  using BodyContainer = weak_ref_data_pool<PhysicBody, AbstractPhysicBody, 256, false>;
+  using BodyContainer =
+    weak_ref_data_pool<PhysicBody, AbstractPhysicBody, 256, false>;
   using BodyWeakRef = BodyContainer::weak_ref;
 
 private:
@@ -41,5 +41,4 @@ public:
   const BodyWeakRef getBody(unsigned int index) const;
   std::size_t bodySize() const;
   bool bodyEmpty() const;
-
 };

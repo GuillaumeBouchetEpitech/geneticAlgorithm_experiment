@@ -5,25 +5,22 @@
 
 #include "framework/asValue.hpp"
 
-#include "framework/graphic/ResourceManager.hpp"
 #include "framework/graphic/GeometryBuilder.hpp"
+#include "framework/graphic/ResourceManager.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
 #include "demo/logic/Context.hpp"
 
-void FloorRenderer::initialise(
-  const glm::vec3& center,
-  const glm::vec3& size)
-{
-  _shader = Context::get().graphic.resourceManager.getShader(asValue(Shaders::litTexture));
+void FloorRenderer::initialise(const glm::vec3& center, const glm::vec3& size) {
+  _shader = Context::get().graphic.resourceManager.getShader(
+    asValue(Shaders::litTexture));
 
   {
 
     GeometryBuilder geometryBuilder;
 
-    geometryBuilder
-      .reset()
+    geometryBuilder.reset()
       .setShader(*_shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
@@ -33,20 +30,16 @@ void FloorRenderer::initialise(
 
     geometryBuilder.build(_geometry);
     _geometry.setPrimitiveCount(0);
-
   }
 
   {
 
-    const glm::ivec2 size = { 512, 512 };
+    const glm::ivec2 size = {512, 512};
     auto pixelsPtr = std::make_unique<unsigned char[]>(size.x * size.y * 4);
     unsigned char* rawPixels = pixelsPtr.get();
 
-    const auto setPixel = [&size, rawPixels](
-      int x, int y,
-      unsigned char grey,
-      unsigned char alpha)
-    {
+    const auto setPixel = [&size, rawPixels](int x, int y, unsigned char grey,
+                                             unsigned char alpha) {
       rawPixels[y * 4 * size.x + x * 4 + 0] = grey;
       rawPixels[y * 4 * size.x + x * 4 + 1] = grey;
       rawPixels[y * 4 * size.x + x * 4 + 2] = grey;
@@ -54,31 +47,23 @@ void FloorRenderer::initialise(
     };
 
     for (int yy = 0; yy < size.y; ++yy)
-    for (int xx = 0; xx < size.x; ++xx)
-    {
-      if (
-        (xx < size.x * 0.5 && yy < size.y * 0.5) ||
-        (xx > size.x * 0.5 && yy > size.y * 0.5)
-      )
-      {
-        setPixel(xx, yy, 32, 220);
+      for (int xx = 0; xx < size.x; ++xx) {
+        if ((xx < size.x * 0.5 && yy < size.y * 0.5) ||
+            (xx > size.x * 0.5 && yy > size.y * 0.5)) {
+          setPixel(xx, yy, 32, 220);
+        } else {
+          setPixel(xx, yy, 100, 255);
+        }
       }
-      else
-      {
-        setPixel(xx, yy, 100, 255);
-      }
-    }
 
     bool pixelated = false;
     bool repeat = true;
     _texture.allocateBlank(size, pixelated, repeat, rawPixels);
-
   }
 
   { // compute chessboard ground
 
-    struct Vertex
-    {
+    struct Vertex {
       glm::vec3 position;
       glm::vec3 normal;
       glm::vec2 texCoord;
@@ -89,17 +74,24 @@ void FloorRenderer::initialise(
     glm::vec3 texCoordSize = boardHSize / 100.0f;
     constexpr float boardHeight = -0.1f;
 
-    const glm::vec3 normal = { 0, 0, 1 };
+    const glm::vec3 normal = {0, 0, 1};
 
-    std::array<Vertex, 4> quadVertices
-    {{
-      { { boardPos.x + boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, normal, { +texCoordSize.x, -texCoordSize.y } },
-      { { boardPos.x - boardHSize.x, boardPos.y - boardHSize.y, boardHeight }, normal, { -texCoordSize.x, -texCoordSize.y } },
-      { { boardPos.x + boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, normal, { +texCoordSize.x, +texCoordSize.y } },
-      { { boardPos.x - boardHSize.x, boardPos.y + boardHSize.y, boardHeight }, normal, { -texCoordSize.x, +texCoordSize.y } },
+    std::array<Vertex, 4> quadVertices{{
+      {{boardPos.x + boardHSize.x, boardPos.y - boardHSize.y, boardHeight},
+       normal,
+       {+texCoordSize.x, -texCoordSize.y}},
+      {{boardPos.x - boardHSize.x, boardPos.y - boardHSize.y, boardHeight},
+       normal,
+       {-texCoordSize.x, -texCoordSize.y}},
+      {{boardPos.x + boardHSize.x, boardPos.y + boardHSize.y, boardHeight},
+       normal,
+       {+texCoordSize.x, +texCoordSize.y}},
+      {{boardPos.x - boardHSize.x, boardPos.y + boardHSize.y, boardHeight},
+       normal,
+       {-texCoordSize.x, +texCoordSize.y}},
     }};
 
-    std::array<int, 6> indices{{ 1,0,2,  1,2,3 }};
+    std::array<int, 6> indices{{1, 0, 2, 1, 2, 3}};
 
     std::vector<Vertex> vertices;
     vertices.reserve(indices.size()); // pre-allocate
@@ -110,16 +102,13 @@ void FloorRenderer::initialise(
     _geometry.setPrimitiveCount(vertices.size());
 
   } // compute chessboard ground
-
 }
 
-void FloorRenderer::setMatricesData(const Camera::MatricesData& matricesData)
-{
+void FloorRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void FloorRenderer::render()
-{
+void FloorRenderer::render() {
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
   _shader->bind();

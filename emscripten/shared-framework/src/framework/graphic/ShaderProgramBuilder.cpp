@@ -3,15 +3,11 @@
 
 #include "framework/ErrorHandler.hpp"
 
-ShaderProgramBuilder::ShaderProgramBuilder()
-{
-  reset();
-}
+ShaderProgramBuilder::ShaderProgramBuilder() { reset(); }
 
 //
 
-ShaderProgramBuilder& ShaderProgramBuilder::reset()
-{
+ShaderProgramBuilder& ShaderProgramBuilder::reset() {
   _def.filenames.vertex.clear();
   _def.filenames.fragment.clear();
   _def.attributes.clear();
@@ -22,32 +18,31 @@ ShaderProgramBuilder& ShaderProgramBuilder::reset()
   return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::setVertexFilename(const std::string& filename)
-{
+ShaderProgramBuilder&
+ShaderProgramBuilder::setVertexFilename(const std::string& filename) {
   _def.filenames.vertex = filename;
   return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::setFragmentFilename(const std::string& filename)
-{
+ShaderProgramBuilder&
+ShaderProgramBuilder::setFragmentFilename(const std::string& filename) {
   _def.filenames.fragment = filename;
   return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::addAttribute(const std::string& name)
-{
+ShaderProgramBuilder&
+ShaderProgramBuilder::addAttribute(const std::string& name) {
   _def.attributes.push_back(name);
   return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::addUniform(const std::string& name)
-{
+ShaderProgramBuilder&
+ShaderProgramBuilder::addUniform(const std::string& name) {
   _def.uniforms.push_back(name);
   return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::validate()
-{
+ShaderProgramBuilder& ShaderProgramBuilder::validate() {
   if (_def.filenames.vertex.empty())
     D_THROW(std::runtime_error, "cannot build without a vertex filename");
 
@@ -60,14 +55,12 @@ ShaderProgramBuilder& ShaderProgramBuilder::validate()
   return *this;
 }
 
-std::shared_ptr<ShaderProgram> ShaderProgramBuilder::build()
-{
+std::shared_ptr<ShaderProgram> ShaderProgramBuilder::build() {
   validate();
   return std::make_shared<ShaderProgram>(_def);
 }
 
-ShaderProgram::Definition ShaderProgramBuilder::getDefinition()
-{
+ShaderProgram::Definition ShaderProgramBuilder::getDefinition() {
   validate();
   return _def;
 }

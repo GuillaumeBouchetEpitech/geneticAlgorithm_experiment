@@ -1,15 +1,13 @@
 
 #pragma once
 
-#include <vector>
-#include <functional>
 #include <cstdint>
+#include <functional>
+#include <vector>
 
-class BSpline
-{
+class BSpline {
 public:
-  struct Definition
-  {
+  struct Definition {
     const float* knotsData;
     std::size_t knotsLength;
     uint32_t dimensions;

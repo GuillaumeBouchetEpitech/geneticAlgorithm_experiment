@@ -6,37 +6,32 @@
 #include "framework/helpers/internals/BulletPhysics.hpp"
 
 PhysicVehicleManager::PhysicVehicleManager(PhysicWorld& physicWorld)
-  : _physicWorld(physicWorld)
-{
+  : _physicWorld(physicWorld) {
   _vehicles.pre_allocate(1024);
 }
 
-PhysicVehicleManager::~PhysicVehicleManager()
-{
-  clear();
-}
+PhysicVehicleManager::~PhysicVehicleManager() { clear(); }
 
-void PhysicVehicleManager::clear()
-{
+void PhysicVehicleManager::clear() {
   while (!_vehicles.empty())
     destroyVehicle(_vehicles.get(0));
   _vehicles.clear();
 }
 
-PhysicVehicleManager::VehicleWeakRef PhysicVehicleManager::createVehicle(const PhysicVehicleDef& def)
-{
+PhysicVehicleManager::VehicleWeakRef
+PhysicVehicleManager::createVehicle(const PhysicVehicleDef& def) {
   return _vehicles.acquire(*_physicWorld._bullet.dynamicsWorld, def);
 }
 
-PhysicVehicleManager::VehicleWeakRef PhysicVehicleManager::createAndAddVehicle(const PhysicVehicleDef& def)
-{
+PhysicVehicleManager::VehicleWeakRef
+PhysicVehicleManager::createAndAddVehicle(const PhysicVehicleDef& def) {
   auto ref = createVehicle(def);
   addVehicle(ref);
   return ref;
 }
 
-void PhysicVehicleManager::destroyVehicle(PhysicVehicleManager::VehicleWeakRef ref)
-{
+void PhysicVehicleManager::destroyVehicle(
+  PhysicVehicleManager::VehicleWeakRef ref) {
   if (!ref)
     return;
 
@@ -44,44 +39,42 @@ void PhysicVehicleManager::destroyVehicle(PhysicVehicleManager::VehicleWeakRef r
   _vehicles.release(ref);
 }
 
-void PhysicVehicleManager::addVehicle(PhysicVehicleManager::VehicleWeakRef ref)
-{
+void PhysicVehicleManager::addVehicle(
+  PhysicVehicleManager::VehicleWeakRef ref) {
   if (!ref)
     return;
   PhysicVehicle* implementation = reinterpret_cast<PhysicVehicle*>(ref.get());
   if (implementation->_isAdded)
     return;
-  _physicWorld._bullet.dynamicsWorld->addVehicle(implementation->_bullet.vehicle);
+  _physicWorld._bullet.dynamicsWorld->addVehicle(
+    implementation->_bullet.vehicle);
   implementation->_isAdded = true;
 }
 
-void PhysicVehicleManager::removeVehicle(PhysicVehicleManager::VehicleWeakRef ref)
-{
+void PhysicVehicleManager::removeVehicle(
+  PhysicVehicleManager::VehicleWeakRef ref) {
   if (!ref)
     return;
   PhysicVehicle* implementation = reinterpret_cast<PhysicVehicle*>(ref.get());
   if (!implementation->_isAdded)
     return;
-  _physicWorld._bullet.dynamicsWorld->removeVehicle(implementation->_bullet.vehicle);
+  _physicWorld._bullet.dynamicsWorld->removeVehicle(
+    implementation->_bullet.vehicle);
   implementation->_isAdded = false;
 }
 
-PhysicVehicleManager::VehicleWeakRef PhysicVehicleManager::getVehicle(unsigned int index)
-{
+PhysicVehicleManager::VehicleWeakRef
+PhysicVehicleManager::getVehicle(unsigned int index) {
   return _vehicles.get(index);
 }
 
-const PhysicVehicleManager::VehicleWeakRef PhysicVehicleManager::getVehicle(unsigned int index) const
-{
+const PhysicVehicleManager::VehicleWeakRef
+PhysicVehicleManager::getVehicle(unsigned int index) const {
   return _vehicles.get(index);
 }
 
-std::size_t PhysicVehicleManager::vehicleSize() const
-{
+std::size_t PhysicVehicleManager::vehicleSize() const {
   return _vehicles.size();
 }
 
-bool PhysicVehicleManager::vehicleEmpty() const
-{
-  return _vehicles.empty();
-}
+bool PhysicVehicleManager::vehicleEmpty() const { return _vehicles.empty(); }

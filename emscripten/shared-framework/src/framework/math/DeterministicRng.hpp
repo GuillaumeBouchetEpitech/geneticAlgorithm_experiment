@@ -1,11 +1,9 @@
 
 #pragma once
 
-
 #include <cstdint>
 
-class DeterministicRng
-{
+class DeterministicRng {
 public:
   DeterministicRng() = default;
 
@@ -22,6 +20,6 @@ public:
   float getRangedValue(float minVal, float maxVal);
 
 private:
-	static constexpr int64_t k_randMax = 2147483648;
-  uint64_t	_seed = 1;
+  static constexpr int64_t k_randMax = 2147483648;
+  uint64_t _seed = 1;
 };

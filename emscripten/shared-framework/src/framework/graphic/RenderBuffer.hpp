@@ -6,13 +6,12 @@
 // forward declaration
 class FrameBuffer;
 
-class RenderBuffer
-{
+class RenderBuffer {
   friend FrameBuffer; // required by FrameBuffer::attachDepthRenderBuffer()
 
 private:
   unsigned int _bufferId = 0;
-  glm::ivec2 _size = { 0, 0 };
+  glm::ivec2 _size = {0, 0};
 
 public:
   RenderBuffer() = default;
@@ -30,6 +29,4 @@ public:
 
 public:
   static void unbind();
-
 };
-

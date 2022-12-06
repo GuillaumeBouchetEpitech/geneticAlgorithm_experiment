@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Geometry.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Texture.hpp"
 
 #include "framework/graphic/camera/Camera.hpp"
@@ -10,32 +10,22 @@
 #include <array>
 #include <memory>
 
-class AnimatedCircuitRenderer
-{
+class AnimatedCircuitRenderer {
 public:
-
-  struct AnimatedVertex
-  {
+  struct AnimatedVertex {
     glm::vec3 postion;
     glm::vec3 color;
     glm::vec3 normal;
     glm::vec3 animatedNormal; // <= animation
-    float limitId; // <= animation
+    float limitId;            // <= animation
 
     AnimatedVertex() = default;
 
-    AnimatedVertex(
-        const glm::vec3& postion,
-        const glm::vec3& color,
-        const glm::vec3& normal,
-        const glm::vec3& animatedNormal,
-        float limitId)
-        : postion(postion)
-        , color(color)
-        , normal(normal)
-        , animatedNormal(animatedNormal)
-        , limitId(limitId)
-    {}
+    AnimatedVertex(const glm::vec3& postion, const glm::vec3& color,
+                   const glm::vec3& normal, const glm::vec3& animatedNormal,
+                   float limitId)
+      : postion(postion), color(color), normal(normal),
+        animatedNormal(animatedNormal), limitId(limitId) {}
   };
 
   using AnimatedVertices = std::vector<AnimatedVertex>;
@@ -45,11 +35,9 @@ public:
   ~AnimatedCircuitRenderer() = default;
 
 public:
-  void initialise(
-    const std::vector<glm::vec3>& skeletonVertices,
-    const AnimatedVertices& groundVertices,
-    const AnimatedVertices& wallsVertices,
-    float maxUpperValue);
+  void initialise(const std::vector<glm::vec3>& skeletonVertices,
+                  const AnimatedVertices& groundVertices,
+                  const AnimatedVertices& wallsVertices, float maxUpperValue);
   void setMatricesData(const Camera::MatricesData& matricesData);
 
 public:
@@ -63,13 +51,11 @@ private:
   std::shared_ptr<ShaderProgram> _shaderCircuitLit;
   std::shared_ptr<ShaderProgram> _shaderCircuit;
 
-  struct Geometries
-  {
+  struct Geometries {
     Geometry skeleton;
     Geometry grounds;
     Geometry walls;
-  }
-  _geometries;
+  } _geometries;
 
   float _targetValue = 10.0f;
   float _lowerValue = 10.0f;
@@ -78,5 +64,4 @@ private:
   std::size_t _maxPrimitiveCount = 0;
 
   Camera::MatricesData _matricesData;
-
 };
