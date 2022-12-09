@@ -10,7 +10,8 @@
 #pragma once
 
 #include <array>
-#include <cstddef> // size_t
+#include <cstddef>  // size_t
+#include <stdint.h> // size_t
 
 /**
  * @brief A Perlin Simplex Noise C++ Implementation (1D, 2D, 3D, 4D).

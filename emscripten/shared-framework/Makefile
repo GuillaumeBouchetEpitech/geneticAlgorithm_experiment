@@ -94,6 +94,7 @@ SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/string/*.cpp)
 SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/multithreading/*.cpp)
 SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/multithreading/internals/*.cpp)
 SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/messaging/*.cpp)
+SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/parser_utils/*.cpp)
 
 SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/sdl/*.cpp)
 SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/*.cpp)
@@ -171,10 +172,11 @@ COMMON_FLAGS += -I$(DIR_SRC)
 
 ifeq ($(build_platform),native)
 
-CXX=g++
+CXX=clang++
 AR=ar
 
 CXXFLAGS_FRAMEWORK += $(COMMON_FLAGS)
+CXXFLAGS_FRAMEWORK += -D_REENTRANT -I/usr/include/SDL2
 
 CXXFLAGS_TESTS += $(BUILD_FLAG)
 CXXFLAGS_TESTS += -std=c++17

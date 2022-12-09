@@ -55,7 +55,7 @@ public:
   const glm::vec3& getUp() const;
   const glm::vec3& getForwardAxis() const;
 
-  void setSize(int width, int height);
+  void setSize(uint32_t width, uint32_t height);
   const glm::vec2& getSize() const;
 
   void setPerspective(float fovy, float near, float far);

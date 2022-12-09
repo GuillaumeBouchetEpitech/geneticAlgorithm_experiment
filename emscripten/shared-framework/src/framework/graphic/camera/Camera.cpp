@@ -87,7 +87,7 @@ const glm::vec3& Camera::getTarget() const { return _target; }
 const glm::vec3& Camera::getUp() const { return _up; }
 const glm::vec3& Camera::getForwardAxis() const { return _forwardAxis; }
 
-void Camera::setSize(int width, int height) {
+void Camera::setSize(uint32_t width, uint32_t height) {
   _viewportSize.x = float(width);
   _viewportSize.y = float(height);
   _dirtyProjectionMatrices = true;

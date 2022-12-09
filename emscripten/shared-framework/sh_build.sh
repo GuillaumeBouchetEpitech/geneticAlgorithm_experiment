@@ -1,129 +1,175 @@
 #!/bin/bash
 
-echo ""
-echo "SHELL      => \""$SHELL"\""
-echo "PWD        => \""$PWD"\""
-echo "EMSDK      => \""$EMSDK"\""
-echo "EMSCRIPTEN => \""$EMSCRIPTEN"\""
-echo ""
+func_do_clean() {
 
-echo ""
-echo "Build target?"
-echo "=> native:   1 (default)"
-echo "=> web wasm: 2"
-echo ""
+    mode=$1
+    platform=$2
 
-read USER_INPUT_PLATFORM
-
-case $USER_INPUT_PLATFORM in
-2)
     echo ""
-    echo "selected target: web wasm"
+    echo "=> cleaning"
+    echo "  mode=${mode}"
+    echo "  platform=${platform}"
     echo ""
-    selected_platform=web_wasm
-    ;;
-*)
+
+    make build_mode="${mode}" build_platform="${platform}" fclean
+}
+
+func_do_build() {
+
+    mode=$1
+    platform=$2
+
     echo ""
-    echo "selected target: experiment"
+    echo "=> building"
+    echo "  mode=${mode}"
+    echo "  platform=${platform}"
     echo ""
-    selected_platform=native
-    ;;
-esac
 
-echo ""
-echo "Build mode?"
-echo "=> release: 1 (default)"
-echo "=> debug:   2"
-echo ""
+    make build_mode="${mode}" build_platform="${platform}" all -j4
+}
 
-read USER_INPUT_MODE
+func_try_to_clean() {
 
-case $USER_INPUT_MODE in
-2)
+    case $must_clean in
+    yes)
+        mode=$1
+        platform=$2
+
+        func_do_clean $mode $platform
+        ;;
+    esac
+}
+
+func_set_build_flags() {
+
+    case $selected_platform in
+    native)
+        ARG_SEL_PLATFORM="native"
+        ;;
+    web_wasm)
+        ARG_SEL_PLATFORM="web_wasm"
+        ;;
+    esac
+
+    case $selected_mode in
+    debug)
+        ARG_SEL_MODE="debug"
+        ;;
+    release)
+        ARG_SEL_MODE="release"
+        ;;
+    esac
+}
+
+func_ask_build_target () {
+
     echo ""
-    echo "selected mode: debug"
+    echo "Build target?"
+    echo "=> native:       1 (default)"
+    echo "=> web wasm:     2"
+    echo "=> full release: 3"
     echo ""
-    selected_mode=debug
-    ;;
-*)
+
+    read USER_INPUT_PLATFORM
+
+    case $USER_INPUT_PLATFORM in
+    2)
+        echo ""
+        echo "selected target: web wasm"
+        echo ""
+        selected_platform=web_wasm
+        ;;
+    3)
+        echo ""
+        echo "selected target: full release"
+        echo ""
+
+        echo ""
+        echo "=> cleanup"
+        echo ""
+
+        func_do_clean release native
+        func_do_clean release web_wasm
+
+        echo ""
+        echo "=> building"
+        echo ""
+
+        func_do_build release native
+        func_do_build release web_wasm
+
+        echo ""
+        echo "=> building completed"
+        echo ""
+
+        exit 0
+        ;;
+    *)
+        echo ""
+        echo "selected target: experiment"
+        echo ""
+        selected_platform=native
+        ;;
+    esac
+}
+
+func_ask_build_mode() {
+
     echo ""
-    echo "selected mode: release"
+    echo "Build mode?"
+    echo "=> release: 1 (default)"
+    echo "=> debug:   2"
     echo ""
-    selected_mode=release
-    ;;
-esac
 
-echo ""
-echo "Rebuild?"
-echo "=> no:  1 (default)"
-echo "=> yes: 2"
-echo ""
+    read USER_INPUT_MODE
 
-read USER_INPUT_REBUILD
+    case $USER_INPUT_MODE in
+    2)
+        echo ""
+        echo "selected mode: debug"
+        echo ""
+        selected_mode=debug
+        ;;
+    *)
+        echo ""
+        echo "selected mode: release"
+        echo ""
+        selected_mode=release
+        ;;
+    esac
+}
 
-case $USER_INPUT_REBUILD in
-2)
+func_ask_rebuild() {
+
     echo ""
-    echo "rebuilding: yes"
+    echo "Rebuild?"
+    echo "=> no:  1 (default)"
+    echo "=> yes: 2"
     echo ""
-    must_clean=yes
-    ;;
-*)
-    echo ""
-    echo "rebuilding: no"
-    echo ""
-    must_clean=no
-    ;;
-esac
 
-#
-#
-#
+    read USER_INPUT_REBUILD
 
-case $selected_platform in
-native)
-    ARG_SEL_PLATFORM="native"
-    ;;
-web_wasm)
-    ARG_SEL_PLATFORM="web_wasm"
-    ;;
-esac
+    case $USER_INPUT_REBUILD in
+    2)
+        echo ""
+        echo "rebuilding: yes"
+        echo ""
+        must_clean=yes
+        ;;
+    *)
+        echo ""
+        echo "rebuilding: no"
+        echo ""
+        must_clean=no
+        ;;
+    esac
+}
 
-case $selected_mode in
-debug)
-    ARG_SEL_MODE="debug"
-    ;;
-release)
-    ARG_SEL_MODE="release"
-    ;;
-esac
+func_ask_build_target
+func_ask_build_mode
+func_ask_rebuild
 
-#
-#
-#
+func_set_build_flags
 
-# echo ""
-# echo "EMSDK ENV"
-
-# OLD_PWD=$PWD
-# # cd ./tools/emsdk
-# cd ../tools/emsdk
-# . ./emsdk_env.sh
-# cd $OLD_PWD
-
-echo ""
-echo "EM++"
-
-em++ --version
-
-echo ""
-echo "=> building"
-echo ""
-
-case $must_clean in
-yes)
-    make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" fclean
-    ;;
-esac
-
-make build_platform="${ARG_SEL_PLATFORM}" build_mode="${ARG_SEL_MODE}" all -j6
+func_try_to_clean $ARG_SEL_MODE $ARG_SEL_PLATFORM
+func_do_build $ARG_SEL_MODE $ARG_SEL_PLATFORM

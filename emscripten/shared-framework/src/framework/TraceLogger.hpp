@@ -37,7 +37,10 @@ template <> TraceLogger& TraceLogger::operator<<<float>(float data);
 
 template <> TraceLogger& TraceLogger::operator<<<double>(double data);
 
+template <> TraceLogger& TraceLogger::operator<<<glm::vec2>(glm::vec2 data);
 template <> TraceLogger& TraceLogger::operator<<<glm::vec3>(glm::vec3 data);
+template <> TraceLogger& TraceLogger::operator<<<glm::vec4>(glm::vec4 data);
+template <> TraceLogger& TraceLogger::operator<<<glm::quat>(glm::quat data);
 
 // this will reduce the "__FILE__" macro to it's filename -> friendlier to read
 #define D_MYLOG_FILENAME                                                       \

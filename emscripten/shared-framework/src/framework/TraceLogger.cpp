@@ -71,6 +71,16 @@ template <> TraceLogger& TraceLogger::operator<<<double>(double data) {
   return *this;
 }
 
+template <> TraceLogger& TraceLogger::operator<<<glm::vec2>(glm::vec2 data) {
+  _sstr << "[";
+  (*this) << data.x;
+  _sstr << " / ";
+  (*this) << data.y;
+  _sstr << "]";
+
+  return *this;
+}
+
 template <> TraceLogger& TraceLogger::operator<<<glm::vec3>(glm::vec3 data) {
   _sstr << "[";
   (*this) << data.x;
@@ -78,6 +88,34 @@ template <> TraceLogger& TraceLogger::operator<<<glm::vec3>(glm::vec3 data) {
   (*this) << data.y;
   _sstr << " / ";
   (*this) << data.z;
+  _sstr << "]";
+
+  return *this;
+}
+
+template <> TraceLogger& TraceLogger::operator<<<glm::vec4>(glm::vec4 data) {
+  _sstr << "[";
+  (*this) << data.x;
+  _sstr << " / ";
+  (*this) << data.y;
+  _sstr << " / ";
+  (*this) << data.z;
+  _sstr << " / ";
+  (*this) << data.w;
+  _sstr << "]";
+
+  return *this;
+}
+
+template <> TraceLogger& TraceLogger::operator<<<glm::quat>(glm::quat data) {
+  _sstr << "[";
+  (*this) << data.x;
+  _sstr << " / ";
+  (*this) << data.y;
+  _sstr << " / ";
+  (*this) << data.z;
+  _sstr << " / ";
+  (*this) << data.w;
   _sstr << "]";
 
   return *this;

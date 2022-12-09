@@ -185,8 +185,10 @@ CXXFLAGS += -I$(DIR_SHARED_LIB_SRC)
 
 ifeq ($(build_platform),native_pthread)
 
-CXX=g++
+CXX=clang++
 AR=ar
+
+CXXFLAGS += -D_REENTRANT -I/usr/include/SDL2
 
 LDFLAGS += $(BUILD_FLAG)
 LDFLAGS += $(NAME_LIB_FRAMEWORK_PHYSIC)

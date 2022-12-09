@@ -4,12 +4,14 @@
 
 #include "framework/math/BSpline.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/parser_utils/BasicRegexpParser.hpp"
 
 #include "framework/string/trim.hpp"
 
 #include "framework/asValue.hpp"
+
+#include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -23,34 +25,6 @@
 
 //
 //
-
-namespace /*anonymous*/
-{
-
-void validateFloat(float value, const std::string_view type) {
-  if (glm::isnan(value))
-    D_THROW(std::runtime_error, "invalid value (NaN), type=" << type);
-
-  if (glm::isinf(value))
-    D_THROW(std::runtime_error, "invalid value (inf), type=" << type);
-};
-
-float getValidFloat(const std::string str, const std::string_view type) {
-  const float value = std::atof(str.c_str());
-
-  validateFloat(value, type);
-
-  return value;
-};
-
-std::string getStreamStr(const std::ostream& stream) {
-  std::string data = dynamic_cast<const std::ostringstream&>(stream).str();
-  return data;
-};
-
-#define D_SSTR(stream) getStreamStr(std::ostringstream() << stream)
-
-} // namespace
 
 void CircuitBuilder::parse(const std::string_view& filename) {
   //
@@ -71,155 +45,74 @@ void CircuitBuilder::parse(const std::string_view& filename) {
   float currentKnotsSize = 2.0f;
   glm::vec3 currentColor = {0.0f, 0.0f, 0.0f};
 
-  struct Matchers {
-    const std::string matchStrName = R"(([\w\-]+))";
-    const std::string matchStrValue = R"(\"(.+?)\")";
-    const std::string matchMaybeSpace = R"(\s*?)";
-    const std::string matchMain = D_SSTR(matchStrName << "=" << matchStrValue);
-    const std::string match1F = R"(([+-]?\d+(?:\.\d+)?))";
-    const std::string matchS1F =
-      D_SSTR(matchMaybeSpace << match1F << matchMaybeSpace);
-    const std::string matchS3F =
-      D_SSTR(matchS1F << "," << matchS1F << "," << matchS1F);
-    const std::string matchS4F =
-      D_SSTR(matchS1F << "," << matchS1F << "," << matchS1F << "," << matchS1F);
-  } matchers;
-
-  struct Regexps {
-    std::regex regexpMain;
-    std::regex regexpS3F;
-    std::regex regexpS4F;
-    std::regex regexpS1F;
-  } regexps;
-
-  regexps.regexpMain = matchers.matchMain;
-  regexps.regexpS1F = matchers.match1F;
-  regexps.regexpS3F = matchers.matchS3F;
-  regexps.regexpS4F = matchers.matchS4F;
-
-  auto get1F = [&regexps](const std::string& toMatch,
-                          const std::string_view type) -> float {
-    std::smatch subMatch;
-    std::regex_search(toMatch, subMatch, regexps.regexpS1F);
-    if (subMatch.empty())
-      throw std::runtime_error("LOL?");
-
-    return getValidFloat(subMatch[1].str(), type);
-  };
-
-  auto get3F = [&regexps](const std::string& toMatch,
-                          const std::string_view type) -> glm::vec3 {
-    std::smatch subMatch;
-    std::regex_search(toMatch, subMatch, regexps.regexpS3F);
-    if (subMatch.empty())
-      throw std::runtime_error("LOL?");
-
-    return {getValidFloat(subMatch[1].str(), type),
-            getValidFloat(subMatch[2].str(), type),
-            getValidFloat(subMatch[3].str(), type)};
-  };
-
-  auto get4F = [&regexps](const std::string& toMatch,
-                          const std::string_view type) -> glm::vec4 {
-    std::smatch subMatch;
-    std::regex_search(toMatch, subMatch, regexps.regexpS4F);
-    if (subMatch.empty())
-      throw std::runtime_error("LOL?");
-
-    return {getValidFloat(subMatch[1].str(), type),
-            getValidFloat(subMatch[2].str(), type),
-            getValidFloat(subMatch[3].str(), type),
-            getValidFloat(subMatch[4].str(), type)};
-  };
-
   //
   //
   // build command handler (parser)
 
-  std::unordered_map<std::string_view, std::function<void(std::istringstream&)>>
+  BasicRegexpParser regexpParser;
+
+  std::unordered_map<std::string, std::function<void(std::istringstream&)>>
     commandsMap;
 
   {
     // AGENTS_START_TRANSFORM    position="{float},{float},{float}"
-    // quaternion="{float},{float},{float},{float}"
-    const std::string_view cmd_name = "AGENTS_START_TRANSFORM";
-    commandsMap[cmd_name] = [&cmd_name, &regexps, &get3F, &get4F,
+
+    const std::string cmd_name = "AGENTS_START_TRANSFORM";
+    commandsMap[cmd_name] = [&cmd_name, &regexpParser,
                              this](std::istringstream& isstr) {
-      const std::string content = isstr.str();
-
-      std::smatch match;
-      std::string::const_iterator searchStart(content.cbegin());
-      while (std::regex_search(searchStart, content.cend(), match,
-                               regexps.regexpMain)) {
-        std::string key = match[1].str();
-        std::string value = match[2].str();
-
-        if (key == "position") {
-          _startTransform.position = get3F(value, cmd_name);
-        } else if (key == "quaternion") {
-          _startTransform.quaternion = get4F(value, cmd_name);
-        }
-
-        searchStart = match.suffix().first;
-      }
+      regexpParser.setErrorHint(cmd_name);
+      regexpParser.forEachArgs(
+        isstr.str(), [this, &regexpParser](const std::string& key,
+                                           const std::string& value) {
+          if (key == "position") {
+            _startTransform.position =
+              regexpParser.get3F(value, -10000.0f, +10000.0f);
+          } else if (key == "quaternion") {
+            _startTransform.quaternion =
+              regexpParser.get4F(value, -10000.0f, +10000.0f);
+          }
+        });
     };
   }
 
   {
     // NEXT_KNOTS_STATES   size="{float}" color="{float},{float},{float}"
-    const std::string_view cmd_name = "NEXT_KNOTS_STATES";
-    commandsMap[cmd_name] = [&cmd_name, &regexps, &get1F, &get3F,
-                             &currentKnotsSize,
-                             &currentColor //,
-                                           // this
-    ](std::istringstream& isstr) {
-      const std::string content = isstr.str();
-
-      std::smatch match;
-      std::string::const_iterator searchStart(content.cbegin());
-      while (std::regex_search(searchStart, content.cend(), match,
-                               regexps.regexpMain)) {
-        std::string key = match[1].str();
-        std::string value = match[2].str();
-
-        if (key == "size") {
-          currentKnotsSize = get1F(value, cmd_name);
-        } else if (key == "color") {
-          currentColor = get3F(value, cmd_name);
-        }
-
-        searchStart = match.suffix().first;
-      }
+    const std::string cmd_name = "NEXT_KNOTS_STATES";
+    commandsMap[cmd_name] = [&cmd_name, &regexpParser, &currentKnotsSize,
+                             &currentColor](std::istringstream& isstr) {
+      regexpParser.setErrorHint(cmd_name);
+      regexpParser.forEachArgs(
+        isstr.str(), [&regexpParser, &currentKnotsSize, &currentColor](
+                       const std::string& key, const std::string& value) {
+          if (key == "size") {
+            currentKnotsSize = regexpParser.get1F(value, 0.001f, +10000.0f);
+          } else if (key == "color") {
+            currentColor = regexpParser.get3F(value, 0.0f, +1.0f);
+          }
+        });
     };
   }
 
   {
     // PUSH_KNOTS   left="{float},{float},{float}"
     // right="{float},{float},{float}"
-    const std::string_view cmd_name = "PUSH_KNOTS";
-    commandsMap[cmd_name] = [&cmd_name, &rawKnots, &regexps, &get3F,
+    const std::string cmd_name = "PUSH_KNOTS";
+    commandsMap[cmd_name] = [&cmd_name, &regexpParser, &rawKnots,
                              &currentKnotsSize,
                              &currentColor](std::istringstream& isstr) {
-      const std::string content = isstr.str();
-
       glm::vec3 left = {0, 0, 0};
       glm::vec3 right = {0, 0, 0};
 
-      std::smatch match;
-      std::string::const_iterator searchStart(content.cbegin());
-      while (std::regex_search(searchStart, content.cend(), match,
-                               regexps.regexpMain)) {
-        std::string key = match[1].str();
-        std::string value = match[2].str();
-
-        if (key == "left") {
-          left = get3F(value, cmd_name);
-        } else if (key == "right") {
-          right = get3F(value, cmd_name);
-        }
-
-        searchStart = match.suffix().first;
-      }
+      regexpParser.setErrorHint(cmd_name);
+      regexpParser.forEachArgs(
+        isstr.str(), [&regexpParser, &left, &right](const std::string& key,
+                                                    const std::string& value) {
+          if (key == "left") {
+            left = regexpParser.get3F(value, -10000.0, +10000.0f);
+          } else if (key == "right") {
+            right = regexpParser.get3F(value, -10000.0, +10000.0f);
+          }
+        });
 
       rawKnots.push_back({left, right, currentKnotsSize, currentColor});
     };

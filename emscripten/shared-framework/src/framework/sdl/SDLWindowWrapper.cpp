@@ -128,7 +128,7 @@ void SDLWindowWrapper::run() {
     const int32_t mustWait = frameDelay - int32_t(elapsedFrameTime);
 
     if (mustWait > 0)
-      SDL_Delay(mustWait);
+      SDL_Delay(uint32_t(mustWait));
   }
 
 #endif
