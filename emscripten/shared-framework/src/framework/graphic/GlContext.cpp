@@ -392,6 +392,10 @@ void GlContext::setUniform(int location, float value) {
   glCheck(glUniform1f(location, value));
 }
 
+void GlContext::setUniform(int location, float x, float y) {
+  glCheck(glUniform2f(location, x, y));
+}
+
 void GlContext::setUniform(int location, float x, float y, float z) {
   glCheck(glUniform3f(location, x, y, z));
 }

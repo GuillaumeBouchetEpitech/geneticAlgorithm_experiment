@@ -14,32 +14,51 @@ Image::~Image() { dispose(); }
 
 //
 
-void Image::load(const std::string& filename,
-                 bool supportNonPowerOfTow /* = true */) {
+void Image::loadFromFile(const std::string& filename,
+                         bool supportNonPowerOfTwo /*= true*/) {
+  loadFromFile(FileUtils::getDefaulCallback(), filename, supportNonPowerOfTwo);
+}
+
+void Image::loadFromFile(FileManager& fileManager, const std::string& filename,
+                         bool supportNonPowerOfTwo /*= true*/) {
+  loadFromFile(FileUtils::getFileManagerCallback(fileManager), filename,
+               supportNonPowerOfTwo);
+}
+
+void Image::loadFromFile(const FileUtils::LoadCallback& loadFileCallback,
+                         const std::string& filename,
+                         bool supportNonPowerOfTwo /*= true*/) {
+  std::string fileContent;
+  loadFileCallback(filename, fileContent);
+
+  loadFromMemory(fileContent, supportNonPowerOfTwo);
+}
+
+void Image::loadFromMemory(const std::string& content,
+                           bool supportNonPowerOfTwo /*= true*/) {
   dispose();
 
   int width;
   int height;
   int bpp;
-  _stbPixels = stbi_load(filename.c_str(), &width, &height, &bpp, 0);
-  _rawPixels = _stbPixels;
+  _stbPixels = stbi_load_from_memory(
+    reinterpret_cast<const unsigned char*>(content.c_str()),
+    int(content.size()), &width, &height, &bpp, 0);
 
-  if (!_rawPixels)
-    D_THROW(std::runtime_error,
-            "image not found, filename=\"" << filename << "\"");
+  if (!_stbPixels)
+    D_THROW(std::runtime_error, "image not found");
   if (bpp != 4)
     D_THROW(std::runtime_error, "image format not supported, bpp: " << bpp);
 
-  if (supportNonPowerOfTow == false) {
+  if (supportNonPowerOfTwo == false) {
     if ((width & (width - 1)) != 0)
-      D_THROW(std::runtime_error,
-              "image width not a power of 2, filename=\"" << filename << "\"");
+      D_THROW(std::runtime_error, "image width not a power of 2");
 
     if ((height & (height - 1)) != 0)
-      D_THROW(std::runtime_error,
-              "image height not a power of 2, filename=\"" << filename << "\"");
+      D_THROW(std::runtime_error, "image height not a power of 2");
   }
 
+  _rawPixels = _stbPixels;
   _size.x = uint32_t(width);
   _size.y = uint32_t(height);
 }

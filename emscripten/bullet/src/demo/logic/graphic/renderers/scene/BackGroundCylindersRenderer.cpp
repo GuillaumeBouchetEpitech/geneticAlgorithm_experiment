@@ -57,24 +57,24 @@ void BackGroundCylindersRenderer::initialise(const glm::vec3& size) {
         }
     };
 
-    constexpr bool pixelated = true;
-    constexpr bool repeat = true;
+    constexpr Texture::Quality quality = Texture::Quality::pixelated;
+    constexpr Texture::Pattern pattern = Texture::Pattern::repeat;
 
     const glm::ivec2 size = {512, 512};
     auto pixelsPtr = std::make_unique<unsigned char[]>(size.x * size.y * 4);
     unsigned char* rawPixels = pixelsPtr.get();
 
     fillBuffer(size, rawPixels, size.x * 0.00f, size.x * 0.25f);
-    _textures.at(0).allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(0).allocateBlank(size, quality, pattern, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.25f, size.x * 0.50f);
-    _textures.at(1).allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(1).allocateBlank(size, quality, pattern, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.50f, size.x * 0.75f);
-    _textures.at(2).allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(2).allocateBlank(size, quality, pattern, rawPixels);
 
     fillBuffer(size, rawPixels, size.x * 0.75f, size.x * 1.00f);
-    _textures.at(3).allocateBlank(size, pixelated, repeat, rawPixels);
+    _textures.at(3).allocateBlank(size, quality, pattern, rawPixels);
 
   } // cylinders (generate the texture)
 

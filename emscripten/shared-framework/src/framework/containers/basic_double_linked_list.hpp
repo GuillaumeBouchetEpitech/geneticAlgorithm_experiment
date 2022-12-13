@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <stdint.h>
 
 struct basic_double_linked_list {
   struct link {
@@ -10,63 +11,69 @@ struct basic_double_linked_list {
   };
 
   link* head_link = nullptr;
+  uint32_t size = 0;
 
-  static void add(basic_double_linked_list& list, link& newLink) {
+  static void add(basic_double_linked_list& list, link& new_link) {
     // add as head of list
 
-    newLink.prev_link = nullptr;
-    newLink.next_link = list.head_link;
+    new_link.prev_link = nullptr;
+    new_link.next_link = list.head_link;
     if (list.head_link)
-      list.head_link->prev_link = &newLink;
-    list.head_link = &newLink;
+      list.head_link->prev_link = &new_link;
+    list.head_link = &new_link;
+
+    list.size += 1;
   }
 
-  static void remove(basic_double_linked_list& list, link& oldLink) {
+  static void remove(basic_double_linked_list& list, link& old_link) {
     // remove from list
 
-    if (oldLink.prev_link)
-      oldLink.prev_link->next_link = oldLink.next_link;
-    if (oldLink.next_link)
-      oldLink.next_link->prev_link = oldLink.prev_link;
+    if (old_link.prev_link)
+      old_link.prev_link->next_link = old_link.next_link;
+    if (old_link.next_link)
+      old_link.next_link->prev_link = old_link.prev_link;
 
-    if (list.head_link == &oldLink)
-      list.head_link = oldLink.next_link;
+    if (list.head_link == &old_link)
+      list.head_link = old_link.next_link;
 
-    reset(oldLink);
+    reset_link(old_link);
+
+    list.size -= 1;
   }
 
-  static void replace(basic_double_linked_list& list, link& oldLink,
-                      link& newLink) {
+  static void replace(basic_double_linked_list& list, link& old_link,
+                      link& new_link) {
     // replace in list
 
-    newLink.prev_link = oldLink.prev_link;
-    newLink.next_link = oldLink.next_link;
+    new_link.prev_link = old_link.prev_link;
+    new_link.next_link = old_link.next_link;
 
-    oldLink.prev_link = nullptr;
-    oldLink.next_link = nullptr;
+    old_link.prev_link = nullptr;
+    old_link.next_link = nullptr;
 
-    if (newLink.prev_link)
-      newLink.prev_link->next_link = &newLink;
-    if (newLink.next_link)
-      newLink.next_link->prev_link = &newLink;
+    if (new_link.prev_link)
+      new_link.prev_link->next_link = &new_link;
+    if (new_link.next_link)
+      new_link.next_link->prev_link = &new_link;
 
-    if (list.head_link == &oldLink)
-      list.head_link = &newLink;
+    if (list.head_link == &old_link)
+      list.head_link = &new_link;
   }
 
-  static void reset(link& oldLink) {
-    oldLink.prev_link = nullptr;
-    oldLink.next_link = nullptr;
+  static void reset_link(link& old_link) {
+    old_link.prev_link = nullptr;
+    old_link.next_link = nullptr;
   }
 
-  static void reset(basic_double_linked_list& list) {
-    link* currLink = list.head_link;
-    while (currLink) {
-      link* tmpLink = currLink;
-      currLink = currLink->next_link;
-      reset(*tmpLink);
+  static void reset_list(basic_double_linked_list& list) {
+    link* curr_link = list.head_link;
+    while (curr_link) {
+      link* to_reset_link = curr_link;
+      curr_link = curr_link->next_link;
+      reset_link(*to_reset_link);
     }
     list.head_link = nullptr;
+    list.size = 0;
   }
 
   // TODO: loop -> for_each ?
@@ -74,24 +81,26 @@ struct basic_double_linked_list {
   template <typename T>
   static void loop(basic_double_linked_list& list,
                    const std::function<void(T*)>& callback) {
-    link* currLink = list.head_link;
-    while (currLink) {
-      callback(reinterpret_cast<T*>(currLink));
-      currLink = currLink->next_link;
+    link* curr_link = list.head_link;
+    while (curr_link) {
+      callback(reinterpret_cast<T*>(curr_link));
+      curr_link = curr_link->next_link;
     }
   }
 
   template <typename T>
   static void loop_and_reset(basic_double_linked_list& list,
                              const std::function<void(T*)>& callback) {
-    link* currLink = list.head_link;
-    while (currLink) {
-      callback(reinterpret_cast<T*>(currLink));
+    link* curr_link = list.head_link;
+    while (curr_link) {
+      link* to_reset_link = curr_link;
 
-      link* tmpLink = currLink;
-      currLink = currLink->next_link;
-      reset(*tmpLink);
+      callback(reinterpret_cast<T*>(curr_link));
+      curr_link = curr_link->next_link;
+
+      reset_link(*to_reset_link);
     }
     list.head_link = nullptr;
+    list.size = 0;
   }
 };

@@ -209,5 +209,70 @@ void test_weak_ref_data_pool() {
     assert(myPool2.size() == 20);
   }
 
+  {
+    using LocalPool = weak_ref_data_pool<common::Test, common::Test, 10, false>;
+    using LocalRef = LocalPool::weak_ref;
+
+    LocalPool myPool;
+
+    assert(myPool.getRefCount(0) == 0);
+    assert(myPool.getRefCount(1) == 0);
+    assert(myPool.getRefCount(2) == 0);
+
+    // for (int ii = 0; ii < 20; ++ii)
+    //   myPool.acquire(ii);
+    LocalRef ref1 = myPool.acquire(666);
+    LocalRef ref2 = myPool.acquire(666);
+    LocalRef ref3 = myPool.acquire(666);
+
+    assert(ref1);
+    assert(ref2);
+    assert(ref3);
+    assert(myPool.getRefCount(0) == 1);
+    assert(myPool.getRefCount(1) == 1);
+    assert(myPool.getRefCount(2) == 1);
+
+    ref2.invalidate();
+
+    assert(ref1);
+    assert(!ref2);
+    assert(ref3);
+    assert(myPool.getRefCount(0) == 1);
+    assert(myPool.getRefCount(1) == 0);
+    assert(myPool.getRefCount(2) == 1);
+
+    {
+      LocalRef tmpRef = myPool.acquire(666);
+
+      assert(ref1);
+      assert(!ref2);
+      assert(ref3);
+      assert(tmpRef);
+      assert(myPool.getRefCount(0) == 1);
+      assert(myPool.getRefCount(1) == 0);
+      assert(myPool.getRefCount(2) == 1);
+      assert(myPool.getRefCount(3) == 1);
+    }
+
+    assert(ref1);
+    assert(!ref2);
+    assert(ref3);
+    assert(myPool.getRefCount(0) == 1);
+    assert(myPool.getRefCount(1) == 0);
+    assert(myPool.getRefCount(2) == 1);
+    assert(myPool.getRefCount(3) == 0);
+
+    myPool.clear();
+
+    assert(!ref1);
+    assert(!ref2);
+    assert(!ref3);
+    assert(myPool.getRefCount(0) == 0);
+    assert(myPool.getRefCount(1) == 0);
+    assert(myPool.getRefCount(2) == 0);
+
+    // assert(myPool.size() == 20); // reallocate was allowed
+  }
+
   D_MYLOG(" => DONE");
 }

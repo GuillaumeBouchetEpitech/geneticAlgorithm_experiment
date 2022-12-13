@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "framework/files/FileLoadFileCallback.hpp"
+#include "framework/files/FileManager.hpp"
+
 #include "framework/helpers/GLMath.hpp"
 
 #include <string>
@@ -20,7 +23,17 @@ public:
   ~Image();
 
 public:
-  void load(const std::string& filename, bool supportNonPowerOfTow = true);
+  void loadFromFile(const std::string& filename,
+                    bool supportNonPowerOfTwo = true);
+  void loadFromFile(const FileUtils::LoadCallback& loadFileCallback,
+                    const std::string& filename,
+                    bool supportNonPowerOfTwo = true);
+  void loadFromFile(FileManager& fileManager, const std::string& filename,
+                    bool supportNonPowerOfTwo = true);
+  void loadFromMemory(const std::string& content,
+                      bool supportNonPowerOfTwo = true);
+
+public:
   void dispose();
 
 public:

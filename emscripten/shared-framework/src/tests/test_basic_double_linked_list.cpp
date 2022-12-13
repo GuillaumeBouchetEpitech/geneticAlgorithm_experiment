@@ -13,6 +13,7 @@ void test_single_link() {
   Link link1;
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
@@ -28,6 +29,7 @@ void test_single_link() {
   }
 
   assert(list.head_link == &link1);
+  assert(list.size == 1);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
@@ -40,6 +42,7 @@ void test_single_link() {
   }
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 }
@@ -50,6 +53,7 @@ void test_double_link() {
   Link link2;
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
   assert(link2.prev_link == nullptr);
@@ -71,6 +75,7 @@ void test_double_link() {
   }
 
   assert(list.head_link == &link2);
+  assert(list.size == 2);
   assert(link2.prev_link == nullptr);
   assert(link2.next_link == &link1);
   assert(link1.prev_link == &link2);
@@ -80,7 +85,7 @@ void test_double_link() {
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2](Link* currLink) {
+    List::loop<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -88,6 +93,7 @@ void test_double_link() {
   }
 
   assert(list.head_link == &link1);
+  assert(list.size == 1);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
@@ -100,6 +106,7 @@ void test_double_link() {
   }
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 }
@@ -111,6 +118,7 @@ void test_triple_link() {
   Link link3;
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
   assert(link2.prev_link == nullptr);
@@ -137,6 +145,7 @@ void test_triple_link() {
   }
 
   assert(list.head_link == &link3);
+  assert(list.size == 3);
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == &link2);
   assert(link2.prev_link == &link3);
@@ -148,7 +157,7 @@ void test_triple_link() {
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
+    List::loop<Link>(list, [&count, &link1, &link3](Link* currLink) {
       if (count == 0)
         assert(currLink == &link3);
       else
@@ -159,6 +168,7 @@ void test_triple_link() {
   }
 
   assert(list.head_link == &link3);
+  assert(list.size == 2);
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == &link1);
   assert(link1.prev_link == &link3);
@@ -168,7 +178,7 @@ void test_triple_link() {
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
+    List::loop<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -176,6 +186,7 @@ void test_triple_link() {
   }
 
   assert(list.head_link == &link1);
+  assert(list.size == 1);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
@@ -188,6 +199,7 @@ void test_triple_link() {
   }
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 }
@@ -200,6 +212,7 @@ void test_triple_link_replaced() {
   Link link4;
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
   assert(link2.prev_link == nullptr);
@@ -228,6 +241,7 @@ void test_triple_link_replaced() {
   }
 
   assert(list.head_link == &link3);
+  assert(list.size == 3);
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == &link2);
   assert(link2.prev_link == &link3);
@@ -252,6 +266,7 @@ void test_triple_link_replaced() {
   }
 
   assert(list.head_link == &link3);
+  assert(list.size == 3);
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == &link4);
   assert(link4.prev_link == &link3);
@@ -266,7 +281,7 @@ void test_triple_link_replaced() {
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
+    List::loop<Link>(list, [&count, &link1, &link3](Link* currLink) {
       if (count == 0)
         assert(currLink == &link3);
       else
@@ -277,6 +292,7 @@ void test_triple_link_replaced() {
   }
 
   assert(list.head_link == &link3);
+  assert(list.size == 2);
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == &link1);
   assert(link1.prev_link == &link3);
@@ -286,7 +302,7 @@ void test_triple_link_replaced() {
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
+    List::loop<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -294,6 +310,7 @@ void test_triple_link_replaced() {
   }
 
   assert(list.head_link == &link1);
+  assert(list.size == 1);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
@@ -306,6 +323,7 @@ void test_triple_link_replaced() {
   }
 
   assert(list.head_link == nullptr);
+  assert(list.size == 0);
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 }
@@ -326,6 +344,7 @@ void test_basic_double_linked_list() {
       Link link3;
 
       assert(list.head_link == nullptr);
+      assert(list.size == 0);
       assert(link1.prev_link == nullptr);
       assert(link1.next_link == nullptr);
       assert(link2.prev_link == nullptr);
@@ -353,6 +372,7 @@ void test_basic_double_linked_list() {
       }
 
       assert(list.head_link == &link3);
+      assert(list.size == 3);
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == &link2);
       assert(link2.prev_link == &link3);
@@ -360,7 +380,7 @@ void test_basic_double_linked_list() {
       assert(link1.prev_link == &link2);
       assert(link1.next_link == nullptr);
 
-      List::reset(list);
+      List::reset_list(list);
 
       {
         int count = 0;
@@ -369,6 +389,7 @@ void test_basic_double_linked_list() {
       }
 
       assert(list.head_link == nullptr);
+      assert(list.size == 0);
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == nullptr);
       assert(link2.prev_link == nullptr);
@@ -384,6 +405,7 @@ void test_basic_double_linked_list() {
       Link link3;
 
       assert(list.head_link == nullptr);
+      assert(list.size == 0);
       assert(link1.prev_link == nullptr);
       assert(link1.next_link == nullptr);
       assert(link2.prev_link == nullptr);
@@ -411,6 +433,7 @@ void test_basic_double_linked_list() {
       }
 
       assert(list.head_link == &link3);
+      assert(list.size == 3);
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == &link2);
       assert(link2.prev_link == &link3);
@@ -440,6 +463,7 @@ void test_basic_double_linked_list() {
       }
 
       assert(list.head_link == nullptr);
+      assert(list.size == 0);
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == nullptr);
       assert(link2.prev_link == nullptr);

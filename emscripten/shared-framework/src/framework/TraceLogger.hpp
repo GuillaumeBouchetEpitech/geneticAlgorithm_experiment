@@ -21,6 +21,9 @@ private:
   std::stringstream _sstr;
 
 public:
+  TraceLogger() = default;
+
+public:
   void dump();
   std::string getData() const;
 
@@ -37,9 +40,14 @@ template <> TraceLogger& TraceLogger::operator<<<float>(float data);
 
 template <> TraceLogger& TraceLogger::operator<<<double>(double data);
 
+template <> TraceLogger& TraceLogger::operator<<<glm::uvec2>(glm::uvec2 data);
+template <> TraceLogger& TraceLogger::operator<<<glm::uvec3>(glm::uvec3 data);
+template <> TraceLogger& TraceLogger::operator<<<glm::uvec4>(glm::uvec4 data);
+
 template <> TraceLogger& TraceLogger::operator<<<glm::vec2>(glm::vec2 data);
 template <> TraceLogger& TraceLogger::operator<<<glm::vec3>(glm::vec3 data);
 template <> TraceLogger& TraceLogger::operator<<<glm::vec4>(glm::vec4 data);
+
 template <> TraceLogger& TraceLogger::operator<<<glm::quat>(glm::quat data);
 
 // this will reduce the "__FILE__" macro to it's filename -> friendlier to read

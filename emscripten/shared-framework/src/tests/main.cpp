@@ -20,5 +20,7 @@ int main() {
   test_static_stack_array();
   test_deterministic_rng();
 
+  // test_audio();
+
   return EXIT_SUCCESS;
 }

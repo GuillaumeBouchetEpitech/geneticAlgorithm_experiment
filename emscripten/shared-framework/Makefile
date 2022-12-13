@@ -32,6 +32,7 @@ NAME_TESTS=			$(DIR_TESTS)/exec
 NAME_FRAMEWORK_SYSTEM=			$(DIR_LIB)/lib_framework_system.a
 NAME_FRAMEWORK_GRAPHIC=			$(DIR_LIB)/lib_framework_graphic.a
 NAME_FRAMEWORK_PHYSIC=			$(DIR_LIB)/lib_framework_physic.a
+NAME_FRAMEWORK_AUDIO=			$(DIR_LIB)/lib_framework_audio.a
 NAME_BULLET_LINEARMATH=	$(DIR_LIB)/lib_bullet_linearmath.a
 NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_bullet_collision.a
 NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_bullet_dynamics.a
@@ -43,6 +44,7 @@ DIR_LIB=	./lib/web
 NAME_FRAMEWORK_SYSTEM=			$(DIR_LIB)/lib_framework_system.bc
 NAME_FRAMEWORK_GRAPHIC=			$(DIR_LIB)/lib_framework_graphic.bc
 NAME_FRAMEWORK_PHYSIC=			$(DIR_LIB)/lib_framework_physic.bc
+NAME_FRAMEWORK_AUDIO=			$(DIR_LIB)/lib_framework_audio.bc
 NAME_BULLET_LINEARMATH=	$(DIR_LIB)/lib_bullet_linearmath.bc
 NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_bullet_collision.bc
 NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_bullet_dynamics.bc
@@ -71,15 +73,15 @@ DIR_OBJ=			./obj/web
 
 endif
 
-OBJDIR_FRAMEWORK=	$(DIR_OBJ)/framework
-OBJDIR_BULLET=	$(DIR_OBJ)/bullet
-OBJDIR_BULLET_LINEARMATH=	$(OBJDIR_BULLET)/linearmath
-OBJDIR_BULLET_COLLISION=	$(OBJDIR_BULLET)/collision
-OBJDIR_BULLET_DYNAMICS=		$(OBJDIR_BULLET)/dynamic
+DIR_OBJ_FRAMEWORK=	$(DIR_OBJ)/framework
+DIR_OBJ_BULLET=	$(DIR_OBJ)/bullet
+DIR_OBJ_BULLET_LINEARMATH=	$(DIR_OBJ_BULLET)/linearmath
+DIR_OBJ_BULLET_COLLISION=	$(DIR_OBJ_BULLET)/collision
+DIR_OBJ_BULLET_DYNAMICS=		$(DIR_OBJ_BULLET)/dynamic
 
 ifeq ($(build_platform),native)
 
-OBJDIR_TESTS=	$(DIR_OBJ)/tests
+DIR_OBJ_TESTS=	$(DIR_OBJ)/tests
 
 endif
 
@@ -108,6 +110,9 @@ SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/shape/*.cpp)
 SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/vehicle/*.cpp)
 SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/queries/*.cpp)
 
+SRC_FRAMEWORK_AUDIO+=	$(wildcard $(DIR_SRC)/framework/audio/*.cpp)
+SRC_FRAMEWORK_AUDIO+=	$(wildcard $(DIR_SRC)/framework/audio/decoders/*.cpp)
+
 SRC_BULLET_LINEARMATH+= $(wildcard $(DIR_BULLET)/LinearMath/*.cpp)
 
 SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/BroadphaseCollision/*.cpp)
@@ -122,20 +127,22 @@ SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/Vehicle/*.cpp)
 SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/ConstraintSolver/*.cpp) # TODO: useful?
 
 SRC_TESTS+=	$(wildcard $(DIR_SRC)/tests/*.cpp)
+SRC_TESTS+=	$(wildcard $(DIR_SRC)/tests/audio/*.cpp)
 
 #
 
-OBJ_FRAMEWORK_SYSTEM=	$(patsubst %.cpp, $(OBJDIR_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_SYSTEM))
-OBJ_FRAMEWORK_GRAPHIC=	$(patsubst %.cpp, $(OBJDIR_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_GRAPHIC))
-OBJ_FRAMEWORK_PHYSIC=	$(patsubst %.cpp, $(OBJDIR_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_PHYSIC))
+OBJ_FRAMEWORK_SYSTEM=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_SYSTEM))
+OBJ_FRAMEWORK_GRAPHIC=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_GRAPHIC))
+OBJ_FRAMEWORK_PHYSIC=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_PHYSIC))
+OBJ_FRAMEWORK_AUDIO=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_AUDIO))
 
-OBJ_BULLET_LINEARMATH=	$(patsubst %.cpp, $(OBJDIR_BULLET_LINEARMATH)/%.o, $(SRC_BULLET_LINEARMATH))
-OBJ_BULLET_COLLISION=	$(patsubst %.cpp, $(OBJDIR_BULLET_COLLISION)/%.o, $(SRC_BULLET_COLLISION))
-OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, $(OBJDIR_BULLET_DYNAMICS)/%.o, $(SRC_BULLET_DYNAMICS))
+OBJ_BULLET_LINEARMATH=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_LINEARMATH)/%.o, $(SRC_BULLET_LINEARMATH))
+OBJ_BULLET_COLLISION=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_COLLISION)/%.o, $(SRC_BULLET_COLLISION))
+OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_DYNAMICS)/%.o, $(SRC_BULLET_DYNAMICS))
 
 ifeq ($(build_platform),native)
 
-OBJ_TESTS=	$(patsubst %.cpp, $(OBJDIR_TESTS)/%.o, $(SRC_TESTS))
+OBJ_TESTS=	$(patsubst %.cpp, $(DIR_OBJ_TESTS)/%.o, $(SRC_TESTS))
 
 endif
 
@@ -184,8 +191,10 @@ CXXFLAGS_TESTS += -Wall -W -Wextra -Wunused -Wpedantic -Wshadow -Wconversion -We
 CXXFLAGS_TESTS += -I$(DIR_SRC)
 
 LDFLAGS_TESTS += $(BUILD_FLAG)
-LDFLAGS_TESTS += $(NAME_FRAMEWORK_SYSTEM)
+LDFLAGS_TESTS += $(NAME_FRAMEWORK_AUDIO)
 LDFLAGS_TESTS += $(NAME_FRAMEWORK_GRAPHIC)
+LDFLAGS_TESTS += $(NAME_FRAMEWORK_SYSTEM)
+LDFLAGS_TESTS += -lopenal
 
 else ifeq ($(build_platform),web_wasm)
 
@@ -207,13 +216,22 @@ RM=			rm -rf
 #
 ## RULE(S)
 
-all:	bullet framework_system framework_graphic framework_physic
+all:	\
+	bullet	\
+	framework
 
 ensure_folders:
 	@mkdir -p $(DIR_LIB)
 
 # framework:	ensure_folders $(OBJ_FRAMEWORK)
 # 	# $(AR) cr $(NAME_FRAMEWORK) $(OBJ_FRAMEWORK)
+
+framework:	\
+	ensure_folders	\
+	framework_system	\
+	framework_graphic	\
+	framework_physic	\
+	framework_audio
 
 framework_system:	ensure_folders $(OBJ_FRAMEWORK_SYSTEM)
 	$(AR) cr $(NAME_FRAMEWORK_SYSTEM) $(OBJ_FRAMEWORK_SYSTEM)
@@ -223,6 +241,9 @@ framework_graphic:	ensure_folders $(OBJ_FRAMEWORK_GRAPHIC)
 
 framework_physic:	ensure_folders $(OBJ_FRAMEWORK_PHYSIC)
 	$(AR) cr $(NAME_FRAMEWORK_PHYSIC) $(OBJ_FRAMEWORK_PHYSIC)
+
+framework_audio:	ensure_folders $(OBJ_FRAMEWORK_AUDIO)
+	$(AR) cr $(NAME_FRAMEWORK_AUDIO) $(OBJ_FRAMEWORK_AUDIO)
 
 ifeq ($(build_platform),native)
 
@@ -234,7 +255,11 @@ build-tests: ensure_tests_folders $(OBJ_TESTS)
 
 endif
 
-bullet:				ensure_folders bullet_linearmath bullet_collision bullet_dynamics
+bullet:	\
+	ensure_folders	\
+	bullet_linearmath	\
+	bullet_collision	\
+	bullet_dynamics
 
 bullet_linearmath:	$(OBJ_BULLET_LINEARMATH)
 	$(AR) cr $(NAME_BULLET_LINEARMATH) $(OBJ_BULLET_LINEARMATH)
@@ -251,34 +276,39 @@ bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
 # => ensure the "obj" folder(s)
 # => compile in a ".o" file
 
-$(OBJDIR_FRAMEWORK)/%.o: %.cpp
+$(DIR_OBJ_FRAMEWORK)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS_FRAMEWORK) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS_FRAMEWORK) $< -c -o $@
 
 ifeq ($(build_platform),native)
 
-$(OBJDIR_TESTS)/%.o: %.cpp
+$(DIR_OBJ_TESTS)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS_TESTS) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS_TESTS) $< -c -o $@
 
 endif
 
-$(OBJDIR_BULLET_LINEARMATH)/%.o: %.cpp
+$(DIR_OBJ_BULLET_LINEARMATH)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
-$(OBJDIR_BULLET_COLLISION)/%.o: %.cpp
+$(DIR_OBJ_BULLET_COLLISION)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
-$(OBJDIR_BULLET_DYNAMICS)/%.o: %.cpp
+$(DIR_OBJ_BULLET_DYNAMICS)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 #
 
 clean:
-		$(RM) $(OBJDIR_FRAMEWORK)
+		$(RM) $(DIR_OBJ_FRAMEWORK)
 
 fclean: clean
 		$(RM) $(NAME_FRAMEWORK_SYSTEM)
@@ -288,7 +318,7 @@ fclean: clean
 ifeq ($(build_platform),native)
 
 clean_tests:
-		$(RM) $(OBJDIR_TESTS)
+		$(RM) $(DIR_OBJ_TESTS)
 
 fclean_tests: clean_tests
 		$(RM) $(NAME_TESTS)
@@ -296,7 +326,7 @@ fclean_tests: clean_tests
 endif
 
 clean_bullet:
-		$(RM) $(OBJDIR_BULLET)
+		$(RM) $(DIR_OBJ_BULLET)
 
 fclean_bullet: clean_bullet
 		$(RM) $(NAME_BULLET_LINEARMATH)

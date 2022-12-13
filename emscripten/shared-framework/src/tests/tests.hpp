@@ -9,3 +9,5 @@ void test_math();
 void test_frustum_culling();
 void test_static_stack_array();
 void test_deterministic_rng();
+
+void test_audio();

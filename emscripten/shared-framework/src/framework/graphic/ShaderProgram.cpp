@@ -16,10 +16,11 @@
 #include <string>
 
 namespace utilities {
-bool getShaderSource(const std::string& filename, std::string& source) {
+
+bool getShaderSource(const std::string& filename, std::string& source,
+                     const FileUtils::LoadCallback& loadFileCallback) {
   std::string subSource;
-  if (!FileUtils::getFileContent(filename, subSource))
-    return false;
+  loadFileCallback(filename, subSource);
 
   std::vector<std::string> newLines;
   newLines.reserve(512);
@@ -27,14 +28,10 @@ bool getShaderSource(const std::string& filename, std::string& source) {
   std::stringstream sstr;
   sstr << subSource;
 
-  // D_MYLOG("##############################");
-  // D_MYLOG("filename=" << filename);
-
   std::regex inlcudeRegexp(R"(^\s*#\s*include\s+\"(\S+)\")");
 
   std::string currentLine;
   while (std::getline(sstr, currentLine)) {
-    // D_MYLOG("currentLine=" << currentLine);
 
     std::smatch match;
     std::regex_search(currentLine, match, inlcudeRegexp);
@@ -43,8 +40,8 @@ bool getShaderSource(const std::string& filename, std::string& source) {
       std::string includeFilename = match[1].str();
 
       std::string includeSource;
-      if (!FileUtils::getFileContent(includeFilename, includeSource))
-        return false;
+      includeSource.clear();
+      loadFileCallback(includeFilename, includeSource);
 
       newLines.push_back(includeSource);
     } else {
@@ -66,19 +63,26 @@ bool getShaderSource(const std::string& filename, std::string& source) {
 
 //
 
-ShaderProgram::ShaderProgram(const Definition& def) {
+ShaderProgram::ShaderProgram(const Definition& def)
+  : ShaderProgram(def, FileUtils::getDefaulCallback()) {}
+
+ShaderProgram::ShaderProgram(const Definition& def, FileManager& fileManager)
+  : ShaderProgram(def, FileUtils::getFileManagerCallback(fileManager)) {}
+
+ShaderProgram::ShaderProgram(const Definition& def,
+                             const FileUtils::LoadCallback& loadFileCallback) {
   std::string vertexSourceCode;
   std::string fragmentSourceCode;
 
-  if (!utilities::getShaderSource(def.filenames.vertex, vertexSourceCode))
+  if (!utilities::getShaderSource(def.filenames.vertex, vertexSourceCode,
+                                  loadFileCallback))
     D_THROW(std::invalid_argument, "fail to read a file"
                                      << ", source=" << def.filenames.vertex);
 
-  if (!utilities::getShaderSource(def.filenames.fragment, fragmentSourceCode))
+  if (!utilities::getShaderSource(def.filenames.fragment, fragmentSourceCode,
+                                  loadFileCallback))
     D_THROW(std::invalid_argument, "fail to read a file"
                                      << ", source=" << def.filenames.fragment);
-
-  //
 
   unsigned int vertexShader = GlContext::loadVertexShader(vertexSourceCode);
   unsigned int fragmentShader =
@@ -93,6 +97,7 @@ ShaderProgram::ShaderProgram(const Definition& def) {
               << ", fragment=" << def.filenames.fragment);
 
   if (!GlContext::linkProgram(_programId, vertexShader, fragmentShader)) {
+
     GlContext::printProgramInfo(_programId);
 
     GlContext::deleteProgram(_programId);
@@ -213,6 +218,10 @@ void ShaderProgram::setUniform(const char* name, float value) const {
   setUniform(getUniform(name), value);
 }
 
+void ShaderProgram::setUniform(const char* name, float x, float y) const {
+  setUniform(getUniform(name), x, y);
+}
+
 void ShaderProgram::setUniform(const char* name, float x, float y,
                                float z) const {
   setUniform(getUniform(name), x, y, z);
@@ -255,6 +264,10 @@ void ShaderProgram::setUniform(int location, int x, int y, int z, int w) const {
 
 void ShaderProgram::setUniform(int location, float value) const {
   GlContext::setUniform(location, value);
+}
+
+void ShaderProgram::setUniform(int location, float x, float y) const {
+  GlContext::setUniform(location, x, y);
 }
 
 void ShaderProgram::setUniform(int location, float x, float y, float z) const {

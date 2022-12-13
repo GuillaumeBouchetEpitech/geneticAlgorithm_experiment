@@ -347,16 +347,12 @@ void Scene::_renderHUD() {
 
   { // render in framebuffer
 
-    graphic.postProcess.bind();
-
-    GlContext::clearColor(0, 0, 0, 0);
-    GlContext::clear(asValue(GlContext::Buffers::color) |
-                     asValue(GlContext::Buffers::depth));
+    graphic.postProcess.startRecording();
 
     Scene::_renderHUD_ortho();
     Scene::_renderHUD_thirdPerson();
 
-    graphic.postProcess.unbind();
+    graphic.postProcess.stopRecording();
 
   } // render in framebuffer
 

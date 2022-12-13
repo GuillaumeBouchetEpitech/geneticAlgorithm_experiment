@@ -62,13 +62,15 @@ void FrameBuffer::initialise(const Definition& def) {
 
   GlContext::checkFrameBuffer();
 
-  // std::vector<uint32_t> allDrawBuffers;
-  // allDrawBuffers.reserve(def.colorTextures.size());
-  // for (const auto& colorTexture : def.colorTextures)
-  //   allDrawBuffers.push_back(colorTexture.index);
+  if (def.colorTextures.size() > 1) {
+    std::vector<uint32_t> drawBuffers;
+    drawBuffers.reserve(def.colorTextures.size());
+    for (const auto& colorTexture : def.colorTextures)
+      drawBuffers.push_back(colorTexture.index);
 
-  // GlContext::drawFrameBuffers(uint32_t(allDrawBuffers.size()),
-  // allDrawBuffers.data());
+    GlContext::drawFrameBuffers(uint32_t(drawBuffers.size()),
+                                drawBuffers.data());
+  }
 
   FrameBuffer::unbind();
 }

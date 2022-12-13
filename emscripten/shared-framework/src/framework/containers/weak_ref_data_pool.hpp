@@ -71,6 +71,8 @@ public:
     // }
 
     void _doMove(internal_data& other) {
+      if (&other == this)
+        return;
       std::swap(_index, other._index);
       std::swap(_is_active, other._is_active);
       std::swap(_list, other._list);
@@ -108,18 +110,18 @@ public:
     weak_ref() = default;
 
   private:
-    weak_ref(weak_ref_data_pool* pool, int32_t index)
-      : _pool(pool), _index(index) {
+    weak_ref(weak_ref_data_pool* inPool, int32_t inIndex) {
       // CTOR
 
-      if (_index < 0 || _pool == nullptr ||
-          _index > int32_t(_pool->_itemsPool.size())) {
-        _index = -1;
-        _pool = nullptr;
+      if (inPool == nullptr ||
+          inPool->_itemsPool.is_out_of_range(std::size_t(inIndex))) {
         return;
       }
 
-      basic_double_linked_list& list = _pool->_itemsPool[_index]._list;
+      _pool = inPool;
+      _index = inIndex;
+      basic_double_linked_list& list =
+        _pool->_itemsPool.at(std::size_t(_index))._list;
       basic_double_linked_list::add(list, *this);
     }
 
@@ -128,22 +130,20 @@ public:
 
     weak_ref(weak_ref&& other) { _doMove(std::move(other)); }
 
-    ~weak_ref() {
-      if (_pool) {
-        basic_double_linked_list& list = _pool->_itemsPool[_index]._list;
-        basic_double_linked_list::remove(list, *this);
-      } else {
-        basic_double_linked_list::reset(*this);
-      }
-
-      _pool = nullptr;
-      _index = -1;
-    }
+    ~weak_ref() { invalidate(); }
 
   public:
     static weak_ref make_invalid() { return weak_ref(); }
 
     void invalidate() {
+      if (_pool) {
+        basic_double_linked_list& list =
+          _pool->_itemsPool.at(std::size_t(_index))._list;
+        basic_double_linked_list::remove(list, *this);
+      } else {
+        basic_double_linked_list::reset_link(*this);
+      }
+
       _pool = nullptr;
       _index = -1;
     }
@@ -167,7 +167,8 @@ public:
       if (_index < 0 || _pool == nullptr)
         return;
 
-      basic_double_linked_list& list = _pool->_itemsPool[_index]._list;
+      basic_double_linked_list& list =
+        _pool->_itemsPool.at(std::size_t(_index))._list;
       basic_double_linked_list::add(list, *this);
     }
 
@@ -178,7 +179,8 @@ public:
       if (_index < 0 || _pool == nullptr)
         return;
 
-      basic_double_linked_list& list = _pool->_itemsPool[_index]._list;
+      basic_double_linked_list& list =
+        _pool->_itemsPool.at(std::size_t(_index))._list;
       basic_double_linked_list::replace(list, other, *this);
     }
 
@@ -186,14 +188,15 @@ public:
     operator bool() const { return is_active(); }
 
     bool is_active() const {
-      return _index >= 0 && _pool && _pool->_itemsPool[_index]._is_active;
+      return _index >= 0 && _pool &&
+             _pool->_itemsPool.at(std::size_t(_index))._is_active;
     }
 
     PublicBaseType* get() {
-      return _index < 0 ? nullptr : &_pool->_itemsPool[_index];
+      return _index < 0 ? nullptr : &_pool->_itemsPool.at(std::size_t(_index));
     }
     const PublicBaseType* get() const {
-      return _index < 0 ? nullptr : &_pool->_itemsPool[_index];
+      return _index < 0 ? nullptr : &_pool->_itemsPool.at(std::size_t(_index));
     }
 
     PublicBaseType* operator->() { return get(); }
@@ -295,10 +298,10 @@ public:
   //   currData._is_active = true;
 
   //   // std::cout << "acquire index=" << index << std::endl;
-  //   // std::cout << "acquire _index=" << _itemsPool[index]._index <<
+  //   // std::cout << "acquire _index=" << _itemsPool.at(index)._index <<
   //   std::endl;
-  //   // std::cout << "acquire _is_active=" << _itemsPool[index]._is_active <<
-  //   std::endl;
+  //   // std::cout << "acquire _is_active=" << _itemsPool.at(index)._is_active
+  //   << std::endl;
 
   //   return weak_ref(this, std::size_t(index));
   // }
@@ -326,6 +329,11 @@ public:
   bool empty() const { return _itemsPool.empty(); }
 
 public:
+  uint32_t getRefCount(uint32_t index) {
+    return index < _itemsPool.size() ? _itemsPool.at(index)._list.size : 0;
+  }
+
+public:
   int32_t get_index(weak_ref& ref) { return ref._index; }
   int32_t get_index(PublicBaseType* pTarget) const {
     return reinterpret_cast<internal_data*>(pTarget)->_index;
@@ -334,7 +342,7 @@ public:
 public:
   bool is_active(weak_ref& ref) { return ref.is_active(); }
   bool is_active(std::size_t index) const {
-    return is_active(&_itemsPool[index]);
+    return is_active(&_itemsPool.at(index));
   }
   bool is_active(PublicBaseType* pTarget) const {
     return reinterpret_cast<internal_data*>(pTarget)->_is_active;
@@ -342,7 +350,7 @@ public:
 
 public:
   void release(weak_ref& ref) { release(ref.get()); }
-  void release(std::size_t index) { release(&_itemsPool[index]); }
+  void release(std::size_t index) { release(&_itemsPool.at(index)); }
 
   void release(PublicBaseType* pExternalData) {
 
@@ -362,7 +370,7 @@ public:
     pinternal_data->invalidate_all_ref();
 
     pinternal_data->_is_active = false;
-    int32_t index = pinternal_data->_index;
+    std::size_t index = std::size_t(pinternal_data->_index);
 
     // std::cout << "pre" << std::endl;
 
@@ -370,8 +378,8 @@ public:
 
     // std::cout << "post" << std::endl;
 
-    if (std::size_t(index) < _itemsPool.size()) {
-      auto& item = _itemsPool[index];
+    if (index < _itemsPool.size()) {
+      auto& item = _itemsPool.at(index);
       item._index = int32_t(index);
       item.sync_all_ref_index();
     }
@@ -380,7 +388,7 @@ public:
 public:
   void filter(std::function<bool(PublicBaseType&)> callback) {
     for (std::size_t index = 0; index < _itemsPool.size();) {
-      auto& item = _itemsPool[int(index)];
+      auto& item = _itemsPool.at(index);
 
       if (item._is_active == false) {
         ++index;
@@ -408,8 +416,8 @@ public:
   }
 
   weak_ref find_if(std::function<bool(const PublicBaseType&)> callback) const {
-    for (int index = 0; index < int(_itemsPool.size()); ++index) {
-      auto& item = _itemsPool[index];
+    for (std::size_t index = 0; index < _itemsPool.size(); ++index) {
+      auto& item = _itemsPool.at(index);
 
       if (item._is_active == false)
         continue;

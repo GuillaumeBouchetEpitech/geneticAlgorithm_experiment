@@ -17,7 +17,7 @@ void disableLogs();
 // void print();
 
 struct Test {
-  int value;
+  int value = -1;
 
   std::string my_string;
 
@@ -30,7 +30,7 @@ struct Test {
 };
 
 struct Test2 {
-  int value;
+  int value = -2;
 
   std::string my_string;
 

@@ -56,9 +56,8 @@ void FloorRenderer::initialise(const glm::vec3& center, const glm::vec3& size) {
         }
       }
 
-    bool pixelated = false;
-    bool repeat = true;
-    _texture.allocateBlank(size, pixelated, repeat, rawPixels);
+    _texture.allocateBlank(size, Texture::Quality::smoothed,
+                           Texture::Pattern::repeat, rawPixels);
   }
 
   { // compute chessboard ground

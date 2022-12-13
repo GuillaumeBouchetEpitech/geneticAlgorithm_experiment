@@ -94,26 +94,24 @@ DIR_SHARED_LIB_SRC=		$(DIR_SHARED_LIB)/src
 ifeq ($(build_platform),native_pthread)
 
 DIR_OBJ=									./obj/native
-OBJDIR=										$(DIR_OBJ)
+DIR_OBJ_MACHINE_LEARNING=	./obj/native/machine_learning
 
 else
 
-DIR_OBJ=									./obj/web
+DIR_OBJ_MACHINE_LEARNING=	./obj/web/machine_learning
 
 ifeq ($(build_platform),web_wasm_pthread)
 
-OBJDIR=										$(DIR_OBJ)/pthread
+DIR_OBJ=									./obj/web/pthread
 
 else ifeq ($(build_platform),web_wasm_webworker)
 
-OBJDIR=										$(DIR_OBJ)/webworker/main
-OBJDIR_WEB_WORKER=				$(DIR_OBJ)/webworker/worker
+DIR_OBJ=									./obj/web/webworker/main
+DIR_OBJ_WEB_WORKER=				./obj/web/webworker/worker
 
 endif
 
 endif
-
-OBJDIR_MACHINE_LEARNING=	$(DIR_OBJ)/machine_learning
 
 #### SRC
 
@@ -153,15 +151,15 @@ SRC_MACHINE_LEARNING+=	$(wildcard $(DIR_SRC)/machineLearning/*.cpp)
 
 #
 
-OBJ=	$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRC))
+OBJ=	$(patsubst %.cpp, $(DIR_OBJ)/%.o, $(SRC))
 
 ifeq ($(build_platform),web_wasm_webworker)
 
-OBJ_WEB_WORKER=	$(patsubst %.cpp, $(OBJDIR_WEB_WORKER)/%.o, $(SRC_WEB_WORKER))
+OBJ_WEB_WORKER=	$(patsubst %.cpp, $(DIR_OBJ_WEB_WORKER)/%.o, $(SRC_WEB_WORKER))
 
 endif
 
-OBJ_MACHINE_LEARNING=	$(patsubst %.cpp, $(OBJDIR_MACHINE_LEARNING)/%.o, $(SRC_MACHINE_LEARNING))
+OBJ_MACHINE_LEARNING=	$(patsubst %.cpp, $(DIR_OBJ_MACHINE_LEARNING)/%.o, $(SRC_MACHINE_LEARNING))
 
 #######
 
@@ -311,28 +309,31 @@ machine_learning:	ensurefolders $(OBJ_MACHINE_LEARNING)
 # => ensure the "obj" folder(s)
 # => compile in a ".o" file
 
-$(OBJDIR)/%.o: %.cpp
+$(DIR_OBJ)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 ifeq ($(build_platform),web_wasm_webworker)
 
-$(OBJDIR_WEB_WORKER)/%.o: %.cpp
+$(DIR_OBJ_WEB_WORKER)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 endif
 
-$(OBJDIR_MACHINE_LEARNING)/%.o: %.cpp
+$(DIR_OBJ_MACHINE_LEARNING)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	$(CXX) $(CXXFLAGS) $< -c -o $@
+	@echo ' ---> building: '$<
+	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 #
 
 ifneq ($(build_platform),web_wasm_webworker)
 
 clean:
-		$(RM) $(OBJDIR)
+		$(RM) $(DIR_OBJ)
 
 fclean:	clean
 		$(RM) $(NAME_APPLICATION)
@@ -340,8 +341,8 @@ fclean:	clean
 else ifeq ($(build_platform),web_wasm_webworker)
 
 clean:
-		$(RM) $(OBJDIR)
-		$(RM) $(OBJDIR_WEB_WORKER)
+		$(RM) $(DIR_OBJ)
+		$(RM) $(DIR_OBJ_WEB_WORKER)
 
 fclean:	clean
 		$(RM) $(NAME_APPLICATION)
@@ -352,7 +353,7 @@ endif
 re:			fclean all
 
 clean_ml:
-		$(RM) $(OBJDIR_MACHINE_LEARNING)
+		$(RM) $(DIR_OBJ_MACHINE_LEARNING)
 
 fclean_ml:	clean_ml
 		$(RM) $(NAME_MACHINE_LEARNING)

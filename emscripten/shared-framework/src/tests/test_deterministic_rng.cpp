@@ -13,9 +13,9 @@ void test_deterministic_rng() {
 
     constexpr int testSize = 10000;
 
-    std::unordered_set<int> allValues;
+    std::unordered_set<int64_t> allValues;
     for (int index = 0; index < testSize; ++index) {
-      const int value = rng.getValue();
+      const int64_t value = rng.getValue();
 
       assert(allValues.count(value) == 0);
       assert(value < rng.getMaxValue());

@@ -5,6 +5,8 @@
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
 
+#include "framework/files/FileManager.hpp"
+
 #include <memory>
 #include <unordered_map>
 
@@ -12,6 +14,9 @@ class ResourceManager {
 public:
   ResourceManager() = default;
   ~ResourceManager() = default;
+
+private:
+  FileManager _fileManager;
 
 private:
   std::unordered_map<std::string, int> _shaderDefsMap;
@@ -27,10 +32,10 @@ private:
   std::unordered_map<int, std::shared_ptr<Texture>> _texturesMap;
 
 public:
-  std::shared_ptr<Texture> createTexture(int aliasCode,
-                                         const std::string& filename,
-                                         bool pixelated = false,
-                                         bool repeat = false);
+  std::shared_ptr<Texture>
+  createTexture(int aliasCode, const std::string& filename,
+                Texture::Quality quality = Texture::Quality::pixelated,
+                Texture::Pattern pattern = Texture::Pattern::clamped);
   std::shared_ptr<Texture> getTexture(int aliasCode);
 
 private:

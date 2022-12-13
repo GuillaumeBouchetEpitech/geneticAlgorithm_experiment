@@ -6,7 +6,10 @@
 BasicRegexpParser::BasicRegexpParser() {
   _regexps.regexpMain = _matchers.matchMain;
   _regexps.regexpName = _matchers.matchStrName;
+  _regexps.regexpFileName = _matchers.matchStrFileName;
   _regexps.regexpS1UI = _matchers.matchS1UI;
+  _regexps.regexpS2UI = _matchers.matchS2UI;
+  _regexps.regexpS3UI = _matchers.matchS3UI;
   _regexps.regexpS1F = _matchers.match1F;
   _regexps.regexpS2F = _matchers.matchS2F;
   _regexps.regexpS3F = _matchers.matchS3F;
@@ -22,6 +25,15 @@ std::string BasicRegexpParser::getName(const std::string& toMatch) {
   std::regex_search(toMatch, subMatch, _regexps.regexpName);
   if (subMatch.empty())
     D_THROW(std::runtime_error, "cannot parse name, type=" << _errorHint);
+
+  return subMatch[1].str();
+}
+
+std::string BasicRegexpParser::getFileName(const std::string& toMatch) {
+  std::smatch subMatch;
+  std::regex_search(toMatch, subMatch, _regexps.regexpFileName);
+  if (subMatch.empty())
+    D_THROW(std::runtime_error, "cannot parse file name, type=" << _errorHint);
 
   return subMatch[1].str();
 }
@@ -42,6 +54,59 @@ uint32_t BasicRegexpParser::get1UI(const std::string& toMatch,
   if (value > maxValue)
     D_THROW(std::runtime_error, "value of 1UI is too high, type="
                                   << _errorHint << ", value=" << value
+                                  << ", maxValue=" << maxValue);
+  return value;
+}
+
+glm::uvec2 BasicRegexpParser::get2UI(const std::string& toMatch) {
+  std::smatch subMatch;
+  std::regex_search(toMatch, subMatch, _regexps.regexpS2UI);
+  if (subMatch.empty())
+    D_THROW(std::runtime_error, "cannot parse 2UI, type=" << _errorHint);
+
+  return {uint32_t(std::atoi(subMatch[1].str().c_str())),
+          uint32_t(std::atoi(subMatch[2].str().c_str()))};
+}
+
+glm::uvec2 BasicRegexpParser::get2UI(const std::string& toMatch,
+                                     uint32_t maxValue) {
+  const glm::uvec2 value = get2UI(toMatch);
+  if (value.x > maxValue)
+    D_THROW(std::runtime_error, "value.x of 2UI is too high, type="
+                                  << _errorHint << ", value=" << value.x
+                                  << ", maxValue=" << maxValue);
+  if (value.y > maxValue)
+    D_THROW(std::runtime_error, "value.y of 2UI is too high, type="
+                                  << _errorHint << ", value=" << value.y
+                                  << ", maxValue=" << maxValue);
+  return value;
+}
+
+glm::uvec3 BasicRegexpParser::get3UI(const std::string& toMatch) {
+  std::smatch subMatch;
+  std::regex_search(toMatch, subMatch, _regexps.regexpS3UI);
+  if (subMatch.empty())
+    D_THROW(std::runtime_error, "cannot parse 3UI, type=" << _errorHint);
+
+  return {uint32_t(std::atoi(subMatch[1].str().c_str())),
+          uint32_t(std::atoi(subMatch[2].str().c_str())),
+          uint32_t(std::atoi(subMatch[3].str().c_str()))};
+}
+
+glm::uvec3 BasicRegexpParser::get3UI(const std::string& toMatch,
+                                     uint32_t maxValue) {
+  const glm::uvec3 value = get3UI(toMatch);
+  if (value.x > maxValue)
+    D_THROW(std::runtime_error, "value.x of 2UI is too high, type="
+                                  << _errorHint << ", value=" << value.x
+                                  << ", maxValue=" << maxValue);
+  if (value.y > maxValue)
+    D_THROW(std::runtime_error, "value.y of 2UI is too high, type="
+                                  << _errorHint << ", value=" << value.y
+                                  << ", maxValue=" << maxValue);
+  if (value.z > maxValue)
+    D_THROW(std::runtime_error, "value.z of 2UI is too high, type="
+                                  << _errorHint << ", value=" << value.z
                                   << ", maxValue=" << maxValue);
   return value;
 }

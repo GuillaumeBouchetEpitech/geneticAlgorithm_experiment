@@ -12,13 +12,15 @@ Texture::~Texture() { dispose(); }
 
 //
 
-void Texture::setFromImage(const Image& image, bool pixelated /*= false*/,
-                           bool repeat /*= false*/) {
-  allocateBlank(image.getSize(), pixelated, repeat, image.getPixels());
+void Texture::setFromImage(const Image& image,
+                           Quality quality /*= Quality::pixelated*/,
+                           Pattern pattern /*= Pattern::clamped*/) {
+  allocateBlank(image.getSize(), quality, pattern, image.getPixels());
 }
 
-void Texture::allocateBlank(const glm::uvec2& size, bool pixelated /*= false*/,
-                            bool repeat /*= false*/,
+void Texture::allocateBlank(const glm::uvec2& size,
+                            Quality quality /*= Quality::pixelated*/,
+                            Pattern pattern /*= Pattern::clamped*/,
                             const void* pixels /*= nullptr*/) {
   if (size.x == 0 || size.y == 0)
     D_THROW(std::runtime_error,
@@ -38,12 +40,12 @@ void Texture::allocateBlank(const glm::uvec2& size, bool pixelated /*= false*/,
 
   GlContext::uploadPixels(uint32_t(_size.x), uint32_t(_size.y), pixels);
 
-  GlContext::setTextureAsRepeat(repeat);
+  GlContext::setTextureAsRepeat(pattern == Pattern::repeat);
 
-  if (pixelated) {
+  if (quality == Quality::pixelated) {
     GlContext::setTextureAsPixelated();
   } else {
-    GlContext::setTextureAsSmoothed(true);
+    GlContext::setTextureAsSmoothed(quality == Quality::smoothedAndMipMapped);
   }
 
   GlContext::bindTexture(0);

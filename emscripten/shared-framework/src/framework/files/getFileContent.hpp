@@ -4,5 +4,6 @@
 #include <string>
 
 namespace FileUtils {
-bool getFileContent(const std::string& filename, std::string& source);
+bool getFileContent(const std::string& filename, std::string& outFileContent);
+
 }

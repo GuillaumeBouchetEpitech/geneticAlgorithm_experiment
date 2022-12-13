@@ -61,6 +61,7 @@ public:
   static void setUniform(int location, int x, int y, int z);
   static void setUniform(int location, int x, int y, int z, int w);
   static void setUniform(int location, float value);
+  static void setUniform(int location, float x, float y);
   static void setUniform(int location, float x, float y, float z);
   static void setUniform(int location, float x, float y, float z, float w);
   static void setUniform(int location, const glm::mat4& matrix);

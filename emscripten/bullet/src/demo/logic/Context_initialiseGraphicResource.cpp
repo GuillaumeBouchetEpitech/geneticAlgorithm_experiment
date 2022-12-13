@@ -173,10 +173,9 @@ void Context::initialiseGraphicResource() {
 
   { // font
 
-    const bool pixelated = true;
-    const bool repeat = false;
     graphic.resourceManager.createTexture(0, "assets/textures/ascii_font.png",
-                                          pixelated, repeat);
+                                          Texture::Quality::pixelated,
+                                          Texture::Pattern::clamped);
 
   } // font
 }

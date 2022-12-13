@@ -35,8 +35,8 @@ public:
 public:
   void initialise(const glm::uvec2& frameSize);
   void dispose();
-  void bind();
-  void unbind();
+  void startRecording();
+  void stopRecording();
   void render();
   void resize(const glm::uvec2& frameSize);
   void update(float elapsedTime);

@@ -16,8 +16,13 @@ public:
 
 public:
   static float getNormalisedValue();
-  static int getRangedValue(int min, int max);
-  static float getRangedValue(float min, float max);
+
+  template <typename T> static T getRangedValue(T min, T max) {
+    return T(getRangedValue<double>(double(min), double(max)));
+  }
 };
+
+template <>
+double RandomNumberGenerator::getRangedValue<double>(double min, double max);
 
 using RNG = RandomNumberGenerator;

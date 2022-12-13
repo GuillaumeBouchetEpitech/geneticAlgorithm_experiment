@@ -316,15 +316,17 @@ public:
   Type& operator[](int index) { return _data[_getIndex(index)]; }
 
   const Type& at(std::size_t index) const {
-    if (index >= _size)
+    if (is_out_of_range(index))
       D_THROW(std::runtime_error, "out of range, index: " << index);
-    return _data[_getIndex(index)];
+    return _data[_getIndex(int(index))];
   }
   Type& at(std::size_t index) {
-    if (index >= _size)
+    if (is_out_of_range(index))
       D_THROW(std::runtime_error, "out of range, index: " << index);
-    return _data[_getIndex(index)];
+    return _data[_getIndex(int(index))];
   }
+
+  bool is_out_of_range(std::size_t index) const { return (index >= _size); }
 
   // const Type& at(std::size_t index) const
   // {

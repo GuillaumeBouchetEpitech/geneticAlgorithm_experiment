@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "framework/files/FileLoadFileCallback.hpp"
+#include "framework/files/FileManager.hpp"
+
 #include "framework/helpers/GLMath.hpp"
 
 #include <string>
@@ -31,6 +34,9 @@ private:
 
 public:
   ShaderProgram(const Definition& def);
+  ShaderProgram(const Definition& def, FileManager& fileManager);
+  ShaderProgram(const Definition& def,
+                const FileUtils::LoadCallback& loadFileCallback);
   ~ShaderProgram();
 
 public:
@@ -51,6 +57,7 @@ public:
   void setUniform(const char* name, int x, int y, int z) const;
   void setUniform(const char* name, int x, int y, int z, int w) const;
   void setUniform(const char* name, float value) const;
+  void setUniform(const char* name, float x, float y) const;
   void setUniform(const char* name, float x, float y, float z) const;
   void setUniform(const char* name, float x, float y, float z, float w) const;
   void setUniform(const char* name, const glm::vec3& vec3) const;
@@ -63,6 +70,7 @@ public:
   void setUniform(int location, int x, int y, int z) const;
   void setUniform(int location, int x, int y, int z, int w) const;
   void setUniform(int location, float value) const;
+  void setUniform(int location, float x, float y) const;
   void setUniform(int location, float x, float y, float z) const;
   void setUniform(int location, float x, float y, float z, float w) const;
   void setUniform(int location, const glm::vec3& vec3) const;

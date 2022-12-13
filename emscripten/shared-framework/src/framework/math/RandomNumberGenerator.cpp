@@ -18,11 +18,8 @@ float RandomNumberGenerator::getNormalisedValue() {
   return dist(_engine);
 }
 
-int RandomNumberGenerator::getRangedValue(int min, int max) {
-  return int(getRangedValue(float(min), float(max)));
-}
-
-float RandomNumberGenerator::getRangedValue(float min, float max) {
-  std::uniform_real_distribution<float> dist(min, max);
+template <>
+double RandomNumberGenerator::getRangedValue<double>(double min, double max) {
+  std::uniform_real_distribution<double> dist(min, max);
   return dist(_engine);
 }

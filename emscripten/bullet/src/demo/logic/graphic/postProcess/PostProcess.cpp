@@ -48,15 +48,16 @@ void PostProcess::initialise(const glm::uvec2& frameSize) {
   resize(frameSize);
 }
 
-void PostProcess::bind() {
+void PostProcess::startRecording() {
   _frameBuffer.bind();
+  GlContext::setViewport(0, 0, _frameSize.x, _frameSize.y);
   GlContext::clearColor(0, 0, 0, 0);
   GlContext::clearDepth(1.0f);
   GlContext::clear(asValue(GlContext::Buffers::color) |
                    asValue(GlContext::Buffers::depth));
 }
 
-void PostProcess::unbind() { FrameBuffer::unbind(); }
+void PostProcess::stopRecording() { FrameBuffer::unbind(); }
 
 void PostProcess::render() {
   GlContext::disable(GlContext::States::cullFace);
@@ -135,7 +136,8 @@ void PostProcess::resize(const glm::uvec2& frameSize) {
 
   {
 
-    _colorTexture.allocateBlank(_frameSize, true, false);
+    _colorTexture.allocateBlank(_frameSize, Texture::Quality::pixelated,
+                                Texture::Pattern::clamped);
     // _depthTexture.allocateDepth(_frameSize);
     _depthRenderBuffer.allocateDepth(_frameSize);
 

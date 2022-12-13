@@ -32,7 +32,7 @@ ResourceManager::createShader(int aliasCode,
             "resource manager new shader alias is duplicated, aliasCode="
               << aliasCode);
 
-  auto newShader = std::make_shared<ShaderProgram>(def);
+  auto newShader = std::make_shared<ShaderProgram>(def, _fileManager);
   _shadersMap[aliasCode] = newShader;
   _shaderDefsMap[shaderUniqueName] = aliasCode;
   return newShader;
@@ -51,12 +51,13 @@ std::shared_ptr<ShaderProgram> ResourceManager::getShader(int aliasCode) {
 //
 //
 
-std::shared_ptr<Texture>
-ResourceManager::createTexture(int aliasCode, const std::string& filename,
-                               bool pixelated /* = false */,
-                               bool repeat /* = false */) {
+std::shared_ptr<Texture> ResourceManager::createTexture(
+  int aliasCode, const std::string& filename,
+  Texture::Quality quality /*= Texture::Quality::pixelated*/,
+  Texture::Pattern pattern /*= Texture::Pattern::clamped*/) {
   std::stringstream sstr;
-  sstr << filename << "-pixelated=" << pixelated << "-repeat=" << repeat;
+  sstr << filename << "-quality=" << asValue(quality)
+       << "-repeat=" << asValue(pattern);
   std::string textureUniqueName = sstr.str();
 
   auto itDef = _textureDefsMap.find(textureUniqueName);
@@ -77,8 +78,8 @@ ResourceManager::createTexture(int aliasCode, const std::string& filename,
   auto newTexture = std::make_shared<Texture>();
 
   Image tmpImg;
-  tmpImg.load(filename);
-  newTexture->setFromImage(tmpImg, pixelated, repeat);
+  tmpImg.loadFromFile(_fileManager, filename);
+  newTexture->setFromImage(tmpImg, quality, pattern);
 
   _texturesMap[aliasCode] = newTexture;
   _textureDefsMap[textureUniqueName] = aliasCode;

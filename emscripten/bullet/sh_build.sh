@@ -10,8 +10,8 @@ func_do_clean() {
     echo "  mode=${mode}"
     echo "  platform=${platform}"
     echo ""
-    make build_mode="${mode}" build_platform="${platform}" fclean
     make build_mode="${mode}" build_platform="${platform}" fclean_ml
+    make build_mode="${mode}" build_platform="${platform}" fclean
 }
 
 func_do_build() {

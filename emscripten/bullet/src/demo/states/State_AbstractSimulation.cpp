@@ -141,6 +141,9 @@ void State_AbstractSimulation::resize(int width, int height) {
 
   graphic.camera.viewportSize = {width, height};
 
+  graphic.camera.main.hud.setOrthographic(0.0f, float(width), 0.0f,
+                                          float(height), -10.0f, +10.0f);
+
   graphic.postProcess.resize({width, height});
 }
 

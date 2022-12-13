@@ -4,12 +4,12 @@
 import Logger from "./utilities/Logger.js";
 
 const extractVarsFromUrl = () => {
-    const urlVarsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
-    const urlVars = {};
-    window.location.href.replace(urlVarsRegexp, (m, key, value) => {
-        urlVars[key] = value;
-    });
-    return urlVars;
+  const urlVarsRegexp = /[?&]+([^=&]+)=([^&]*)/gi;
+  const urlVars = {};
+  window.location.href.replace(urlVarsRegexp, (m, key, value) => {
+    urlVars[key] = value;
+  });
+  return urlVars;
 };
 
 const ensureWasmSupport = (logger, displayErrorText) => {
@@ -206,6 +206,14 @@ const onGlobalPageLoad = async () => {
     hide(errorText);
     show(mainCanvas);
   };
+  const resize = (width, height) => {
+    renderArea.style.width = `${width}px`;
+    renderArea.style.height = `${height}px`;
+    mainCanvas.width = width;
+    mainCanvas.height = height;
+    mainCanvas.style.width = `${width}px`;
+    mainCanvas.style.height = `${height}px`;
+  };
 
   //
   //
@@ -220,50 +228,34 @@ const onGlobalPageLoad = async () => {
     // const initialMemory = urlVars.initialMemory || 128;
   };
 
-  renderArea.style.width = `${config.width}px`;
-  renderArea.style.height = `${config.height}px`;
-  mainCanvas.width = config.width;
-  mainCanvas.height = config.height;
-  mainCanvas.style.width = `${config.width}px`;
-  mainCanvas.style.height = `${config.height}px`;
+  resize(config.width, config.height);
 
-  if (config.genomesPerCore != 30) {
+  const setupActiveButton = (currButton, className, genomesPerCore) => {
 
-    buttons.try_with_90_cars.disabled = false;
-    buttons.try_with_270_cars.disabled = true;
+    currButton.disabled = false;
 
-    // add blue class
-    if (!buttons.try_with_90_cars.classList.contains('blueButton'))
-      buttons.try_with_90_cars.classList.add('blueButton');
+    // add active class
+    if (!currButton.classList.contains(className))
+      currButton.classList.add(className);
 
     // remove grey class
-    if (buttons.try_with_90_cars.classList.contains('grayButton'))
-      buttons.try_with_90_cars.classList.remove('grayButton');
+    if (currButton.classList.contains('grayButton'))
+      currButton.classList.remove('grayButton');
 
     // handle events
-    buttons.try_with_90_cars.addEventListener("click", () => {
+    currButton.addEventListener("click", () => {
       // simple reload
-      window.location.href = window.location.pathname + `?genomesPerCore=${30}`;
+      window.location.href = window.location.pathname + `?genomesPerCore=${genomesPerCore}`;
     });
   }
+
+  if (config.genomesPerCore != 30) {
+    buttons.try_with_270_cars.disabled = true;
+    setupActiveButton(buttons.try_with_90_cars, 'blueButton', 30);
+  }
   else {
-
     buttons.try_with_90_cars.disabled = true;
-    buttons.try_with_270_cars.disabled = false;
-
-    // add red class
-    if (!buttons.try_with_270_cars.classList.contains('redButton'))
-      buttons.try_with_270_cars.classList.add('redButton');
-
-    // remove grey class
-    if (buttons.try_with_270_cars.classList.contains('grayButton'))
-      buttons.try_with_270_cars.classList.remove('grayButton');
-
-    // handle events
-    buttons.try_with_270_cars.addEventListener("click", () => {
-      // simple reload
-      window.location.href = window.location.pathname + `?genomesPerCore=${90}`;
-    });
+    setupActiveButton(buttons.try_with_270_cars, 'redButton', 90);
   }
 
   //
