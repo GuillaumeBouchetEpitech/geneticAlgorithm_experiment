@@ -27,13 +27,14 @@ public:
 
 private:
   uint32_t _frameBufferId = 0;
+  bool _isLinked = false;
 
 public:
   FrameBuffer() = default;
   ~FrameBuffer();
 
 public:
-  void initialise(const Definition& def);
+  bool initialise(const Definition& def, bool throwException = true);
   void dispose();
 
 private:
@@ -49,6 +50,7 @@ public:
 
 public:
   bool isValid() const;
+  bool isLinked() const;
 
 public:
   void getAsImage(Image& image, uint32_t posX, uint32_t posY, uint32_t width,

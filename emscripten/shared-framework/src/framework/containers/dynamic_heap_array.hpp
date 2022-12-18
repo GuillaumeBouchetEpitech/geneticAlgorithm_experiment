@@ -142,7 +142,7 @@ private:
 
 private:
   // allocate memory only, will not call any constructor
-  Type* allocateMemory(std::size_t size) {
+  Type* allocate_memory(std::size_t size) {
     // Type* newData = (Type*) ::operator new (size * sizeof(Type));
 
     Allocator alloc;
@@ -152,7 +152,7 @@ private:
   }
 
   // deallocate memory only, will not call any destructor
-  void deallocateMemory(Type* data, std::size_t size) {
+  void deallocate_memory(Type* data, std::size_t size) {
     // ::operator delete(data, size * sizeof(Type));
 
     Allocator alloc;
@@ -160,7 +160,7 @@ private:
   }
 
   // call the move constructor only, do not allocate memory
-  void callMoveConstructor(Type* data, std::size_t index, Type&& value) {
+  void call_move_constructor(Type* data, std::size_t index, Type&& value) {
     // new (&data[index]) Type(std::move(value));
 
     Allocator alloc;
@@ -169,7 +169,8 @@ private:
 
   // call the move constructor only, do not allocate memory
   template <typename... Args>
-  Type& emplaceMoveConstructor(Type* data, std::size_t index, Args&&... args) {
+  Type& emplace_move_constructor(Type* data, std::size_t index,
+                                 Args&&... args) {
     // new (&data[index]) Type(std::forward<Args>(args)...);
 
     Allocator alloc;
@@ -178,7 +179,7 @@ private:
   }
 
   // call the destructor only, do not deallocate memory
-  void callDestructor(std::size_t index) {
+  void call_destructor(std::size_t index) {
     // _data[index].~Type();
 
     Allocator alloc;
@@ -212,7 +213,7 @@ public:
 
   ~dynamic_heap_array() {
     clear();
-    deallocateMemory(_data, _capacity);
+    deallocate_memory(_data, _capacity);
   }
 
 private:
@@ -247,7 +248,7 @@ public:
     if (_size == _capacity)
       _realloc(_capacity * 2);
 
-    callMoveConstructor(_data, _size, std::move(value));
+    call_move_constructor(_data, _size, std::move(value));
 
     ++_size;
   }
@@ -257,7 +258,7 @@ public:
       _realloc(_capacity * 2);
 
     Type& result =
-      emplaceMoveConstructor(_data, _size, std::forward<Args>(args)...);
+      emplace_move_constructor(_data, _size, std::forward<Args>(args)...);
 
     ++_size;
 
@@ -270,12 +271,12 @@ public:
 
     --_size;
 
-    callDestructor(_size);
+    call_destructor(_size);
   }
 
   void clear() {
     for (std::size_t ii = 0; ii < _size; ++ii)
-      callDestructor(ii);
+      call_destructor(ii);
 
     _size = 0;
   }
@@ -285,7 +286,7 @@ public:
   void unsorted_erase(std::size_t index) {
     if (_size > 1 && index + 1 < _size) {
       // move target to the back
-      callMoveConstructor(_data, index, std::move(_data[_size - 1]));
+      call_move_constructor(_data, index, std::move(_data[_size - 1]));
     }
     // remove the back
     pop_back();
@@ -293,11 +294,11 @@ public:
 
   void sorted_erase(std::size_t index) {
     // call target destructor
-    callDestructor(index);
+    call_destructor(index);
 
     // move data after the target
     for (std::size_t ii = index; ii < _size; ++ii)
-      callMoveConstructor(_data, ii, std::move(_data[ii + 1]));
+      call_move_constructor(_data, ii, std::move(_data[ii + 1]));
 
     --_size;
   }
@@ -306,48 +307,22 @@ public:
   bool empty() const { return _size == 0; }
   std::size_t size() const { return _size; }
   std::size_t capacity() const { return _capacity; }
+  bool is_out_of_range(std::size_t index) const { return (index >= _size); }
 
 public:
-  // const Type& operator[](std::size_t index) const { return
-  // _data[_getIndex(index)]; } Type& operator[](std::size_t index) { return
-  // _data[_getIndex(index)]; }
-
   const Type& operator[](int index) const { return _data[_getIndex(index)]; }
   Type& operator[](int index) { return _data[_getIndex(index)]; }
 
   const Type& at(std::size_t index) const {
     if (is_out_of_range(index))
       D_THROW(std::runtime_error, "out of range, index: " << index);
-    return _data[_getIndex(int(index))];
+    return _data[index];
   }
   Type& at(std::size_t index) {
     if (is_out_of_range(index))
       D_THROW(std::runtime_error, "out of range, index: " << index);
-    return _data[_getIndex(int(index))];
+    return _data[index];
   }
-
-  bool is_out_of_range(std::size_t index) const { return (index >= _size); }
-
-  // const Type& at(std::size_t index) const
-  // {
-  //   if (!(index < _size))
-  //   {
-  //     std::cerr << "index " << index << std::endl;
-  //     std::cerr << "_size " << _size << std::endl;
-  //     throw std::out_of_range("out of range");
-  //   }
-  //   return _data[index];
-  // }
-  // Type& at(std::size_t index)
-  // {
-  //   if (!(index < _size))
-  //   {
-  //     std::cerr << "index " << index << std::endl;
-  //     std::cerr << "_size " << _size << std::endl;
-  //     throw std::out_of_range("out of range");
-  //   }
-  //   return _data[index];
-  // }
 
   const Type& front() const { return _data[0]; }
   Type& front() { return _data[0]; }
@@ -371,15 +346,15 @@ private:
     if (newCapacity < _capacity)
       return;
 
-    Type* newData = allocateMemory(newCapacity);
+    Type* newData = allocate_memory(newCapacity);
 
     for (std::size_t ii = 0; ii < _size; ++ii)
-      callMoveConstructor(newData, ii, std::move(_data[ii]));
+      call_move_constructor(newData, ii, std::move(_data[ii]));
 
     for (std::size_t ii = 0; ii < _size; ++ii)
-      callDestructor(ii);
+      call_destructor(ii);
 
-    deallocateMemory(_data, _capacity);
+    deallocate_memory(_data, _capacity);
 
     _data = newData;
     _capacity = newCapacity;

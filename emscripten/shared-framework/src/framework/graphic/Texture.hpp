@@ -24,9 +24,31 @@ public:
     repeat,
   };
 
+public:
+  enum class DepthFormat {
+    depth16,
+    depth24,
+    depth32,
+    depth32f,
+  };
+
+  enum class DepthType {
+    unsingedShort,
+    unsingedInt,
+    float32,
+  };
+
 private:
   unsigned int _textureId = 0;
   glm::uvec2 _size = {0, 0};
+
+  struct DepthCompatibleValues {
+    bool computed = false;
+    DepthFormat depthFormat = DepthFormat::depth32;
+    DepthType depthType = DepthType::unsingedInt;
+  };
+
+  static DepthCompatibleValues s_depthCompatibleValues;
 
 public:
   Texture() = default;
@@ -39,7 +61,10 @@ public:
                      Quality quality = Quality::pixelated,
                      Pattern pattern = Pattern::clamped,
                      const void* pixels = nullptr);
-  void allocateDepth(const glm::uvec2& size);
+  void allocateDepth(const glm::uvec2& size, DepthFormat depthFormat,
+                     DepthType depthType);
+  void allocateCompatibleDepth(const glm::uvec2& size);
+  static void ensureCompatibleDepth();
   void dispose();
 
   void getAsImage(Image& image);

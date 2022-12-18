@@ -1,12 +1,14 @@
 
 #include "Scene.hpp"
 
+#include "framework/containers/static_heap_grid_array.hpp"
 #include "framework/graphic/GlContext.hpp"
+#include "framework/math/constants.hpp"
 
 void Scene::_renderLeadingCarSensors() {
   auto& context = Context::get();
   const auto& leaderCar = context.logic.leaderCar;
-  auto& stackRenderer = context.graphic.stackRenderers.wireframes;
+  auto& stackRenderer = context.graphic.scene.stackRenderers.wireframes;
 
   if (auto leaderCarData = leaderCar.leaderData()) {
     // leading car alive?
@@ -57,8 +59,8 @@ void Scene::_renderFloor(const Camera& camera) {
   // transparency friendly
   GlContext::disable(GlContext::States::depthTest);
 
-  graphic.backGroundCylindersRenderer.render(camera.getTarget());
-  graphic.floorRenderer.render();
+  graphic.scene.backGroundTorusRenderer.render(camera.getTarget());
+  graphic.scene.floorRenderer.render();
 
   GlContext::disable(GlContext::States::cullFace);
   GlContext::enable(GlContext::States::depthTest);

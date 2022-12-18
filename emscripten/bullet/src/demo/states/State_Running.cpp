@@ -1,12 +1,10 @@
 
 #include "demo/defines.hpp"
 
+#include "StateManager.hpp"
 #include "State_Running.hpp"
 
-#include "StateManager.hpp"
-
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphic/Scene.hpp"
 
 #include "framework/helpers/GLMath.hpp"
@@ -80,12 +78,12 @@ void State_Running::update(int deltaTime) {
     } // camera tracking
 
     {
-      graphic.particleManager.update(elapsedTime);
-      graphic.backGroundCylindersRenderer.update(elapsedTime);
-      graphic.animatedCircuitRenderer.update(elapsedTime);
-      graphic.flockingManager.update();
-      graphic.topologyRenderer.update(elapsedTime);
-      graphic.postProcess.update(elapsedTime);
+      graphic.scene.particleManager.update(elapsedTime);
+      graphic.scene.backGroundTorusRenderer.update(elapsedTime);
+      graphic.scene.animatedCircuitRenderer.update(elapsedTime);
+      graphic.scene.flockingManager.update();
+      graphic.hud.topologyRenderer.update(elapsedTime);
+      graphic.hud.animationManager.update(elapsedTime);
     }
   }
 }

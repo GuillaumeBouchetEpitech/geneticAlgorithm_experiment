@@ -108,10 +108,11 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def) {
         const uint32_t rowIndex =
           (uint32_t(attr.index) + kk * rowSize) * uint32_t(sizeof(float));
 
-        GlContext::enableVertexAttribArray(attrId);
-        GlContext::vertexAttribPointer(attrId, rowSize, stride, rowIndex);
+        GlContext::VertexBufferObject::enableAttribArray(attrId);
+        GlContext::VertexBufferObject::setAttribPointer(attrId, rowSize, stride,
+                                                        rowIndex);
         if (vbo.instanced) {
-          GlContext::enableVertexAttribDivisor(attrId);
+          GlContext::VertexBufferObject::enableAttribDivisor(attrId);
 
           if (!_isInstanced)
             _isInstanced = true;
@@ -130,7 +131,7 @@ void Geometry::updateBuffer(uint32_t index, const void* data, uint32_t dataSize,
 
   _vbo.bind(index);
 
-  GlContext::bufferData(data, dataSize, dynamic);
+  GlContext::VertexBufferObject::uploadBuffer(data, dataSize, dynamic);
 
   VertexBufferObject::unbind();
 }
@@ -144,17 +145,19 @@ void Geometry::render() const {
 
   _vao.bind();
 
-  GlContext::Primitives primitive = GlContext::Primitives::lines;
+  GlContext::VertexBufferObject::Primitives primitive =
+    GlContext::VertexBufferObject::Primitives::lines;
   if (_primitiveType == PrimitiveType::triangles)
-    primitive = GlContext::Primitives::triangles;
+    primitive = GlContext::VertexBufferObject::Primitives::triangles;
   else if (_primitiveType == PrimitiveType::line_strip)
-    primitive = GlContext::Primitives::line_strip;
+    primitive = GlContext::VertexBufferObject::Primitives::line_strip;
 
   if (_isInstanced)
-    GlContext::drawArraysInstanced(primitive, _primitiveStart, _primitiveCount,
-                                   _instanceCount);
+    GlContext::VertexBufferObject::drawInstancedArrays(
+      primitive, _primitiveStart, _primitiveCount, _instanceCount);
   else
-    GlContext::drawArrays(primitive, _primitiveStart, _primitiveCount);
+    GlContext::VertexBufferObject::drawArrays(primitive, _primitiveStart,
+                                              _primitiveCount);
 
   _vao.unbind();
 }

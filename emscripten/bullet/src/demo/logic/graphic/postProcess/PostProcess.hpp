@@ -7,6 +7,8 @@
 #include "framework/graphic/ShaderProgram.hpp"
 #include "framework/graphic/Texture.hpp"
 
+#include "framework/graphic/camera/Camera.hpp"
+
 #include "framework/helpers/GLMath.hpp"
 
 #include <memory>
@@ -16,7 +18,7 @@ private:
   glm::uvec2 _frameSize = {800, 600};
 
   Texture _colorTexture;
-  Texture _depthTexture;
+  Texture _outlineTexture;
   RenderBuffer _depthRenderBuffer;
   FrameBuffer _frameBuffer;
 
@@ -28,17 +30,19 @@ private:
     float timeLeft = 0.0f;
   } _animation;
 
+  Camera::MatricesData _matricesData;
+
 public:
   PostProcess() = default;
   ~PostProcess() = default;
 
 public:
+  void setMatricesData(const Camera::MatricesData& matricesData);
+
   void initialise(const glm::uvec2& frameSize);
   void dispose();
   void startRecording();
   void stopRecording();
   void render();
   void resize(const glm::uvec2& frameSize);
-  void update(float elapsedTime);
-  void animate();
 };

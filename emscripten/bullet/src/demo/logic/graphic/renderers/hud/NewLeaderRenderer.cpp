@@ -41,8 +41,8 @@ void NewLeaderRenderer::renderWireframe() {
 
   glm::vec2 textPos = {_screenCoord.x + 50, _screenCoord.y + 50};
 
-  Context::get().graphic.stackRenderers.wireframes.pushLine(_screenCoord,
-                                                            textPos, {1, 1, 1});
+  Context::get().graphic.hud.stackRenderers.wireframes.pushLine(
+    _screenCoord, textPos, {1, 1, 1});
 }
 
 void NewLeaderRenderer::renderHudText() {
@@ -51,6 +51,6 @@ void NewLeaderRenderer::renderHudText() {
 
   glm::vec2 textPos = {_screenCoord.x + 50, _screenCoord.y + 50};
 
-  Context::get().graphic.textRenderer.push(textPos, "NEW\nLEADER", glm::vec3(1),
-                                           1.1f);
+  Context::get().graphic.hud.textRenderer.push(textPos, "NEW\nLEADER",
+                                               glm::vec4(1), 1.1f);
 }

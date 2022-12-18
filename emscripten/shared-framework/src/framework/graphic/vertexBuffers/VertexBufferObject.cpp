@@ -21,14 +21,15 @@ void VertexBufferObject::allocate(std::size_t size /* = 1 */) {
     deallocate();
 
   _ids.resize(size);
-  GlContext::genBuffers(uint32_t(_ids.size()), _ids.data());
+  GlContext::VertexBufferObject::generateMany(uint32_t(_ids.size()),
+                                              _ids.data());
 }
 
 void VertexBufferObject::deallocate() {
   if (_ids.empty())
     D_THROW(std::runtime_error, "not allocated");
 
-  GlContext::deleteBuffers(uint32_t(_ids.size()), _ids.data());
+  GlContext::VertexBufferObject::deleteMany(uint32_t(_ids.size()), _ids.data());
   _ids.clear();
 }
 
@@ -42,7 +43,7 @@ void VertexBufferObject::bind(unsigned int index /* = 0 */) const {
     D_THROW(std::out_of_range,
             "index out of range, input=" << index << ", max=" << _ids.size());
 
-  GlContext::bindBuffer(_ids[index]);
+  GlContext::VertexBufferObject::bind(_ids[index]);
 }
 
-void VertexBufferObject::unbind() { GlContext::bindBuffer(0); }
+void VertexBufferObject::unbind() { GlContext::VertexBufferObject::bind(0); }

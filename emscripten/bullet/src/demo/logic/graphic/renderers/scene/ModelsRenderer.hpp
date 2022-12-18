@@ -14,12 +14,13 @@
 
 class ModelsRenderer {
 private:
-  std::shared_ptr<ShaderProgram> _shader;
+  struct RenderPass {
+    std::shared_ptr<ShaderProgram> shader;
+    Geometry geometry;
+  };
 
-  struct Geometries {
-    Geometry cars;
-    Geometry wheels;
-  } _geometries;
+  RenderPass _chassis;
+  RenderPass _wheels;
 
   struct Attributes {
     glm::mat4 tranform;

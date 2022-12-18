@@ -1,17 +1,15 @@
 
 #include "Context.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
-
 #include "demo/defines.hpp"
-
 #if defined D_WEB_WEBWORKER_BUILD
 #include "demo/logic/simulation/webworker/WebWorkersSimulation.hpp"
 #else
 #include "demo/logic/simulation/pthread/PthreadSimulation.hpp"
 #endif
 
+#include "framework/ErrorHandler.hpp"
+#include "framework/TraceLogger.hpp"
 #include "framework/graphic/GlContext.hpp"
 
 #include <iomanip>
@@ -43,15 +41,21 @@ void Context::initialise(unsigned int width, unsigned int height,
 
   initialiseGraphicResource();
 
-  graphic.stackRenderers.wireframes.initialise();
-  graphic.stackRenderers.triangles.initialise();
-  graphic.particleManager.initialise();
-  graphic.textRenderer.initialise();
-  graphic.modelsRenderer.initialise();
-  graphic.flockingManager.initialise();
-  graphic.carTailsRenderer.initialise();
+  graphic.hud.stackRenderers.wireframes.initialise(
+    ShaderIds::stackRendererHud, GeometryIds::stackRendererWireframesHud);
+  graphic.hud.stackRenderers.triangles.initialise(
+    ShaderIds::stackRendererHud, GeometryIds::stackRendererTrianglesHud);
+  graphic.scene.stackRenderers.wireframes.initialise(
+    ShaderIds::stackRendererScene, GeometryIds::stackRendererWireframesScene);
+  graphic.scene.stackRenderers.triangles.initialise(
+    ShaderIds::stackRendererScene, GeometryIds::stackRendererTrianglesScene);
+  graphic.scene.particleManager.initialise();
+  graphic.hud.textRenderer.initialise();
+  graphic.scene.modelsRenderer.initialise();
+  graphic.scene.flockingManager.initialise();
+  graphic.scene.carTailsRenderer.initialise();
 
-  graphic.postProcess.initialise({width, height});
+  graphic.hud.postProcess.initialise({width, height});
 
   //
   //

@@ -2,16 +2,10 @@
 #include "ModelsRenderer.hpp"
 
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/graphic/loaders/loadObjModel.hpp"
-
 #include "framework/math/RandomNumberGenerator.hpp"
 
 namespace {
@@ -34,55 +28,46 @@ void updateVerticesNormals(loader::ModelVertices& vertices) {
 } // namespace
 
 void ModelsRenderer::initialise() {
-  _shader =
-    Context::get().graphic.resourceManager.getShader(asValue(Shaders::models));
 
-  {
-    GeometryBuilder geometryBuilder;
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f, 6)
-      .addVbo()
-      .setVboAsInstanced()
-      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f, 0)
-      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec3f, 16);
+  { // chassis geometry (instanced)
 
-    geometryBuilder.build(_geometries.cars);
-    geometryBuilder.build(_geometries.wheels);
+    loader::ModelVertices modelVertices;
+    loader::loadObjModel("./assets/model/CarNoWheels.obj", "./assets/model/",
+                         modelVertices);
 
-    { // chassis geometry (instanced)
+    updateVerticesNormals(modelVertices);
 
-      loader::ModelVertices modelVertices;
-      loader::loadObjModel("./assets/model/CarNoWheels.obj", "./assets/model/",
-                           modelVertices);
+    _chassis.shader = resourceManager.getShader(asValue(ShaderIds::modelsLit));
 
-      updateVerticesNormals(modelVertices);
+    auto geoDef =
+      resourceManager.getGeometryDefinition(asValue(GeometryIds::modelsLit));
+    _chassis.geometry.initialise(*_chassis.shader, geoDef);
+    _chassis.geometry.updateBuffer(0, modelVertices);
+    _chassis.geometry.setPrimitiveCount(modelVertices.size());
+  }
 
-      _geometries.cars.updateBuffer(0, modelVertices);
-      _geometries.cars.setPrimitiveCount(modelVertices.size());
-    }
+  { // wheel geometry (instanced)
 
-    { // wheel geometry (instanced)
+    loader::ModelVertices modelVertices;
+    loader::loadObjModel("./assets/model/CarWheel.obj", "./assets/model/",
+                         modelVertices);
 
-      loader::ModelVertices modelVertices;
-      loader::loadObjModel("./assets/model/CarWheel.obj", "./assets/model/",
-                           modelVertices);
+    updateVerticesNormals(modelVertices); // TODO: useful?
 
-      updateVerticesNormals(modelVertices);
+    _wheels.shader = resourceManager.getShader(asValue(ShaderIds::models));
 
-      _geometries.wheels.updateBuffer(0, modelVertices);
-      _geometries.wheels.setPrimitiveCount(modelVertices.size());
-    }
+    auto geoDef =
+      resourceManager.getGeometryDefinition(asValue(GeometryIds::models));
+    _wheels.geometry.initialise(*_wheels.shader, geoDef);
+    _wheels.geometry.updateBuffer(0, modelVertices);
+    _wheels.geometry.setPrimitiveCount(modelVertices.size());
   }
 }
 
 void ModelsRenderer::render(const Camera& cameraInstance) {
-  if (!_shader)
+  if (!_chassis.shader || !_wheels.shader)
     D_THROW(std::runtime_error, "shader not setup");
 
   const auto& logic = Context::get().logic;
@@ -95,10 +80,6 @@ void ModelsRenderer::render(const Camera& cameraInstance) {
   const IFrustumCulling& frustumCulling = cameraInstance.getFrustumCulling();
 
   const auto& matricesData = cameraInstance.getMatricesData();
-
-  _shader->bind();
-  _shader->setUniform("u_projectionMatrix", matricesData.projection);
-  _shader->setUniform("u_modelViewMatrix", matricesData.view);
 
   _modelsChassisMatrices.clear();
   _modelWheelsMatrices.clear();
@@ -147,14 +128,21 @@ void ModelsRenderer::render(const Camera& cameraInstance) {
   }
 
   if (!_modelsChassisMatrices.empty()) {
-    _geometries.cars.updateBuffer(1, _modelsChassisMatrices);
-    _geometries.cars.setInstancedCount(_modelsChassisMatrices.size());
-    _geometries.cars.render();
+    _chassis.shader->bind();
+    _chassis.shader->setUniform("u_projectionMatrix", matricesData.projection);
+    _chassis.shader->setUniform("u_modelViewMatrix", matricesData.view);
+
+    _chassis.geometry.updateBuffer(1, _modelsChassisMatrices);
+    _chassis.geometry.setInstancedCount(_modelsChassisMatrices.size());
+    _chassis.geometry.render();
   }
 
   if (!_modelWheelsMatrices.empty()) {
-    _geometries.wheels.updateBuffer(1, _modelWheelsMatrices);
-    _geometries.wheels.setInstancedCount(_modelWheelsMatrices.size());
-    _geometries.wheels.render();
+    _wheels.shader->bind();
+    _wheels.shader->setUniform("u_composedMatrix", matricesData.composed);
+
+    _wheels.geometry.updateBuffer(1, _modelWheelsMatrices);
+    _wheels.geometry.setInstancedCount(_modelWheelsMatrices.size());
+    _wheels.geometry.render();
   }
 }

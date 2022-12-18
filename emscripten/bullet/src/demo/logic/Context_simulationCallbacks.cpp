@@ -1,8 +1,6 @@
 
-#include "demo/defines.hpp"
-
 #include "Context.hpp"
-
+#include "demo/defines.hpp"
 #include "demo/states/StateManager.hpp"
 
 #include <iomanip>
@@ -83,14 +81,14 @@ void Context::initialiseSimulationCallbacks() {
       glm::vec4 carPos =
         carData.liveTransforms.chassis * glm::vec4(extraHeight, 1.0f);
 
-      graphic.particleManager.emitParticles(carPos, carData.velocity);
+      graphic.scene.particleManager.emitParticles(carPos, carData.velocity);
     });
 
   logic.simulation->setOnGenerationEndCallback([this](bool isSmarter) -> void {
     logic.fitnessStats.update(logic.simulation->getBestGenome().fitness);
 
     if (isSmarter)
-      graphic.carTailsRenderer.updateLatestTrail();
+      graphic.scene.carTailsRenderer.updateLatestTrail();
 
     StateManager::get()->changeState(StateManager::States::EndGeneration);
 

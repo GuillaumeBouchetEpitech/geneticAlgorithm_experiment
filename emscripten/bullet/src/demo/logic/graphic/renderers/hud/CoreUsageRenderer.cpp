@@ -1,9 +1,9 @@
 
 #include "CoreUsageRenderer.hpp"
 
-#include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphic/helpers/writeTime.hpp"
+
+#include "demo/logic/Context.hpp"
 
 namespace {
 
@@ -17,7 +17,7 @@ void CoreUsageRenderer::renderWireframe() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  auto& stackRenderers = graphic.stackRenderers;
+  auto& stackRenderers = graphic.hud.stackRenderers;
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
@@ -94,7 +94,7 @@ void CoreUsageRenderer::renderHudText() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
   auto& logic = context.logic;
-  auto& textRenderer = graphic.textRenderer;
+  auto& textRenderer = graphic.hud.textRenderer;
   auto& profileData = logic.cores.profileData;
 
   {
@@ -111,7 +111,7 @@ void CoreUsageRenderer::renderHudText() {
 #endif
 
     std::string str = sstr.str();
-    textRenderer.push({position.x, position.y}, str, glm::vec3(1), 1.0f);
+    textRenderer.push({position.x, position.y}, str, glm::vec4(1), 1.0f);
   }
 
   {
@@ -122,9 +122,9 @@ void CoreUsageRenderer::renderHudText() {
     sstr << "CPU time: " << writeTime(totalDelta);
     std::string str = sstr.str();
 
-    const glm::vec3 textColor =
-      profileData.getAllTimeMaxDelta() > k_slowdownDelta ? glm::vec3(1, 0, 0)
-                                                         : glm::vec3(1, 1, 1);
+    const glm::vec4 textColor =
+      profileData.getAllTimeMaxDelta() > k_slowdownDelta ? glm::vec4(1, 0, 0, 1)
+                                                         : glm::vec4(1, 1, 1, 1);
 
     textRenderer.push({position.x, position.y - 16}, str, textColor, 1.0f);
   }

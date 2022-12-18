@@ -2,16 +2,10 @@
 #include "ParticleManager.hpp"
 
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphic/helpers/generateSphereVerticesFilled.hpp"
-
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/math/RandomNumberGenerator.hpp"
 
 namespace /*anonymous*/
@@ -48,36 +42,25 @@ ParticleManager::TrailParticle::TrailParticle(const glm::vec3& position,
 }
 
 void ParticleManager::initialise() {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::particles));
 
-  {
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    GeometryBuilder geometryBuilder;
+  _shader = resourceManager.getShader(asValue(ShaderIds::particles));
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVbo()
-      .setVboAsInstanced()
-      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 3)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 4);
+  auto geoDef =
+    resourceManager.getGeometryDefinition(asValue(GeometryIds::particles));
 
-    std::vector<glm::vec3> particlesVertices;
+  std::vector<glm::vec3> particlesVertices;
 
-    generateSphereVerticesFilled(0.5f, 0, particlesVertices);
-    geometryBuilder.build(_geometrySmallSphere);
-    _geometrySmallSphere.updateBuffer(0, particlesVertices);
-    _geometrySmallSphere.setPrimitiveCount(particlesVertices.size());
+  generateSphereVerticesFilled(0.5f, 0, particlesVertices);
+  _geometrySmallSphere.initialise(*_shader, geoDef);
+  _geometrySmallSphere.updateBuffer(0, particlesVertices);
+  _geometrySmallSphere.setPrimitiveCount(particlesVertices.size());
 
-    generateSphereVerticesFilled(0.5f, 1, particlesVertices);
-    geometryBuilder.build(_geometryBigSphere);
-    _geometryBigSphere.updateBuffer(0, particlesVertices);
-    _geometryBigSphere.setPrimitiveCount(particlesVertices.size());
-  }
+  generateSphereVerticesFilled(0.5f, 1, particlesVertices);
+  _geometryBigSphere.initialise(*_shader, geoDef);
+  _geometryBigSphere.updateBuffer(0, particlesVertices);
+  _geometryBigSphere.setPrimitiveCount(particlesVertices.size());
 
   _trailParticles.pre_allocate(2048);
   _smallSphereInstances.reserve(2048); // pre-allocate
@@ -219,7 +202,7 @@ void ParticleManager::render() {
   }
 
   {
-    auto& stackRenderer = Context::get().graphic.stackRenderers.triangles;
+    auto& stackRenderer = Context::get().graphic.scene.stackRenderers.triangles;
 
     for (auto& trailParticle : _trailParticles) {
       // update scale

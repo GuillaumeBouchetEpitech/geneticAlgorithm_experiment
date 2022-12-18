@@ -20,14 +20,16 @@ void VertexArrayObject::allocate(unsigned int size /* = 1 */) {
     deallocate();
 
   _vaoIds.resize(size);
-  GlContext::genVertexArrays(uint32_t(_vaoIds.size()), _vaoIds.data());
+  GlContext::VertexArrayObject::generateMany(uint32_t(_vaoIds.size()),
+                                             _vaoIds.data());
 }
 
 void VertexArrayObject::deallocate() {
   if (_vaoIds.empty())
     D_THROW(std::runtime_error, "not allocated");
 
-  GlContext::deleteVertexArrays(uint32_t(_vaoIds.size()), _vaoIds.data());
+  GlContext::VertexArrayObject::deleteMany(uint32_t(_vaoIds.size()),
+                                           _vaoIds.data());
   _vaoIds.clear();
 }
 
@@ -39,9 +41,9 @@ void VertexArrayObject::bind(unsigned int index /* = 0 */) const {
     D_THROW(std::out_of_range, "index out of range, input=" << index << ", max="
                                                             << _vaoIds.size());
 
-  GlContext::bindVertexArray(_vaoIds[index]);
+  GlContext::VertexArrayObject::bind(_vaoIds[index]);
 }
 
-void VertexArrayObject::unbind() { GlContext::bindVertexArray(0); }
+void VertexArrayObject::unbind() { GlContext::VertexArrayObject::bind(0); }
 
 bool VertexArrayObject::isAllocated() const { return !_vaoIds.empty(); }

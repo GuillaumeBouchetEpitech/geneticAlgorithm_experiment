@@ -76,75 +76,66 @@ ShaderProgram::ShaderProgram(const Definition& def,
 
   if (!utilities::getShaderSource(def.filenames.vertex, vertexSourceCode,
                                   loadFileCallback))
-    D_THROW(std::invalid_argument, "fail to read a file"
-                                     << ", source=" << def.filenames.vertex);
+    D_THROW(std::invalid_argument,
+            "fail to read a file, filename=" << def.filenames.vertex);
 
   if (!utilities::getShaderSource(def.filenames.fragment, fragmentSourceCode,
                                   loadFileCallback))
-    D_THROW(std::invalid_argument, "fail to read a file"
-                                     << ", source=" << def.filenames.fragment);
+    D_THROW(std::invalid_argument,
+            "fail to read a file, filename=" << def.filenames.fragment);
 
-  unsigned int vertexShader = GlContext::loadVertexShader(vertexSourceCode);
-  unsigned int fragmentShader =
-    GlContext::loadFragmentShader(fragmentSourceCode);
+  unsigned int vertexShader =
+    GlContext::Shader::loadVertexShader(def.filenames.vertex, vertexSourceCode);
+  unsigned int fragmentShader = GlContext::Shader::loadFragmentShader(
+    def.filenames.fragment, fragmentSourceCode);
 
-  _programId = GlContext::createProgram();
+  _programId = GlContext::Shader::createProgram();
 
   if (!_programId)
-    D_THROW(std::invalid_argument,
-            "fail to create a shader program"
-              << ", sources: vertex=" << def.filenames.vertex
-              << ", fragment=" << def.filenames.fragment);
+    D_THROW(std::invalid_argument, "fail to create a shader program");
 
-  if (!GlContext::linkProgram(_programId, vertexShader, fragmentShader)) {
+  if (!GlContext::Shader::linkProgram(_programId, vertexShader,
+                                      fragmentShader)) {
 
-    GlContext::printProgramInfo(_programId);
+    GlContext::Shader::deleteProgram(_programId);
 
-    GlContext::deleteProgram(_programId);
-
-    D_THROW(std::runtime_error,
-            "fail to link a shader"
-              << ", sources: vertex=" << def.filenames.vertex
-              << ", fragment=" << def.filenames.fragment);
+    D_THROW(std::runtime_error, "fail to link a shader"
+                                  << ", vertex=" << def.filenames.vertex
+                                  << ", fragment=" << def.filenames.fragment);
   }
 
   for (const auto& attribute : def.attributes) {
     if (_attributesMap.count(attribute) > 0)
-      D_THROW(std::runtime_error,
-              "duplicate attribute"
-                << ", input=" << attribute
-                << ", sources: vertex=" << def.filenames.vertex
-                << ", fragment=" << def.filenames.fragment);
+      D_THROW(std::runtime_error, "duplicate attribute"
+                                    << ", input=" << attribute
+                                    << ", vertex=" << def.filenames.vertex);
 
     const int location =
-      GlContext::getAttribLocation(_programId, attribute.c_str());
+      GlContext::Shader::getAttribLocation(_programId, attribute.c_str());
 
     if (location == -1)
       D_THROW(std::runtime_error,
-              "fail to get an attribute location"
+              "fail to find an attribute location (missing or unused)"
                 << ", input=" << attribute
-                << ", sources: vertex=" << def.filenames.vertex
-                << ", fragment=" << def.filenames.fragment);
+                << ", vertex=" << def.filenames.vertex);
 
     _attributesMap[attribute] = location;
   }
 
   for (const auto& uniform : def.uniforms) {
     if (_uniformsMap.count(uniform) > 0)
-      D_THROW(std::runtime_error,
-              "duplicate uniform"
-                << ", input=" << uniform
-                << ", sources: vertex=" << def.filenames.vertex
-                << ", fragment=" << def.filenames.fragment);
+      D_THROW(std::runtime_error, "duplicate uniform"
+                                    << ", input=" << uniform
+                                    << ", vertex=" << def.filenames.vertex
+                                    << ", fragment=" << def.filenames.fragment);
 
     const int location =
-      GlContext::getUniformLocation(_programId, uniform.c_str());
+      GlContext::Shader::getUniformLocation(_programId, uniform.c_str());
 
     if (location == -1)
       D_THROW(std::runtime_error,
-              "fail to get an uniform location"
-                << ", input=" << uniform
-                << ", sources: vertex=" << def.filenames.vertex
+              "fail to find an uniform location (missing or unused)"
+                << ", input=" << uniform << ", vertex=" << def.filenames.vertex
                 << ", fragment=" << def.filenames.fragment);
 
     _uniformsMap[uniform] = location;
@@ -153,7 +144,7 @@ ShaderProgram::ShaderProgram(const Definition& def,
 
 ShaderProgram::~ShaderProgram() {
   if (_programId)
-    GlContext::deleteProgram(_programId);
+    GlContext::Shader::deleteProgram(_programId);
 }
 
 //
@@ -162,10 +153,10 @@ void ShaderProgram::bind() const {
   if (!_programId)
     D_THROW(std::runtime_error, "shader not initialised");
 
-  GlContext::useProgram(_programId);
+  GlContext::Shader::useProgram(_programId);
 }
 
-void ShaderProgram::unbind() { GlContext::useProgram(0); }
+void ShaderProgram::unbind() { GlContext::Shader::useProgram(0); }
 
 //
 
@@ -247,46 +238,46 @@ void ShaderProgram::setUniform(const char* name, const glm::mat4& mat4) const {
 //
 
 void ShaderProgram::setUniform(int location, int value) const {
-  GlContext::setUniform(location, value);
+  GlContext::Shader::setUniform(location, value);
 }
 
 void ShaderProgram::setUniform(int location, int x, int y) const {
-  GlContext::setUniform(location, x, y);
+  GlContext::Shader::setUniform(location, x, y);
 }
 
 void ShaderProgram::setUniform(int location, int x, int y, int z) const {
-  GlContext::setUniform(location, x, y, z);
+  GlContext::Shader::setUniform(location, x, y, z);
 }
 
 void ShaderProgram::setUniform(int location, int x, int y, int z, int w) const {
-  GlContext::setUniform(location, x, y, z, w);
+  GlContext::Shader::setUniform(location, x, y, z, w);
 }
 
 void ShaderProgram::setUniform(int location, float value) const {
-  GlContext::setUniform(location, value);
+  GlContext::Shader::setUniform(location, value);
 }
 
 void ShaderProgram::setUniform(int location, float x, float y) const {
-  GlContext::setUniform(location, x, y);
+  GlContext::Shader::setUniform(location, x, y);
 }
 
 void ShaderProgram::setUniform(int location, float x, float y, float z) const {
-  GlContext::setUniform(location, x, y, z);
+  GlContext::Shader::setUniform(location, x, y, z);
 }
 
 void ShaderProgram::setUniform(int location, float x, float y, float z,
                                float w) const {
-  GlContext::setUniform(location, x, y, z, w);
+  GlContext::Shader::setUniform(location, x, y, z, w);
 }
 
 void ShaderProgram::setUniform(int location, const glm::vec3& vec3) const {
-  GlContext::setUniform(location, vec3.x, vec3.y, vec3.z);
+  GlContext::Shader::setUniform(location, vec3.x, vec3.y, vec3.z);
 }
 
 void ShaderProgram::setUniform(int location, const glm::vec4& vec4) const {
-  GlContext::setUniform(location, vec4.x, vec4.y, vec4.z, vec4.w);
+  GlContext::Shader::setUniform(location, vec4.x, vec4.y, vec4.z, vec4.w);
 }
 
 void ShaderProgram::setUniform(int location, const glm::mat4& mat4) const {
-  GlContext::setUniform(location, mat4);
+  GlContext::Shader::setUniform(location, mat4);
 }

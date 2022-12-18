@@ -6,7 +6,7 @@
 void renderLeaderEye(const glm::vec2& position, const glm::vec2& size) {
   auto& context = Context::get();
   auto& logic = context.logic;
-  auto& stackRenderers = context.graphic.stackRenderers;
+  auto& stackRenderers = context.graphic.hud.stackRenderers;
 
   if (auto leaderData = logic.leaderCar.leaderData()) {
     const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);

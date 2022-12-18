@@ -145,11 +145,12 @@ void Context::initialiseSimulation(unsigned int totalCores,
   graphic.camera.main.center = logic.simulation->getStartPosition();
   graphic.camera.main.distance = 200.0f;
 
-  graphic.animatedCircuitRenderer.initialise(skeletonVertices, groundVertices,
-                                             wallsVertices, maxUpperValue);
+  graphic.scene.animatedCircuitRenderer.initialise(
+    skeletonVertices, groundVertices, wallsVertices, maxUpperValue);
 
   const glm::vec3 boundariesSize = circuitDimension.max - circuitDimension.min;
 
-  graphic.floorRenderer.initialise(circuitDimension.center, boundariesSize);
-  graphic.backGroundCylindersRenderer.initialise(boundariesSize);
+  graphic.scene.floorRenderer.initialise(circuitDimension.center,
+                                         boundariesSize);
+  graphic.scene.backGroundTorusRenderer.initialise();
 }

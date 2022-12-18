@@ -5,11 +5,9 @@
 
 #include "demo/states/StateManager.hpp"
 
-#include "framework/graphic/ShaderProgram.hpp"
-
-#include "framework/math/clamp.hpp"
-
 #include "framework/graphic/GlContext.hpp"
+#include "framework/graphic/ShaderProgram.hpp"
+#include "framework/math/clamp.hpp"
 
 void Scene::initialise() {
   GlContext::enable(GlContext::States::depthTest);
@@ -27,32 +25,33 @@ void Scene::renderSimple() {
 
   auto& graphic = Context::get().graphic;
 
+  graphic.hud.postProcess.startRecording();
+
   { // scene
 
     const Camera& camInstance = graphic.camera.main.scene;
-    graphic.stackRenderers.wireframes.setMatricesData(
-      camInstance.getMatricesData());
-    graphic.stackRenderers.triangles.setMatricesData(
-      camInstance.getMatricesData());
-    graphic.particleManager.setMatricesData(camInstance.getMatricesData());
-    graphic.animatedCircuitRenderer.setMatricesData(
-      camInstance.getMatricesData());
+    const auto& matricesData = camInstance.getMatricesData();
+    graphic.scene.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.scene.stackRenderers.triangles.setMatricesData(matricesData);
+    graphic.scene.particleManager.setMatricesData(matricesData);
+    graphic.scene.animatedCircuitRenderer.setMatricesData(matricesData);
 
-    Scene::_renderFloor(camInstance);
-    graphic.animatedCircuitRenderer.renderWireframe();
-    graphic.animatedCircuitRenderer.renderWalls();
-    graphic.animatedCircuitRenderer.renderGround();
+    // Scene::_renderFloor(camInstance);
+    // graphic.scene.animatedCircuitRenderer.renderWireframe();
+    // graphic.scene.animatedCircuitRenderer.renderWalls();
+    // graphic.scene.animatedCircuitRenderer.renderGround();
   }
+
+  graphic.hud.postProcess.stopRecording();
 
   { // HUD
 
-    const Camera& camInstance = graphic.camera.main.hud;
-    graphic.stackRenderers.wireframes.setMatricesData(
-      camInstance.getMatricesData());
-    graphic.stackRenderers.triangles.setMatricesData(
-      camInstance.getMatricesData());
-    graphic.particleManager.setMatricesData(camInstance.getMatricesData());
-    graphic.textRenderer.setMatricesData(camInstance.getMatricesData());
+    const auto& matricesData = graphic.camera.main.hud.getMatricesData();
+    graphic.hud.postProcess.setMatricesData(matricesData);
+    graphic.hud.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.hud.stackRenderers.triangles.setMatricesData(matricesData);
+    graphic.scene.particleManager.setMatricesData(matricesData);
+    graphic.hud.textRenderer.setMatricesData(matricesData);
 
     Scene::_renderHUD();
   }
@@ -66,6 +65,8 @@ void Scene::renderAll() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
+  graphic.hud.postProcess.startRecording();
+
   { // scene
 
     auto& logic = context.logic;
@@ -74,43 +75,45 @@ void Scene::renderAll() {
     const Camera& camInstance = camera.main.scene;
     const auto& matricesData = camInstance.getMatricesData();
 
-    graphic.stackRenderers.wireframes.setMatricesData(matricesData);
-    graphic.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.particleManager.setMatricesData(matricesData);
-    graphic.floorRenderer.setMatricesData(matricesData);
-    graphic.backGroundCylindersRenderer.setMatricesData(matricesData);
-    graphic.animatedCircuitRenderer.setMatricesData(matricesData);
-    graphic.flockingManager.setMatricesData(matricesData);
-    graphic.carTailsRenderer.setMatricesData(matricesData);
+    graphic.scene.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.scene.stackRenderers.triangles.setMatricesData(matricesData);
+    graphic.scene.particleManager.setMatricesData(matricesData);
+    graphic.scene.floorRenderer.setMatricesData(matricesData);
+    graphic.scene.animatedCircuitRenderer.setMatricesData(matricesData);
+    graphic.scene.flockingManager.setMatricesData(matricesData);
+    graphic.scene.carTailsRenderer.setMatricesData(matricesData);
 
     Scene::_renderFloor(camInstance);
-    graphic.animatedCircuitRenderer.renderWireframe();
-    graphic.animatedCircuitRenderer.renderWalls();
+    graphic.scene.animatedCircuitRenderer.renderWireframe();
+    graphic.scene.animatedCircuitRenderer.renderWalls();
 
     if (!logic.isAccelerated)
       Scene::_renderLeadingCarSensors();
 
-    graphic.flockingManager.render();
+    graphic.scene.flockingManager.render();
+    graphic.scene.stackRenderers.triangles.flush();
 
-    graphic.particleManager.render();
+    graphic.scene.particleManager.render();
 
-    graphic.stackRenderers.wireframes.flush();
-    graphic.stackRenderers.triangles.flush();
+    graphic.scene.stackRenderers.wireframes.flush();
+    graphic.scene.stackRenderers.triangles.flush();
 
-    graphic.modelsRenderer.render(camInstance);
-    graphic.animatedCircuitRenderer.renderGround();
-    graphic.carTailsRenderer.render();
+    graphic.scene.modelsRenderer.render(camInstance);
+    graphic.scene.animatedCircuitRenderer.renderGround();
+    graphic.scene.carTailsRenderer.render();
   }
+
+  graphic.hud.postProcess.stopRecording();
 
   { // HUD
 
     const auto& matricesData = graphic.camera.main.hud.getMatricesData();
-    graphic.stackRenderers.wireframes.setMatricesData(matricesData);
-    graphic.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.particleManager.setMatricesData(matricesData);
-    graphic.floorRenderer.setMatricesData(matricesData);
-    graphic.backGroundCylindersRenderer.setMatricesData(matricesData);
-    graphic.textRenderer.setMatricesData(matricesData);
+    graphic.hud.postProcess.setMatricesData(matricesData);
+    graphic.hud.stackRenderers.wireframes.setMatricesData(matricesData);
+    graphic.hud.stackRenderers.triangles.setMatricesData(matricesData);
+    graphic.scene.particleManager.setMatricesData(matricesData);
+    graphic.scene.floorRenderer.setMatricesData(matricesData);
+    graphic.hud.textRenderer.setMatricesData(matricesData);
 
     Scene::_renderHUD();
   }
@@ -143,6 +146,10 @@ void Scene::updateMatrices(float elapsedTime) {
     camera.main.scene.setSize(camera.viewportSize.x, camera.viewportSize.y);
     camera.main.scene.lookAt(eye, camera.main.center, upAxis);
     camera.main.scene.computeMatrices();
+
+    camera.main.hud.setOrthographic(0.0f, float(camera.viewportSize.x), 0.0f,
+                                    float(camera.viewportSize.y), -10.0f,
+                                    +10.0f);
 
     camera.main.hud.computeMatrices();
 

@@ -27,10 +27,11 @@ void TopologyRenderer::render(const glm::vec2& position,
   const glm::vec4 redColor(1.0f, 0.0f, 0.0f, 0.85f);
   const glm::vec4 blueColor(0.5f, 0.5f, 1.0f, 0.85f);
 
-  auto& stackRenderer = graphic.stackRenderers.triangles;
+  auto& stackRenderer = graphic.hud.stackRenderers.triangles;
   stackRenderer.pushQuad(glm::vec3(position + size * 0.5f, -0.1f), size,
                          glm::vec4(0, 0, 0, 0.75f));
-  graphic.stackRenderers.wireframes.pushRectangle(position, size, whiteColor);
+  graphic.hud.stackRenderers.wireframes.pushRectangle(position, size,
+                                                      whiteColor);
 
   std::vector<unsigned int> topologyArray;
   topologyArray.reserve(logic.annTopology.getInput() +

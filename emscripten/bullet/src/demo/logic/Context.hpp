@@ -1,35 +1,32 @@
 
 #pragma once
 
+#include "demo/logic/simulation/AbstactSimulation.hpp"
+#include "demo/states/StateManager.hpp"
+
 #include "graphic/renderers/TrianglesStackRenderer.hpp"
 #include "graphic/renderers/WireframesStackRenderer.hpp"
-
-#include "graphic/postProcess/PostProcess.hpp"
-#include "graphic/renderers/hud/TextRenderer.hpp"
-#include "graphic/renderers/hud/TopologyRenderer.hpp"
-#include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
-#include "graphic/renderers/scene/BackGroundCylindersRenderer.hpp"
-#include "graphic/renderers/scene/CarTailsRenderer.hpp"
-#include "graphic/renderers/scene/FlockingManager.hpp"
-#include "graphic/renderers/scene/FloorRenderer.hpp"
-#include "graphic/renderers/scene/ModelsRenderer.hpp"
-#include "graphic/renderers/scene/ParticleManager.hpp"
-
-#include "framework/graphic/camera/Camera.hpp"
-
-#include "framework/graphic/ResourceManager.hpp"
 
 #include "helpers/CarWheelsTrails.hpp"
 #include "helpers/FitnessStats.hpp"
 #include "helpers/LeaderCar.hpp"
 #include "helpers/ProfileData.hpp"
 
-#include "demo/logic/simulation/AbstactSimulation.hpp"
-
-#include "demo/states/StateManager.hpp"
+#include "graphic/postProcess/PostProcess.hpp"
+#include "graphic/renderers/hud/TextRenderer.hpp"
+#include "graphic/renderers/hud/TopologyRenderer.hpp"
+#include "graphic/renderers/hud/AnimationManager.hpp"
+#include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
+#include "graphic/renderers/scene/BackGroundTorusRenderer.hpp"
+#include "graphic/renderers/scene/CarTailsRenderer.hpp"
+#include "graphic/renderers/scene/FlockingManager.hpp"
+#include "graphic/renderers/scene/FloorRenderer.hpp"
+#include "graphic/renderers/scene/ModelsRenderer.hpp"
+#include "graphic/renderers/scene/ParticleManager.hpp"
 
 #include "framework/NonCopyable.hpp"
-
+#include "framework/graphic/ResourceManager.hpp"
+#include "framework/graphic/camera/Camera.hpp"
 #include "framework/helpers/GLMath.hpp"
 
 #include <array>
@@ -100,17 +97,26 @@ public:
     struct StackRenderers {
       WireframesStackRenderer wireframes;
       TrianglesStackRenderer triangles;
-    } stackRenderers;
-    ParticleManager particleManager;
-    FloorRenderer floorRenderer;
-    BackGroundCylindersRenderer backGroundCylindersRenderer;
-    AnimatedCircuitRenderer animatedCircuitRenderer;
-    TextRenderer textRenderer;
-    ModelsRenderer modelsRenderer;
-    FlockingManager flockingManager;
-    CarTailsRenderer carTailsRenderer;
-    TopologyRenderer topologyRenderer;
-    PostProcess postProcess;
+    };
+
+    struct Hud {
+      StackRenderers stackRenderers;
+      TextRenderer textRenderer;
+      TopologyRenderer topologyRenderer;
+      AnimationManager animationManager;
+      PostProcess postProcess;
+    } hud;
+
+    struct Scene {
+      StackRenderers stackRenderers;
+      ParticleManager particleManager;
+      FloorRenderer floorRenderer;
+      BackGroundTorusRenderer backGroundTorusRenderer;
+      AnimatedCircuitRenderer animatedCircuitRenderer;
+      ModelsRenderer modelsRenderer;
+      FlockingManager flockingManager;
+      CarTailsRenderer carTailsRenderer;
+    } scene;
 
     ResourceManager resourceManager;
   } graphic;

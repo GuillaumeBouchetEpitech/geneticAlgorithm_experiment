@@ -1,11 +1,11 @@
 
 #pragma once
 
+#include "demo/logic/graphicIds.hpp"
+
 #include "framework/graphic/Geometry.hpp"
 #include "framework/graphic/ShaderProgram.hpp"
-
 #include "framework/graphic/camera/Camera.hpp"
-
 #include "framework/helpers/GLMath.hpp"
 
 #include <memory>
@@ -27,7 +27,7 @@ public:
   ~TrianglesStackRenderer() = default;
 
 public:
-  void initialise();
+  void initialise(ShaderIds shaderId, GeometryIds geometryId);
   void setMatricesData(const Camera::MatricesData& matricesData);
 
 public:

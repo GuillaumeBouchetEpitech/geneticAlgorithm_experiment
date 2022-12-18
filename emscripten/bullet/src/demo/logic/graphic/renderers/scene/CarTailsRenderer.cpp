@@ -2,34 +2,26 @@
 #include "CarTailsRenderer.hpp"
 
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
 
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 void CarTailsRenderer::initialise() {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::wireframes));
 
-  {
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    GeometryBuilder geometryBuilder;
+  _shader = resourceManager.getShader(asValue(ShaderIds::wireframes));
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::line_strip)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0);
+  auto geoDef = resourceManager.getGeometryDefinition(
+    asValue(GeometryIds::wireframesLineStrip));
+  _geometries.leaderCarTrail.initialise(*_shader, geoDef);
+  _geometries.leaderCarTrail.setPrimitiveCount(0);
 
-    for (auto& wheelsTrail : _geometries.bestNewCarsTrails)
-      for (auto& wheel : wheelsTrail.wheels)
-        geometryBuilder.build(wheel);
-
-    geometryBuilder.build(_geometries.leaderCarTrail);
-  }
+  for (auto& wheelsTrail : _geometries.bestNewCarsTrails)
+    for (auto& wheel : wheelsTrail.wheels) {
+      wheel.initialise(*_shader, geoDef);
+      wheel.setPrimitiveCount(0);
+    }
 }
 
 void CarTailsRenderer::setMatricesData(

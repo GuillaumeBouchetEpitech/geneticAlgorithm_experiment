@@ -10,17 +10,18 @@ FrameBuffer::~FrameBuffer() { dispose(); }
 
 //
 
-void FrameBuffer::initialise(const Definition& def) {
+bool FrameBuffer::initialise(const Definition& def,
+                             bool throwException /*= true*/) {
   if (def.colorTextures.empty())
     D_THROW(std::runtime_error, "empty frame buffer color texture array");
-  for (const auto& colorTexture : def.colorTextures) {
-    if (colorTexture.texture == nullptr)
+  for (const auto& currColorTexture : def.colorTextures) {
+    if (currColorTexture.texture == nullptr)
       D_THROW(std::runtime_error,
               "null color texture in frame buffer color texture array");
 
     uint32_t totalSameIndex = 0;
     for (const auto& otherColorTexture : def.colorTextures)
-      if (colorTexture.index == otherColorTexture.index)
+      if (currColorTexture.index == otherColorTexture.index)
         totalSameIndex += 1;
     if (totalSameIndex > 1)
       D_THROW(
@@ -29,7 +30,7 @@ void FrameBuffer::initialise(const Definition& def) {
 
     uint32_t totalSameTexture = 0;
     for (const auto& otherColorTexture : def.colorTextures)
-      if (colorTexture.texture == otherColorTexture.texture)
+      if (currColorTexture.texture == otherColorTexture.texture)
         totalSameTexture += 1;
     if (totalSameTexture > 1)
       D_THROW(
@@ -48,55 +49,63 @@ void FrameBuffer::initialise(const Definition& def) {
   //
 
   if (_frameBufferId == 0)
-    _frameBufferId = GlContext::genFramebuffer();
+    _frameBufferId = GlContext::FrameBuffers::generateOne();
+
+  _isLinked = false;
 
   bind();
 
-  for (const auto& colorTexture : def.colorTextures)
-    _attachColorTexture(colorTexture.index, *colorTexture.texture);
+  for (const auto& currColorTexture : def.colorTextures)
+    _attachColorTexture(currColorTexture.index, *currColorTexture.texture);
 
   if (def.depthTexture)
     _attachDepthTexture(*def.depthTexture);
   else if (def.renderBuffer)
     _attachDepthRenderBuffer(*def.renderBuffer);
 
-  GlContext::checkFrameBuffer();
-
   if (def.colorTextures.size() > 1) {
+
     std::vector<uint32_t> drawBuffers;
     drawBuffers.reserve(def.colorTextures.size());
-    for (const auto& colorTexture : def.colorTextures)
-      drawBuffers.push_back(colorTexture.index);
+    for (const auto& currColorTexture : def.colorTextures)
+      drawBuffers.push_back(
+        GlContext::FrameBuffers::getColorAttachment(currColorTexture.index));
 
-    GlContext::drawFrameBuffers(uint32_t(drawBuffers.size()),
-                                drawBuffers.data());
+    GlContext::FrameBuffers::drawMany(uint32_t(drawBuffers.size()),
+                                      drawBuffers.data());
   }
 
+  _isLinked = GlContext::FrameBuffers::check(throwException);
+
   FrameBuffer::unbind();
+
+  return _isLinked;
 }
 
 void FrameBuffer::dispose() {
   if (!isValid())
     return;
 
-  GlContext::deleteFramebuffer(_frameBufferId);
+  GlContext::FrameBuffers::deleteOne(_frameBufferId);
   _frameBufferId = 0;
 }
 
 void FrameBuffer::_attachColorTexture(uint32_t index,
                                       const Texture& colorTexture) {
   colorTexture.bind();
-  GlContext::framebufferTexture2D(index, colorTexture._textureId);
+  GlContext::FrameBuffers::attachTexture2D(
+    GlContext::FrameBuffers::getColorAttachment(index),
+    colorTexture._textureId);
 }
 
 void FrameBuffer::_attachDepthTexture(const Texture& depthTexture) {
   depthTexture.bind();
-  GlContext::framebufferDepthTexture2D(depthTexture._textureId);
+  GlContext::FrameBuffers::attachDepthTexture2D(depthTexture._textureId);
 }
 
 void FrameBuffer::_attachDepthRenderBuffer(const RenderBuffer& buffer) {
   buffer.bind();
-  GlContext::framebufferRenderbuffer(buffer._bufferId);
+  GlContext::FrameBuffers::attachRenderbuffer(buffer._bufferId);
 }
 
 //
@@ -105,12 +114,14 @@ void FrameBuffer::bind() const {
   if (!isValid())
     D_THROW(std::runtime_error, "framebuffer not valid");
 
-  GlContext::bindFramebuffer(_frameBufferId);
+  GlContext::FrameBuffers::bind(_frameBufferId);
 }
 
-void FrameBuffer::unbind() { GlContext::bindFramebuffer(0); }
+void FrameBuffer::unbind() { GlContext::FrameBuffers::bind(0); }
 
 bool FrameBuffer::isValid() const { return _frameBufferId != 0; }
+
+bool FrameBuffer::isLinked() const { return _isLinked; }
 
 void FrameBuffer::getAsImage(Image& image, uint32_t posX, uint32_t posY,
                              uint32_t width, uint32_t height) const {
@@ -123,7 +134,7 @@ void FrameBuffer::getAsImage(Image& image, uint32_t posX, uint32_t posY,
   uint8_t* pixels = new uint8_t[bufferSize];
 
   bind();
-  GlContext::downloadPixels(posX, posY, width, height, pixels);
+  GlContext::FrameBuffers::downloadPixels(posX, posY, width, height, pixels);
   unbind();
 
   image._rawPixels = pixels;

@@ -28,7 +28,7 @@ private:
   struct LetterOffset {
     glm::vec3 position;
     glm::vec2 texCoord;
-    glm::vec3 color;
+    glm::vec4 color;
     float scale;
   };
   using LettersOffsets = std::vector<LetterOffset>;
@@ -55,7 +55,7 @@ public:
 
 public:
   void push(const glm::vec2& position, std::string_view message,
-            const glm::vec3& color, float scale = 1.0f,
+            const glm::vec4& color, float scale = 1.0f,
             TextAllign allign = TextAllign::left);
 
   void clear();

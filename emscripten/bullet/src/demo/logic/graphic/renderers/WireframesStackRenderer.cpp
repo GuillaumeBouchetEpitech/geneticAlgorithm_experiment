@@ -1,36 +1,21 @@
 
 #include "WireframesStackRenderer.hpp"
 
-#include "demo/logic/graphicIds.hpp"
-
-#include "framework/asValue.hpp"
-
-#include "framework/math/constants.hpp"
-
-#include "framework/graphic/ResourceManager.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-
 #include "demo/logic/Context.hpp"
 
-void WireframesStackRenderer::initialise() {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::stackRenderer));
+#include "framework/asValue.hpp"
+#include "framework/math/constants.hpp"
 
-  {
+void WireframesStackRenderer::initialise(ShaderIds shaderId,
+                                         GeometryIds geometryId) {
 
-    GeometryBuilder geometryBuilder;
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::lines)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec4f, 3);
+  _shader = resourceManager.getShader(asValue(shaderId));
 
-    geometryBuilder.build(_geometry);
-    _geometry.setPrimitiveCount(0);
-  }
+  auto geoDef = resourceManager.getGeometryDefinition(asValue(geometryId));
+  _geometry.initialise(*_shader, geoDef);
+  _geometry.setPrimitiveCount(0);
 
   constexpr std::size_t preAllocatedSize = 1024 * 32; // 32Ko
   _vertices.reserve(preAllocatedSize);

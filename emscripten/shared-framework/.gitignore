@@ -3,3 +3,5 @@ bin
 lib
 obj
 thirdparty
+unused
+src/tests/audio/assets

@@ -129,7 +129,7 @@ PUSH_KNOTS left="30,0,0"     right="30,0,0"
     NEXT_KNOTS_STATES   color="0.75,0.25,0.25"
 
     PUSH_KNOTS    left=" 60,  0,  0"     right=" 60,  0,  0"
-    PUSH_KNOTS    left="-60,-20, 60"     right=" 60,-20, 60"
+    PUSH_KNOTS    left=" 60,-20, 60"     right=" 60,-20, 60"
     PUSH_KNOTS    left="-60,-20, 60"     right="-60,-20, 60"
     PUSH_KNOTS    left="-60,-20,-60"     right="-60,-20,-60"
     PUSH_KNOTS    left=" 60,-20,-60"     right=" 60,-20,-60"
@@ -25729,215 +25729,44 @@ f 90//42 88//42 150//42 148//42 146//42 144//42 142//42 140//42 138//42 136//42 
 f 147//43 148//43 150//43 149//43
 f 149//44 150//44 88//44 87//44
 f 87//45 89//45 91//45 93//45 95//45 97//45 99//45 101//45 103//45 105//45 107//45 109//45 111//45 113//45 115//45 117//45 119//45 121//45 123//45 125//45 127//45 129//45 131//45 133//45 135//45 137//45 139//45 141//45 143//45 145//45 147//45 149//45
-
-const float k_ambiant = 0.4;
-const vec3 k_lightPos = vec3(0.0, 0.0, 0.0);
-const vec3 k_specColor = vec3(1.0, 1.0, 1.0);
-
-vec3 applyLighting(vec3 currentColor, vec3 normal, vec3 vertexPos)
-{
-    normal = normalize(normal);
-    vec3 lightDir = normalize(k_lightPos - vertexPos);
-
-    float lambertian = max(dot(lightDir, normal.xyz), 0.0);
-    float specular = 0.0;
-
-    if (lambertian > 0.0)
-    {
-        // lighting specular
-
-        vec3 reflectDir = reflect(-lightDir, normal);
-        vec3 viewDir = normalize(-vertexPos);
-
-        float specAngle = max(dot(reflectDir, viewDir), 0.0);
-        specular = pow(specAngle, 64.0);
-    }
-
-    // lighting output
-
-    vec3 ambiant_color = currentColor * k_ambiant;
-    vec3 diffuse_color = currentColor * lambertian;
-    vec3 specular_color = k_specColor * specular;
-
-    return ambiant_color + diffuse_color + specular_color;
-}
-
-precision lowp float;
-
-varying vec4 v_color;
-
-void main(void)
-{
-    gl_FragColor = v_color;
-}
-
-precision highp float;
-
-uniform mat4 u_composedMatrix;
-uniform float u_alpha;
-uniform float u_lowerLimit;
-uniform float u_upperLimit;
-
-attribute vec3 a_position;
-attribute vec3 a_color;
-attribute vec3 a_animated_normal;
-attribute float a_index;
-
-varying vec4 v_color;
-
-const vec4 k_white = vec4(1.0);
-
-void main(void)
-{
-	float deformationCoef = 0.0;
-
-	if (a_index <= u_lowerLimit)
-	{
-		// not deformed (normal shape)
-		deformationCoef = 0.0;
-	}
-	else if (a_index > u_upperLimit)
-	{
-		// fully deformed (shattered shape)
-		deformationCoef = 1.0;
-	}
-	else
-	{
-		// animated deformation (normal shape <-> shattered shape)
-		deformationCoef = (a_index - u_lowerLimit) / (u_upperLimit - u_lowerLimit);
-	}
-
-	vec3 position = a_position;
-
-	if (deformationCoef == 1.0)
-	{
-		// invisible
-		v_color = vec4(0.0);
-	}
-	else
-	{
-		// modified color (normal color <-> white color)
-		v_color = mix(vec4(a_color, u_alpha), k_white, deformationCoef);
-
-		// modified shape (normal shape <-> shattered shape)
-		position -= a_animated_normal * deformationCoef;
-	}
-
-	gl_Position = u_composedMatrix * vec4(position, 1.0);
-}
-
-precision lowp float;
-
-varying vec4 v_color;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
-
-#include "assets/shaders/_common-apply-lighting.glsl.frag"
-
-void main(void)
-{
-    gl_FragColor = vec4(applyLighting(v_color.xyz, v_normalInterp, v_vertPos), v_color.a);
-}
-
-precision highp float;
-
-// uniform mat4 u_composedMatrix;
-uniform mat4 u_projectionMatrix;
-uniform mat4 u_modelViewMatrix;
-
-uniform float u_alpha;
-uniform float u_lowerLimit;
-uniform float u_upperLimit;
-
-attribute vec3 a_position;
-attribute vec3 a_color;
-attribute vec3 a_normal;
-attribute vec3 a_animated_normal;
-attribute float a_index;
-
-varying vec4 v_color;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
-
-const vec3 k_white = vec3(1.0);
-
-void main(void)
-{
-	float deformationCoef = 0.0;
-
-	if (a_index <= u_lowerLimit)
-	{
-		// not deformed (normal shape)
-		deformationCoef = 0.0;
-	}
-	else if (a_index > u_upperLimit)
-	{
-		// fully deformed (shattered shape)
-		deformationCoef = 1.0;
-	}
-	else
-	{
-		// animated deformation (normal shape <-> shattered shape)
-		deformationCoef = (a_index - u_lowerLimit) / (u_upperLimit - u_lowerLimit);
-	}
-
-	vec3 position = a_position;
-
-	if (deformationCoef == 1.0)
-	{
-		// invisible
-		v_color = vec4(0.0);
-	}
-	else
-	{
-		// modified color (normal color <-> white color)
-		v_color = vec4(mix(a_color, k_white, deformationCoef), u_alpha);
-
-		// modified shape (normal shape <-> shattered shape)
-		position -= a_animated_normal * deformationCoef;
-	}
-
-	vec4 vertPos4 = u_modelViewMatrix * vec4(position, 1.0);
-
-	gl_Position = u_projectionMatrix * vertPos4;
-
-	v_vertPos = vec3(vertPos4) / vertPos4.w;
-	v_normalInterp = vec3(u_modelViewMatrix * vec4(a_normal, 0.0));
-}
+#version 300 es
 
 precision lowp float;
 
 uniform sampler2D u_texture;
 
-varying vec2 v_texCoord;
-varying vec3 v_color;
+in vec2 v_texCoord;
+in vec4 v_color;
+
+out vec4 out_color;
 
 void main(void)
 {
-    vec4 texColor = texture2D(u_texture, v_texCoord);
+    vec4 texColor = texture(u_texture, v_texCoord);
     if (texColor.a < 0.5)
     {
         discard;
     }
     else
     {
-        gl_FragColor = texColor * vec4(v_color, 1.0);
+        out_color = texColor * v_color;
     }
 }
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec2 a_position;
-attribute vec2 a_texCoord;
-attribute vec3 a_offsetPosition;
-attribute vec2 a_offsetTexCoord;
-attribute vec3 a_offsetColor;
-attribute float a_offsetScale;
+in vec2 a_position;
+in vec2 a_texCoord;
+in vec3 a_offsetPosition;
+in vec2 a_offsetTexCoord;
+in vec4 a_offsetColor;
+in float a_offsetScale;
 
-varying vec2 v_texCoord;
-varying vec3 v_color;
+out vec2 v_texCoord;
+out vec4 v_color;
 
 void main(void)
 {
@@ -25948,76 +25777,376 @@ void main(void)
 	v_texCoord = a_texCoord + a_offsetTexCoord;
 	v_color = a_offsetColor;
 }
+#version 300 es
+
+precision lowp float;
+
+uniform sampler2D u_colorTexture;
+uniform sampler2D u_outlineTexture;
+
+out vec4 out_color;
+
+void main(void)
+{
+  ivec2 pixelCoord = ivec2(gl_FragCoord.xy);
+  vec4 pixelColor = texelFetch(u_colorTexture, pixelCoord, 0);
+  vec4 pixelOutline = texelFetch(u_outlineTexture, pixelCoord, 0);
+
+  if (pixelOutline.x == 0.0)
+  {
+    float depth = 0.0;
+    depth += texelFetch(u_outlineTexture, pixelCoord, 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1, 0), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1, 0), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2( 0,-1), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2( 0,+1), 0).x;
+
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1,-1), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1,-1), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1,+1), 0).x;
+    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1,+1), 0).x;
+
+    const vec4 outlineColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+    if (depth > 1.0)
+      out_color = outlineColor;
+    else
+      out_color = pixelColor;
+  }
+  else
+  {
+    out_color = pixelColor;
+  }
+}
+#version 300 es
+
+precision highp float;
+
+uniform mat4 u_composedMatrix;
+
+in vec3 a_position;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+}
+#version 300 es
+
+precision lowp float;
+
+in vec4 v_color;
+
+out vec4 out_color;
+
+void main(void)
+{
+	out_color = v_color;
+}
+#version 300 es
+
+precision highp float;
+
+uniform mat4 u_composedMatrix;
+
+in vec3 a_position;
+in vec4 a_color;
+
+out vec4 v_color;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
+
+	v_color = a_color;
+}
+
+const float k_ambiant = 0.4;
+const vec3 k_lightPos = vec3(0.0, 0.0, 0.0);
+const vec3 k_specColor = vec3(1.0, 1.0, 1.0);
+
+vec3 applyLighting(vec3 inColor, vec3 inNormal, vec3 inVertexPos)
+{
+    inNormal = normalize(inNormal);
+    vec3 lightDir = normalize(k_lightPos - inVertexPos);
+
+    float lambertian = max(dot(lightDir, inNormal.xyz), 0.0);
+    float specular = 0.0;
+
+    if (lambertian > 0.0)
+    {
+        // lighting specular
+
+        vec3 reflectDir = reflect(-lightDir, inNormal);
+        vec3 viewDir = normalize(-inVertexPos);
+
+        float specAngle = max(dot(reflectDir, viewDir), 0.0);
+        specular = pow(specAngle, 64.0);
+    }
+
+    // lighting output
+
+    vec3 ambiant_color = inColor * k_ambiant;
+    vec3 diffuse_color = inColor * lambertian;
+    vec3 specular_color = k_specColor * specular;
+
+    return ambiant_color + diffuse_color + specular_color;
+}
+#version 300 es
+
+precision lowp float;
+
+in vec4 v_color;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
+void main(void)
+{
+    out_color = v_color;
+    out_outline = vec4(0.0);
+}
+#version 300 es
+
+precision highp float;
+
+uniform mat4 u_composedMatrix;
+uniform float u_alpha;
+uniform float u_lowerLimit;
+uniform float u_upperLimit;
+
+in vec3 a_vertex_position;
+in vec3 a_vertex_color;
+in vec3 a_vertex_animatedNormal;
+in float a_vertex_index;
+
+out vec4 v_color;
+
+const vec4 k_white = vec4(1.0);
+
+void main(void)
+{
+	float deformationCoef = 0.0;
+
+	if (a_vertex_index <= u_lowerLimit)
+	{
+		// not deformed (normal shape)
+		deformationCoef = 0.0;
+	}
+	else if (a_vertex_index > u_upperLimit)
+	{
+		// fully deformed (shattered shape)
+		deformationCoef = 1.0;
+	}
+	else
+	{
+		// animated deformation (normal shape <-> shattered shape)
+		deformationCoef = (a_vertex_index - u_lowerLimit) / (u_upperLimit - u_lowerLimit);
+	}
+
+	vec3 position = a_vertex_position;
+
+	if (deformationCoef == 1.0)
+	{
+		// invisible
+		v_color = vec4(0.0);
+	}
+	else
+	{
+		// modified color (normal color <-> white color)
+		v_color = mix(vec4(a_vertex_color, u_alpha), k_white, deformationCoef);
+
+		// modified shape (normal shape <-> shattered shape)
+		position -= a_vertex_animatedNormal * deformationCoef;
+	}
+
+	gl_Position = u_composedMatrix * vec4(position, 1.0);
+}
+#version 300 es
+
+precision lowp float;
+
+in vec4 v_color;
+in vec3 v_normal;
+in vec3 v_vertPos;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
+#include "assets/shaders/scene/_common-apply-lighting.glsl.frag"
+
+void main(void)
+{
+    out_color = vec4(applyLighting(v_color.xyz, v_normal, v_vertPos), v_color.a);
+    out_outline = vec4(0.0);
+}
+#version 300 es
+
+precision highp float;
+
+uniform mat4 u_projectionMatrix;
+uniform mat4 u_modelViewMatrix;
+
+uniform float u_alpha;
+uniform float u_lowerLimit;
+uniform float u_upperLimit;
+
+in vec3 a_vertex_position;
+in vec3 a_vertex_color;
+in vec3 a_vertex_normal;
+in vec3 a_vertex_animatedNormal;
+in float a_vertex_index;
+
+out vec4 v_color;
+out vec3 v_normal;
+out vec3 v_vertPos;
+
+const vec3 k_white = vec3(1.0);
+
+void main(void)
+{
+	float deformationCoef = 0.0;
+
+	if (a_vertex_index <= u_lowerLimit)
+	{
+		// not deformed (normal shape)
+		deformationCoef = 0.0;
+	}
+	else if (a_vertex_index > u_upperLimit)
+	{
+		// fully deformed (shattered shape)
+		deformationCoef = 1.0;
+	}
+	else
+	{
+		// animated deformation (normal shape <-> shattered shape)
+		deformationCoef = (a_vertex_index - u_lowerLimit) / (u_upperLimit - u_lowerLimit);
+	}
+
+	vec3 position = a_vertex_position;
+
+	if (deformationCoef == 1.0)
+	{
+		// invisible
+		v_color = vec4(0.0);
+	}
+	else
+	{
+		// modified color (normal color <-> white color)
+		v_color = vec4(mix(a_vertex_color, k_white, deformationCoef), u_alpha);
+
+		// modified shape (normal shape <-> shattered shape)
+		position -= a_vertex_animatedNormal * deformationCoef;
+	}
+
+	vec4 vertPos4 = u_modelViewMatrix * vec4(position, 1.0);
+
+	v_normal = vec3(u_modelViewMatrix * vec4(a_vertex_normal, 0.0));
+	v_vertPos = vec3(vertPos4) / vertPos4.w;
+	gl_Position = u_projectionMatrix * vertPos4;
+}
+#version 300 es
 
 precision lowp float;
 
 uniform sampler2D u_texture;
 
-varying vec2 v_texCoord;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
+in vec2 v_texCoord;
 
-#include "assets/shaders/_common-apply-lighting.glsl.frag"
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-  vec4 color = texture2D(u_texture, v_texCoord);
-  gl_FragColor = vec4(applyLighting(color.xyz, v_normalInterp, v_vertPos), color.a);
+  out_color = texture(u_texture, v_texCoord);
+  out_outline = vec4(0.0);
 }
+#version 300 es
 
 precision highp float;
 
-// uniform mat4 u_composedMatrix;
-uniform mat4 u_projectionMatrix;
-uniform mat4 u_modelViewMatrix;
+uniform mat4 u_composedMatrix;
+uniform float u_animationCoef;
 
-attribute vec3 a_position;
-attribute vec3 a_normal;
-attribute vec2 a_texCoord;
+in vec3 a_position;
+in vec2 a_texCoord;
+in vec2 a_texCoord2;
 
-varying vec2 v_texCoord;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
+out vec2 v_texCoord;
 
 void main(void)
 {
-	vec4 vertPos4 = u_modelViewMatrix * vec4(a_position, 1.0);
+	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
 
-	gl_Position = u_projectionMatrix * vertPos4;
-
-	v_texCoord = a_texCoord;
-	v_vertPos = vec3(vertPos4) / vertPos4.w;
-	v_normalInterp = vec3(u_modelViewMatrix * vec4(a_normal, 0.0));
+	v_texCoord = a_texCoord + (a_texCoord2 - a_texCoord) * u_animationCoef;
 }
+#version 300 es
 
 precision lowp float;
 
-varying vec3 v_color;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
+in vec3 v_color;
 
-#include "assets/shaders/_common-apply-lighting.glsl.frag"
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-  gl_FragColor = vec4(applyLighting(v_color, v_normalInterp, v_vertPos), 1.0);
+  out_color = vec4(v_color, 1.0);
+  out_outline = vec4(1.0);
 }
+#version 300 es
+
+precision highp float;
+
+uniform mat4 u_composedMatrix;
+
+in vec3 a_vertex_position;
+in vec3 a_vertex_color;
+
+in mat4 a_offset_transform;
+in vec3 a_offset_color;
+
+out vec3 v_color;
+
+void main(void)
+{
+	gl_Position = u_composedMatrix * a_offset_transform * vec4(a_vertex_position, 1.0);
+	v_color = a_vertex_color * a_offset_color;
+}
+#version 300 es
+
+precision lowp float;
+
+in vec3 v_color;
+in vec3 v_normal;
+in vec3 v_vertPos;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
+#include "assets/shaders/scene/_common-apply-lighting.glsl.frag"
+
+void main(void)
+{
+  out_color = vec4(applyLighting(v_color, v_normal, v_vertPos), 1.0);
+  out_outline = vec4(1.0);
+}
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_projectionMatrix;
 uniform mat4 u_modelViewMatrix;
 
-attribute vec3 a_vertex_position;
-attribute vec3 a_vertex_color;
-attribute vec3 a_vertex_normal;
+in vec3 a_vertex_position;
+in vec3 a_vertex_color;
+in vec3 a_vertex_normal;
 
-attribute mat4 a_offset_transform;
-attribute vec3 a_offset_color;
+in mat4 a_offset_transform;
+in vec3 a_offset_color;
 
-varying vec3 v_color;
-varying vec3 v_normalInterp;
-varying vec3 v_vertPos;
+out vec3 v_color;
+out vec3 v_normal;
+out vec3 v_vertPos;
 
 void main(void)
 {
@@ -26027,29 +26156,35 @@ void main(void)
 	gl_Position = u_projectionMatrix * vertPos4;
 
 	v_color = a_vertex_color * a_offset_color;
+	v_normal = vec3(transform * vec4(a_vertex_normal, 0.0));
 	v_vertPos = vec3(vertPos4) / vertPos4.w;
-	v_normalInterp = vec3(transform * vec4(a_vertex_normal, 0.0));
 }
+#version 300 es
 
 precision lowp float;
 
-varying vec4 v_color;
+in vec4 v_color;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-	gl_FragColor = v_color;
+	out_color = v_color;
+	out_outline = vec4(0.0);
 }
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec3  a_position;
-attribute vec3  a_offsetPosition;
-attribute float a_offsetScale;
-attribute vec3  a_offsetColor;
+in vec3  a_position;
+in vec3  a_offsetPosition;
+in float a_offsetScale;
+in vec3  a_offsetColor;
 
-varying vec4 v_color;
+out vec4 v_color;
 
 void main(void)
 {
@@ -26059,55 +26194,32 @@ void main(void)
 
 	v_color = vec4(a_offsetColor, 1.0);
 }
-precision lowp float;
-
-uniform sampler2D u_colorTexture;
-
-varying vec2 v_texCoord;
-
-void main(void)
-{
-
-  gl_FragColor = texture2D(u_colorTexture, v_texCoord);
-
-}
-precision highp float;
-
-uniform mat4 u_composedMatrix;
-uniform float u_animationCoef;
-
-attribute vec3 a_position;
-attribute vec3 a_animationNormal;
-attribute vec2 a_texCoord;
-
-varying vec2 v_texCoord;
-
-void main(void)
-{
-	gl_Position = u_composedMatrix * vec4(a_position + a_animationNormal * u_animationCoef, 1.0);
-
-	v_texCoord = a_texCoord;
-}
+#version 300 es
 
 precision lowp float;
 
 uniform sampler2D u_texture;
 
-varying vec2 v_texCoord;
+in vec2 v_texCoord;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-    gl_FragColor = texture2D(u_texture, v_texCoord);
+  out_color = texture(u_texture, v_texCoord);
+  out_outline = vec4(0.0);
 }
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec3 a_position;
-attribute vec2 a_texCoord;
+in vec3 a_position;
+in vec2 a_texCoord;
 
-varying vec2 v_texCoord;
+out vec2 v_texCoord;
 
 void main(void)
 {
@@ -26115,24 +26227,77 @@ void main(void)
 
 	v_texCoord = a_texCoord;
 }
+#version 300 es
 
 precision lowp float;
 
-varying vec4 v_color;
+uniform sampler2D u_texture;
+
+in vec2 v_texCoord;
+in vec3 v_normal;
+in vec3 v_vertPos;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
+#include "assets/shaders/scene/_common-apply-lighting.glsl.frag"
 
 void main(void)
 {
-	gl_FragColor = v_color;
+  vec4 texColor = texture(u_texture, v_texCoord);
+  out_color = vec4(applyLighting(texColor.xyz, v_normal, v_vertPos), texColor.a);
+  out_outline = vec4(0.0);
 }
+#version 300 es
+
+precision highp float;
+
+// uniform mat4 u_composedMatrix;
+uniform mat4 u_projectionMatrix;
+uniform mat4 u_modelViewMatrix;
+
+in vec3 a_position;
+in vec3 a_normal;
+in vec2 a_texCoord;
+
+out vec2 v_texCoord;
+out vec3 v_normal;
+out vec3 v_vertPos;
+
+void main(void)
+{
+	vec4 vertPos4 = u_modelViewMatrix * vec4(a_position, 1.0);
+
+	gl_Position = u_projectionMatrix * vertPos4;
+
+	v_texCoord = a_texCoord;
+	v_normal = vec3(u_modelViewMatrix * vec4(a_normal, 0.0));
+	v_vertPos = vec3(vertPos4) / vertPos4.w;
+}
+#version 300 es
+
+precision lowp float;
+
+in vec4 v_color;
+
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
+void main(void)
+{
+	out_color = v_color;
+  out_outline = vec4(0.0);
+}
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec3 a_position;
-attribute vec4 a_color;
+in vec3 a_position;
+in vec4 a_color;
 
-varying vec4 v_color;
+out vec4 v_color;
 
 void main(void)
 {
@@ -26140,21 +26305,27 @@ void main(void)
 
 	v_color = a_color;
 }
+#version 300 es
 
 precision lowp float;
 
 uniform vec4 u_color;
 
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_outline;
+
 void main(void)
 {
-	gl_FragColor = u_color;
+	out_color = u_color;
+  out_outline = vec4(0.0);
 }
+#version 300 es
 
 precision highp float;
 
 uniform mat4 u_composedMatrix;
 
-attribute vec3 a_position;
+in vec3 a_position;
 
 void main(void)
 {

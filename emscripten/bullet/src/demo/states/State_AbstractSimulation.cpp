@@ -1,9 +1,8 @@
 
 #include "demo/defines.hpp"
 
-#include "State_AbstractSimulation.hpp"
-
 #include "StateManager.hpp"
+#include "State_AbstractSimulation.hpp"
 
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
@@ -141,10 +140,7 @@ void State_AbstractSimulation::resize(int width, int height) {
 
   graphic.camera.viewportSize = {width, height};
 
-  graphic.camera.main.hud.setOrthographic(0.0f, float(width), 0.0f,
-                                          float(height), -10.0f, +10.0f);
-
-  graphic.postProcess.resize({width, height});
+  graphic.hud.postProcess.resize({width, height});
 }
 
 void State_AbstractSimulation::visibility(bool visible) {

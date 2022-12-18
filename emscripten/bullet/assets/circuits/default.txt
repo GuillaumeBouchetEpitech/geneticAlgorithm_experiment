@@ -129,7 +129,7 @@ PUSH_KNOTS left="30,0,0"     right="30,0,0"
     NEXT_KNOTS_STATES   color="0.75,0.25,0.25"
 
     PUSH_KNOTS    left=" 60,  0,  0"     right=" 60,  0,  0"
-    PUSH_KNOTS    left="-60,-20, 60"     right=" 60,-20, 60"
+    PUSH_KNOTS    left=" 60,-20, 60"     right=" 60,-20, 60"
     PUSH_KNOTS    left="-60,-20, 60"     right="-60,-20, 60"
     PUSH_KNOTS    left="-60,-20,-60"     right="-60,-20,-60"
     PUSH_KNOTS    left=" 60,-20,-60"     right=" 60,-20,-60"

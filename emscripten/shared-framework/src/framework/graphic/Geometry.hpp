@@ -32,6 +32,7 @@ public:
         std::size_t index = 0;
 
         Attr() = default;
+        ~Attr() = default;
 
         Attr(const std::string& inName, AttrType inType, std::size_t inIndex)
           : name(inName), type(inType), index(inIndex) {}
@@ -43,6 +44,7 @@ public:
       std::vector<Attr> attrs;
 
       Vbo() = default;
+      ~Vbo() = default;
     };
 
     std::vector<Vbo> vbos;

@@ -1,36 +1,22 @@
 
 #include "FloorRenderer.hpp"
 
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/helpers/GLMath.hpp"
 
-#include "demo/logic/Context.hpp"
-
 void FloorRenderer::initialise(const glm::vec3& center, const glm::vec3& size) {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::litTexture));
 
-  {
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    GeometryBuilder geometryBuilder;
+  _shader = resourceManager.getShader(asValue(ShaderIds::simpleTextureLit));
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 6);
-
-    geometryBuilder.build(_geometry);
-    _geometry.setPrimitiveCount(0);
-  }
+  auto geoDef = resourceManager.getGeometryDefinition(
+    asValue(GeometryIds::simpleTextureLit));
+  _geometry.initialise(*_shader, geoDef);
+  _geometry.setPrimitiveCount(0);
 
   {
 

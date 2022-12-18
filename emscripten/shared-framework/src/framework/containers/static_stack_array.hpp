@@ -1,5 +1,7 @@
 #pragma once
 
+#include "framework/ErrorHandler.hpp"
+
 #include <string>
 
 template <typename static_stack_array> class static_stack_array_iterator {
@@ -136,11 +138,6 @@ private:
     return std::size_t(index);
   }
 
-  // std::size_t _getIndex(std::size_t index) const
-  // {
-  //   return std::size_t(index) % _Size;
-  // }
-
 public:
   Iterator begin() { return Iterator(*this, 0); }
   Iterator end() { return Iterator(*this, _Size); }
@@ -150,16 +147,25 @@ public:
 
 public:
   constexpr std::size_t size() const { return _Size; }
+  bool is_out_of_range(std::size_t index) const { return (index >= _Size); }
 
+public:
   const Type* data() const { return _data; }
   Type* data() { return _data; }
 
-  // const Type& operator[](std::size_t index) const { return
-  // _data[_getIndex(index)]; } Type& operator[](std::size_t index) { return
-  // _data[_getIndex(index)]; }
-
   const Type& operator[](int index) const { return _data[_getIndex(index)]; }
   Type& operator[](int index) { return _data[_getIndex(index)]; }
+
+  const Type& at(std::size_t index) const {
+    if (is_out_of_range(index))
+      D_THROW(std::runtime_error, "out of range, index: " << index);
+    return _data[index];
+  }
+  Type& at(std::size_t index) {
+    if (is_out_of_range(index))
+      D_THROW(std::runtime_error, "out of range, index: " << index);
+    return _data[index];
+  }
 
 public:
   bool operator==(const static_stack_array& other) const {

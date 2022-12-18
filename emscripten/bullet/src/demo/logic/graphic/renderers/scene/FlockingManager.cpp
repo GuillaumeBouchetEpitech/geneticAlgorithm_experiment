@@ -2,19 +2,12 @@
 #include "FlockingManager.hpp"
 
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphic/helpers/generateSphereVerticesFilled.hpp"
-
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
-#include "framework/math/RandomNumberGenerator.hpp"
-
 #include "framework/graphic/GlContext.hpp"
+#include "framework/math/RandomNumberGenerator.hpp"
 
 FlockingManager::Boid::Boid() {
   position = {0, 0, 0};
@@ -97,30 +90,20 @@ FlockingManager::FlockingManager() {
 }
 
 void FlockingManager::initialise() {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::particles));
 
-  {
-    GeometryBuilder geometryBuilder;
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-    std::vector<glm::vec3> particlesVertices;
-    generateSphereVerticesFilled(0.5f, 0, particlesVertices);
+  _shader = resourceManager.getShader(asValue(ShaderIds::particles));
 
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVbo()
-      .setVboAsInstanced()
-      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 3)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 4);
+  auto geoDef =
+    resourceManager.getGeometryDefinition(asValue(GeometryIds::particles));
+  _geometry.initialise(*_shader, geoDef);
 
-    geometryBuilder.build(_geometry);
-    _geometry.updateBuffer(0, particlesVertices);
-    _geometry.setPrimitiveCount(particlesVertices.size());
-  }
+  std::vector<glm::vec3> particlesVertices;
+  generateSphereVerticesFilled(0.5f, 0, particlesVertices);
+
+  _geometry.updateBuffer(0, particlesVertices);
+  _geometry.setPrimitiveCount(particlesVertices.size());
 }
 
 void FlockingManager::setMatricesData(
@@ -203,9 +186,10 @@ void FlockingManager::render() {
 
     GlContext::disable(GlContext::States::depthTest);
 
-    auto& stackRenderer = Context::get().graphic.stackRenderers.triangles;
+    auto& stackRenderer = Context::get().graphic.scene.stackRenderers.triangles;
 
-    const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
+    // const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
+    const glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.4f);
 
     for (Boid& boid : _boids)
       for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)

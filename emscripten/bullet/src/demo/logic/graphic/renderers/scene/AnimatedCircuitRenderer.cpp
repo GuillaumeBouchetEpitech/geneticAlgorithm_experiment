@@ -1,42 +1,32 @@
 
 #include "AnimatedCircuitRenderer.hpp"
 
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/graphic/GlContext.hpp"
-
 #include "framework/helpers/GLMath.hpp"
-
-#include "demo/logic/Context.hpp"
 
 void AnimatedCircuitRenderer::initialise(
   const std::vector<glm::vec3>& skeletonVertices,
   const AnimatedVertices& groundVertices, const AnimatedVertices& wallsVertices,
   float maxUpperValue) {
   _maxUpperValue = maxUpperValue;
-  _shaderWireframe = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::wireframes));
-  _shaderCircuitLit = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::animatedCircuitLit));
-  _shaderCircuit = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::animatedCircuit));
 
-  GeometryBuilder geometryBuilder;
+  auto& resourceManager = Context::get().graphic.resourceManager;
+
+  _shaderWireframe = resourceManager.getShader(asValue(ShaderIds::wireframes));
+  _shaderCircuitLit =
+    resourceManager.getShader(asValue(ShaderIds::animatedCircuitLit));
+  _shaderCircuit =
+    resourceManager.getShader(asValue(ShaderIds::animatedCircuit));
 
   { // compute circuit skeleton wireframe geometry
 
-    geometryBuilder.reset()
-      .setShader(*_shaderWireframe)
-      .setPrimitiveType(Geometry::PrimitiveType::lines)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .build(_geometries.skeleton);
-
+    auto geoDef =
+      resourceManager.getGeometryDefinition(asValue(GeometryIds::wireframes));
+    _geometries.skeleton.initialise(*_shaderWireframe, geoDef);
     _geometries.skeleton.updateBuffer(0, skeletonVertices);
     _geometries.skeleton.setPrimitiveCount(skeletonVertices.size());
 
@@ -44,17 +34,9 @@ void AnimatedCircuitRenderer::initialise(
 
   { // compute circuit ground geometries
 
-    geometryBuilder.reset()
-      .setShader(*_shaderCircuitLit)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 6)
-      .addVboAttribute("a_animated_normal", Geometry::AttrType::Vec3f, 9)
-      .addVboAttribute("a_index", Geometry::AttrType::Float, 12);
-
-    geometryBuilder.build(_geometries.grounds);
+    auto geoDef = resourceManager.getGeometryDefinition(
+      asValue(GeometryIds::animatedCircuitLit));
+    _geometries.grounds.initialise(*_shaderCircuitLit, geoDef);
     _geometries.grounds.updateBuffer(0, groundVertices);
     _geometries.grounds.setPrimitiveCount(groundVertices.size());
 
@@ -62,17 +44,9 @@ void AnimatedCircuitRenderer::initialise(
 
   { // compute circuit walls geometries
 
-    geometryBuilder.reset()
-      .setShader(*_shaderCircuit)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .setVboStride(13 * 4)
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_animated_normal", Geometry::AttrType::Vec3f, 9)
-      .addVboAttribute("a_index", Geometry::AttrType::Float, 12);
-
-    geometryBuilder.build(_geometries.walls);
+    auto geoDef = resourceManager.getGeometryDefinition(
+      asValue(GeometryIds::animatedCircuit));
+    _geometries.walls.initialise(*_shaderCircuit, geoDef);
     _geometries.walls.updateBuffer(0, wallsVertices);
     _geometries.walls.setPrimitiveCount(wallsVertices.size());
 

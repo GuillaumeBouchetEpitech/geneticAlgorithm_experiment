@@ -3,9 +3,8 @@
 
 #if defined D_WEB_WEBWORKER_BUILD
 
-#include "State_WebWorkersLoading.hpp"
-
 #include "StateManager.hpp"
+#include "State_WebWorkersLoading.hpp"
 
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"

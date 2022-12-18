@@ -1,0 +1,216 @@
+
+#include "BackGroundTorusRenderer.hpp"
+
+#include "demo/logic/Context.hpp"
+#include "demo/logic/graphicIds.hpp"
+
+#include "framework/asValue.hpp"
+#include "framework/containers/static_heap_grid_array.hpp"
+#include "framework/helpers/GLMath.hpp"
+#include "framework/math/constants.hpp"
+
+constexpr float ringRadius = 500.0f;
+constexpr float tubeRadius = 100.0f;
+
+void BackGroundTorusRenderer::initialise() {
+
+  auto& resourceManager = Context::get().graphic.resourceManager;
+
+  _shader = resourceManager.getShader(asValue(ShaderIds::backGroundTorus));
+
+  { // cylinders (generate the texture)
+
+    auto fillBuffer = [](const glm::ivec2& size, unsigned char* rawPixels) {
+      for (int yy = 0; yy < size.y; ++yy)
+        for (int xx = 0; xx < size.x; ++xx) {
+
+          const int border = 50;
+
+          if (xx > border && xx + border < size.x && yy > border &&
+              yy + border < size.y) {
+            // transparent
+            rawPixels[yy * 4 * size.x + xx * 4 + 0] = 0;
+            rawPixels[yy * 4 * size.x + xx * 4 + 1] = 0;
+            rawPixels[yy * 4 * size.x + xx * 4 + 2] = 0;
+            rawPixels[yy * 4 * size.x + xx * 4 + 3] = 0;
+          } else {
+            // white
+            rawPixels[yy * 4 * size.x + xx * 4 + 0] = 0;
+            rawPixels[yy * 4 * size.x + xx * 4 + 1] = 32;
+            rawPixels[yy * 4 * size.x + xx * 4 + 2] = 0;
+            rawPixels[yy * 4 * size.x + xx * 4 + 3] = 255;
+          }
+        }
+    };
+
+    constexpr Texture::Quality quality = Texture::Quality::pixelated;
+    constexpr Texture::Pattern pattern = Texture::Pattern::repeat;
+
+    const glm::ivec2 size = {512, 512};
+    auto pixelsPtr = std::make_unique<unsigned char[]>(size.x * size.y * 4);
+    unsigned char* rawPixels = pixelsPtr.get();
+
+    fillBuffer(size, rawPixels);
+    _texture.allocateBlank(size, quality, pattern, rawPixels);
+
+  } // cylinders (generate the texture)
+
+  {
+
+    struct RealVertex {
+      glm::vec3 position;
+      glm::vec2 texCoord;
+      glm::vec2 texCoord2;
+    };
+
+    std::array<int, 6> indices{{0, 1, 2, 0, 2, 3}};
+
+    std::vector<RealVertex> vertices;
+    vertices.reserve(2048); // pre-allocate
+
+    {
+
+      {
+        const float startAngle = 0.0f;
+        const float sweepAngle = 360.0f + 360.0f / 64.0f;
+        const uint32_t ringQuality = 256;
+        const uint32_t tubeQuality = 128;
+
+        struct SubVertex {
+          glm::vec3 position;
+          glm::vec3 normal;
+
+          glm::vec3 getForward(float radius) const {
+            return position + normal * radius;
+          }
+        };
+
+        std::vector<SubVertex> tubeSliceVertices;
+        tubeSliceVertices.resize(tubeQuality);
+
+        for (uint32_t tubeIndex = 0; tubeIndex < tubeQuality; ++tubeIndex) {
+          const float coef = float(tubeIndex) / float(tubeQuality);
+          const float angle = math::pi2 * 0.125f + coef * math::pi2;
+
+          const float cosVal = std::cos(angle);
+          const float sinVal = std::sin(angle);
+
+          const glm::vec3 normal = {cosVal, 0.0f, sinVal};
+
+          tubeSliceVertices[tubeIndex].normal = normal;
+          tubeSliceVertices[tubeIndex].position = normal * tubeRadius;
+        }
+
+        std::vector<glm::vec3> ringCenters;
+        ringCenters.reserve(ringQuality);
+
+        static_heap_grid_array<SubVertex> ringVertices;
+        ringVertices.allocate(ringQuality, tubeQuality);
+
+        for (uint32_t ringIndex = 0; ringIndex < ringQuality; ++ringIndex) {
+          const float coef = float(ringIndex) / float(ringQuality);
+          const float angle = startAngle + coef * sweepAngle;
+
+          const float radAngle = glm::radians(angle);
+          ringCenters.push_back({ringRadius * std::cos(radAngle),
+                                 ringRadius * std::sin(radAngle), 0});
+
+          const glm::mat4 transformNormal = glm::rotate(
+            glm::identity<glm::mat4>(), radAngle, glm::vec3(0, 0, 1));
+          const glm::mat4 transformVertex =
+            glm::translate(transformNormal, glm::vec3(ringRadius, 0, 0));
+
+          for (std::size_t tubeIndex = 0; tubeIndex < std::size_t(tubeQuality);
+               ++tubeIndex) {
+            const SubVertex& sliceVertex = tubeSliceVertices[tubeIndex];
+
+            SubVertex& vertex = ringVertices(ringIndex, tubeIndex);
+            vertex.position =
+              transformVertex * glm::vec4(sliceVertex.position, 1.0f);
+            vertex.normal =
+              transformNormal * glm::vec4(sliceVertex.normal, 0.0f);
+          }
+        }
+
+        for (std::size_t ringIndex = 0;
+             ringIndex + 1 < std::size_t(ringQuality); ++ringIndex) {
+          const std::size_t indexA1 = ringIndex;
+          const std::size_t indexB1 =
+            (ringIndex + 1) % std::size_t(ringQuality);
+
+          for (std::size_t tubeIndex = 0; tubeIndex < std::size_t(tubeQuality);
+               ++tubeIndex) {
+            const std::size_t indexA2 = tubeIndex;
+            const std::size_t indexB2 =
+              (tubeIndex + 1) % std::size_t(tubeQuality);
+
+            const SubVertex& vertexAA = ringVertices(indexA1, indexA2);
+            const SubVertex& vertexAB = ringVertices(indexA1, indexB2);
+            const SubVertex& vertexBA = ringVertices(indexB1, indexA2);
+            const SubVertex& vertexBB = ringVertices(indexB1, indexB2);
+
+            const glm::vec3 posAA = vertexAA.getForward(tubeRadius);
+            const glm::vec3 posAB = vertexAB.getForward(tubeRadius);
+            const glm::vec3 posBA = vertexBA.getForward(tubeRadius);
+            const glm::vec3 posBB = vertexBB.getForward(tubeRadius);
+
+            std::array<RealVertex, 4> patchVertices{{
+              {posAA, {0.0f, 0.0f}, {1.0f, 1.0f}},
+              {posAB, {0.0f, 1.0f}, {1.0f, 2.0f}},
+              {posBB, {1.0f, 1.0f}, {2.0f, 2.0f}},
+              {posBA, {1.0f, 0.0f}, {2.0f, 1.0f}},
+            }};
+
+            for (int index : indices)
+              vertices.push_back(patchVertices.at(index));
+          }
+        }
+      }
+    }
+
+    auto geoDef = resourceManager.getGeometryDefinition(
+      asValue(GeometryIds::backGroundTorus));
+
+    _geometry.initialise(*_shader, geoDef);
+    _geometry.updateBuffer(0, vertices);
+    _geometry.setPrimitiveCount(vertices.size());
+  }
+}
+
+void BackGroundTorusRenderer::update(float elapsedTime) {
+  _animationTime += elapsedTime;
+  while (_animationTime > 1.0f)
+    _animationTime -= 1.0f;
+}
+
+void BackGroundTorusRenderer::render(const glm::vec3& center) {
+
+  if (!_shader)
+    D_THROW(std::runtime_error, "shader not setup");
+
+  const auto& camera = Context::get().graphic.camera;
+  const auto& viewportSize = camera.viewportSize;
+
+  Camera tmpCamera;
+  tmpCamera.setSize(viewportSize.x, viewportSize.y);
+  tmpCamera.setPerspective(70.0f, 95.0f, 6000.0f);
+  tmpCamera.lookAt(camera.main.scene.getEye(), camera.main.scene.getTarget(),
+                   camera.main.scene.getUp());
+  tmpCamera.computeMatrices();
+
+  _shader->bind();
+
+  glm::mat4 model = glm::identity<glm::mat4>();
+
+  model = glm::translate(model, center + glm::vec3(0, ringRadius * 1.0f, 0));
+  model = glm::rotate(model, math::hpi, glm::vec3(0, 0, 1));
+  model = glm::scale(model, glm::vec3(1, 2, 1));
+
+  const glm::mat4 composed = tmpCamera.getMatricesData().composed * model;
+
+  _shader->setUniform("u_composedMatrix", composed);
+  _shader->setUniform("u_animationCoef", _animationTime);
+
+  _texture.bind();
+  _geometry.render();
+}

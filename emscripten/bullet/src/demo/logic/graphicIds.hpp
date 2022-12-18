@@ -3,26 +3,39 @@
 
 #include <cstdint>
 
-enum class Shaders : uint32_t {
-  stackRenderer = 0,
-  particles = 1,
-  simpleTexture = 2,
-  litTexture = 3,
-  hudText = 4,
-  wireframes = 5,
-  animatedCircuit = 6,
-  animatedCircuitLit = 7,
-  models = 8,
+enum class ShaderIds : uint32_t {
+  stackRendererHud = 0,
+  stackRendererScene,
+  particles,
+  simpleTexture,
+  simpleTextureLit,
+  hudText,
+  wireframes,
+  animatedCircuit,
+  animatedCircuitLit,
+  models,
+  modelsLit,
+  postProcess,
+  backGroundTorus,
 };
 
-enum class Geometries : uint32_t {
-  stackRenderer = 0,
-  particles = 1,
-  simpleTexture = 2,
-  hudText = 3,
-  wireframes = 4,
-  animatedCircuit = 5,
-  models = 6,
+enum class GeometryIds : uint32_t {
+  stackRendererWireframesHud = 0,
+  stackRendererTrianglesHud,
+  stackRendererWireframesScene,
+  stackRendererTrianglesScene,
+  particles,
+  simpleTexture,
+  simpleTextureLit,
+  hudText,
+  wireframes,
+  wireframesLineStrip,
+  animatedCircuit,
+  animatedCircuitLit,
+  models,
+  modelsLit,
+  postProcess,
+  backGroundTorus,
 };
 
 // enum class Textures : uint32_t

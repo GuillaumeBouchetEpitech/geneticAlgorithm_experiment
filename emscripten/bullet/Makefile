@@ -9,11 +9,11 @@ build_mode=release
 #
 
 ifeq ($(build_platform),native_pthread)
-$(info build_platform is valid, value=$(build_platform))
+# $(info build_platform is valid, value=$(build_platform))
 else ifeq ($(build_platform),web_wasm_pthread)
-$(info build_platform is valid, value=$(build_platform))
+# $(info build_platform is valid, value=$(build_platform))
 else ifeq ($(build_platform),web_wasm_webworker)
-$(info build_platform is valid, value=$(build_platform))
+# $(info build_platform is valid, value=$(build_platform))
 else
 $(error unsupported value for "build_platform", value=$(build_platform))
 endif
@@ -21,12 +21,14 @@ endif
 #
 
 ifeq ($(build_mode),release)
-$(info build_mode is valid, value=$(build_mode))
+# $(info build_mode is valid, value=$(build_mode))
 else ifeq ($(build_mode),debug)
-$(info build_mode is valid, value=$(build_mode))
+# $(info build_mode is valid, value=$(build_mode))
 else
 $(error unsupported value for "build_mode", value=$(build_mode))
 endif
+
+LOG_INFO= '[$(build_mode)] [$(build_platform)]'
 
 #
 
@@ -208,6 +210,8 @@ AR=emar
 CXXFLAGS += -s USE_SDL=2
 
 LDFLAGS_COMMON_WEB += -s USE_SDL=2
+LDFLAGS_COMMON_WEB += -s USE_WEBGL2=1
+LDFLAGS_COMMON_WEB += -s FULL_ES3=1
 LDFLAGS_COMMON_WEB += -s TOTAL_MEMORY=128Mb # 16Kb, 256Mb, etc.
 LDFLAGS_COMMON_WEB +=	-s WASM=1
 LDFLAGS_COMMON_WEB +=	-s BINARYEN_IGNORE_IMPLICIT_TRAPS=1
@@ -285,23 +289,27 @@ all:	machine_learning application web_worker
 endif
 
 ensurefolders:
-				@mkdir -p $(DIR_TARGET)
-				@mkdir -p $(DIR_LIB)
+	@mkdir -p `dirname $(NAME_APPLICATION)`
+	@mkdir -p `dirname $(NAME_MACHINE_LEARNING)`
 
 application:	ensurefolders $(OBJ)
-				@mkdir -p `dirname $(NAME_APPLICATION)`
-				$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME_APPLICATION) $(LDFLAGS)
+	@echo ' ---> building $(LOG_INFO): "application"'
+	@$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME_APPLICATION) $(LDFLAGS)
+	@echo '   --> built $(LOG_INFO): "application"'
 
 ifeq ($(build_platform),web_wasm_webworker)
 
 web_worker:		ensurefolders $(OBJ_WEB_WORKER)
-				@mkdir -p `dirname $(NAME_WEB_WORKER)`
-				$(CXX) $(CXXFLAGS) $(OBJ_WEB_WORKER) -o $(NAME_WEB_WORKER) $(LDFLAGS_WEB_WORKER)
+	@echo ' ---> building $(LOG_INFO): "web worker application"'
+	@$(CXX) $(CXXFLAGS) $(OBJ_WEB_WORKER) -o $(NAME_WEB_WORKER) $(LDFLAGS_WEB_WORKER)
+	@echo '   --> built $(LOG_INFO): "web worker application"'
 
 endif
 
 machine_learning:	ensurefolders $(OBJ_MACHINE_LEARNING)
-				$(AR) cr $(NAME_MACHINE_LEARNING) $(OBJ_MACHINE_LEARNING) $(NAME_LIB_FRAMEWORK_SYSTEM)
+	@echo ' ---> building $(LOG_INFO): "machine learning library"'
+	@$(AR) cr $(NAME_MACHINE_LEARNING) $(OBJ_MACHINE_LEARNING) $(NAME_LIB_FRAMEWORK_SYSTEM)
+	@echo '   --> built $(LOG_INFO): "machine learning library"'
 
 #
 
@@ -311,21 +319,21 @@ machine_learning:	ensurefolders $(OBJ_MACHINE_LEARNING)
 
 $(DIR_OBJ)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 ifeq ($(build_platform),web_wasm_webworker)
 
 $(DIR_OBJ_WEB_WORKER)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 endif
 
 $(DIR_OBJ_MACHINE_LEARNING)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 #
@@ -333,30 +341,42 @@ $(DIR_OBJ_MACHINE_LEARNING)/%.o: %.cpp
 ifneq ($(build_platform),web_wasm_webworker)
 
 clean:
-		$(RM) $(DIR_OBJ)
+	@echo ' -> cleaning $(LOG_INFO): application build file(s)'
+	$(RM) $(DIR_OBJ)
+	@echo '   -> cleaned $(LOG_INFO): application build file(s)'
 
 fclean:	clean
-		$(RM) $(NAME_APPLICATION)
+	@echo ' -> cleaning $(LOG_INFO): application file(s)'
+	$(RM) $(NAME_APPLICATION)
+	@echo '   -> cleaned $(LOG_INFO): application file(s)'
 
 else ifeq ($(build_platform),web_wasm_webworker)
 
 clean:
-		$(RM) $(DIR_OBJ)
-		$(RM) $(DIR_OBJ_WEB_WORKER)
+	@echo ' -> cleaning $(LOG_INFO): application and webworker build file(s)'
+	$(RM) $(DIR_OBJ)
+	$(RM) $(DIR_OBJ_WEB_WORKER)
+	@echo '   -> cleaned $(LOG_INFO): application and webworker build file(s)'
 
 fclean:	clean
-		$(RM) $(NAME_APPLICATION)
-		$(RM) $(NAME_WEB_WORKER)
+	@echo ' -> cleaning $(LOG_INFO): application and webworker file(s)'
+	$(RM) $(NAME_APPLICATION)
+	$(RM) $(NAME_WEB_WORKER)
+	@echo '   -> cleaned $(LOG_INFO): application and webworker file(s)'
 
 endif
 
 re:			fclean all
 
 clean_ml:
-		$(RM) $(DIR_OBJ_MACHINE_LEARNING)
+	@echo ' -> cleaning $(LOG_INFO): machine learning build file(s)'
+	$(RM) $(DIR_OBJ_MACHINE_LEARNING)
+	@echo '   -> cleaned $(LOG_INFO): machine learning build file(s)'
 
 fclean_ml:	clean_ml
-		$(RM) $(NAME_MACHINE_LEARNING)
+	@echo ' -> cleaning $(LOG_INFO): machine learning file(s)'
+	$(RM) $(NAME_MACHINE_LEARNING)
+	@echo '   -> cleaned $(LOG_INFO): machine learning file(s)'
 
 re_ml:	fclean_ml machine_learning
 

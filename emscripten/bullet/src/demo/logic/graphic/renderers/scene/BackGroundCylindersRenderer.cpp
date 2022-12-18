@@ -1,22 +1,18 @@
 
 #include "BackGroundCylindersRenderer.hpp"
 
+#include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
 #include "framework/asValue.hpp"
-
+#include "framework/helpers/GLMath.hpp"
 #include "framework/math/constants.hpp"
 
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
-#include "framework/helpers/GLMath.hpp"
-
-#include "demo/logic/Context.hpp"
-
 void BackGroundCylindersRenderer::initialise(const glm::vec3& size) {
-  _shader = Context::get().graphic.resourceManager.getShader(
-    asValue(Shaders::simpleTexture));
+
+  auto& resourceManager = Context::get().graphic.resourceManager;
+
+  _shader = resourceManager.getShader(asValue(ShaderIds::simpleTexture));
 
   { // cylinders (generate the texture)
 
@@ -122,17 +118,11 @@ void BackGroundCylindersRenderer::initialise(const glm::vec3& size) {
       }
     }
 
-    GeometryBuilder geometryBuilder;
-
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
+    auto geoDef = resourceManager.getGeometryDefinition(
+      asValue(GeometryIds::simpleTexture));
 
     for (auto& geometry : _geometries) {
-      geometryBuilder.build(geometry);
+      geometry.initialise(*_shader, geoDef);
       geometry.updateBuffer(0, vertices);
       geometry.setPrimitiveCount(vertices.size());
     }

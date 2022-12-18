@@ -3,14 +3,8 @@
 
 #include "common.hpp"
 
-#include "demo/states/StateManager.hpp"
-
 #include "demo/logic/graphicIds.hpp"
-
-#include "framework/asValue.hpp"
-
-#include "framework/TraceLogger.hpp"
-#include "framework/math/clamp.hpp"
+#include "demo/states/StateManager.hpp"
 
 #include "renderers/hud/CoreUsageRenderer.hpp"
 #include "renderers/hud/NewLeaderRenderer.hpp"
@@ -18,8 +12,10 @@
 
 #include "./helpers/writeTime.hpp"
 
+#include "framework/TraceLogger.hpp"
+#include "framework/asValue.hpp"
 #include "framework/graphic/GlContext.hpp"
-#include "framework/graphic/ResourceManager.hpp"
+#include "framework/math/clamp.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -38,7 +34,7 @@ void Scene::_renderHUD_ortho() {
 
   { // texts
 
-    auto& textRenderer = graphic.textRenderer;
+    auto& textRenderer = graphic.hud.textRenderer;
     const auto& simulation = *logic.simulation;
     const auto& hudText = logic.hudText;
 
@@ -48,7 +44,7 @@ void Scene::_renderHUD_ortho() {
 
     { // top-left header text
 
-      textRenderer.push({8, vSize.y - 16 - 8}, hudText.header, glm::vec3(1),
+      textRenderer.push({8, vSize.y - 16 - 8}, hudText.header, glm::vec4(1),
                         1.0f);
 
     } // top-left header text
@@ -62,7 +58,7 @@ void Scene::_renderHUD_ortho() {
 
       const std::string str = sstr.str();
 
-      textRenderer.push({8, vSize.y - 5 * 16 - 8}, str, glm::vec3(1), 1.0f);
+      textRenderer.push({8, vSize.y - 5 * 16 - 8}, str, glm::vec4(1), 1.0f);
 
     } // top-left performance stats
 
@@ -89,7 +85,7 @@ void Scene::_renderHUD_ortho() {
 
         const std::string str = sstr.str();
 
-        textRenderer.push({8, 8 + 2 * 16}, str, glm::vec3(1), 1.0f);
+        textRenderer.push({8, 8 + 2 * 16}, str, glm::vec4(1), 1.0f);
       }
 
       {
@@ -107,8 +103,8 @@ void Scene::_renderHUD_ortho() {
             ? 0.0f
             : clamp(localBestFitness / bestFitness, 0.0f, 1.0f);
 
-        const glm::vec3 textColor =
-          glm::mix(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), coef);
+        const glm::vec4 textColor =
+          glm::mix(glm::vec4(1, 0, 0, 1), glm::vec4(0, 1, 0, 1), coef);
 
         textRenderer.push({8, 8 + 1 * 16}, str, textColor, 1.0f);
       }
@@ -124,8 +120,8 @@ void Scene::_renderHUD_ortho() {
         const float coef =
           1.0f - clamp(float(carsLeft) / totalCars, 0.0f, 1.0f);
 
-        const glm::vec3 textColor =
-          glm::mix(glm::vec3(0, 1, 0), glm::vec3(1, 0, 0), coef);
+        const glm::vec4 textColor =
+          glm::mix(glm::vec4(0, 1, 0, 1), glm::vec4(1, 0, 0, 1), coef);
 
         textRenderer.push({8, 8 + 0 * 16}, str, textColor, 1.0f);
       }
@@ -147,9 +143,11 @@ void Scene::_renderHUD_ortho() {
         sstr << "WEB WORKERS" << std::endl << "  LOADING  " << std::endl;
         std::string message = sstr.str();
 
-        textRenderer.push(
-          {vSize.x * 0.5f - 5 * 16 * scale, vSize.y * 0.5f - 8 * scale},
-          message, glm::vec3(1), scale);
+        glm::vec2 textPos;
+        textPos.x = vSize.x * 0.5f - 5 * 16 * scale;
+        textPos.y = vSize.y * 0.5f - 8 * scale;
+
+        textRenderer.push(textPos, message, glm::vec4(1), scale);
       }
 #endif
 
@@ -158,65 +156,11 @@ void Scene::_renderHUD_ortho() {
 
         std::string message = "PAUSED";
 
-        textRenderer.push(
-          {vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale,
-           vSize.y * 0.5f - 8 * scale},
-          message, glm::vec3(1), scale);
-      }
+        glm::vec2 textPos;
+        textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
+        textPos.y = vSize.y * 0.5f - 8 * scale;
 
-      if (currentState == StateManager::States::StartGeneration) {
-        {
-          const float scale = 3.0f;
-
-          std::stringstream sstr;
-          sstr << "Generation: " << simulation.getGenerationNumber();
-          const std::string message = sstr.str();
-
-          textRenderer.push(
-            {vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale,
-             vSize.y * 0.5f + 16 * scale},
-            message, glm::vec3(1), scale);
-        }
-
-        {
-          const float scale = 2.0f;
-
-          const float prevFitness = logic.fitnessStats.get(-2);
-          const float currFitness = logic.fitnessStats.get(-1);
-
-          if (currFitness > 0.0f) {
-            {
-              std::stringstream sstr;
-              sstr << "Fitness: " << std::fixed << std::setprecision(1)
-                   << currFitness;
-              std::string message = sstr.str();
-
-              textRenderer.push(
-                {vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale,
-                 vSize.y * 0.5f + 0 * scale},
-                message, glm::vec3(1), scale);
-            }
-
-            if (currFitness != prevFitness) {
-              std::stringstream sstr;
-
-              if (currFitness > prevFitness)
-                sstr << "Smarter result (+" << std::fixed
-                     << std::setprecision(1) << (currFitness - prevFitness)
-                     << ")";
-              else if (currFitness < prevFitness)
-                sstr << "Worse result (" << std::fixed << std::setprecision(1)
-                     << (currFitness - prevFitness) << ")";
-
-              const std::string message = sstr.str();
-
-              textRenderer.push(
-                {vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale,
-                 vSize.y * 0.5f - 16 * scale},
-                message, glm::vec3(1), scale);
-            }
-          }
-        }
+        textRenderer.push(textPos, message, glm::vec4(1), scale);
       }
 
     } // big titles
@@ -225,12 +169,29 @@ void Scene::_renderHUD_ortho() {
 
   } // texts
 
+  {
+
+    auto& textRenderer = graphic.hud.textRenderer;
+    textRenderer.clear();
+
+
+    graphic.hud.animationManager.render();
+
+
+    auto& stackRenderer = graphic.hud.stackRenderers;
+    stackRenderer.wireframes.flush();
+    stackRenderer.triangles.flush();
+
+    textRenderer.render();
+
+  }
+
   { // wireframes
 
     coreUsageRndr.renderWireframe();
     newLeaderRndr.renderWireframe();
 
-    auto& stackRenderer = graphic.stackRenderers;
+    auto& stackRenderer = graphic.hud.stackRenderers;
 
     { // progresses curve
 
@@ -269,8 +230,8 @@ void Scene::_renderHUD_ortho() {
     if (logic.leaderCar.hasLeader()) {
       const auto& vSize = graphic.camera.viewportSize;
 
-      graphic.topologyRenderer.render(glm::vec2(vSize.x - 150 - 10, 170),
-                                      glm::vec2(150, 125));
+      graphic.hud.topologyRenderer.render(glm::vec2(vSize.x - 150 - 10, 170),
+                                          glm::vec2(150, 125));
 
       renderLeaderEye(glm::vec2(vSize.x - 100 - 10, 305), glm::vec2(100, 60));
     }
@@ -312,30 +273,29 @@ void Scene::_renderHUD_thirdPerson() {
 
   const auto& matriceData = camInstance.getMatricesData();
 
-  graphic.stackRenderers.wireframes.setMatricesData(matriceData);
-  graphic.stackRenderers.triangles.setMatricesData(matriceData);
-  graphic.particleManager.setMatricesData(matriceData);
-  graphic.floorRenderer.setMatricesData(matriceData);
-  graphic.backGroundCylindersRenderer.setMatricesData(matriceData);
-  graphic.animatedCircuitRenderer.setMatricesData(matriceData);
-  graphic.flockingManager.setMatricesData(matriceData);
-  graphic.carTailsRenderer.setMatricesData(matriceData);
+  graphic.hud.stackRenderers.wireframes.setMatricesData(matriceData);
+  graphic.hud.stackRenderers.triangles.setMatricesData(matriceData);
+  graphic.scene.particleManager.setMatricesData(matriceData);
+  graphic.scene.floorRenderer.setMatricesData(matriceData);
+  graphic.scene.animatedCircuitRenderer.setMatricesData(matriceData);
+  graphic.scene.flockingManager.setMatricesData(matriceData);
+  graphic.scene.carTailsRenderer.setMatricesData(matriceData);
 
   Scene::_renderFloor(camInstance);
-  graphic.animatedCircuitRenderer.renderWireframe();
-  graphic.animatedCircuitRenderer.renderWalls();
+  graphic.scene.animatedCircuitRenderer.renderWireframe();
+  graphic.scene.animatedCircuitRenderer.renderWalls();
 
   Scene::_renderLeadingCarSensors();
-  graphic.flockingManager.render();
+  graphic.scene.flockingManager.render();
 
-  graphic.stackRenderers.wireframes.flush();
-  graphic.stackRenderers.triangles.flush();
+  graphic.hud.stackRenderers.wireframes.flush();
+  graphic.hud.stackRenderers.triangles.flush();
 
-  graphic.particleManager.render();
+  graphic.scene.particleManager.render();
 
-  graphic.modelsRenderer.render(camInstance);
-  graphic.animatedCircuitRenderer.renderGround();
-  graphic.carTailsRenderer.render();
+  graphic.scene.modelsRenderer.render(camInstance);
+  graphic.scene.animatedCircuitRenderer.renderGround();
+  graphic.scene.carTailsRenderer.render();
 
   GlContext::disable(GlContext::States::scissorTest);
   GlContext::setViewport(0, 0, viewportSize.x, viewportSize.y);
@@ -345,20 +305,8 @@ void Scene::_renderHUD() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  { // render in framebuffer
+  graphic.hud.postProcess.render();
 
-    graphic.postProcess.startRecording();
-
-    Scene::_renderHUD_ortho();
-    Scene::_renderHUD_thirdPerson();
-
-    graphic.postProcess.stopRecording();
-
-  } // render in framebuffer
-
-  { // render framebuffer texture in curved geometry
-
-    graphic.postProcess.render();
-
-  } // render framebuffer texture in curved geometry
+  Scene::_renderHUD_ortho();
+  Scene::_renderHUD_thirdPerson();
 }

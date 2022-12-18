@@ -2,46 +2,24 @@
 #include "TextRenderer.hpp"
 
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
-
-#include "framework/graphic/GeometryBuilder.hpp"
-#include "framework/graphic/ResourceManager.hpp"
-
 #include "framework/ErrorHandler.hpp"
+#include "framework/asValue.hpp"
 
 void TextRenderer::initialise() {
 
-  _shader =
-    Context::get().graphic.resourceManager.getShader(asValue(Shaders::hudText));
+  auto& resourceManager = Context::get().graphic.resourceManager;
 
-  _texture = Context::get().graphic.resourceManager.getTexture(0);
+  _shader = resourceManager.getShader(asValue(ShaderIds::hudText));
+
+  _texture = resourceManager.getTexture(0);
 
   const glm::vec2 gridSize = {16, 16};
   const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
   const glm::vec2 texCoord = letterSize / glm::vec2(_texture->getSize());
 
   {
-
-    GeometryBuilder geometryBuilder;
-
-    geometryBuilder.reset()
-      .setShader(*_shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec2f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 2)
-      .addVbo()
-      .setVboAsInstanced()
-      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f, 3)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 5)
-      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 8);
-
-    geometryBuilder.build(_geometry);
-
     struct Vertex {
       glm::vec2 position;
       glm::vec2 texCoord;
@@ -61,6 +39,9 @@ void TextRenderer::initialise() {
     for (int index : indices)
       letterVertices.push_back(vertices.at(index));
 
+    auto geoDef =
+      resourceManager.getGeometryDefinition(asValue(GeometryIds::hudText));
+    _geometry.initialise(*_shader, geoDef);
     _geometry.updateBuffer(0, letterVertices);
     _geometry.setPrimitiveCount(letterVertices.size());
   }
@@ -182,7 +163,7 @@ void TextRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
 //
 
 void TextRenderer::push(const glm::vec2& position, std::string_view message,
-                        const glm::vec3& color, float scale /* = 1.0f */,
+                        const glm::vec4& color, float scale /* = 1.0f */,
                         TextAllign allign /* = TextAllign::left */) {
   // TODO: support text align
 
@@ -238,7 +219,7 @@ void TextRenderer::push(const glm::vec2& position, std::string_view message,
                                 currPos.y + scale * stepY, 0.0f};
 
         _lettersOffsetBackground.push_back(
-          {pos0, texCoord, glm::vec3(0), scale});
+          {pos0, texCoord, glm::vec4(0, 0, 0, 1), scale});
       }
 
     currPos.x += letterSize.x * scale;

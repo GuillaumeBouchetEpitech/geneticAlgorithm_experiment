@@ -135,8 +135,6 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize) {
       _geneticAlgorithm.getNeuralNetworks()
         .at(_coreIndex * _def.genomesPerCore + carIndex)
         ->setNeuronsValues(neuronsValues);
-
-      // TODO: neural network outputs here
     }
 
     _flags[asValue(Status::Updated)] = true;

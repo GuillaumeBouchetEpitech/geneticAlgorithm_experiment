@@ -9,17 +9,19 @@ build_mode=release
 
 ifeq ($(build_platform),native)
 
-$(info build_platform is valid, value=$(build_platform))
+# $(info build_platform is valid, value=$(build_platform))
 
 else ifeq ($(build_platform),web_wasm)
 
-$(info build_platform is valid, value=$(build_platform))
+# $(info build_platform is valid, value=$(build_platform))
 
 else
 
 $(error unsupported value for "build_platform", value=$(build_platform))
 
 endif
+
+LOG_INFO= '[$(build_mode)] [$(build_platform)]'
 
 #
 
@@ -103,6 +105,7 @@ SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/*.cpp)
 SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/camera/*.cpp)
 SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/vertexBuffers/*.cpp)
 SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/loaders/*.cpp)
+SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/wrappers/*.cpp)
 
 SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/*.cpp)
 SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/body/*.cpp)
@@ -234,16 +237,24 @@ framework:	\
 	framework_audio
 
 framework_system:	ensure_folders $(OBJ_FRAMEWORK_SYSTEM)
-	$(AR) cr $(NAME_FRAMEWORK_SYSTEM) $(OBJ_FRAMEWORK_SYSTEM)
+	@echo ' ---> building $(LOG_INFO): "framework system library"'
+	@$(AR) cr $(NAME_FRAMEWORK_SYSTEM) $(OBJ_FRAMEWORK_SYSTEM)
+	@echo '   --> built $(LOG_INFO): "framework system library"'
 
 framework_graphic:	ensure_folders $(OBJ_FRAMEWORK_GRAPHIC)
-	$(AR) cr $(NAME_FRAMEWORK_GRAPHIC) $(OBJ_FRAMEWORK_GRAPHIC)
+	@echo ' ---> building $(LOG_INFO): "framework graphic library"'
+	@$(AR) cr $(NAME_FRAMEWORK_GRAPHIC) $(OBJ_FRAMEWORK_GRAPHIC)
+	@echo '   --> built $(LOG_INFO): "framework graphic library"'
 
 framework_physic:	ensure_folders $(OBJ_FRAMEWORK_PHYSIC)
-	$(AR) cr $(NAME_FRAMEWORK_PHYSIC) $(OBJ_FRAMEWORK_PHYSIC)
+	@echo ' ---> building $(LOG_INFO): "framework physic library"'
+	@$(AR) cr $(NAME_FRAMEWORK_PHYSIC) $(OBJ_FRAMEWORK_PHYSIC)
+	@echo '   --> built $(LOG_INFO): "framework physic library"'
 
 framework_audio:	ensure_folders $(OBJ_FRAMEWORK_AUDIO)
-	$(AR) cr $(NAME_FRAMEWORK_AUDIO) $(OBJ_FRAMEWORK_AUDIO)
+	@echo ' ---> building $(LOG_INFO): "framework audio library"'
+	@$(AR) cr $(NAME_FRAMEWORK_AUDIO) $(OBJ_FRAMEWORK_AUDIO)
+	@echo '   --> built $(LOG_INFO): "framework audio library"'
 
 ifeq ($(build_platform),native)
 
@@ -251,7 +262,9 @@ ensure_tests_folders: ensure_folders
 	@mkdir -p $(DIR_TESTS)
 
 build-tests: ensure_tests_folders $(OBJ_TESTS)
-	$(CXX) $(CXXFLAGS_TESTS) $(OBJ_TESTS) -o $(NAME_TESTS) $(LDFLAGS_TESTS)
+	@echo ' ---> building $(LOG_INFO): "tests"'
+	@$(CXX) $(CXXFLAGS_TESTS) $(OBJ_TESTS) -o $(NAME_TESTS) $(LDFLAGS_TESTS)
+	@echo '   --> built $(LOG_INFO): "tests"'
 
 endif
 
@@ -262,13 +275,19 @@ bullet:	\
 	bullet_dynamics
 
 bullet_linearmath:	$(OBJ_BULLET_LINEARMATH)
-	$(AR) cr $(NAME_BULLET_LINEARMATH) $(OBJ_BULLET_LINEARMATH)
+	@echo ' ---> building $(LOG_INFO): "bullet linear math library"'
+	@$(AR) cr $(NAME_BULLET_LINEARMATH) $(OBJ_BULLET_LINEARMATH)
+	@echo '   --> built $(LOG_INFO): "bullet linear math library"'
 
 bullet_collision:	$(OBJ_BULLET_COLLISION)
-	$(AR) cr $(NAME_BULLET_COLLISION) $(OBJ_BULLET_COLLISION)
+	@echo ' ---> building $(LOG_INFO): "bullet collision library"'
+	@$(AR) cr $(NAME_BULLET_COLLISION) $(OBJ_BULLET_COLLISION)
+	@echo '   --> built $(LOG_INFO): "bullet collision library"'
 
 bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
-	$(AR) cr $(NAME_BULLET_DYNAMICS) $(OBJ_BULLET_DYNAMICS)
+	@echo ' ---> building $(LOG_INFO): "bullet dynamics library"'
+	@$(AR) cr $(NAME_BULLET_DYNAMICS) $(OBJ_BULLET_DYNAMICS)
+	@echo '   --> built $(LOG_INFO): "bullet dynamics library"'
 
 #
 
@@ -278,60 +297,73 @@ bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
 
 $(DIR_OBJ_FRAMEWORK)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_FRAMEWORK) $< -c -o $@
 
 ifeq ($(build_platform),native)
 
 $(DIR_OBJ_TESTS)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_TESTS) $< -c -o $@
 
 endif
 
 $(DIR_OBJ_BULLET_LINEARMATH)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 $(DIR_OBJ_BULLET_COLLISION)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 $(DIR_OBJ_BULLET_DYNAMICS)/%.o: %.cpp
 	@mkdir -p `dirname $@`
-	@echo ' ---> building: '$<
+	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 #
 
 clean:
-		$(RM) $(DIR_OBJ_FRAMEWORK)
+	@echo ' -> cleaning $(LOG_INFO): framework library build file(s)'
+	@$(RM) $(DIR_OBJ_FRAMEWORK)
+	@echo '   -> cleaned $(LOG_INFO): framework library build file(s)'
 
 fclean: clean
-		$(RM) $(NAME_FRAMEWORK_SYSTEM)
-		$(RM) $(NAME_FRAMEWORK_GRAPHIC)
-		$(RM) $(NAME_FRAMEWORK_PHYSIC)
+	@echo ' -> cleaning $(LOG_INFO): framework library file(s)'
+	@$(RM) $(NAME_FRAMEWORK_SYSTEM)
+	@$(RM) $(NAME_FRAMEWORK_GRAPHIC)
+	@$(RM) $(NAME_FRAMEWORK_PHYSIC)
+	@$(RM) $(NAME_FRAMEWORK_AUDIO)
+	@echo '   -> cleaned $(LOG_INFO): framework library file(s)'
 
 ifeq ($(build_platform),native)
 
 clean_tests:
-		$(RM) $(DIR_OBJ_TESTS)
+	@echo ' -> cleaning $(LOG_INFO): tests build file(s)'
+	@$(RM) $(DIR_OBJ_TESTS)
+	@echo '   -> cleaned $(LOG_INFO): tests build file(s)'
 
 fclean_tests: clean_tests
-		$(RM) $(NAME_TESTS)
+	@echo ' -> cleaning $(LOG_INFO): tests file(s)'
+	@$(RM) $(NAME_TESTS)
+	@echo '   -> cleaned $(LOG_INFO): tests file(s)'
 
 endif
 
 clean_bullet:
-		$(RM) $(DIR_OBJ_BULLET)
+	@echo ' -> cleaning $(LOG_INFO): bullet physics library build file(s)'
+	@$(RM) $(DIR_OBJ_BULLET)
+	@echo '   -> cleaned $(LOG_INFO): bullet physics library build file(s)'
 
 fclean_bullet: clean_bullet
-		$(RM) $(NAME_BULLET_LINEARMATH)
-		$(RM) $(NAME_BULLET_COLLISION)
-		$(RM) $(NAME_BULLET_DYNAMICS)
+	@echo ' -> cleaning $(LOG_INFO): bullet physics library file(s)'
+	@$(RM) $(NAME_BULLET_LINEARMATH)
+	@$(RM) $(NAME_BULLET_COLLISION)
+	@$(RM) $(NAME_BULLET_DYNAMICS)
+	@echo '   -> cleaned $(LOG_INFO): bullet physics library file(s)'
 
 re:			fclean all
 

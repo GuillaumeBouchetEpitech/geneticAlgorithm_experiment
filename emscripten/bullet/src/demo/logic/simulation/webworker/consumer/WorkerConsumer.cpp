@@ -288,8 +288,6 @@ void WorkerConsumer::_processSimulation(float elapsedTime,
     _messageToSend << neuronsValues.size();
     for (const auto& currValue : neuronsValues)
       _messageToSend << currValue;
-
-    // TODO: neural network outputs here
   }
 
   _sendBackToProducer();

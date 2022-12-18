@@ -8,6 +8,8 @@
 
 #include "framework/ErrorHandler.hpp"
 
+Texture::DepthCompatibleValues Texture::s_depthCompatibleValues;
+
 Texture::~Texture() { dispose(); }
 
 //
@@ -34,24 +36,53 @@ void Texture::allocateBlank(const glm::uvec2& size,
   _size = size;
 
   if (_textureId == 0)
-    _textureId = GlContext::genTexture();
+    _textureId = GlContext::Texture::generateOne();
 
-  GlContext::bindTexture(_textureId);
+  GlContext::Texture::bind(_textureId);
 
-  GlContext::uploadPixels(uint32_t(_size.x), uint32_t(_size.y), pixels);
+  GlContext::Texture::uploadPixels(uint32_t(_size.x), uint32_t(_size.y),
+                                   pixels);
 
-  GlContext::setTextureAsRepeat(pattern == Pattern::repeat);
+  GlContext::Texture::setTextureAsRepeat(pattern == Pattern::repeat);
 
   if (quality == Quality::pixelated) {
-    GlContext::setTextureAsPixelated();
+    GlContext::Texture::setTextureAsPixelated();
   } else {
-    GlContext::setTextureAsSmoothed(quality == Quality::smoothedAndMipMapped);
+    GlContext::Texture::setTextureAsSmoothed(quality ==
+                                             Quality::smoothedAndMipMapped);
   }
 
-  GlContext::bindTexture(0);
+  GlContext::Texture::bind(0);
 }
 
-void Texture::allocateDepth(const glm::uvec2& size) {
+namespace {
+GlContext::Texture::DepthFormat
+getRawDepthFormat(Texture::DepthFormat depthFormat) {
+  switch (depthFormat) {
+  case Texture::DepthFormat::depth16:
+    return GlContext::Texture::DepthFormat::depth16;
+  case Texture::DepthFormat::depth24:
+    return GlContext::Texture::DepthFormat::depth24;
+  case Texture::DepthFormat::depth32:
+    return GlContext::Texture::DepthFormat::depth32;
+  case Texture::DepthFormat::depth32f:
+    return GlContext::Texture::DepthFormat::depth32f;
+  }
+}
+GlContext::Texture::DepthType getRawDepthType(Texture::DepthType depthType) {
+  switch (depthType) {
+  case Texture::DepthType::float32:
+    return GlContext::Texture::DepthType::float32;
+  case Texture::DepthType::unsingedInt:
+    return GlContext::Texture::DepthType::unsingedInt;
+  default:
+    return GlContext::Texture::DepthType::unsingedShort;
+  }
+}
+} // namespace
+
+void Texture::allocateDepth(const glm::uvec2& size, DepthFormat depthFormat,
+                            DepthType depthType) {
   _size = size;
 
   // TODO: check max texture size
@@ -59,11 +90,71 @@ void Texture::allocateDepth(const glm::uvec2& size) {
   //   D_THROW(std::runtime_error, "image allocated with incorrect size");
 
   if (_textureId == 0)
-    _textureId = GlContext::genTexture();
+    _textureId = GlContext::Texture::generateOne();
 
-  GlContext::bindTexture(_textureId);
-  GlContext::setAsDepthTexture(_size.x, _size.y);
-  GlContext::bindTexture(0);
+  const GlContext::Texture::DepthFormat rawFormat =
+    getRawDepthFormat(depthFormat);
+  const GlContext::Texture::DepthType rawType = getRawDepthType(depthType);
+
+  GlContext::Texture::bind(_textureId);
+  GlContext::Texture::setAsDepthTexture(_size.x, _size.y, rawFormat, rawType);
+  GlContext::Texture::bind(0);
+}
+
+void Texture::allocateCompatibleDepth(const glm::uvec2& size) {
+  Texture::ensureCompatibleDepth();
+  allocateDepth(size, s_depthCompatibleValues.depthFormat,
+                s_depthCompatibleValues.depthType);
+}
+
+void Texture::ensureCompatibleDepth() {
+  if (s_depthCompatibleValues.computed == true)
+    return;
+
+  s_depthCompatibleValues.computed = true;
+
+  struct DepthParameters {
+    Texture::DepthFormat format;
+    Texture::DepthType type;
+    std::string_view msg;
+  };
+
+  std::array<DepthParameters, 4> allConfig = {{
+    // { Texture::DepthFormat::depth32f, Texture::DepthType::float32, "float32"
+    // },
+    {Texture::DepthFormat::depth32, Texture::DepthType::unsingedInt,
+     "depth32-int"},
+    {Texture::DepthFormat::depth24, Texture::DepthType::unsingedInt,
+     "depth24-int"},
+    {Texture::DepthFormat::depth16, Texture::DepthType::unsingedInt,
+     "depth16-int"},
+    {Texture::DepthFormat::depth16, Texture::DepthType::unsingedShort,
+     "depth16-short"},
+  }};
+
+  Texture tmpColorTexture;
+  Texture tmpDepthTexture;
+  FrameBuffer tmpFrameBuffer;
+  const glm::uvec2 tmpSize = {10, 10};
+
+  tmpColorTexture.allocateBlank(tmpSize);
+
+  for (auto& currConfig : allConfig) {
+    tmpDepthTexture.allocateDepth(tmpSize, currConfig.format, currConfig.type);
+
+    FrameBuffer::Definition def;
+    def.colorTextures.push_back({0, &tmpColorTexture});
+    def.depthTexture = &tmpDepthTexture;
+    if (tmpFrameBuffer.initialise(def, false)) {
+      s_depthCompatibleValues.depthFormat = currConfig.format;
+      s_depthCompatibleValues.depthType = currConfig.type;
+      D_MYLOG("currConfig.msg " << currConfig.msg);
+      break;
+    }
+  }
+
+  if (!tmpFrameBuffer.isLinked())
+    D_THROW(std::runtime_error, "depth texture are unavailable");
 }
 
 void Texture::dispose() {
@@ -72,7 +163,7 @@ void Texture::dispose() {
 
   _size.x = 0;
   _size.y = 0;
-  GlContext::deleteTexture(_textureId);
+  GlContext::Texture::deleteOne(_textureId);
   _textureId = 0;
 }
 
@@ -102,7 +193,7 @@ void Texture::bind() const {
   if (_textureId == 0)
     D_THROW(std::runtime_error, "not allocated");
 
-  GlContext::bindTexture(_textureId);
+  GlContext::Texture::bind(_textureId);
 }
 
-void Texture::unbind() { GlContext::bindTexture(0); }
+void Texture::unbind() { GlContext::Texture::bind(0); }

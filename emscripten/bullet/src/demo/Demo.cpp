@@ -1,11 +1,9 @@
 
 #include "Demo.hpp"
 
-#include "states/StateManager.hpp"
-
 #include "demo/logic/Context.hpp"
-
 #include "demo/logic/graphic/Scene.hpp"
+#include "demo/states/StateManager.hpp"
 
 #include "framework/TraceLogger.hpp"
 
@@ -13,7 +11,7 @@
 
 Demo::Demo(const Definition& def)
   : SDLWindowWrapper("AI", def.width, def.height, 30,
-                     SDLWindowWrapper::OpenGlEsVersion::v2) {
+                     SDLWindowWrapper::OpenGlEsVersion::v3) {
   Context::create(def.width, def.height, def.totalCores, def.genomesPerCore);
   StateManager::create();
   Scene::initialise();
