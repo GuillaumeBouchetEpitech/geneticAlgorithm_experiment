@@ -10,8 +10,8 @@
 #include "framework/helpers/GLMath.hpp"
 // #include "framework/math/easingFunctions.hpp"
 
-#include <iomanip>
 #include <array>
+#include <iomanip>
 
 void State_StartGeneration::enter() {
   auto& context = Context::get();
@@ -23,111 +23,118 @@ void State_StartGeneration::enter() {
     _countdownUntilNextState = 1500; // wait 1.5 second(s)
   }
 
-  context.graphic.hud.animationManager.push(0.0f, float(_countdownUntilNextState + 500) / 1000.0f, [&context](float coef)
-  {
-    static_cast<void>(coef);
+  context.graphic.hud.animationManager.push(
+    0.0f, float(_countdownUntilNextState + 500) / 1000.0f,
+    [&context](float coef) {
+      static_cast<void>(coef);
 
-    auto& graphic = context.graphic;
-    auto& vSize = graphic.camera.viewportSize;
+      auto& graphic = context.graphic;
+      auto& vSize = graphic.camera.viewportSize;
 
-    {
-      const float valueAlpha = AnimationTransition()
-        .push(0.0f, 0.0f)
-        .push(0.1f, 1.0f)
-        .push(0.9f, 1.0f)
-        .push(1.0f, 0.0f).get(coef);
+      {
+        const float valueAlpha = AnimationTransition()
+                                   .push(0.0f, 0.0f)
+                                   .push(0.1f, 1.0f)
+                                   .push(0.9f, 1.0f)
+                                   .push(1.0f, 0.0f)
+                                   .get(coef);
 
-      graphic.hud.stackRenderers.triangles.pushQuad(
-        glm::vec3(vSize * 0.5f, -1.0f),
-        vSize, glm::vec4(0, 0, 0, valueAlpha * 0.75f));
-    }
-  });
+        graphic.hud.stackRenderers.triangles.pushQuad(
+          glm::vec3(vSize * 0.5f, -1.0f), vSize,
+          glm::vec4(0, 0, 0, valueAlpha * 0.75f));
+      }
+    });
 
-  context.graphic.hud.animationManager.push(0.25f, float(_countdownUntilNextState + 250) / 1000.0f, [&context](float coef)
-  {
-    static_cast<void>(coef);
+  context.graphic.hud.animationManager.push(
+    0.25f, float(_countdownUntilNextState + 250) / 1000.0f,
+    [&context](float coef) {
+      static_cast<void>(coef);
 
-    auto& graphic = context.graphic;
-    auto& textRenderer = graphic.hud.textRenderer;
-    auto& vSize = graphic.camera.viewportSize;
+      auto& graphic = context.graphic;
+      auto& textRenderer = graphic.hud.textRenderer;
+      auto& vSize = graphic.camera.viewportSize;
 
-    {
-      const float valueAlpha = AnimationTransition()
-        .push(0.0f, 0.0f)
-        .push(0.2f, 1.0f)
-        .push(0.9f, 1.0f)
-        .push(1.0f, 0.0f).get(coef);
+      {
+        const float valueAlpha = AnimationTransition()
+                                   .push(0.0f, 0.0f)
+                                   .push(0.2f, 1.0f)
+                                   .push(0.9f, 1.0f)
+                                   .push(1.0f, 0.0f)
+                                   .get(coef);
 
-      std::stringstream sstr;
-      sstr << "Generation: " << context.logic.simulation->getGenerationNumber();
-      const std::string message = sstr.str();
+        std::stringstream sstr;
+        sstr << "Generation: "
+             << context.logic.simulation->getGenerationNumber();
+        const std::string message = sstr.str();
 
-      constexpr float scale = 3.0f;
+        constexpr float scale = 3.0f;
 
-      glm::vec2 textPos;
-      textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
-      textPos.y = vSize.y * 0.5f + 16 * scale;
+        glm::vec2 textPos;
+        textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
+        textPos.y = vSize.y * 0.5f + 16 * scale;
 
-      textRenderer.push(textPos, message, glm::vec4(1,1,1, valueAlpha), scale);
-    }
+        textRenderer.push(textPos, message, glm::vec4(1, 1, 1, valueAlpha),
+                          scale);
+      }
 
-    {
-      const float scale = 2.0f;
+      {
+        const float scale = 2.0f;
 
-      const float prevFitness = context.logic.fitnessStats.get(-2);
-      const float currFitness = context.logic.fitnessStats.get(-1);
+        const float prevFitness = context.logic.fitnessStats.get(-2);
+        const float currFitness = context.logic.fitnessStats.get(-1);
 
-      if (currFitness > 0.0f) {
-        {
-          const float valueAlpha = AnimationTransition()
-            .push(0.0f, 0.0f)
-            .push(0.3f, 1.0f)
-            .push(0.9f, 1.0f)
-            .push(1.0f, 0.0f).get(coef);
+        if (currFitness > 0.0f) {
+          {
+            const float valueAlpha = AnimationTransition()
+                                       .push(0.0f, 0.0f)
+                                       .push(0.3f, 1.0f)
+                                       .push(0.9f, 1.0f)
+                                       .push(1.0f, 0.0f)
+                                       .get(coef);
 
-          std::stringstream sstr;
-          sstr << "Fitness: " << std::fixed << std::setprecision(1)
-                << currFitness;
-          std::string message = sstr.str();
+            std::stringstream sstr;
+            sstr << "Fitness: " << std::fixed << std::setprecision(1)
+                 << currFitness;
+            std::string message = sstr.str();
 
-          glm::vec2 textPos;
-          textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
-          textPos.y = vSize.y * 0.5f + 0 * scale;
+            glm::vec2 textPos;
+            textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
+            textPos.y = vSize.y * 0.5f + 0 * scale;
 
-          textRenderer.push(textPos, message, glm::vec4(1, 1, 1, valueAlpha), scale);
-        }
+            textRenderer.push(textPos, message, glm::vec4(1, 1, 1, valueAlpha),
+                              scale);
+          }
 
-        if (currFitness != prevFitness) {
+          if (currFitness != prevFitness) {
 
-          const float valueAlpha = AnimationTransition()
-            .push(0.0f, 0.0f)
-            .push(0.4f, 1.0f)
-            .push(0.9f, 1.0f)
-            .push(1.0f, 0.0f).get(coef);
+            const float valueAlpha = AnimationTransition()
+                                       .push(0.0f, 0.0f)
+                                       .push(0.4f, 1.0f)
+                                       .push(0.9f, 1.0f)
+                                       .push(1.0f, 0.0f)
+                                       .get(coef);
 
+            std::stringstream sstr;
 
-          std::stringstream sstr;
+            if (currFitness > prevFitness)
+              sstr << "Smarter result (+" << std::fixed << std::setprecision(1)
+                   << (currFitness - prevFitness) << ")";
+            else if (currFitness < prevFitness)
+              sstr << "Worse result (" << std::fixed << std::setprecision(1)
+                   << (currFitness - prevFitness) << ")";
 
-          if (currFitness > prevFitness)
-            sstr << "Smarter result (+" << std::fixed
-                  << std::setprecision(1) << (currFitness - prevFitness)
-                  << ")";
-          else if (currFitness < prevFitness)
-            sstr << "Worse result (" << std::fixed << std::setprecision(1)
-                  << (currFitness - prevFitness) << ")";
+            const std::string message = sstr.str();
 
-          const std::string message = sstr.str();
+            glm::vec2 textPos;
+            textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
+            textPos.y = vSize.y * 0.5f - 16 * scale;
 
-          glm::vec2 textPos;
-          textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
-          textPos.y = vSize.y * 0.5f - 16 * scale;
-
-          textRenderer.push(textPos, message, glm::vec4(1, 1, 1, valueAlpha), scale);
+            textRenderer.push(textPos, message, glm::vec4(1, 1, 1, valueAlpha),
+                              scale);
+          }
         }
       }
-    }
-  });
-
+    });
 }
 
 void State_StartGeneration::update(int deltaTime) {

@@ -50,7 +50,9 @@ void Context::initialise(unsigned int width, unsigned int height,
   graphic.scene.stackRenderers.triangles.initialise(
     ShaderIds::stackRendererScene, GeometryIds::stackRendererTrianglesScene);
   graphic.scene.particleManager.initialise();
+  graphic.hud.topologyRenderer.initialise();
   graphic.hud.textRenderer.initialise();
+  graphic.hud.thirdPersonCamera.initialise();
   graphic.scene.modelsRenderer.initialise();
   graphic.scene.flockingManager.initialise();
   graphic.scene.carTailsRenderer.initialise();

@@ -5,8 +5,7 @@
 
 #include "framework/helpers/GLMath.hpp"
 
-class CoreUsageRenderer {
-
+class ThirdPersonCamera {
 private:
   glm::vec2 _position;
   glm::vec2 _size;
@@ -14,11 +13,15 @@ private:
   AnimationManager::AnimationRef _animRef;
 
 public:
-  CoreUsageRenderer();
+  ThirdPersonCamera() = default;
+  ~ThirdPersonCamera() = default;
 
+public:
+  void initialise();
+
+public:
   void fadeIn();
   void fadeOut();
 
-  void renderWireframe();
-  void renderHudText();
+  void render();
 };

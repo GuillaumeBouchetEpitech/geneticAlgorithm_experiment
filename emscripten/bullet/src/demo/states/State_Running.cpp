@@ -12,6 +12,20 @@
 #include <cmath>  // std::ceil
 #include <limits> // std::numeric_limits<T>::max();
 
+void State_Running::enter() {
+  auto& context = Context::get();
+  context.graphic.hud.topologyRenderer.fadeIn();
+  context.graphic.hud.coreUsageRenderer.fadeIn();
+  context.graphic.hud.thirdPersonCamera.fadeIn();
+}
+
+void State_Running::leave() {
+  auto& context = Context::get();
+  context.graphic.hud.topologyRenderer.fadeOut();
+  context.graphic.hud.coreUsageRenderer.fadeOut();
+  context.graphic.hud.thirdPersonCamera.fadeOut();
+}
+
 void State_Running::update(int deltaTime) {
   State_AbstractSimulation::update(deltaTime);
 

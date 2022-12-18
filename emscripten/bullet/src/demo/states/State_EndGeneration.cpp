@@ -12,7 +12,8 @@ void State_EndGeneration::enter() {
 
   // auto& context = Context::get();
 
-  // context.graphic.hud.animationManager.push(0.0f, 0.5f, [&context](float coef)
+  // context.graphic.hud.animationManager.push(0.0f, 0.5f, [&context](float
+  // coef)
   // {
   //   static_cast<void>(coef);
 
@@ -31,8 +32,6 @@ void State_EndGeneration::enter() {
   //       vSize, glm::vec4(0, 0, 0, valueAlpha * 0.75f));
   //   }
   // });
-
-
 }
 
 void State_EndGeneration::update(int deltaTime) {

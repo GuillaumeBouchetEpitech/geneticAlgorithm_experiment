@@ -3,10 +3,9 @@
 
 #include "common.hpp"
 
-#include "demo/logic/graphicIds.hpp"
+// #include "demo/logic/graphicIds.hpp"
 #include "demo/states/StateManager.hpp"
 
-#include "renderers/hud/CoreUsageRenderer.hpp"
 #include "renderers/hud/NewLeaderRenderer.hpp"
 #include "renderers/scene/renderLeaderEye.hpp"
 
@@ -27,10 +26,6 @@ void Scene::_renderHUD_ortho() {
 
   NewLeaderRenderer newLeaderRndr;
   newLeaderRndr.compute();
-
-  CoreUsageRenderer coreUsageRndr;
-  coreUsageRndr.position = {8, 4 * 16 + 7};
-  coreUsageRndr.size = {150, 100};
 
   { // texts
 
@@ -129,7 +124,7 @@ void Scene::_renderHUD_ortho() {
     } // bottom-left text
 
     newLeaderRndr.renderHudText();
-    coreUsageRndr.renderHudText();
+    graphic.hud.coreUsageRenderer.renderHudText();
 
     { // big titles
 
@@ -174,24 +169,25 @@ void Scene::_renderHUD_ortho() {
     auto& textRenderer = graphic.hud.textRenderer;
     textRenderer.clear();
 
-
     graphic.hud.animationManager.render();
-
 
     auto& stackRenderer = graphic.hud.stackRenderers;
     stackRenderer.wireframes.flush();
     stackRenderer.triangles.flush();
 
     textRenderer.render();
-
   }
 
   { // wireframes
 
-    coreUsageRndr.renderWireframe();
-    newLeaderRndr.renderWireframe();
-
     auto& stackRenderer = graphic.hud.stackRenderers;
+
+    graphic.hud.coreUsageRenderer.renderWireframe();
+
+    stackRenderer.wireframes.flush();
+    stackRenderer.triangles.flush();
+
+    newLeaderRndr.renderWireframe();
 
     { // progresses curve
 
@@ -230,8 +226,7 @@ void Scene::_renderHUD_ortho() {
     if (logic.leaderCar.hasLeader()) {
       const auto& vSize = graphic.camera.viewportSize;
 
-      graphic.hud.topologyRenderer.render(glm::vec2(vSize.x - 150 - 10, 170),
-                                          glm::vec2(150, 125));
+      graphic.hud.topologyRenderer.render();
 
       renderLeaderEye(glm::vec2(vSize.x - 100 - 10, 305), glm::vec2(100, 60));
     }
@@ -243,62 +238,62 @@ void Scene::_renderHUD_ortho() {
 }
 
 void Scene::_renderHUD_thirdPerson() {
-  auto& context = Context::get();
-  auto& logic = context.logic;
-  auto& graphic = context.graphic;
-  const auto& leaderCar = logic.leaderCar;
+  // auto& context = Context::get();
+  // auto& logic = context.logic;
+  // auto& graphic = context.graphic;
+  // const auto& leaderCar = logic.leaderCar;
 
-  // valid leading car?
-  if (logic.isAccelerated || !leaderCar.hasLeader())
-    return;
+  // // valid leading car?
+  // if (logic.isAccelerated || !leaderCar.hasLeader())
+  //   return;
 
-  auto& camera = graphic.camera;
+  // auto& camera = graphic.camera;
 
-  const auto& viewportSize = camera.viewportSize;
-  const glm::vec2 thirdPViewportPos = {
-    viewportSize.x - scene::thirdPViewportWidth - 10, 10};
+  // const auto& viewportSize = camera.viewportSize;
+  // const glm::vec2 thirdPViewportPos = {
+  //   viewportSize.x - scene::thirdPViewportWidth - 10, 10};
 
-  GlContext::enable(GlContext::States::scissorTest);
-  GlContext::setScissor(thirdPViewportPos.x, thirdPViewportPos.y,
-                        scene::thirdPViewportWidth,
-                        scene::thirdPViewportHeight);
-  GlContext::setViewport(thirdPViewportPos.x, thirdPViewportPos.y,
-                         scene::thirdPViewportWidth,
-                         scene::thirdPViewportHeight);
-  GlContext::clearColor(0, 0, 0, 1);
-  GlContext::clear(asValue(GlContext::Buffers::color) |
-                   asValue(GlContext::Buffers::depth));
+  // GlContext::enable(GlContext::States::scissorTest);
+  // GlContext::setScissor(thirdPViewportPos.x, thirdPViewportPos.y,
+  //                       scene::thirdPViewportWidth,
+  //                       scene::thirdPViewportHeight);
+  // GlContext::setViewport(thirdPViewportPos.x, thirdPViewportPos.y,
+  //                        scene::thirdPViewportWidth,
+  //                        scene::thirdPViewportHeight);
+  // GlContext::clearColor(0, 0, 0, 1);
+  // GlContext::clear(asValue(GlContext::Buffers::color) |
+  //                  asValue(GlContext::Buffers::depth));
 
-  const Camera& camInstance = camera.thirdPerson.scene;
+  // const Camera& camInstance = camera.thirdPerson.scene;
 
-  const auto& matriceData = camInstance.getMatricesData();
+  // const auto& matriceData = camInstance.getMatricesData();
 
-  graphic.hud.stackRenderers.wireframes.setMatricesData(matriceData);
-  graphic.hud.stackRenderers.triangles.setMatricesData(matriceData);
-  graphic.scene.particleManager.setMatricesData(matriceData);
-  graphic.scene.floorRenderer.setMatricesData(matriceData);
-  graphic.scene.animatedCircuitRenderer.setMatricesData(matriceData);
-  graphic.scene.flockingManager.setMatricesData(matriceData);
-  graphic.scene.carTailsRenderer.setMatricesData(matriceData);
+  // graphic.hud.stackRenderers.wireframes.setMatricesData(matriceData);
+  // graphic.hud.stackRenderers.triangles.setMatricesData(matriceData);
+  // graphic.scene.particleManager.setMatricesData(matriceData);
+  // graphic.scene.floorRenderer.setMatricesData(matriceData);
+  // graphic.scene.animatedCircuitRenderer.setMatricesData(matriceData);
+  // graphic.scene.flockingManager.setMatricesData(matriceData);
+  // graphic.scene.carTailsRenderer.setMatricesData(matriceData);
 
-  Scene::_renderFloor(camInstance);
-  graphic.scene.animatedCircuitRenderer.renderWireframe();
-  graphic.scene.animatedCircuitRenderer.renderWalls();
+  // Scene::_renderFloor(camInstance);
+  // graphic.scene.animatedCircuitRenderer.renderWireframe();
+  // graphic.scene.animatedCircuitRenderer.renderWalls();
 
-  Scene::_renderLeadingCarSensors();
-  graphic.scene.flockingManager.render();
+  // Scene::_renderLeadingCarSensors();
+  // graphic.scene.flockingManager.render();
 
-  graphic.hud.stackRenderers.wireframes.flush();
-  graphic.hud.stackRenderers.triangles.flush();
+  // graphic.hud.stackRenderers.wireframes.flush();
+  // graphic.hud.stackRenderers.triangles.flush();
 
-  graphic.scene.particleManager.render();
+  // graphic.scene.particleManager.render();
 
-  graphic.scene.modelsRenderer.render(camInstance);
-  graphic.scene.animatedCircuitRenderer.renderGround();
-  graphic.scene.carTailsRenderer.render();
+  // graphic.scene.modelsRenderer.render(camInstance);
+  // graphic.scene.animatedCircuitRenderer.renderGround();
+  // graphic.scene.carTailsRenderer.render();
 
-  GlContext::disable(GlContext::States::scissorTest);
-  GlContext::setViewport(0, 0, viewportSize.x, viewportSize.y);
+  // GlContext::disable(GlContext::States::scissorTest);
+  // GlContext::setViewport(0, 0, viewportSize.x, viewportSize.y);
 }
 
 void Scene::_renderHUD() {
@@ -308,5 +303,6 @@ void Scene::_renderHUD() {
   graphic.hud.postProcess.render();
 
   Scene::_renderHUD_ortho();
-  Scene::_renderHUD_thirdPerson();
+  // Scene::_renderHUD_thirdPerson();
+  graphic.hud.thirdPersonCamera.render();
 }

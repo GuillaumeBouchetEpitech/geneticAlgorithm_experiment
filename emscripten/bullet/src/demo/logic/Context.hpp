@@ -13,9 +13,12 @@
 #include "helpers/ProfileData.hpp"
 
 #include "graphic/postProcess/PostProcess.hpp"
-#include "graphic/renderers/hud/TextRenderer.hpp"
-#include "graphic/renderers/hud/TopologyRenderer.hpp"
 #include "graphic/renderers/hud/AnimationManager.hpp"
+#include "graphic/renderers/hud/CoreUsageRenderer.hpp"
+#include "graphic/renderers/hud/TextRenderer.hpp"
+#include "graphic/renderers/hud/ThirdPersonCamera.hpp"
+#include "graphic/renderers/hud/TopologyRenderer.hpp"
+
 #include "graphic/renderers/scene/AnimatedCircuitRenderer.hpp"
 #include "graphic/renderers/scene/BackGroundTorusRenderer.hpp"
 #include "graphic/renderers/scene/CarTailsRenderer.hpp"
@@ -103,6 +106,8 @@ public:
       StackRenderers stackRenderers;
       TextRenderer textRenderer;
       TopologyRenderer topologyRenderer;
+      CoreUsageRenderer coreUsageRenderer;
+      ThirdPersonCamera thirdPersonCamera;
       AnimationManager animationManager;
       PostProcess postProcess;
     } hud;

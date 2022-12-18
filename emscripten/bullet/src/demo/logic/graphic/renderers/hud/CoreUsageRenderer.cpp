@@ -1,16 +1,46 @@
 
 #include "CoreUsageRenderer.hpp"
 
-#include "demo/logic/graphic/helpers/writeTime.hpp"
-
 #include "demo/logic/Context.hpp"
+#include "demo/logic/graphic/helpers/writeTime.hpp"
 
 namespace {
 
 constexpr unsigned int k_slowdownDelta = 16 * 1000;
 constexpr float k_divider = 5000.0f; // 5ms
 
+constexpr float k_faceInX = +8.0f;
+constexpr float k_faceOutX = -400.0f;
+
 } // namespace
+
+CoreUsageRenderer::CoreUsageRenderer() {
+  // _position = {8, 4 * 16 + 7};
+  _position.x = k_faceOutX;
+  _position.y = 4 * 16 + 7;
+
+  _size = {150, 100};
+}
+
+void CoreUsageRenderer::fadeIn() {
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+
+  _animRef = graphic.hud.animationManager.push(
+    _animRef, 0.25f, 1.5f, [this](float coef) {
+      _position.x = _position.x + (k_faceInX - _position.x) * coef;
+    });
+}
+
+void CoreUsageRenderer::fadeOut() {
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+
+  _animRef = graphic.hud.animationManager.push(
+    _animRef, 0.25f, 4.0f, [this](float coef) {
+      _position.x = _position.x + (k_faceOutX - _position.x) * coef;
+    });
+}
 
 void CoreUsageRenderer::renderWireframe() {
 
@@ -21,8 +51,8 @@ void CoreUsageRenderer::renderWireframe() {
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
-  const glm::vec2 borderPos = {position.x, position.y + 16 + 8};
-  const glm::vec2 borderSize = {size.x, size.y - 16 * 3};
+  const glm::vec2 borderPos = {_position.x, _position.y + 16 + 8};
+  const glm::vec2 borderSize = {_size.x, _size.y - 16 * 3};
 
   const auto& profileData = context.logic.cores.profileData;
 
@@ -111,7 +141,7 @@ void CoreUsageRenderer::renderHudText() {
 #endif
 
     std::string str = sstr.str();
-    textRenderer.push({position.x, position.y}, str, glm::vec4(1), 1.0f);
+    textRenderer.push({_position.x, _position.y}, str, glm::vec4(1), 1.0f);
   }
 
   {
@@ -123,9 +153,10 @@ void CoreUsageRenderer::renderHudText() {
     std::string str = sstr.str();
 
     const glm::vec4 textColor =
-      profileData.getAllTimeMaxDelta() > k_slowdownDelta ? glm::vec4(1, 0, 0, 1)
-                                                         : glm::vec4(1, 1, 1, 1);
+      profileData.getAllTimeMaxDelta() > k_slowdownDelta
+        ? glm::vec4(1, 0, 0, 1)
+        : glm::vec4(1, 1, 1, 1);
 
-    textRenderer.push({position.x, position.y - 16}, str, textColor, 1.0f);
+    textRenderer.push({_position.x, _position.y - 16}, str, textColor, 1.0f);
   }
 }

@@ -3,11 +3,9 @@
 
 #include <array>
 
-class AnimationTransition
-{
+class AnimationTransition {
 private:
-  struct Step
-  {
+  struct Step {
     float coefStep;
     float value;
   };
@@ -23,5 +21,4 @@ public:
 public:
   AnimationTransition& push(float coefStep, float value);
   float get(float coef);
-
 };

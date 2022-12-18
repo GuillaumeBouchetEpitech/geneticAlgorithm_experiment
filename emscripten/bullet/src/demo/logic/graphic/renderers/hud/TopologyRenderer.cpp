@@ -5,33 +5,79 @@
 
 #include "framework/math/DeterministicRng.hpp"
 
+namespace {
+
+constexpr float k_faceInX = -10.0f;
+constexpr float k_faceOutX = +500.0f;
+
+} // namespace
+
+void TopologyRenderer::initialise() {
+  auto& context = Context::get();
+  const auto& vSize = context.graphic.camera.viewportSize;
+
+  _size = {150, 125};
+
+  _position.x = vSize.x - _size.x + k_faceOutX;
+  _position.y = 170;
+}
+
+void TopologyRenderer::fadeIn() {
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+
+  _animRef = graphic.hud.animationManager.push(
+    _animRef, 0.5f, 1.5f, [this, &graphic](float coef) {
+      const auto& vSize = graphic.camera.viewportSize;
+      const float targetPos = vSize.x - _size.x + k_faceInX;
+      _position.x = _position.x + (targetPos - _position.x) * coef;
+    });
+}
+
+void TopologyRenderer::fadeOut() {
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+
+  _animRef = graphic.hud.animationManager.push(
+    _animRef, 0.5f, 6.0f, [this, &graphic](float coef) {
+      const auto& vSize = graphic.camera.viewportSize;
+      const float targetPos = vSize.x - _size.x + k_faceOutX;
+      _position.x = _position.x + (targetPos - _position.x) * coef;
+    });
+}
+
 void TopologyRenderer::update(float elapsedTime) {
   _animationTime += elapsedTime * 2.0f;
   while (_animationTime > 1.0f)
     _animationTime -= 1.0f;
 }
 
-void TopologyRenderer::render(const glm::vec2& position,
-                              const glm::vec2& size) {
+void TopologyRenderer::render() {
   auto& context = Context::get();
   auto& logic = context.logic;
   auto& graphic = context.graphic;
 
-  if (!logic.leaderCar.hasLeader())
-    return;
+  // if (!logic.leaderCar.hasLeader())
+  //   return;
 
-  if (logic.leaderCar.totalTimeAsLeader() < 0.25f)
-    return;
+  // if (logic.leaderCar.totalTimeAsLeader() < 0.25f)
+  //   return;
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
   const glm::vec4 redColor(1.0f, 0.0f, 0.0f, 0.85f);
   const glm::vec4 blueColor(0.5f, 0.5f, 1.0f, 0.85f);
 
   auto& stackRenderer = graphic.hud.stackRenderers.triangles;
-  stackRenderer.pushQuad(glm::vec3(position + size * 0.5f, -0.1f), size,
+  stackRenderer.pushQuad(glm::vec3(_position + _size * 0.5f, -0.1f), _size,
                          glm::vec4(0, 0, 0, 0.75f));
-  graphic.hud.stackRenderers.wireframes.pushRectangle(position, size,
+  graphic.hud.stackRenderers.wireframes.pushRectangle(_position, _size,
                                                       whiteColor);
+
+  if (!logic.leaderCar.hasLeader())
+    return;
+
+  if (logic.leaderCar.totalTimeAsLeader() < 0.25f)
+    return;
 
   std::vector<unsigned int> topologyArray;
   topologyArray.reserve(logic.annTopology.getInput() +
@@ -68,12 +114,13 @@ void TopologyRenderer::render(const glm::vec2& position,
     for (std::size_t ii = 0; ii < topologyArray.size(); ++ii) {
       const unsigned int actualSize = topologyArray.at(ii);
 
-      glm::vec2 currPos = position;
-      currPos.y += size.y - size.y / topologyArray.size() * (float(ii) + 0.5f);
+      glm::vec2 currPos = _position;
+      currPos.y +=
+        _size.y - _size.y / topologyArray.size() * (float(ii) + 0.5f);
 
       layersData.at(ii).reserve(actualSize); // pre-allocate
       for (unsigned int jj = 0; jj < actualSize; ++jj) {
-        currPos.x += size.x / (actualSize + 1);
+        currPos.x += _size.x / (actualSize + 1);
 
         const float neuronsValue =
           glm::clamp(neuronsValues.at(neuronIndex++), 0.0f, 1.0f);
