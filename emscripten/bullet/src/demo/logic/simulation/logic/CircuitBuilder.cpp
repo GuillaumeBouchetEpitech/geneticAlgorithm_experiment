@@ -2,16 +2,12 @@
 
 #include "CircuitBuilder.hpp"
 
-#include "framework/math/BSpline.hpp"
-
-#include "framework/parser_utils/BasicRegexpParser.hpp"
-
-#include "framework/string/trim.hpp"
-
-#include "framework/asValue.hpp"
-
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/BSpline.hpp"
+#include "framework/system/parser_utils/BasicRegexpParser.hpp"
+#include "framework/system/string/trim.hpp"
 
 #include <algorithm>
 #include <fstream>

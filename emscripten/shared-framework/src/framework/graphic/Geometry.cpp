@@ -5,7 +5,7 @@
 
 #include "GlContext.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include <cstdint>
 

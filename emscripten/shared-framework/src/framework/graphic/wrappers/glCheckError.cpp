@@ -1,10 +1,6 @@
 
 #include "framework/helpers/internals/OpenGLES.hpp"
-
-// #include "framework/asValue.hpp"
-
-// #include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 namespace debug {
 

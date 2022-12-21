@@ -1,7 +1,7 @@
 
 #include "FitnessStats.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 FitnessStats::FitnessStats() {
   _index = 0;

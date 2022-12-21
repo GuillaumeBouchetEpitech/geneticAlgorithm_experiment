@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "AnimationManager.hpp"
-
 #include "framework/helpers/GLMath.hpp"
+#include "framework/system/Timer.hpp"
+#include "framework/system/math/GenericEasing.hpp"
 
 class TopologyRenderer {
 private:
@@ -12,7 +12,9 @@ private:
   glm::vec2 _position;
   glm::vec2 _size;
 
-  AnimationManager::AnimationRef _animRef;
+  bool _isVisible = false;
+  Timer _timer;
+  GenericEasing<2> _moveEasing;
 
 public:
   TopologyRenderer() = default;
@@ -20,8 +22,9 @@ public:
 public:
   void initialise();
 
-  void fadeIn();
-  void fadeOut();
+  void fadeIn(float delay, float duration);
+  void fadeOut(float delay, float duration);
+  void resize();
 
   void update(float elapsedTime);
 

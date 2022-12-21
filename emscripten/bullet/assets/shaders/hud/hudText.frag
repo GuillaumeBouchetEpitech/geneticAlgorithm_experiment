@@ -18,6 +18,6 @@ void main(void)
     }
     else
     {
-        out_color = texColor * v_color;
+        out_color = vec4(texColor.xyz * v_color.xyz, v_color.a);
     }
 }

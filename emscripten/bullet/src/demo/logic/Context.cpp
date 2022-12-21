@@ -8,9 +8,9 @@
 #include "demo/logic/simulation/pthread/PthreadSimulation.hpp"
 #endif
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
 #include "framework/graphic/GlContext.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -28,36 +28,16 @@ void Context::initialise(unsigned int width, unsigned int height,
   {
     graphic.camera.viewportSize = {width, height};
 
-    graphic.camera.main.scene.setPerspective(70.0f, 0.1f, 1500.0f);
+    graphic.camera.scene.setPerspective(70.0f, 0.1f, 1500.0f);
 
-    graphic.camera.main.hud.setOrthographic(0.0f, float(width), 0.0f,
-                                            float(height), -10.0f, +10.0f);
-    graphic.camera.main.hud.lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0),
-                                   glm::vec3(0, 1, 0));
-    graphic.camera.main.hud.computeMatrices();
-
-    graphic.camera.thirdPerson.scene.setPerspective(70.0f, 0.1f, 1500.0f);
+    graphic.camera.hud.setOrthographic(0.0f, float(width), 0.0f, float(height),
+                                       -10.0f, +10.0f);
+    graphic.camera.hud.lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0),
+                              glm::vec3(0, 1, 0));
+    graphic.camera.hud.computeMatrices();
   }
 
   initialiseGraphicResource();
-
-  graphic.hud.stackRenderers.wireframes.initialise(
-    ShaderIds::stackRendererHud, GeometryIds::stackRendererWireframesHud);
-  graphic.hud.stackRenderers.triangles.initialise(
-    ShaderIds::stackRendererHud, GeometryIds::stackRendererTrianglesHud);
-  graphic.scene.stackRenderers.wireframes.initialise(
-    ShaderIds::stackRendererScene, GeometryIds::stackRendererWireframesScene);
-  graphic.scene.stackRenderers.triangles.initialise(
-    ShaderIds::stackRendererScene, GeometryIds::stackRendererTrianglesScene);
-  graphic.scene.particleManager.initialise();
-  graphic.hud.topologyRenderer.initialise();
-  graphic.hud.textRenderer.initialise();
-  graphic.hud.thirdPersonCamera.initialise();
-  graphic.scene.modelsRenderer.initialise();
-  graphic.scene.flockingManager.initialise();
-  graphic.scene.carTailsRenderer.initialise();
-
-  graphic.hud.postProcess.initialise({width, height});
 
   //
   //
@@ -109,6 +89,35 @@ void Context::initialise(unsigned int width, unsigned int height,
     logic.hudText.header = sstr.str();
 
   } // compute the top left HUD text
+
+  {
+
+    graphic.scene.stackRenderers.wireframes.initialise(
+      ShaderIds::stackRendererScene, GeometryIds::stackRendererWireframesScene);
+    graphic.scene.stackRenderers.triangles.initialise(
+      ShaderIds::stackRendererScene, GeometryIds::stackRendererTrianglesScene);
+    graphic.scene.particleManager.initialise();
+    graphic.scene.modelsRenderer.initialise();
+    graphic.scene.flockingManager.initialise();
+    graphic.scene.carTailsRenderer.initialise();
+    const auto& dimension = logic.circuitDimension;
+    const glm::vec3 boundariesSize = dimension.max - dimension.min;
+    graphic.scene.floorRenderer.initialise(dimension.center, boundariesSize);
+    graphic.scene.backGroundTorusRenderer.initialise();
+
+    graphic.hud.stackRenderers.wireframes.initialise(
+      ShaderIds::stackRendererHud, GeometryIds::stackRendererWireframesHud);
+    graphic.hud.stackRenderers.triangles.initialise(
+      ShaderIds::stackRendererHud, GeometryIds::stackRendererTrianglesHud);
+    graphic.hud.topologyRenderer.initialise();
+    graphic.hud.textRenderer.initialise();
+    graphic.hud.thirdPersonCamera.initialise();
+    graphic.hud.leaderEyeRenderer.initialise();
+
+    graphic.hud.postProcess.initialise({width, height});
+    graphic.hud.postProcess.setGeometry(glm::vec2(0, 0),
+                                        glm::vec2(width, height), -2.0f);
+  }
 }
 
 //

@@ -14,7 +14,10 @@
 
 
 clang-tidy \
-  ./src/framework/*.cpp \
+  ./src/framework/system/*.cpp \
+  ./src/framework/graphic/*.cpp \
+  ./src/framework/physic/*.cpp \
+  ./src/framework/audio/*.cpp \
   -extra-arg=-std=c++17 \
   -- \
   -I./src/ \

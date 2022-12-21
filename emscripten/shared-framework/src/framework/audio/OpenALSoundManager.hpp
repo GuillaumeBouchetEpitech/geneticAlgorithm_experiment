@@ -3,8 +3,8 @@
 
 #include "OpenAlContext.hpp"
 
-#include "framework/files/FileLoadFileCallback.hpp"
-#include "framework/files/FileManager.hpp"
+#include "framework/system/files/FileLoadFileCallback.hpp"
+#include "framework/system/files/FileManager.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "framework/sdl/SDLWindowWrapper.hpp"
+#include "framework/graphic/sdl/SDLWindowWrapper.hpp"
 
 #include <cstdint>
 

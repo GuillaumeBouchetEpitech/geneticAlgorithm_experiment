@@ -4,8 +4,8 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/asValue.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/asValue.hpp"
 
 void TextRenderer::initialise() {
 
@@ -162,12 +162,12 @@ void TextRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
 
 //
 
-void TextRenderer::push(const glm::vec2& position, std::string_view message,
-                        const glm::vec4& color, float scale /* = 1.0f */,
-                        TextAllign allign /* = TextAllign::left */) {
+void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
+                        const glm::vec4& inColor, float inScale /* = 1.0f */,
+                        float zDepth /*= 0.0f*/
+                        // TextAllign allign /* = TextAllign::left */
+) {
   // TODO: support text align
-
-  static_cast<void>(allign); // unused
 
   const glm::vec2 gridSize = {16, 16};
   const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
@@ -177,24 +177,23 @@ void TextRenderer::push(const glm::vec2& position, std::string_view message,
   allLinesWidth.push_back(0.0f);
 
   float currWidth = 0.0f;
-  for (char letter : message) {
+  for (char letter : inMessage) {
     if (letter == '\n') {
       currWidth = 0.0f;
       allLinesWidth.push_back(0.0f);
       continue;
     }
 
-    currWidth += letterSize.x * scale;
-    if (allLinesWidth.back() < currWidth)
-      allLinesWidth.back() = currWidth;
+    currWidth += letterSize.x * inScale;
+    allLinesWidth.back() = std::min(allLinesWidth.back(), currWidth);
   }
 
-  glm::vec2 currPos = position;
+  glm::vec2 currPos = inPosition;
 
-  for (char letter : message) {
+  for (char letter : inMessage) {
     if (letter == '\n') {
-      currPos.x = position.x;
-      currPos.y -= letterSize.y * scale;
+      currPos.x = inPosition.x;
+      currPos.y -= letterSize.y * inScale;
       continue;
     }
 
@@ -207,22 +206,28 @@ void TextRenderer::push(const glm::vec2& position, std::string_view message,
     const auto& texCoord = it->second;
 
     _lettersOffsetColored.push_back(
-      {glm::vec3(currPos.x, currPos.y, 0.1f), texCoord, color, scale});
+      {glm::vec3(currPos, zDepth), texCoord, inColor, inScale});
 
+    const glm::vec4 blackColor = glm::vec4(0, 0, 0, inColor.a);
     constexpr int range = 1;
-    for (int stepY = -range; stepY <= +range; stepY += range)
+    glm::vec3 outlinePos;
+    outlinePos.z = zDepth - 0.1f;
+    for (int stepY = -range; stepY <= +range; stepY += range) {
+
+      outlinePos.y = currPos.y + inScale * stepY;
+
       for (int stepX = -range; stepX <= +range; stepX += range) {
         if (stepX == 0 && stepY == 0)
           continue;
 
-        const glm::vec3 pos0 = {currPos.x + scale * stepX,
-                                currPos.y + scale * stepY, 0.0f};
+        outlinePos.x = currPos.x + inScale * stepX;
 
         _lettersOffsetBackground.push_back(
-          {pos0, texCoord, glm::vec4(0, 0, 0, 1), scale});
+          {outlinePos, texCoord, blackColor, inScale});
       }
+    }
 
-    currPos.x += letterSize.x * scale;
+    currPos.x += letterSize.x * inScale;
   }
 }
 

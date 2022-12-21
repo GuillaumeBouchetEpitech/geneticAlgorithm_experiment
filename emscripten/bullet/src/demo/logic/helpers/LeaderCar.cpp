@@ -2,8 +2,17 @@
 #include "LeaderCar.hpp"
 
 #include "demo/logic/Context.hpp"
+#include "demo/states/StateManager.hpp"
 
 void LeaderCar::update(float elapsedTime) {
+
+  const StateManager::States currentState = StateManager::get()->getState();
+  const bool validSate = (currentState == StateManager::States::Running);
+  if (!validSate) {
+    reset();
+    return;
+  }
+
   auto& simulation = *Context::get().logic.simulation;
 
   if (_countdownUntilNewLeader > 0.0f)
@@ -64,6 +73,7 @@ void LeaderCar::reset() {
   _carIndex = -1;
   _countdownUntilNewLeader = 0.0f;
   _totalTimeAsLeader = 0.0f;
+  _carPosition = { 0, 0, 0 };
 }
 
 bool LeaderCar::hasLeader() const { return _carIndex >= 0; }

@@ -2,7 +2,9 @@
 #include "CoreUsageRenderer.hpp"
 
 #include "demo/logic/Context.hpp"
-#include "demo/logic/graphic/helpers/writeTime.hpp"
+#include "helpers/writeTime.hpp"
+
+#include "framework/system/math/easingFunctions.hpp"
 
 namespace {
 
@@ -15,31 +17,42 @@ constexpr float k_faceOutX = -400.0f;
 } // namespace
 
 CoreUsageRenderer::CoreUsageRenderer() {
-  // _position = {8, 4 * 16 + 7};
   _position.x = k_faceOutX;
   _position.y = 4 * 16 + 7;
 
   _size = {150, 100};
 }
 
-void CoreUsageRenderer::fadeIn() {
-  auto& context = Context::get();
-  auto& graphic = context.graphic;
+void CoreUsageRenderer::fadeIn(float delay, float duration) {
+  _timer.start(delay, duration);
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.25f, 1.5f, [this](float coef) {
-      _position.x = _position.x + (k_faceInX - _position.x) * coef;
-    });
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, k_faceInX);
+
+  _isVisible = true;
 }
 
-void CoreUsageRenderer::fadeOut() {
-  auto& context = Context::get();
-  auto& graphic = context.graphic;
+void CoreUsageRenderer::fadeOut(float delay, float duration) {
+  _timer.start(delay, duration);
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.25f, 4.0f, [this](float coef) {
-      _position.x = _position.x + (k_faceOutX - _position.x) * coef;
-    });
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, k_faceOutX);
+
+  _isVisible = false;
+}
+
+void CoreUsageRenderer::update(float elapsedTime) {
+  if (!_timer.isDone()) {
+    _timer.update(elapsedTime);
+    _position.x = _moveEasing.get(_timer.getCoefElapsed());
+  }
+}
+
+void CoreUsageRenderer::resize() {
+  if (_isVisible)
+    fadeIn(0.0f, 0.2f);
+  else
+    fadeOut(0.0f, 0.2f);
 }
 
 void CoreUsageRenderer::renderWireframe() {
@@ -49,9 +62,10 @@ void CoreUsageRenderer::renderWireframe() {
 
   auto& stackRenderers = graphic.hud.stackRenderers;
 
-  const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+  const glm::vec3 whiteColor(0.8f, 0.8f, 0.8f);
+  const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
 
-  const glm::vec2 borderPos = {_position.x, _position.y + 16 + 8};
+  const glm::vec3 borderPos = {_position.x, _position.y + 16 + 8, 0.1f};
   const glm::vec2 borderSize = {_size.x, _size.y - 16 * 3};
 
   const auto& profileData = context.logic.cores.profileData;
@@ -64,12 +78,13 @@ void CoreUsageRenderer::renderWireframe() {
   { // background
 
     const glm::vec4 bgColor = allTimeMaxDelta > k_slowdownDelta
-                                ? glm::vec4(1, 0, 0, 1.00f)
-                                : glm::vec4(0, 0, 0, 0.75f);
+                                ? glm::vec4(0.5f, 0.0f, 0.0f, 0.75f)
+                                : glm::vec4(0.0f, 0.0f, 0.0f, 0.75f);
 
-    stackRenderers.triangles.pushQuad(
-      glm::vec3(borderPos + borderSize * 0.5f, -0.1f), borderSize, bgColor);
-    stackRenderers.wireframes.pushRectangle(borderPos, borderSize, whiteColor);
+    stackRenderers.triangles.pushQuad(glm::vec3(glm::vec2(borderPos) + borderSize * 0.5f, borderPos.z),
+                                      borderSize, bgColor, -0.2f);
+    stackRenderers.wireframes.pushRectangle(borderPos, borderSize, whiteColor,
+                                            -0.1f);
 
   } // background
 
@@ -83,8 +98,8 @@ void CoreUsageRenderer::renderWireframe() {
       const float ratio = currDivider / verticalSize;
 
       stackRenderers.wireframes.pushLine(
-        borderPos + glm::vec2(0, borderSize.y * ratio),
-        borderPos + glm::vec2(borderSize.x, borderSize.y * ratio), whiteColor);
+        borderPos + glm::vec3(0, borderSize.y * ratio, 0.0f),
+        borderPos + glm::vec3(borderSize.x, borderSize.y * ratio, 0.0f), whiteColor);
     }
 
   } // dividers
@@ -109,9 +124,10 @@ void CoreUsageRenderer::renderWireframe() {
         const float currHeight = borderSize.y * currDelta / verticalSize;
 
         stackRenderers.wireframes.pushLine(
-          borderPos + glm::vec2((statIndex + 0) * widthStep, prevHeight),
-          borderPos + glm::vec2((statIndex + 1) * widthStep, currHeight),
-          whiteColor);
+          borderPos + glm::vec3((statIndex + 0) * widthStep, prevHeight, 0.0f),
+          borderPos + glm::vec3((statIndex + 1) * widthStep, currHeight, 0.0f),
+          prevDelta < k_slowdownDelta ? whiteColor : redColor,
+          currDelta < k_slowdownDelta ? whiteColor : redColor);
       }
   }
 
@@ -141,7 +157,8 @@ void CoreUsageRenderer::renderHudText() {
 #endif
 
     std::string str = sstr.str();
-    textRenderer.push({_position.x, _position.y}, str, glm::vec4(1), 1.0f);
+    textRenderer.push({_position.x, _position.y}, str, glm::vec4(0.8,0.8,0.8,1), 1.0f,
+                      0.25f);
   }
 
   {
@@ -154,9 +171,10 @@ void CoreUsageRenderer::renderHudText() {
 
     const glm::vec4 textColor =
       profileData.getAllTimeMaxDelta() > k_slowdownDelta
-        ? glm::vec4(1, 0, 0, 1)
-        : glm::vec4(1, 1, 1, 1);
+        ? glm::vec4(0.8f, 0.0f, 0.0f, 1)
+        : glm::vec4(0.8f, 0.8f, 0.8f, 1);
 
-    textRenderer.push({_position.x, _position.y - 16}, str, textColor, 1.0f);
+    textRenderer.push({_position.x, _position.y - 16}, str, textColor, 1.0f,
+                      0.25f);
   }
 }

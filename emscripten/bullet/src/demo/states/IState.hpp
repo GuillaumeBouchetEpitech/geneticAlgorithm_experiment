@@ -2,8 +2,7 @@
 #pragma once
 
 #include "framework/helpers/SDL.hpp" // SDL_Event + SDL_Window
-
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
 
 class IState : public NonCopyable {
 public:

@@ -1,7 +1,7 @@
 
-#include "framework/math/DeterministicRng.hpp"
+#include "framework/system/math/DeterministicRng.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <unordered_set>
 

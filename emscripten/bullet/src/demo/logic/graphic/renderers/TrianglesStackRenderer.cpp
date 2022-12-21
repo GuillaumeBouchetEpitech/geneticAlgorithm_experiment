@@ -3,8 +3,8 @@
 
 #include "demo/logic/Context.hpp"
 
-#include "framework/asValue.hpp"
-#include "framework/math/constants.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/constants.hpp"
 
 void TrianglesStackRenderer::initialise(ShaderIds shaderId,
                                         GeometryIds geometryId) {
@@ -100,7 +100,8 @@ void TrianglesStackRenderer::pushQuad(const glm::vec2& center,
     {center.x - hsize.x, center.y - hsize.y, z},
   }};
 
-  std::array<glm::uvec3, 2> indices = {{{0, 1, 2}, {2, 1, 3}}};
+  // std::array<glm::uvec3, 2> indices = {{{0, 1, 2}, {2, 1, 3}}};
+  std::array<glm::uvec3, 2> indices = {{{1, 0, 2}, {2, 1, 3}}};
 
   for (const glm::uvec3& index : indices)
     pushTriangle(vertices.at(index[0]), vertices.at(index[1]),

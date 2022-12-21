@@ -4,7 +4,7 @@
 #include "vertexBuffers/VertexArrayObject.hpp"
 #include "vertexBuffers/VertexBufferObject.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 

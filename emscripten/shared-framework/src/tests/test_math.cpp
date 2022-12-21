@@ -1,8 +1,8 @@
 
 
-#include "framework/math/circleCircleIntersectionPoints.hpp"
+#include "framework/system/math/circleCircleIntersectionPoints.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 void test_math() {
 

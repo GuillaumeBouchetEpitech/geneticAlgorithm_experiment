@@ -12,7 +12,7 @@
 #include "State_Running.hpp"
 #include "State_StartGeneration.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 //
 //
@@ -23,13 +23,16 @@ StateManager* StateManager::_instance = nullptr;
 StateManager::StateManager() {
   // allocate states
 
-  _states.at(asValue(States::Running)) = new State_Running();
-  _states.at(asValue(States::Paused)) = new State_Paused();
-  _states.at(asValue(States::StartGeneration)) = new State_StartGeneration();
-  _states.at(asValue(States::EndGeneration)) = new State_EndGeneration();
+  _states.at(asValue(States::Running)) = std::make_unique<State_Running>();
+  _states.at(asValue(States::Paused)) = std::make_unique<State_Paused>();
+  _states.at(asValue(States::StartGeneration)) =
+    std::make_unique<State_StartGeneration>();
+  _states.at(asValue(States::EndGeneration)) =
+    std::make_unique<State_EndGeneration>();
 
 #if defined D_WEB_WEBWORKER_BUILD
-  _states.at(asValue(States::WorkersLoading)) = new State_WebWorkersLoading();
+  _states.at(asValue(States::WorkersLoading)) =
+    std::make_unique<State_WebWorkersLoading>();
 #endif
 
 #if defined D_WEB_WEBWORKER_BUILD
@@ -40,13 +43,6 @@ StateManager::StateManager() {
 
   _previousState = _currentState;
   _states.at(asValue(_currentState))->enter();
-}
-
-StateManager::~StateManager() {
-  // deallocate states
-
-  for (auto& state : _states)
-    delete state;
 }
 
 //

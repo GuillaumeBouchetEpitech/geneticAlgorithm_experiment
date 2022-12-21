@@ -4,8 +4,9 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-#include "framework/asValue.hpp"
 #include "framework/graphic/GlContext.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/easingFunctions.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -23,87 +24,136 @@ void ThirdPersonCamera::initialise() {
 
   _size = {175, 150};
 
-  _position.x = vSize.x - _size.x + k_faceInX;
+  _position.x = vSize.x - _size.x + k_faceOutX;
   _position.y = 10;
+
+  _postProcess.initialise({_size.x, _size.y});
 }
 
-void ThirdPersonCamera::fadeIn() {
+bool ThirdPersonCamera::canActivate() const {
+  auto& context = Context::get();
+  auto& logic = context.logic;
+  const auto& leaderCar = logic.leaderCar;
+
+  // do not update the third person camera if not in a correct state
+  const StateManager::States currentState = StateManager::get()->getState();
+  if (currentState == StateManager::States::Running ||
+      currentState == StateManager::States::StartGeneration) {
+
+    // valid leading car?
+    if (logic.isAccelerated || !leaderCar.hasLeader())
+      return false;
+  }
+
+  return true;
+}
+
+void ThirdPersonCamera::fadeIn(float delay, float duration) {
+
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.0f, 2.0f, [this, &graphic](float coef) {
-      const auto& vSize = graphic.camera.viewportSize;
-      const float targetPos = vSize.x - _size.x + k_faceInX;
-      _position.x = _position.x + (targetPos - _position.x) * coef;
-    });
+  const auto& vSize = graphic.camera.viewportSize;
+  const float targetPos = vSize.x - _size.x + k_faceInX;
+
+  _timer.start(delay, duration);
+
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, targetPos);
+
+  _isVisible = true;
 }
 
-void ThirdPersonCamera::fadeOut() {
+void ThirdPersonCamera::fadeOut(float delay, float duration) {
+
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.0f, 5.0f, [this, &graphic](float coef) {
-      const auto& vSize = graphic.camera.viewportSize;
-      const float targetPos = vSize.x - _size.x + k_faceOutX;
-      _position.x = _position.x + (targetPos - _position.x) * coef;
-    });
+  const auto& vSize = graphic.camera.viewportSize;
+  const float targetPos = vSize.x - _size.x + k_faceOutX;
+
+  _timer.start(delay, duration);
+
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, targetPos);
+
+  _isVisible = false;
+}
+
+void ThirdPersonCamera::update(float elapsedTime) {
+  if (!_timer.isDone()) {
+    _timer.update(elapsedTime);
+    _position.x = _moveEasing.get(_timer.getCoefElapsed());
+  }
+
+  if (canActivate()) {
+    auto& context = Context::get();
+    auto& leaderCar = context.logic.leaderCar;
+
+    if (auto leaderData = leaderCar.leaderData()) {
+      const glm::vec3 carOrigin =
+        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
+      const glm::vec3 carUpAxis =
+        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
+
+      if (
+        // do not update the third person camera if too close from the target
+        glm::distance(carOrigin, _eye) > 0.25f) {
+        // simple lerp to setup the third person camera
+        const float lerpRatio = 0.1f * 60.0f * elapsedTime;
+        _eye += (carOrigin - _eye) * lerpRatio;
+        _upAxis += (carUpAxis - _upAxis) * lerpRatio;
+      }
+
+      const glm::vec3 eye = _eye;
+      const glm::vec3 target = carOrigin;
+      const glm::vec3 upAxis = _upAxis;
+
+      _camera.setSize(_size.x, _size.y);
+      _camera.setPerspective(70.0f, 0.1f, 1500.0f);
+      _camera.lookAt(eye, target, upAxis);
+      _camera.computeMatrices();
+    }
+  }
+}
+
+void ThirdPersonCamera::resize() {
+  if (_isVisible)
+    fadeIn(0.0f, 0.2f);
+  else
+    fadeOut(0.0f, 0.2f);
 }
 
 void ThirdPersonCamera::render() {
+
   auto& context = Context::get();
-  auto& logic = context.logic;
   auto& graphic = context.graphic;
-  const auto& leaderCar = logic.leaderCar;
-
-  // valid leading car?
-  if (logic.isAccelerated || !leaderCar.hasLeader())
-    return;
-
   auto& camera = graphic.camera;
 
-  const auto& vSize = camera.viewportSize;
-  // const glm::vec2 thirdPViewportPos = {
-  //   viewportSize.x - _size.x - 10, 10};
+  if (canActivate()) {
+    const auto& vSize = camera.viewportSize;
 
-  GlContext::enable(GlContext::States::scissorTest);
-  GlContext::setScissor(_position.x, _position.y, uint32_t(_size.x),
-                        uint32_t(_size.y));
-  GlContext::setViewport(_position.x, _position.y, uint32_t(_size.x),
-                         uint32_t(_size.y));
-  GlContext::clearColor(0, 0, 0, 1);
-  GlContext::clear(asValue(GlContext::Buffers::color) |
-                   asValue(GlContext::Buffers::depth));
+    _postProcess.startRecording();
 
-  const Camera& camInstance = camera.thirdPerson.scene;
+    Scene::renderScene(_camera);
 
-  const auto& matriceData = camInstance.getMatricesData();
+    _postProcess.stopRecording();
 
-  graphic.hud.stackRenderers.wireframes.setMatricesData(matriceData);
-  graphic.hud.stackRenderers.triangles.setMatricesData(matriceData);
-  graphic.scene.particleManager.setMatricesData(matriceData);
-  graphic.scene.floorRenderer.setMatricesData(matriceData);
-  graphic.scene.animatedCircuitRenderer.setMatricesData(matriceData);
-  graphic.scene.flockingManager.setMatricesData(matriceData);
-  graphic.scene.carTailsRenderer.setMatricesData(matriceData);
+    GlContext::setViewport(0, 0, vSize.x, vSize.y);
+  }
 
-  Scene::_renderFloor(camInstance);
-  graphic.scene.animatedCircuitRenderer.renderWireframe();
-  graphic.scene.animatedCircuitRenderer.renderWalls();
+  {
+    const auto& matricesData = camera.hud.getMatricesData();
+    _postProcess.setMatricesData(matricesData);
 
-  Scene::_renderLeadingCarSensors();
-  graphic.scene.flockingManager.render();
+    _postProcess.setGeometry(_position, _size, -1.0f);
 
-  graphic.hud.stackRenderers.wireframes.flush();
-  graphic.hud.stackRenderers.triangles.flush();
+    _postProcess.render();
 
-  graphic.scene.particleManager.render();
-
-  graphic.scene.modelsRenderer.render(camInstance);
-  graphic.scene.animatedCircuitRenderer.renderGround();
-  graphic.scene.carTailsRenderer.render();
-
-  GlContext::disable(GlContext::States::scissorTest);
-  GlContext::setViewport(0, 0, vSize.x, vSize.y);
+    auto& stackRenderers = graphic.hud.stackRenderers;
+    stackRenderers.triangles.pushQuad(_position + _size * 0.5f, _size,
+                                      glm::vec4(0, 0, 0, 0.75f), -1.5f);
+    stackRenderers.wireframes.pushRectangle(_position, _size,
+                                            glm::vec4(0.8f, 0.8f, 0.8f, 1), -0.1f);
+  }
 }

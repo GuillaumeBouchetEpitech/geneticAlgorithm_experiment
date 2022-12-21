@@ -3,10 +3,10 @@
 
 #include "Image.hpp"
 
-#include "framework/asValue.hpp"
+#include "framework/system/asValue.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <sstream>
 

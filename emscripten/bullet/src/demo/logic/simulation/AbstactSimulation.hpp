@@ -6,7 +6,7 @@
 
 #include "machineLearning/GeneticAlgorithm.hpp"
 
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
 
 #include "demo/defines.hpp"
 

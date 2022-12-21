@@ -5,7 +5,7 @@
 
 #include "Genome.hpp"
 
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
 
 #include <array>
 

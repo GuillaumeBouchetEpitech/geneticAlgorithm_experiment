@@ -3,15 +3,9 @@
 
 #include "body/PhysicBody.hpp"
 #include "vehicle/PhysicVehicle.hpp"
-// #include "PhysicHingeConstraint.hpp"
-// #include "PhysicFixedConstraint.hpp"
-
-// #include "wrappers/MyDynamicsWorld.hpp"
-// #include "wrappers/PhysicContactEventsHandler.hpp"
-
-#include "framework/TraceLogger.hpp"
 
 #include "framework/helpers/internals/BulletPhysics.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <algorithm>
 #include <array>

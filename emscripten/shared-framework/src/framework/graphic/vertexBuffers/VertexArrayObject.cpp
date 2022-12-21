@@ -3,7 +3,7 @@
 
 #include "../GlContext.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include <stdexcept> // <= std::invalid_argument / runtime_error / out_of_range
 

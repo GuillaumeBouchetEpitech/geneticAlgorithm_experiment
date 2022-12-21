@@ -17,12 +17,12 @@
 class Shader;
 
 struct TextRenderer {
-public:
-  enum class TextAllign {
-    left = 0,
-    center,
-    right,
-  };
+  // public:
+  //   enum class TextAllign {
+  //     left = 0,
+  //     center,
+  //     right,
+  //   };
 
 private:
   struct LetterOffset {
@@ -55,8 +55,9 @@ public:
 
 public:
   void push(const glm::vec2& position, std::string_view message,
-            const glm::vec4& color, float scale = 1.0f,
-            TextAllign allign = TextAllign::left);
+            const glm::vec4& color, float scale = 1.0f, float zDepth = 0.0f
+            // TextAllign allign = TextAllign::left
+  );
 
   void clear();
 

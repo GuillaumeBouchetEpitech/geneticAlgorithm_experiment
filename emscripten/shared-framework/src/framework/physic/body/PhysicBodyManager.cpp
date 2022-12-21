@@ -13,7 +13,7 @@ PhysicBodyManager::PhysicBodyManager(PhysicWorld& physicWorld)
 PhysicBodyManager::~PhysicBodyManager() { clear(); }
 
 void PhysicBodyManager::clear() {
-  while (!_bodies.empty())
+  while (!_bodies.is_empty())
     destroyBody(_bodies.get(0));
   _bodies.clear();
 }
@@ -72,4 +72,4 @@ PhysicBodyManager::getBody(unsigned int index) const {
 
 std::size_t PhysicBodyManager::bodySize() const { return _bodies.size(); }
 
-bool PhysicBodyManager::bodyEmpty() const { return _bodies.empty(); }
+bool PhysicBodyManager::bodyEmpty() const { return _bodies.is_empty(); }

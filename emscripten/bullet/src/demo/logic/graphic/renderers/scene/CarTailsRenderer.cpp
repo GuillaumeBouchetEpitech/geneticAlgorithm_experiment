@@ -4,7 +4,7 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
+#include "framework/system/asValue.hpp"
 
 void CarTailsRenderer::initialise() {
 
@@ -61,7 +61,7 @@ void CarTailsRenderer::render() {
 
   _shader->bind();
   _shader->setUniform("u_composedMatrix", _matricesData.composed);
-  _shader->setUniform("u_color", 1.0f, 1.0f, 1.0f, 1.0f);
+  _shader->setUniform("u_color", 0.8f, 0.8f, 0.8f, 1.0f);
 
   { // best trails
 
@@ -73,7 +73,8 @@ void CarTailsRenderer::render() {
 
   { // leader trail
 
-    if (logic.leaderCar.hasLeader()) {
+    if (logic.leaderCar.hasLeader() && !logic.carWheelsTrails.isEmpty()) {
+
       const auto& trailData =
         logic.carWheelsTrails.getTrailByIndex(logic.leaderCar.leaderIndex());
 
@@ -88,7 +89,8 @@ void CarTailsRenderer::render() {
         const int currSize = std::min(totalSize, maxSize);
 
         const float* dataPointer = &currWheel.at(totalSize - currSize).x;
-        const int dataSize = currSize * sizeof(glm::vec3);
+        const int dataSize =
+          currSize * sizeof(CarWheelsTrails::WheelTrail::value_type);
 
         _geometries.leaderCarTrail.updateBuffer(0, dataPointer, dataSize, true);
         _geometries.leaderCarTrail.setPrimitiveCount(currSize);

@@ -1,7 +1,7 @@
 
 #include "loadObjModel.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include "framework/helpers/internals/TinyObjLoader.hpp"
 

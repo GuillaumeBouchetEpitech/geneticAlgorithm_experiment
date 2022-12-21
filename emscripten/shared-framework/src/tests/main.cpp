@@ -1,7 +1,7 @@
 
 #include "./tests.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 
@@ -19,8 +19,19 @@ int main() {
   test_frustum_culling();
   test_static_stack_array();
   test_deterministic_rng();
+  test_generic_array_container();
 
   // test_audio();
+
+  D_MYLOG("");
+  D_MYLOG("");
+  D_MYLOG("###############");
+  D_MYLOG("#             #");
+  D_MYLOG("#   SUCCESS   #");
+  D_MYLOG("#             #");
+  D_MYLOG("###############");
+  D_MYLOG("");
+  D_MYLOG("");
 
   return EXIT_SUCCESS;
 }

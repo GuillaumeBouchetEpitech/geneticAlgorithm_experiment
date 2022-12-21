@@ -1,7 +1,7 @@
 
 #include "common.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <functional>
 #include <iostream>
@@ -35,13 +35,12 @@ void reset() {
   totalDtor = 0;
 }
 
-// void print()
-// {
-//   std::cout << " => totalCtor=     " << totalCtor << std::endl;
-//   std::cout << " => totalCopyCtor= " << totalCopyCtor << std::endl;
-//   std::cout << " => totalMoveCtor= " << totalMoveCtor << std::endl;
-//   std::cout << " => totalDtor=     " << totalDtor << std::endl;
-// }
+void print() {
+  std::cout << " => totalCtor=     " << totalCtor << std::endl;
+  std::cout << " => totalCopyCtor= " << totalCopyCtor << std::endl;
+  std::cout << " => totalMoveCtor= " << totalMoveCtor << std::endl;
+  std::cout << " => totalDtor=     " << totalDtor << std::endl;
+}
 
 Test::Test(int inValue /* = 0 */) : value(inValue) {
   ++totalCtor;
@@ -58,6 +57,7 @@ Test::~Test() {
 Test::Test(const Test& other) {
   ++totalCopyCtor;
   value = other.value;
+  my_string = other.my_string;
   if (logEnabled)
     std::cout << "ctor copy " << value << std::endl;
 }
@@ -73,6 +73,7 @@ Test::Test(Test&& other) {
   ++totalMoveCtor;
   // value = std::move(other.value);
   std::swap(value, other.value);
+  my_string = std::move(other.my_string);
   if (logEnabled) {
     std::cout << "ctor move " << value << ", " << other.value << std::endl;
   }
@@ -81,6 +82,7 @@ Test::Test(Test&& other) {
 Test& Test::operator=(const Test& other) {
   ++totalCopyCtor;
   value = other.value;
+  my_string = other.my_string;
   if (logEnabled)
     std::cout << "op= copy " << value << std::endl;
   return *this;
@@ -96,6 +98,7 @@ Test& Test::operator=(Test&& other) {
   ++totalMoveCtor;
   // value = std::move(other.value);
   std::swap(value, other.value);
+  my_string = std::move(other.my_string);
   if (logEnabled)
     std::cout << "op= move " << value << ", " << other.value << std::endl;
   return *this;

@@ -1,7 +1,7 @@
 
-#include "framework/containers/static_stack_array.hpp"
+#include "framework/system//containers/static_stack_array.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "common.hpp"
 
@@ -34,7 +34,7 @@ void test_static_stack_array() {
       int index = 0;
       for (auto it = myArray.begin(); it != myArray.end(); ++it)
         assert(*it == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     {
@@ -42,14 +42,14 @@ void test_static_stack_array() {
       const auto& cmyArray = myArray;
       for (auto it = cmyArray.begin(); it != cmyArray.end(); ++it)
         assert(*it == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     {
       int index = 0;
       for (int value : myArray)
         assert(value == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     {
@@ -57,21 +57,21 @@ void test_static_stack_array() {
       const auto& cmyArray = myArray;
       for (const int value : cmyArray)
         assert(value == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     {
       int index = 0;
       for (auto it = myArray.begin(); it != myArray.end(); ++it)
         assert(*it == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     {
       int index = 0;
       for (int value : myArray)
         assert(value == index++);
-      assert(index == myArray.size());
+      assert(index == int(myArray.size()));
     }
 
     assert(myArray[-5] == 0);
@@ -91,6 +91,59 @@ void test_static_stack_array() {
     assert(myArray[7] == 2);
     assert(myArray[8] == 3);
     assert(myArray[9] == 4);
+  }
+
+  {
+    static_stack_array<int, 5> myArray;
+
+    assert(myArray.total_iterators() == 0);
+
+    {
+      auto it1 = myArray.begin();
+
+      assert(myArray.total_iterators() == 1);
+    }
+
+    assert(myArray.total_iterators() == 0);
+
+    {
+      auto it1 = myArray.begin();
+      auto it2 = myArray.end();
+
+      const auto& cmyArray = myArray;
+      auto it3 = cmyArray.begin();
+      auto it4 = cmyArray.end();
+
+      assert(myArray.total_iterators() == 4);
+    }
+
+    assert(myArray.total_iterators() == 0);
+  }
+
+  {
+    auto* pArray = new static_stack_array<int, 5>();
+
+    assert(pArray->total_iterators() == 0);
+
+    auto it1 = pArray->begin();
+    auto it2 = pArray->end();
+
+    const auto* cpArray = pArray;
+    auto it3 = cpArray->begin();
+    auto it4 = cpArray->end();
+
+    assert(pArray->total_iterators() == 4);
+    assert(it1.is_valid());
+    assert(it2.is_valid());
+    assert(it3.is_valid());
+    assert(it4.is_valid());
+
+    delete pArray, pArray = nullptr;
+
+    assert(!it1.is_valid());
+    assert(!it2.is_valid());
+    assert(!it3.is_valid());
+    assert(!it4.is_valid());
   }
 
   D_MYLOG(" => DONE");

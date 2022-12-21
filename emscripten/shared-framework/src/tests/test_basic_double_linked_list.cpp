@@ -1,7 +1,6 @@
 
-#include "framework/containers/basic_double_linked_list.hpp"
-
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
+#include "framework/system/containers/basic_double_linked_list.hpp"
 
 #include "common.hpp"
 

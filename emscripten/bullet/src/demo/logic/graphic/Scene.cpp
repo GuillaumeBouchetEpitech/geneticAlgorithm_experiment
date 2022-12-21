@@ -1,13 +1,11 @@
 
 #include "Scene.hpp"
 
-#include "common.hpp"
-
 #include "demo/states/StateManager.hpp"
 
 #include "framework/graphic/GlContext.hpp"
 #include "framework/graphic/ShaderProgram.hpp"
-#include "framework/math/clamp.hpp"
+#include "framework/system/math/clamp.hpp"
 
 void Scene::initialise() {
   GlContext::enable(GlContext::States::depthTest);
@@ -22,6 +20,7 @@ void Scene::initialise() {
 
 void Scene::renderSimple() {
   Scene::_clear();
+  Scene::updateMatrices();
 
   auto& graphic = Context::get().graphic;
 
@@ -29,28 +28,23 @@ void Scene::renderSimple() {
 
   { // scene
 
-    const Camera& camInstance = graphic.camera.main.scene;
-    const auto& matricesData = camInstance.getMatricesData();
-    graphic.scene.stackRenderers.wireframes.setMatricesData(matricesData);
-    graphic.scene.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.scene.particleManager.setMatricesData(matricesData);
-    graphic.scene.animatedCircuitRenderer.setMatricesData(matricesData);
+    const auto& vSize = graphic.camera.viewportSize;
 
-    // Scene::_renderFloor(camInstance);
-    // graphic.scene.animatedCircuitRenderer.renderWireframe();
-    // graphic.scene.animatedCircuitRenderer.renderWalls();
-    // graphic.scene.animatedCircuitRenderer.renderGround();
+    GlContext::setViewport(0, 0, vSize.x, vSize.y);
+
+    GlContext::clearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    GlContext::clear(asValue(GlContext::Buffers::color) |
+                     asValue(GlContext::Buffers::depth));
   }
 
   graphic.hud.postProcess.stopRecording();
 
   { // HUD
 
-    const auto& matricesData = graphic.camera.main.hud.getMatricesData();
+    const auto& matricesData = graphic.camera.hud.getMatricesData();
     graphic.hud.postProcess.setMatricesData(matricesData);
     graphic.hud.stackRenderers.wireframes.setMatricesData(matricesData);
     graphic.hud.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.scene.particleManager.setMatricesData(matricesData);
     graphic.hud.textRenderer.setMatricesData(matricesData);
 
     Scene::_renderHUD();
@@ -61,58 +55,33 @@ void Scene::renderSimple() {
 
 void Scene::renderAll() {
   Scene::_clear();
+  Scene::updateMatrices();
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
-
-  graphic.hud.postProcess.startRecording();
+  auto& camera = graphic.camera;
 
   { // scene
 
-    auto& logic = context.logic;
-    auto& graphic = context.graphic;
-    auto& camera = graphic.camera;
-    const Camera& camInstance = camera.main.scene;
-    const auto& matricesData = camInstance.getMatricesData();
+    const Camera& camInstance = camera.scene;
+    const auto& vSize = camera.viewportSize;
 
-    graphic.scene.stackRenderers.wireframes.setMatricesData(matricesData);
-    graphic.scene.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.scene.particleManager.setMatricesData(matricesData);
-    graphic.scene.floorRenderer.setMatricesData(matricesData);
-    graphic.scene.animatedCircuitRenderer.setMatricesData(matricesData);
-    graphic.scene.flockingManager.setMatricesData(matricesData);
-    graphic.scene.carTailsRenderer.setMatricesData(matricesData);
+    graphic.hud.postProcess.startRecording();
 
-    Scene::_renderFloor(camInstance);
-    graphic.scene.animatedCircuitRenderer.renderWireframe();
-    graphic.scene.animatedCircuitRenderer.renderWalls();
+    Scene::renderScene(camInstance);
 
-    if (!logic.isAccelerated)
-      Scene::_renderLeadingCarSensors();
+    graphic.hud.postProcess.stopRecording();
 
-    graphic.scene.flockingManager.render();
-    graphic.scene.stackRenderers.triangles.flush();
-
-    graphic.scene.particleManager.render();
-
-    graphic.scene.stackRenderers.wireframes.flush();
-    graphic.scene.stackRenderers.triangles.flush();
-
-    graphic.scene.modelsRenderer.render(camInstance);
-    graphic.scene.animatedCircuitRenderer.renderGround();
-    graphic.scene.carTailsRenderer.render();
+    GlContext::setViewport(0, 0, vSize.x, vSize.y);
   }
-
-  graphic.hud.postProcess.stopRecording();
 
   { // HUD
 
-    const auto& matricesData = graphic.camera.main.hud.getMatricesData();
+    const auto& matricesData = camera.hud.getMatricesData();
+
     graphic.hud.postProcess.setMatricesData(matricesData);
     graphic.hud.stackRenderers.wireframes.setMatricesData(matricesData);
     graphic.hud.stackRenderers.triangles.setMatricesData(matricesData);
-    graphic.scene.particleManager.setMatricesData(matricesData);
-    graphic.scene.floorRenderer.setMatricesData(matricesData);
     graphic.hud.textRenderer.setMatricesData(matricesData);
 
     Scene::_renderHUD();
@@ -121,9 +90,8 @@ void Scene::renderAll() {
   ShaderProgram::unbind();
 }
 
-void Scene::updateMatrices(float elapsedTime) {
+void Scene::updateMatrices() {
   auto& context = Context::get();
-  const auto& logic = context.logic;
   auto& graphic = context.graphic;
   auto& camera = graphic.camera;
 
@@ -131,65 +99,30 @@ void Scene::updateMatrices(float elapsedTime) {
 
     // clamp vertical rotation [-70..+70]
     const float verticalLimit = glm::radians(70.0f);
-    auto& rotations = camera.main.rotations;
+    auto& rotations = camera.rotations;
     rotations.phi = glm::clamp(rotations.phi, -verticalLimit, verticalLimit);
 
     const float cosPhi = std::cos(rotations.phi);
-    const glm::vec3 eye = {
-      camera.main.center.x +
-        camera.main.distance * cosPhi * std::cos(rotations.theta),
-      camera.main.center.y +
-        camera.main.distance * cosPhi * std::sin(rotations.theta),
-      camera.main.center.z + camera.main.distance * std::sin(rotations.phi)};
+    const glm::vec3 cameraDir = {
+      cosPhi * std::cos(rotations.theta),
+      cosPhi * std::sin(rotations.theta),
+      std::sin(rotations.phi)
+    };
+    const glm::vec3 eye = camera.center + cameraDir * camera.distance;
     const glm::vec3 upAxis = {0.0f, 0.0f, 1.0f};
 
-    camera.main.scene.setSize(camera.viewportSize.x, camera.viewportSize.y);
-    camera.main.scene.lookAt(eye, camera.main.center, upAxis);
-    camera.main.scene.computeMatrices();
+    camera.scene.setSize(camera.viewportSize.x, camera.viewportSize.y);
+    camera.scene.lookAt(eye, camera.center, upAxis);
+    camera.scene.computeMatrices();
 
-    camera.main.hud.setOrthographic(0.0f, float(camera.viewportSize.x), 0.0f,
-                                    float(camera.viewportSize.y), -10.0f,
-                                    +10.0f);
+    camera.hud.setOrthographic(0.0f, float(camera.viewportSize.x), 0.0f,
+                               float(camera.viewportSize.y), -10.0f, +10.0f);
 
-    camera.main.hud.computeMatrices();
+    camera.hud.lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0),
+                      glm::vec3(0, 1, 0));
+    camera.hud.computeMatrices();
 
   } // scene
-
-  { // third person
-
-    if (auto leaderData = logic.leaderCar.leaderData()) {
-      const glm::vec3 carOrigin =
-        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 2.5f, 1.0f);
-      const glm::vec3 carUpAxis =
-        leaderData->liveTransforms.chassis * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
-
-      const StateManager::States currentState = StateManager::get()->getState();
-
-      if (
-        // do not update the third person camera if not in a correct state
-        (currentState == StateManager::States::Running ||
-         currentState == StateManager::States::StartGeneration) &&
-        // do not update the third person camera if too close from the target
-        glm::distance(carOrigin, camera.thirdPerson.eye) > 0.25f) {
-        // simple lerp to setup the third person camera
-        const float lerpRatio = 0.1f * 60.0f * elapsedTime;
-        camera.thirdPerson.eye +=
-          (carOrigin - camera.thirdPerson.eye) * lerpRatio;
-        camera.thirdPerson.upAxis +=
-          (carUpAxis - camera.thirdPerson.upAxis) * lerpRatio;
-      }
-
-      const glm::vec3 eye = camera.thirdPerson.eye;
-      const glm::vec3 target = carOrigin;
-      const glm::vec3 upAxis = camera.thirdPerson.upAxis;
-
-      camera.thirdPerson.scene.setSize(scene::thirdPViewportWidth,
-                                       scene::thirdPViewportHeight);
-      camera.thirdPerson.scene.lookAt(eye, target, upAxis);
-      camera.thirdPerson.scene.computeMatrices();
-    }
-
-  } // third person
 }
 
 void Scene::_clear() {

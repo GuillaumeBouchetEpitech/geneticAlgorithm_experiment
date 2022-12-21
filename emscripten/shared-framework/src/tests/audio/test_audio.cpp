@@ -2,7 +2,7 @@
 
 #include "framework/audio/OpenALSoundManager.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <thread>
 

@@ -1,7 +1,7 @@
 
-#include "framework/containers/weak_ref_data_pool.hpp"
+#include "framework/system/containers/weak_ref_data_pool.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <cassert>
 

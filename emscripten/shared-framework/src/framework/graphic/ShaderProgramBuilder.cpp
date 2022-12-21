@@ -1,7 +1,7 @@
 
 #include "ShaderProgramBuilder.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 ShaderProgramBuilder::ShaderProgramBuilder() { reset(); }
 

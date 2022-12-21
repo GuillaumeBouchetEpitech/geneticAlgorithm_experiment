@@ -3,12 +3,12 @@
 
 #include "./decoders/ogg.hpp"
 
-#include "framework/files/getFileContent.hpp"
+#include "framework/system/files/getFileContent.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
-#include "framework/math/RandomNumberGenerator.hpp"
-#include "framework/math/clamp.hpp"
+#include "framework/system/math/RandomNumberGenerator.hpp"
+#include "framework/system/math/clamp.hpp"
 
 #include <algorithm>
 #include <iostream>

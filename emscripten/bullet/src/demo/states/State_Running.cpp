@@ -14,28 +14,31 @@
 
 void State_Running::enter() {
   auto& context = Context::get();
-  context.graphic.hud.topologyRenderer.fadeIn();
-  context.graphic.hud.coreUsageRenderer.fadeIn();
-  context.graphic.hud.thirdPersonCamera.fadeIn();
+  context.graphic.hud.topologyRenderer.fadeIn(0.5f, 0.5f);
+  context.graphic.hud.thirdPersonCamera.fadeIn(0.6f, 0.5f);
+  context.graphic.hud.coreUsageRenderer.fadeIn(0.7f, 0.5f);
+  context.graphic.hud.fitnessDataRenderer.fadeIn(0.8f, 0.5f);
+  context.graphic.hud.informationTextRenderer.fadeIn(0.9f, 0.5f);
 }
 
 void State_Running::leave() {
   auto& context = Context::get();
-  context.graphic.hud.topologyRenderer.fadeOut();
-  context.graphic.hud.coreUsageRenderer.fadeOut();
-  context.graphic.hud.thirdPersonCamera.fadeOut();
+  context.graphic.hud.topologyRenderer.fadeOut(0.0f, 0.5f);
+  context.graphic.hud.thirdPersonCamera.fadeOut(0.1f, 0.5f);
+  context.graphic.hud.coreUsageRenderer.fadeOut(0.2f, 0.5f);
+  context.graphic.hud.fitnessDataRenderer.fadeOut(0.3f, 0.5f);
+  context.graphic.hud.informationTextRenderer.fadeOut(0.3f, 0.5f);
 }
 
 void State_Running::update(int deltaTime) {
   State_AbstractSimulation::update(deltaTime);
 
-  float elapsedTime = float(deltaTime) / 1000.0f;
+  const float elapsedTime = float(deltaTime) / 1000.0f;
 
   auto& context = Context::get();
   auto& logic = context.logic;
   auto& simulation = *logic.simulation;
   auto& graphic = context.graphic;
-  auto& camera = graphic.camera;
 
   { // simulation update
 
@@ -50,54 +53,12 @@ void State_Running::update(int deltaTime) {
 
   } // simulation update
 
-  Scene::updateMatrices(elapsedTime);
-
   // done to avoid a spurious change of camera
   // -> true when changing states: Running -> EndGeneration
   if (StateManager::get()->getState() == StateManager::States::Running) {
 
-    { // camera tracking
-
-      glm::vec3 cameraNextCenter = logic.circuitDimension.center;
-      float cameraNextDistance = 200.0f;
-
-      //
-      //
-
-      auto& leaderCar = logic.leaderCar;
-
-      if (logic.isAccelerated) {
-        leaderCar.reset();
-      } else {
-        cameraNextDistance = 40.0f;
-
-        leaderCar.update(elapsedTime);
-
-        if (auto leaderPos = leaderCar.leaderPosition())
-          cameraNextCenter = *leaderPos;
-      }
-
-      //
-      //
-
-      {
-        const float lerpRatio = 6.0f * elapsedTime;
-
-        camera.main.center +=
-          (cameraNextCenter - camera.main.center) * lerpRatio;
-        camera.main.distance +=
-          (cameraNextDistance - camera.main.distance) * lerpRatio;
-      }
-
-    } // camera tracking
-
-    {
-      graphic.scene.particleManager.update(elapsedTime);
-      graphic.scene.backGroundTorusRenderer.update(elapsedTime);
-      graphic.scene.animatedCircuitRenderer.update(elapsedTime);
-      graphic.scene.flockingManager.update();
-      graphic.hud.topologyRenderer.update(elapsedTime);
-      graphic.hud.animationManager.update(elapsedTime);
-    }
+    _updateCameraTracking(elapsedTime);
+    _updateCommonLogic(elapsedTime);
+    graphic.scene.animatedCircuitRenderer.update(elapsedTime);
   }
 }

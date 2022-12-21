@@ -20,7 +20,7 @@ public:
 
 public:
   void update(float elapsedTime);
-  void render(const glm::vec3& center);
+  void render(const Camera& camera);
 
 private:
   std::shared_ptr<ShaderProgram> _shader;

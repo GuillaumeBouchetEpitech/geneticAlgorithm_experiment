@@ -4,30 +4,32 @@ precision lowp float;
 
 uniform sampler2D u_colorTexture;
 uniform sampler2D u_outlineTexture;
+uniform vec2 u_invResolution;
+
+in vec2 v_texCoord;
 
 out vec4 out_color;
 
 void main(void)
 {
-  ivec2 pixelCoord = ivec2(gl_FragCoord.xy);
-  vec4 pixelColor = texelFetch(u_colorTexture, pixelCoord, 0);
-  vec4 pixelOutline = texelFetch(u_outlineTexture, pixelCoord, 0);
+  vec4 pixelColor = texture(u_colorTexture, v_texCoord);
+  vec4 pixelOutline = texture(u_outlineTexture, v_texCoord);
 
   if (pixelOutline.x == 0.0)
   {
     float depth = 0.0;
-    depth += texelFetch(u_outlineTexture, pixelCoord, 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1, 0), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1, 0), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2( 0,-1), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2( 0,+1), 0).x;
+    depth += texture(u_outlineTexture, v_texCoord).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(-1.0 * u_invResolution.x,  0.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(+1.0 * u_invResolution.x,  0.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2( 0.0 * u_invResolution.x, -1.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2( 0.0 * u_invResolution.x, +1.0 * u_invResolution.y)).x;
 
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1,-1), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1,-1), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(-1,+1), 0).x;
-    depth += texelFetch(u_outlineTexture, pixelCoord + ivec2(+1,+1), 0).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(-1.0 * u_invResolution.x, -1.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(+1.0 * u_invResolution.x, -1.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(-1.0 * u_invResolution.x, +1.0 * u_invResolution.y)).x;
+    depth += texture(u_outlineTexture, v_texCoord + vec2(+1.0 * u_invResolution.x, +1.0 * u_invResolution.y)).x;
 
-    const vec4 outlineColor = vec4(1.0, 1.0, 1.0, 1.0);
+    const vec4 outlineColor = vec4(0.8, 0.8, 0.8, 1.0);
 
     if (depth > 1.0)
       out_color = outlineColor;

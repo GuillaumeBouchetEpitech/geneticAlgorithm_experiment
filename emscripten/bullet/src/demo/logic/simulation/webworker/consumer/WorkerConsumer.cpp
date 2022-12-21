@@ -6,7 +6,7 @@
 
 #include "demo/defines.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include <chrono>
 #include <memory> // std::make_unique

@@ -1,7 +1,7 @@
 
 #include "OpenAlContext.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include <AL/al.h>
 #include <AL/alc.h>

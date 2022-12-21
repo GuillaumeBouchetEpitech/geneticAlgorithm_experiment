@@ -1,7 +1,7 @@
 
 #include "framework/graphic/camera/FrustumCulling.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "framework/helpers/GLMath.hpp"
 

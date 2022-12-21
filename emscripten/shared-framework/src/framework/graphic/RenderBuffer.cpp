@@ -6,7 +6,7 @@
 #include "FrameBuffer.hpp"
 #include "Texture.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include <array>
 
@@ -91,7 +91,7 @@ void RenderBuffer::ensureCompatibleDepth() {
     def.renderBuffer = &tmpRenderBuffer;
     if (tmpFrameBuffer.initialise(def, false)) {
       s_depthCompatibleValues.depthFormat = currConfig.format;
-      D_MYLOG("currConfig.msg " << currConfig.msg);
+      // D_MYLOG("currConfig.msg " << currConfig.msg);
       break;
     }
   }

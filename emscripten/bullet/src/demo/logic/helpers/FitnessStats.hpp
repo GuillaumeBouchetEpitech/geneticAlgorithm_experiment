@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "framework/containers/static_stack_array.hpp"
+#include "framework/system/containers/static_stack_array.hpp"
 
 class FitnessStats {
 private:

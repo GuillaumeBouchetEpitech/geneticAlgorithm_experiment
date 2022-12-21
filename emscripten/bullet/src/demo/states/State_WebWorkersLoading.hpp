@@ -7,9 +7,12 @@
 
 #include "State_AbstractSimulation.hpp"
 
+#include "framework/system/Timer.hpp"
+
 class State_WebWorkersLoading : public State_AbstractSimulation {
 private:
-  int _countdownUntilNextState = 0;
+  bool _awaiting = true;
+  Timer _timer;
 
 public:
   virtual void enter() override;

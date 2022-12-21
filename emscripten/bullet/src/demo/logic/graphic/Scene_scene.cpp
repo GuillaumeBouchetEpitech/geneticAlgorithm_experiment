@@ -1,9 +1,7 @@
 
 #include "Scene.hpp"
 
-#include "framework/containers/static_heap_grid_array.hpp"
 #include "framework/graphic/GlContext.hpp"
-#include "framework/math/constants.hpp"
 
 void Scene::_renderLeadingCarSensors() {
   auto& context = Context::get();
@@ -50,18 +48,49 @@ void Scene::_renderLeadingCarSensors() {
   }
 }
 
-void Scene::_renderFloor(const Camera& camera) {
-  auto& graphic = Context::get().graphic;
+void Scene::renderScene(const Camera& inCamera)
+{
+  auto& context = Context::get();
+  auto& graphic = context.graphic;
+  auto& scene = graphic.scene;
 
-  // hide the floor if the camera is looking from beneath it
-  GlContext::enable(GlContext::States::cullFace);
+  {
+    const auto& matriceData = inCamera.getMatricesData();
 
-  // transparency friendly
-  GlContext::disable(GlContext::States::depthTest);
+    scene.stackRenderers.wireframes.setMatricesData(matriceData);
+    scene.stackRenderers.triangles.setMatricesData(matriceData);
+    scene.particleManager.setMatricesData(matriceData);
+    scene.floorRenderer.setMatricesData(matriceData);
+    scene.animatedCircuitRenderer.setMatricesData(matriceData);
+    scene.flockingManager.setMatricesData(matriceData);
+    scene.carTailsRenderer.setMatricesData(matriceData);
+  }
 
-  graphic.scene.backGroundTorusRenderer.render(camera.getTarget());
-  graphic.scene.floorRenderer.render();
+  {
+    scene.backGroundTorusRenderer.render(inCamera);
+    GlContext::clear(asValue(GlContext::Buffers::depth));
 
-  GlContext::disable(GlContext::States::cullFace);
-  GlContext::enable(GlContext::States::depthTest);
+    scene.floorRenderer.render();
+
+    scene.animatedCircuitRenderer.renderWireframe();
+    scene.animatedCircuitRenderer.renderWalls();
+
+    Scene::_renderLeadingCarSensors();
+
+    scene.stackRenderers.wireframes.flush();
+    scene.stackRenderers.triangles.flush();
+
+    scene.particleManager.render();
+
+    scene.stackRenderers.wireframes.flush();
+    scene.stackRenderers.triangles.flush();
+
+    scene.modelsRenderer.render(inCamera);
+    scene.animatedCircuitRenderer.renderGround();
+    scene.carTailsRenderer.render();
+    scene.flockingManager.render();
+
+    scene.stackRenderers.wireframes.flush();
+    scene.stackRenderers.triangles.flush();
+  }
 }

@@ -12,9 +12,12 @@
 #include "helpers/LeaderCar.hpp"
 #include "helpers/ProfileData.hpp"
 
-#include "graphic/postProcess/PostProcess.hpp"
-#include "graphic/renderers/hud/AnimationManager.hpp"
 #include "graphic/renderers/hud/CoreUsageRenderer.hpp"
+#include "graphic/renderers/hud/FitnessDataRenderer.hpp"
+#include "graphic/renderers/hud/InformationTextRenderer.hpp"
+#include "graphic/renderers/hud/LeaderEyeRenderer.hpp"
+#include "graphic/renderers/hud/PostProcess.hpp"
+#include "graphic/renderers/hud/ScreenTitles.hpp"
 #include "graphic/renderers/hud/TextRenderer.hpp"
 #include "graphic/renderers/hud/ThirdPersonCamera.hpp"
 #include "graphic/renderers/hud/TopologyRenderer.hpp"
@@ -27,10 +30,10 @@
 #include "graphic/renderers/scene/ModelsRenderer.hpp"
 #include "graphic/renderers/scene/ParticleManager.hpp"
 
-#include "framework/NonCopyable.hpp"
 #include "framework/graphic/ResourceManager.hpp"
 #include "framework/graphic/camera/Camera.hpp"
 #include "framework/helpers/GLMath.hpp"
+#include "framework/system/NonCopyable.hpp"
 
 #include <array>
 #include <list>
@@ -76,25 +79,16 @@ public:
     struct CameraData {
       glm::vec2 viewportSize = {800.0f, 600.0f};
 
-      struct SceneData {
-        struct Rotations {
-          float theta = -2.5f;
-          float phi = 0.5f;
-        } rotations;
+      struct Rotations {
+        float theta = -2.5f;
+        float phi = 0.5f;
+      } rotations;
 
-        glm::vec3 center = {0.0f, 0.0f, 0.0f};
-        float distance = 0.0f;
+      glm::vec3 center = {0.0f, 0.0f, 0.0f};
+      float distance = 100.0f;
 
-        Camera scene;
-        Camera hud;
-      } main;
-
-      struct ThirdPersonData {
-        glm::vec3 eye = {0.0f, 0.0f, 0.0f};
-        glm::vec3 upAxis = {0.0f, 0.0f, 1.0f};
-
-        Camera scene;
-      } thirdPerson;
+      Camera scene;
+      Camera hud;
     } camera;
 
     struct StackRenderers {
@@ -106,9 +100,12 @@ public:
       StackRenderers stackRenderers;
       TextRenderer textRenderer;
       TopologyRenderer topologyRenderer;
+      ScreenTitles screenTitles;
       CoreUsageRenderer coreUsageRenderer;
       ThirdPersonCamera thirdPersonCamera;
-      AnimationManager animationManager;
+      FitnessDataRenderer fitnessDataRenderer;
+      InformationTextRenderer informationTextRenderer;
+      LeaderEyeRenderer leaderEyeRenderer;
       PostProcess postProcess;
     } hud;
 

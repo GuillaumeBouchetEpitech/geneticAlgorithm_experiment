@@ -6,7 +6,7 @@
 
 #include "GlContext.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 Texture::DepthCompatibleValues Texture::s_depthCompatibleValues;
 
@@ -148,7 +148,7 @@ void Texture::ensureCompatibleDepth() {
     if (tmpFrameBuffer.initialise(def, false)) {
       s_depthCompatibleValues.depthFormat = currConfig.format;
       s_depthCompatibleValues.depthType = currConfig.type;
-      D_MYLOG("currConfig.msg " << currConfig.msg);
+      // D_MYLOG("currConfig.msg " << currConfig.msg);
       break;
     }
   }

@@ -3,7 +3,7 @@
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 void CarWheelsTrails::reset(const AbstactSimulation& simulation) {
   _genomeIndexMap.clear();
@@ -33,6 +33,8 @@ void CarWheelsTrails::push(unsigned int carIndex, int wheelIndex,
                            const glm::vec3& value) {
   _allWheelsTrails.at(carIndex).wheels.at(wheelIndex).emplace_back(value);
 }
+
+bool CarWheelsTrails::isEmpty() const { return _allWheelsTrails.empty(); }
 
 const CarWheelsTrails::WheelsTrail&
 CarWheelsTrails::getTrailByIndex(int index) const {

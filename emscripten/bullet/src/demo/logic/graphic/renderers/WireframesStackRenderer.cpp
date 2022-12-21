@@ -3,8 +3,8 @@
 
 #include "demo/logic/Context.hpp"
 
-#include "framework/asValue.hpp"
-#include "framework/math/constants.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/constants.hpp"
 
 void WireframesStackRenderer::initialise(ShaderIds shaderId,
                                          GeometryIds geometryId) {
@@ -28,14 +28,28 @@ void WireframesStackRenderer::setMatricesData(
 
 //
 
-void WireframesStackRenderer::pushLine(const glm::vec3& posA,
-                                       const glm::vec3& posB,
-                                       const glm::vec4& color) {
+void WireframesStackRenderer::pushLine(
+  const glm::vec3& posA, const glm::vec3& posB,
+  const glm::vec4& colorA, const glm::vec4& colorB)
+{
   if (_vertices.size() + 2 >= _vertices.capacity())
     flush();
 
-  _vertices.emplace_back(posA, color);
-  _vertices.emplace_back(posB, color);
+  _vertices.emplace_back(posA, colorA);
+  _vertices.emplace_back(posB, colorB);
+}
+
+void WireframesStackRenderer::pushLine(const glm::vec3& posA,
+                                       const glm::vec3& posB,
+                                       const glm::vec4& color) {
+
+  pushLine(posA, posB, color, color);
+}
+
+void WireframesStackRenderer::pushLine(const glm::vec3& posA, const glm::vec3& posB,
+              const glm::vec3& colorA, const glm::vec3& colorB)
+{
+  pushLine(posA, posB, glm::vec4(colorA, 1.0f), glm::vec4(colorB, 1.0f));
 }
 
 void WireframesStackRenderer::pushLine(const glm::vec3& posA,
@@ -43,6 +57,8 @@ void WireframesStackRenderer::pushLine(const glm::vec3& posA,
                                        const glm::vec3& color) {
   pushLine(posA, posB, glm::vec4(color, 1.0f));
 }
+
+//
 
 void WireframesStackRenderer::pushCross(const glm::vec3& pos,
                                         const glm::vec3& color,
@@ -60,29 +76,23 @@ void WireframesStackRenderer::pushCross(const glm::vec3& pos,
     pushLine(elem.at(0), elem.at(1), color);
 }
 
-void WireframesStackRenderer::pushLine(const glm::vec2& posA,
-                                       const glm::vec2& posB,
-                                       const glm::vec4& color) {
-  WireframesStackRenderer::pushLine({posA.x, posA.y, 0}, {posB.x, posB.y, 0},
-                                    color);
-}
-
-void WireframesStackRenderer::pushLine(const glm::vec2& posA,
-                                       const glm::vec2& posB,
-                                       const glm::vec3& color) {
-  WireframesStackRenderer::pushLine({posA.x, posA.y, 0}, {posB.x, posB.y, 0},
-                                    glm::vec4(color, 1.0f));
-}
-
 void WireframesStackRenderer::pushRectangle(const glm::vec2& pos,
                                             const glm::vec2& size,
-                                            const glm::vec3& color) {
+                                            const glm::vec3& color,
+                                            float depth /*= 0.0f*/) {
   const glm::vec2 farPos = pos + size;
 
-  WireframesStackRenderer::pushLine(pos, {farPos.x, pos.y}, color);
-  WireframesStackRenderer::pushLine({farPos.x, pos.y}, farPos, color);
-  WireframesStackRenderer::pushLine(farPos, {pos.x, farPos.y}, color);
-  WireframesStackRenderer::pushLine({pos.x, farPos.y}, pos, color);
+  std::array<glm::vec3, 4> vertices = {{
+    glm::vec3(pos, depth),
+    glm::vec3(farPos.x, pos.y, depth),
+    glm::vec3(farPos, depth),
+    glm::vec3(pos.x, farPos.y, depth),
+  }};
+
+  WireframesStackRenderer::pushLine(vertices.at(0), vertices.at(1), color);
+  WireframesStackRenderer::pushLine(vertices.at(1), vertices.at(2), color);
+  WireframesStackRenderer::pushLine(vertices.at(2), vertices.at(3), color);
+  WireframesStackRenderer::pushLine(vertices.at(3), vertices.at(0), color);
 }
 
 void WireframesStackRenderer::flush() {

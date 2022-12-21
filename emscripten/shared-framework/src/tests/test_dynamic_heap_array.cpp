@@ -1,7 +1,7 @@
 
-#include "framework/containers/dynamic_heap_array.hpp"
+#include "framework/system/containers/dynamic_heap_array.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "common.hpp"
 
@@ -28,13 +28,13 @@ void test_dynamic_heap_array() {
     // std::vector<Test> vertices;
     // vertices.pre_allocate(16);
 
-    assert(vertices.empty() == true);
+    assert(vertices.is_empty() == true);
     assert(vertices.size() == 0);
     assert(vertices.capacity() == 0);
 
     vertices.push_back(common::Test(1));
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 1);
     assert(vertices.capacity() == 1);
     assert(vertices[0].value == 1);
@@ -45,7 +45,7 @@ void test_dynamic_heap_array() {
 
     assert(lol.value == 222222222);
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 2);
     assert(vertices.capacity() == 2);
     assert(vertices[0].value == 1);
@@ -54,7 +54,7 @@ void test_dynamic_heap_array() {
     // std::cout << "------" << std::endl;
     vertices.push_back(common::Test(3));
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 3);
     assert(vertices.capacity() == 4);
     assert(vertices[0].value == 1);
@@ -64,7 +64,7 @@ void test_dynamic_heap_array() {
     // std::cout << "------" << std::endl;
     vertices.push_back(common::Test(4));
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 4);
     assert(vertices.capacity() == 4);
     assert(vertices[0].value == 1);
@@ -75,7 +75,7 @@ void test_dynamic_heap_array() {
     // std::cout << "------" << std::endl;
     vertices.push_back(common::Test(5));
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 5);
     assert(vertices.capacity() == 8);
     assert(vertices[0].value == 1);
@@ -86,7 +86,7 @@ void test_dynamic_heap_array() {
 
     vertices.unsorted_erase(1);
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 4);
     assert(vertices.capacity() == 8);
     assert(vertices[0].value == 1);
@@ -96,7 +96,7 @@ void test_dynamic_heap_array() {
 
     vertices.sorted_erase(1);
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 3);
     assert(vertices.capacity() == 8);
     assert(vertices[0].value == 1);
@@ -105,7 +105,7 @@ void test_dynamic_heap_array() {
 
     vertices.pop_back();
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 2);
     assert(vertices.capacity() == 8);
     assert(vertices[0].value == 1);
@@ -113,7 +113,7 @@ void test_dynamic_heap_array() {
 
     vertices.pre_allocate(20);
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 2);
     assert(vertices.capacity() == 20);
     assert(vertices[0].value == 1);
@@ -121,7 +121,7 @@ void test_dynamic_heap_array() {
 
     vertices.pre_allocate(8);
 
-    assert(vertices.empty() == false);
+    assert(vertices.is_empty() == false);
     assert(vertices.size() == 2);
     assert(vertices.capacity() == 20);
     assert(vertices[0].value == 1);
@@ -129,7 +129,7 @@ void test_dynamic_heap_array() {
 
     vertices.clear();
 
-    assert(vertices.empty() == true);
+    assert(vertices.is_empty() == true);
     assert(vertices.size() == 0);
     assert(vertices.capacity() == 20);
 
@@ -377,6 +377,70 @@ void test_dynamic_heap_array() {
         assert(item.value == index++);
       assert(index == int(vertices.size()));
     }
+  }
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test> vertices;
+
+    for (int ii = 0; ii < 5; ++ii)
+      vertices.emplace_back(ii);
+
+    assert(vertices.total_iterators() == 0);
+
+    {
+      auto it1 = vertices.begin();
+
+      assert(vertices.total_iterators() == 1);
+    }
+
+    assert(vertices.total_iterators() == 0);
+
+    {
+      auto it1 = vertices.begin();
+      auto it2 = vertices.end();
+
+      const auto& cvertices = vertices;
+      auto it3 = cvertices.begin();
+      auto it4 = cvertices.end();
+
+      assert(vertices.total_iterators() == 4);
+    }
+
+    assert(vertices.total_iterators() == 0);
+  }
+
+  {
+
+    common::reset();
+    dynamic_heap_array<common::Test>* pVertices =
+      new dynamic_heap_array<common::Test>();
+
+    for (int ii = 0; ii < 5; ++ii)
+      pVertices->emplace_back(ii);
+
+    assert(pVertices->total_iterators() == 0);
+
+    auto it1 = pVertices->begin();
+    auto it2 = pVertices->end();
+
+    const auto* cpVertices = pVertices;
+    auto it3 = cpVertices->begin();
+    auto it4 = cpVertices->end();
+
+    assert(pVertices->total_iterators() == 4);
+    assert(it1.is_valid());
+    assert(it2.is_valid());
+    assert(it3.is_valid());
+    assert(it4.is_valid());
+
+    delete pVertices, pVertices = nullptr;
+
+    assert(!it1.is_valid());
+    assert(!it2.is_valid());
+    assert(!it3.is_valid());
+    assert(!it4.is_valid());
   }
 
   D_MYLOG(" => DONE");

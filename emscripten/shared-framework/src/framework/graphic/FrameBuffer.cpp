@@ -2,7 +2,7 @@
 #include "FrameBuffer.hpp"
 #include "Image.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include "GlContext.hpp"
 

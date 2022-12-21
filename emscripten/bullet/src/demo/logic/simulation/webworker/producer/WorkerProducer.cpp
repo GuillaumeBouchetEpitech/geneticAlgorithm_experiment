@@ -3,7 +3,7 @@
 
 #include "demo/logic/simulation/webworker/preprocessing.hpp"
 
-#include "framework/ErrorHandler.hpp"
+#include "framework/system/ErrorHandler.hpp"
 
 #include "demo/defines.hpp"
 

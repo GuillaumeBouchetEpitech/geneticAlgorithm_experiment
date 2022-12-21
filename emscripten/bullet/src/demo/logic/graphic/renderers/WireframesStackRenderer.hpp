@@ -33,20 +33,21 @@ public:
 public:
   void push(const Vertex& vertex);
   void pushLine(const glm::vec3& posA, const glm::vec3& posB,
+                const glm::vec4& colorA, const glm::vec4& colorB);
+  void pushLine(const glm::vec3& posA, const glm::vec3& posB,
                 const glm::vec4& color);
   void pushLine(const glm::vec3& posA, const glm::vec3& posB,
+                const glm::vec3& colorA, const glm::vec3& colorB);
+  void pushLine(const glm::vec3& posA, const glm::vec3& posB,
                 const glm::vec3& color);
+
+public:
   void pushCross(const glm::vec3& pos, const glm::vec3& color,
                  float halfExtent);
 
-  // 2d
-  void pushLine(const glm::vec2& posA, const glm::vec2& posB,
-                const glm::vec4& color);
-  void pushLine(const glm::vec2& posA, const glm::vec2& posB,
-                const glm::vec3& color);
+public:
   void pushRectangle(const glm::vec2& pos, const glm::vec2& size,
-                     const glm::vec3& color);
-  // 2d
+                     const glm::vec3& color, float depth = 0.0f);
 
 public:
   void flush();

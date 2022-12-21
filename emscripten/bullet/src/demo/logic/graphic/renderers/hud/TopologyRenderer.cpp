@@ -3,12 +3,13 @@
 
 #include "demo/logic/Context.hpp"
 
-#include "framework/math/DeterministicRng.hpp"
+#include "framework/system/math/DeterministicRng.hpp"
+#include "framework/system/math/easingFunctions.hpp"
 
 namespace {
 
 constexpr float k_faceInX = -10.0f;
-constexpr float k_faceOutX = +500.0f;
+constexpr float k_faceOutX = +200.0f;
 
 } // namespace
 
@@ -22,34 +23,52 @@ void TopologyRenderer::initialise() {
   _position.y = 170;
 }
 
-void TopologyRenderer::fadeIn() {
+void TopologyRenderer::fadeIn(float delay, float duration) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.5f, 1.5f, [this, &graphic](float coef) {
-      const auto& vSize = graphic.camera.viewportSize;
-      const float targetPos = vSize.x - _size.x + k_faceInX;
-      _position.x = _position.x + (targetPos - _position.x) * coef;
-    });
+  const auto& vSize = graphic.camera.viewportSize;
+  const float targetPos = vSize.x - _size.x + k_faceInX;
+
+  _timer.start(delay, duration);
+
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, targetPos);
+
+  _isVisible = true;
 }
 
-void TopologyRenderer::fadeOut() {
+void TopologyRenderer::fadeOut(float delay, float duration) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
-  _animRef = graphic.hud.animationManager.push(
-    _animRef, 0.5f, 6.0f, [this, &graphic](float coef) {
-      const auto& vSize = graphic.camera.viewportSize;
-      const float targetPos = vSize.x - _size.x + k_faceOutX;
-      _position.x = _position.x + (targetPos - _position.x) * coef;
-    });
+  const auto& vSize = graphic.camera.viewportSize;
+  const float targetPos = vSize.x - _size.x + k_faceOutX;
+
+  _timer.start(delay, duration);
+
+  _moveEasing =
+    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, targetPos);
+
+  _isVisible = false;
 }
 
 void TopologyRenderer::update(float elapsedTime) {
   _animationTime += elapsedTime * 2.0f;
   while (_animationTime > 1.0f)
     _animationTime -= 1.0f;
+
+  if (!_timer.isDone()) {
+    _timer.update(elapsedTime);
+    _position.x = _moveEasing.get(_timer.getCoefElapsed());
+  }
+}
+
+void TopologyRenderer::resize() {
+  if (_isVisible)
+    fadeIn(0.0f, 0.2f);
+  else
+    fadeOut(0.0f, 0.2f);
 }
 
 void TopologyRenderer::render() {
@@ -57,21 +76,14 @@ void TopologyRenderer::render() {
   auto& logic = context.logic;
   auto& graphic = context.graphic;
 
-  // if (!logic.leaderCar.hasLeader())
-  //   return;
-
-  // if (logic.leaderCar.totalTimeAsLeader() < 0.25f)
-  //   return;
-
-  const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+  const glm::vec3 whiteColor(0.8f, 0.8f, 0.8f);
   const glm::vec4 redColor(1.0f, 0.0f, 0.0f, 0.85f);
   const glm::vec4 blueColor(0.5f, 0.5f, 1.0f, 0.85f);
 
-  auto& stackRenderer = graphic.hud.stackRenderers.triangles;
-  stackRenderer.pushQuad(glm::vec3(_position + _size * 0.5f, -0.1f), _size,
-                         glm::vec4(0, 0, 0, 0.75f));
-  graphic.hud.stackRenderers.wireframes.pushRectangle(_position, _size,
-                                                      whiteColor);
+  auto& stackRenderers = graphic.hud.stackRenderers;
+  stackRenderers.triangles.pushQuad(_position + _size * 0.5f, _size,
+                                    glm::vec4(0, 0, 0, 0.75f), -0.2f);
+  stackRenderers.wireframes.pushRectangle(_position, _size, whiteColor, -0.1f);
 
   if (!logic.leaderCar.hasLeader())
     return;
@@ -134,7 +146,6 @@ void TopologyRenderer::render() {
   { // show input/output values
 
     constexpr float valueHeight = 12.0f;
-    ;
 
     const auto& inputlayer = layersData.front();
     for (auto neuron : inputlayer) {
@@ -145,8 +156,8 @@ void TopologyRenderer::render() {
       const glm::vec4 color =
         glm::mix(redColor, glm::vec4(0, 1, 0, 1), neuron.value);
 
-      stackRenderer.pushThickTriangle2dLine(start, neuron.position, thickness,
-                                            1.0f, color, color, +0.2f);
+      stackRenderers.triangles.pushThickTriangle2dLine(
+        start, neuron.position, thickness, 1.0f, color, color, +0.2f);
     }
 
     const auto& outputlayer = layersData.back();
@@ -158,13 +169,13 @@ void TopologyRenderer::render() {
 
       if (neuron.value > 0.0f) {
         const float thickness = 2.0f + neuron.value * +10.0f;
-        stackRenderer.pushThickTriangle2dLine(start, neuron.position, thickness,
-                                              12.0f, redColor, redColor, +0.2f);
+        stackRenderers.triangles.pushThickTriangle2dLine(
+          start, neuron.position, thickness, 12.0f, redColor, redColor, +0.2f);
       } else {
         const float thickness = 2.0f + neuron.value * -10.0f;
-        stackRenderer.pushThickTriangle2dLine(start, neuron.position, thickness,
-                                              12.0f, blueColor, blueColor,
-                                              +0.2f);
+        stackRenderers.triangles.pushThickTriangle2dLine(
+          start, neuron.position, thickness, 12.0f, blueColor, blueColor,
+          +0.2f);
       }
     }
 
@@ -172,15 +183,15 @@ void TopologyRenderer::render() {
 
   { // draw neurons
 
-    const glm::vec4 whiteColor(1, 1, 1, 1);
+    const glm::vec4 whiteColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     for (const auto& layer : layersData) {
       for (const auto& neuron : layer) {
         const float coef = glm::clamp(neuron.value, 0.0f, 1.0f);
         const float radius = 2.0f + coef * 2.0f;
 
-        stackRenderer.pushCircle(glm::vec3(neuron.position, +0.2f), radius,
-                                 whiteColor);
+        stackRenderers.triangles.pushCircle(glm::vec3(neuron.position, +0.2f),
+                                            radius, whiteColor);
       }
     }
 
@@ -246,7 +257,7 @@ void TopologyRenderer::render() {
             const glm::vec4 targetColor(weight > 0.0f ? positiveColor
                                                       : negativeColor);
 
-            stackRenderer.pushThickTriangle2dLine(
+            stackRenderers.triangles.pushThickTriangle2dLine(
               prevNeuron.position, currNeuron.position, targetThickness,
               targetColor, range.depth);
 
@@ -257,7 +268,7 @@ void TopologyRenderer::render() {
 
             const glm::vec2 diff = currNeuron.position - prevNeuron.position;
 
-            stackRenderer.pushThickTriangle2dLine(
+            stackRenderers.triangles.pushThickTriangle2dLine(
               prevNeuron.position + diff * (tmpCoef - 0.05f),
               prevNeuron.position + diff * (tmpCoef + 0.05f),
               targetThickness * 1.5f, targetColor, range.depth + 0.01f);

@@ -9,16 +9,13 @@
 
 #include "machineLearning/NeuralNetwork.hpp"
 
+#include "framework/helpers/GLMath.hpp"
 #include "framework/physic/PhysicWorld.hpp"
-
-#include "framework/messaging/MessageBuffer.hpp"
-#include "framework/messaging/MessageView.hpp"
-
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
+#include "framework/system/messaging/MessageBuffer.hpp"
+#include "framework/system/messaging/MessageView.hpp"
 
 #include "demo/defines.hpp"
-
-#include "framework/helpers/GLMath.hpp"
 
 #include <memory>
 #include <vector>

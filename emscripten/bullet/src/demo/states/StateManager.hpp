@@ -5,11 +5,11 @@
 
 #include "IState.hpp"
 
-#include "framework/asValue.hpp"
-
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
+#include "framework/system/asValue.hpp"
 
 #include <array>
+#include <memory>
 
 class StateManager : public NonCopyable {
   //
@@ -20,7 +20,7 @@ private:
   static StateManager* _instance;
 
   StateManager();
-  ~StateManager();
+  ~StateManager() = default;
 
 public:
   static void create();
@@ -47,7 +47,9 @@ public:
   };
 
 private:
-  using StateInstances = std::array<IState*, asValue(States::Total)>;
+  // using StateInstances = std::array<IState*, asValue(States::Total)>;
+  using StateInstances =
+    std::array<std::unique_ptr<IState>, asValue(States::Total)>;
   StateInstances _states;
 
   States _currentState;

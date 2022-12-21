@@ -1,7 +1,7 @@
 
-#include "framework/containers/static_heap_grid_array.hpp"
+#include "framework/system//containers/static_heap_grid_array.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "common.hpp"
 

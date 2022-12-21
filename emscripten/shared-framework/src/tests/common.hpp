@@ -14,7 +14,7 @@ int getTotalDtor();
 void enableLogs();
 void disableLogs();
 
-// void print();
+void print();
 
 struct Test {
   int value = -1;

@@ -5,7 +5,7 @@
 #include "demo/logic/graphic/Scene.hpp"
 #include "demo/states/StateManager.hpp"
 
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <chrono>
 

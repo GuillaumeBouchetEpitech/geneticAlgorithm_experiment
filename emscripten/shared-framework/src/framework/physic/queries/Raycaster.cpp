@@ -1,12 +1,10 @@
 
 #include "Raycaster.hpp"
 
-#include "framework/physic/PhysicWorld.hpp"
-
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
-
 #include "framework/helpers/internals/BulletPhysics.hpp"
+#include "framework/physic/PhysicWorld.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 Raycaster::Raycaster(PhysicWorld& physicWorld) : _physicWorld(physicWorld) {}
 

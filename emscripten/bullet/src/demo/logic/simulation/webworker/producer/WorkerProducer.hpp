@@ -8,15 +8,13 @@
 
 #include "machineLearning/NeuralNetwork.hpp"
 
-#include "framework/messaging/MessageBuffer.hpp"
-#include "framework/messaging/MessageView.hpp"
-
-#include "framework/NonCopyable.hpp"
-#include "framework/asValue.hpp"
+#include "framework/helpers/GLMath.hpp"
+#include "framework/system/NonCopyable.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/messaging/MessageBuffer.hpp"
+#include "framework/system/messaging/MessageView.hpp"
 
 #include "demo/defines.hpp"
-
-#include "framework/helpers/GLMath.hpp"
 
 #include <bitset>
 

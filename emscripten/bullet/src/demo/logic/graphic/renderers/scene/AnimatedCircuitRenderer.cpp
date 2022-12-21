@@ -4,9 +4,9 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
 #include "framework/graphic/GlContext.hpp"
 #include "framework/helpers/GLMath.hpp"
+#include "framework/system/asValue.hpp"
 
 void AnimatedCircuitRenderer::initialise(
   const std::vector<glm::vec3>& skeletonVertices,
@@ -90,18 +90,15 @@ void AnimatedCircuitRenderer::update(float elapsedTime) {
     if (_lowerValue > _targetValue + 10.0f) {
       // fall really quickly
       _lowerValue -= 60.0f * elapsedTime;
-      if (_lowerValue < _targetValue)
-        _lowerValue = _targetValue;
+      _lowerValue = std::max(_lowerValue, _targetValue);
     } else if (_lowerValue > _targetValue) {
       // fall quickly
       _lowerValue -= 18.0f * elapsedTime;
-      if (_lowerValue < _targetValue)
-        _lowerValue = _targetValue;
+      _lowerValue = std::max(_lowerValue, _targetValue);
     } else {
       // rise slowly
       _lowerValue += 12.0f * elapsedTime;
-      if (_lowerValue > _targetValue)
-        _lowerValue = _targetValue;
+      _lowerValue = std::min(_lowerValue, _targetValue);
     }
 
     // upper value, farthest from the cars
@@ -109,18 +106,15 @@ void AnimatedCircuitRenderer::update(float elapsedTime) {
     if (_upperValue > _targetValue + 10.0f) {
       // fall really quickly
       _upperValue -= 36.0f * elapsedTime;
-      if (_upperValue < _targetValue)
-        _upperValue = _targetValue;
+      _upperValue = std::max(_upperValue, _targetValue);
     } else if (_upperValue > _targetValue) {
       // fall slowly
       _upperValue -= 6.0f * elapsedTime;
-      if (_upperValue < _targetValue)
-        _upperValue = _targetValue;
+      _upperValue = std::max(_upperValue, _targetValue);
     } else {
       // rise really quickly
       _upperValue += 60.0f * elapsedTime;
-      if (_upperValue > _targetValue)
-        _upperValue = _targetValue;
+      _upperValue = std::min(_upperValue, _targetValue);
     }
   }
 

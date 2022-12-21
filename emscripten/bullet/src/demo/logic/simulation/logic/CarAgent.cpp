@@ -3,11 +3,10 @@
 
 #include "../common.hpp"
 
-#include "framework/asValue.hpp"
-
-#include "framework/math/constants.hpp"
-
-#include "framework/TraceLogger.hpp"
+#include "framework/system/TraceLogger.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/GenericEasing.hpp"
+#include "framework/system/math/constants.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -82,7 +81,7 @@ void CarAgent::update(float elapsedTime,
 
   // switch output range to [-1..1]
   output.at(0) = output.at(0) * 2.0f - 1.0f;
-  output.at(1) = output.at(1) * 2.0f - 1.0f;
+  // output.at(1) = output.at(1) * 2.0f - 1.0f;
 
   _output.steer = output.at(0); // steering angle: left/right
   _output.speed = output.at(1); // speed coef: forward/backward
@@ -91,8 +90,19 @@ void CarAgent::update(float elapsedTime,
                                    _output.steer * constants::steeringMaxValue);
   _physicVehicle->setSteeringValue(1,
                                    _output.steer * constants::steeringMaxValue);
-  _physicVehicle->applyEngineForce(2, _output.speed * constants::speedMaxValue);
-  _physicVehicle->applyEngineForce(3, _output.speed * constants::speedMaxValue);
+
+  // const float engineFore = GenericEasing<4>()
+  auto engineEasing = GenericEasing<5>()
+                        .push(0.0f, -constants::speedMaxValue)
+                        .push(0.5f, 0.0f)
+                        .push(0.75f, constants::speedMaxValue * 4.0f)
+                        .push(0.90f, constants::speedMaxValue)
+                        .push(1.0f, constants::speedMaxValue);
+
+  const float engineForce = engineEasing.get(_output.speed);
+
+  _physicVehicle->applyEngineForce(2, engineForce);
+  _physicVehicle->applyEngineForce(3, engineForce);
 
   ++_totalUpdateNumber;
 }

@@ -13,7 +13,7 @@ PhysicVehicleManager::PhysicVehicleManager(PhysicWorld& physicWorld)
 PhysicVehicleManager::~PhysicVehicleManager() { clear(); }
 
 void PhysicVehicleManager::clear() {
-  while (!_vehicles.empty())
+  while (!_vehicles.is_empty())
     destroyVehicle(_vehicles.get(0));
   _vehicles.clear();
 }
@@ -77,4 +77,4 @@ std::size_t PhysicVehicleManager::vehicleSize() const {
   return _vehicles.size();
 }
 
-bool PhysicVehicleManager::vehicleEmpty() const { return _vehicles.empty(); }
+bool PhysicVehicleManager::vehicleEmpty() const { return _vehicles.is_empty(); }

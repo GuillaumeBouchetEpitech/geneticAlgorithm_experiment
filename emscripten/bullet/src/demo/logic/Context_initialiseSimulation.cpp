@@ -1,7 +1,7 @@
 
 #include "Context.hpp"
 
-#include "framework/math/RandomNumberGenerator.hpp"
+#include "framework/system/math/RandomNumberGenerator.hpp"
 
 #include <limits> // <= std::numeric_limits<T>::max()
 
@@ -33,25 +33,18 @@ void Context::initialiseSimulation(unsigned int totalCores,
 
       skeletonVertices.push_back(vertex);
 
-      if (vertex.x < circuitDimension.min.x)
-        circuitDimension.min.x = vertex.x;
-      if (vertex.y < circuitDimension.min.y)
-        circuitDimension.min.y = vertex.y;
-      if (vertex.z < circuitDimension.min.z)
-        circuitDimension.min.z = vertex.z;
-
-      if (vertex.x > circuitDimension.max.x)
-        circuitDimension.max.x = vertex.x;
-      if (vertex.y > circuitDimension.max.y)
-        circuitDimension.max.y = vertex.y;
-      if (vertex.z > circuitDimension.max.z)
-        circuitDimension.max.z = vertex.z;
+      circuitDimension.min.x = std::min(circuitDimension.min.x, vertex.x);
+      circuitDimension.min.y = std::min(circuitDimension.min.y, vertex.y);
+      circuitDimension.min.z = std::min(circuitDimension.min.z, vertex.z);
+      circuitDimension.max.x = std::max(circuitDimension.max.x, vertex.x);
+      circuitDimension.max.y = std::max(circuitDimension.max.y, vertex.y);
+      circuitDimension.max.z = std::max(circuitDimension.max.z, vertex.z);
     }
   };
 
   float latestSize = 0;
   float maxUpperValue = 0.0f;
-  constexpr float maxDeformation = 0.5f;
+  constexpr float k_maxDeformation = 0.5f;
 
   auto onGroundPatchCallback =
     [&latestSize, &whiteColor, &groundVertices,
@@ -71,9 +64,9 @@ void Context::initialiseSimulation(unsigned int totalCores,
       const auto& color = (firstLine ? whiteColor : colors.at(index));
 
       const glm::vec3 deformation = {
-        RNG::getRangedValue(-maxDeformation, +maxDeformation),
-        RNG::getRangedValue(-maxDeformation, +maxDeformation),
-        RNG::getRangedValue(-maxDeformation, +maxDeformation)};
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation),
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation),
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation)};
 
       const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
@@ -103,9 +96,9 @@ void Context::initialiseSimulation(unsigned int totalCores,
       const auto& color = (firstLine ? whiteColor : greyColor);
 
       const glm::vec3 deformation = {
-        RNG::getRangedValue(-maxDeformation, +maxDeformation),
-        RNG::getRangedValue(-maxDeformation, +maxDeformation),
-        RNG::getRangedValue(-maxDeformation, +maxDeformation)};
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation),
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation),
+        RNG::getRangedValue(-k_maxDeformation, +k_maxDeformation)};
 
       const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
@@ -117,7 +110,6 @@ void Context::initialiseSimulation(unsigned int totalCores,
   };
 
   logic.annTopology.init({16, 5, 2}, /*useBiasNeuron =*/true);
-  // logic.annTopology.init({15, 10, 5, 2}, /*useBiasNeuron =*/ true);
 
   logic.cores.genomesPerCore = genomesPerCore;
   logic.cores.totalCores = totalCores;
@@ -142,15 +134,10 @@ void Context::initialiseSimulation(unsigned int totalCores,
   circuitDimension.center =
     circuitDimension.min + (circuitDimension.max - circuitDimension.min) * 0.5f;
 
-  graphic.camera.main.center = logic.simulation->getStartPosition();
-  graphic.camera.main.distance = 200.0f;
+  // graphic.camera.center = logic.simulation->getStartPosition();
+  graphic.camera.center = { 0,0,0 };
+  graphic.camera.distance = 200.0f;
 
   graphic.scene.animatedCircuitRenderer.initialise(
     skeletonVertices, groundVertices, wallsVertices, maxUpperValue);
-
-  const glm::vec3 boundariesSize = circuitDimension.max - circuitDimension.min;
-
-  graphic.scene.floorRenderer.initialise(circuitDimension.center,
-                                         boundariesSize);
-  graphic.scene.backGroundTorusRenderer.initialise();
 }

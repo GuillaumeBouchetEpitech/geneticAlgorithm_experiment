@@ -10,11 +10,13 @@
 #include "demo/logic/graphic/Scene.hpp"
 
 void State_WebWorkersLoading::enter() {
-  _countdownUntilNextState = 0;
+
+  _awaiting = true;
 
   Context::get().logic.simulation->setOnWorkersReadyCallback([this]() -> void {
     // leave the "WEB WORKERS LOADING" message for at least 1 second
-    _countdownUntilNextState = 1000;
+    _awaiting = false;
+    _timer.start(1.0f);
   });
 }
 
@@ -23,14 +25,18 @@ void State_WebWorkersLoading::handleEvent(const SDL_Event& event) {
 }
 
 void State_WebWorkersLoading::update(int deltaTime) {
-  if (_countdownUntilNextState == 0) {
+  if (_awaiting == true) {
     // only update to load the webworkers
     Context::get().logic.simulation->update(0.0f, 1);
   } else {
+
+    float elapsedTime = float(deltaTime) / 1000.0f;
+
     // to ensure the message is visible (<= why the user waited)
-    _countdownUntilNextState -= deltaTime;
-    if (_countdownUntilNextState <= 0)
+    _timer.update(elapsedTime);
+    if (_timer.isDone()) {
       StateManager::get()->changeState(StateManager::States::StartGeneration);
+    }
   }
 }
 

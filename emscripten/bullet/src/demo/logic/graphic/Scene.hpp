@@ -4,6 +4,7 @@
 #include "demo/logic/Context.hpp"
 
 #include "framework/helpers/GLMath.hpp"
+#include "framework/graphic/camera/Camera.hpp"
 
 class Scene {
 public:
@@ -11,17 +12,14 @@ public:
   static void renderSimple();
   static void renderAll();
 
-  static void updateMatrices(float elapsedTime);
+  static void updateMatrices();
+  static void renderScene(const Camera& camera);
 
 private:
   static void _clear();
 
-public:
-  static void _renderLeadingCarSensors();
-  static void _renderFloor(const Camera& camera);
-
 private:
+  static void _renderLeadingCarSensors();
   static void _renderHUD_ortho();
-  static void _renderHUD_thirdPerson();
   static void _renderHUD();
 };

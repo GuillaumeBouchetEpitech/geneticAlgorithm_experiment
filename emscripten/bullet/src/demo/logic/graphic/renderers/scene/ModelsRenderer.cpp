@@ -4,9 +4,9 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
 #include "framework/graphic/loaders/loadObjModel.hpp"
-#include "framework/math/RandomNumberGenerator.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/RandomNumberGenerator.hpp"
 
 namespace {
 

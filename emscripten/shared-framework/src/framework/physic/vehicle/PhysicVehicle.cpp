@@ -1,13 +1,11 @@
 
 #include "PhysicVehicle.hpp"
 
+#include "framework/helpers/internals/BulletPhysics.hpp"
 #include "framework/physic/PhysicWorld.hpp"
 #include "framework/physic/body/PhysicBody.hpp"
-
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
-
-#include "framework/helpers/internals/BulletPhysics.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 namespace {
 

@@ -3,7 +3,7 @@
 
 #include "graphicIds.hpp"
 
-#include "framework/asValue.hpp"
+#include "framework/system/asValue.hpp"
 
 #include "framework/graphic/GeometryBuilder.hpp"
 #include "framework/graphic/ShaderProgramBuilder.hpp"
@@ -396,9 +396,11 @@ void Context::initialiseGraphicResource() {
       .setVertexFilename("assets/shaders/hud/postProcess.glsl.vert")
       .setFragmentFilename("assets/shaders/hud/postProcess.glsl.frag")
       .addAttribute("a_position")
+      .addAttribute("a_texCoord")
       .addUniform("u_composedMatrix")
       .addUniform("u_colorTexture")
-      .addUniform("u_outlineTexture");
+      .addUniform("u_outlineTexture")
+      .addUniform("u_invResolution");
 
     auto shader = rManager.createShader(asValue(ShaderIds::postProcess),
                                         shaderProgramBuilder.getDefinition());
@@ -407,7 +409,8 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::postProcess),
                                       geometryBuilder.getDefinition());

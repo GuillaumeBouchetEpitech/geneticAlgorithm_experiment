@@ -1,9 +1,9 @@
 
 #include "NeuralNetwork.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
-#include "framework/math/RandomNumberGenerator.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
+#include "framework/system/math/RandomNumberGenerator.hpp"
 
 #include <stdexcept>
 

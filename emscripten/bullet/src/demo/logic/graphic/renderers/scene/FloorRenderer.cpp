@@ -4,8 +4,9 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
+#include "framework/graphic/GlContext.hpp"
 #include "framework/helpers/GLMath.hpp"
+#include "framework/system/asValue.hpp"
 
 void FloorRenderer::initialise(const glm::vec3& center, const glm::vec3& size) {
 
@@ -34,8 +35,8 @@ void FloorRenderer::initialise(const glm::vec3& center, const glm::vec3& size) {
 
     for (int yy = 0; yy < size.y; ++yy)
       for (int xx = 0; xx < size.x; ++xx) {
-        if ((xx < size.x * 0.5 && yy < size.y * 0.5) ||
-            (xx > size.x * 0.5 && yy > size.y * 0.5)) {
+        if ((xx < size.x * 0.5f && yy < size.y * 0.5f) ||
+            (xx > size.x * 0.5f && yy > size.y * 0.5f)) {
           setPixel(xx, yy, 32, 220);
         } else {
           setPixel(xx, yy, 100, 255);
@@ -96,6 +97,13 @@ void FloorRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
 void FloorRenderer::render() {
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
+
+  // hide the floor if the camera is looking from beneath it
+  GlContext::enable(GlContext::States::cullFace);
+
+  // transparency friendly
+  GlContext::disable(GlContext::States::depthTest);
+
   _shader->bind();
 
   _shader->setUniform("u_projectionMatrix", _matricesData.projection);
@@ -103,4 +111,7 @@ void FloorRenderer::render() {
 
   _texture.bind();
   _geometry.render();
+
+  GlContext::disable(GlContext::States::cullFace);
+  GlContext::enable(GlContext::States::depthTest);
 }

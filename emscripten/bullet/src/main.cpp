@@ -1,8 +1,8 @@
 
 #include "demo/Demo.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <array>
 #include <sstream>

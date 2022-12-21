@@ -78,7 +78,7 @@ void State_AbstractSimulation::update(int deltaTime) {
 
   { // events
 
-    auto& rotations = camera.main.rotations;
+    auto& rotations = camera.rotations;
 
     { // mouse/touch event(s)
 
@@ -141,6 +141,14 @@ void State_AbstractSimulation::resize(int width, int height) {
   graphic.camera.viewportSize = {width, height};
 
   graphic.hud.postProcess.resize({width, height});
+  graphic.hud.postProcess.setGeometry(glm::vec2(0, 0), glm::vec2(width, height),
+                                      -2.0f);
+
+  graphic.hud.topologyRenderer.resize();
+  graphic.hud.thirdPersonCamera.resize();
+  graphic.hud.coreUsageRenderer.resize();
+  graphic.hud.fitnessDataRenderer.resize();
+  graphic.hud.leaderEyeRenderer.resize();
 }
 
 void State_AbstractSimulation::visibility(bool visible) {
@@ -153,4 +161,58 @@ void State_AbstractSimulation::visibility(bool visible) {
   if (currentState != StateManager::States::Paused && !visible)
     stateManager->changeState(StateManager::States::Paused);
 #endif
+}
+
+void State_AbstractSimulation::_updateCommonLogic(float elapsedTime) {
+  auto& graphic = Context::get().graphic;
+
+  graphic.scene.particleManager.update(elapsedTime);
+  graphic.scene.backGroundTorusRenderer.update(elapsedTime);
+  graphic.scene.flockingManager.update();
+
+  graphic.hud.screenTitles.update(elapsedTime);
+  graphic.hud.topologyRenderer.update(elapsedTime);
+  graphic.hud.thirdPersonCamera.update(elapsedTime);
+  graphic.hud.coreUsageRenderer.update(elapsedTime);
+  graphic.hud.fitnessDataRenderer.update(elapsedTime);
+  graphic.hud.informationTextRenderer.update(elapsedTime);
+  graphic.hud.leaderEyeRenderer.update(elapsedTime);
+}
+
+void State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
+  auto& context = Context::get();
+  auto& camera = context.graphic.camera;
+  auto& logic = context.logic;
+
+  glm::vec3 cameraNextCenter = logic.circuitDimension.center;
+  float cameraNextDistance = 200.0f;
+
+  //
+  //
+
+  auto& leaderCar = logic.leaderCar;
+  auto& simulation = *logic.simulation;
+
+  if (logic.isAccelerated) {
+    leaderCar.reset();
+  } else {
+    leaderCar.update(elapsedTime);
+
+    cameraNextDistance = 40.0f;
+
+    if (auto leaderPos = leaderCar.leaderPosition())
+      cameraNextCenter = *leaderPos;
+    else
+      cameraNextCenter = simulation.getStartPosition();
+  }
+
+  //
+  //
+
+  {
+    const float lerpRatio = 6.0f * elapsedTime;
+
+    camera.center += (cameraNextCenter - camera.center) * lerpRatio;
+    camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
+  }
 }

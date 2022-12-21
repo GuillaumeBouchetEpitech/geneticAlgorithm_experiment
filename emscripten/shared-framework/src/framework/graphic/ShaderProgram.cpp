@@ -3,10 +3,10 @@
 
 #include "GlContext.hpp"
 
-#include "framework/files/getFileContent.hpp"
+#include "framework/system/files/getFileContent.hpp"
 
-#include "framework/ErrorHandler.hpp"
-#include "framework/TraceLogger.hpp"
+#include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include <fstream>
 #include <memory> // <= std::unique_ptr / make_unique

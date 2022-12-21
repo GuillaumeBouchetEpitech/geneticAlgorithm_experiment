@@ -2,12 +2,13 @@
 #include "FlockingManager.hpp"
 
 #include "demo/logic/Context.hpp"
-#include "demo/logic/graphic/helpers/generateSphereVerticesFilled.hpp"
 #include "demo/logic/graphicIds.hpp"
 
-#include "framework/asValue.hpp"
+#include "helpers/generateSphereVerticesFilled.hpp"
+
 #include "framework/graphic/GlContext.hpp"
-#include "framework/math/RandomNumberGenerator.hpp"
+#include "framework/system/asValue.hpp"
+#include "framework/system/math/RandomNumberGenerator.hpp"
 
 FlockingManager::Boid::Boid() {
   position = {0, 0, 0};
@@ -159,45 +160,33 @@ void FlockingManager::render() {
   if (_boids.empty())
     return;
 
-  //
-  //
+  _particlesInstances.clear();
+  for (Boid& boid : _boids)
+    _particlesInstances.emplace_back(boid.position, 0.4f,
+                                     glm::vec3(0.6f, 0.6f, 0.0f));
 
-  {
+  if (!_particlesInstances.empty()) {
+    _shader->bind();
+    _shader->setUniform("u_composedMatrix", _matricesData.composed);
 
-    _particlesInstances.clear();
-    for (Boid& boid : _boids)
-      _particlesInstances.emplace_back(boid.position, 0.4f,
-                                       glm::vec3(0.6f, 0.6f, 0.0f));
-
-    if (!_particlesInstances.empty()) {
-      _shader->bind();
-      _shader->setUniform("u_composedMatrix", _matricesData.composed);
-
-      _geometry.updateBuffer(1, _particlesInstances);
-      _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
-      _geometry.render();
-    }
+    _geometry.updateBuffer(1, _particlesInstances);
+    _geometry.setInstancedCount(uint32_t(_particlesInstances.size()));
+    _geometry.render();
   }
 
-  //
-  //
+  // GlContext::disable(GlContext::States::depthTest);
 
-  {
+  auto& stackRenderer = Context::get().graphic.scene.stackRenderers.triangles;
 
-    GlContext::disable(GlContext::States::depthTest);
+  // const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
+  const glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.4f);
 
-    auto& stackRenderer = Context::get().graphic.scene.stackRenderers.triangles;
+  for (Boid& boid : _boids)
+    for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
+      stackRenderer.pushThickTriangle3dLine(boid.trail.at(kk + 0),
+                                            boid.trail.at(kk + 1), 0.2f, color);
 
-    // const glm::vec4 color = glm::vec4(0.6f, 0.6f, 0.0f, 0.2f);
-    const glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 0.4f);
+  stackRenderer.flush();
 
-    for (Boid& boid : _boids)
-      for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
-        stackRenderer.pushThickTriangle3dLine(
-          boid.trail.at(kk + 0), boid.trail.at(kk + 1), 0.2f, color);
-
-    stackRenderer.flush();
-
-    GlContext::enable(GlContext::States::depthTest);
-  }
+  // GlContext::enable(GlContext::States::depthTest);
 }

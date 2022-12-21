@@ -7,11 +7,11 @@
 #include <vector>
 
 struct CarData {
-  bool isAlive;
-  float life;
-  float fitness;
-  unsigned int totalUpdates;
-  int groundIndex;
+  bool isAlive = false;
+  float life = 0.0f;
+  float fitness = 0.0f;
+  unsigned int totalUpdates = 0;
+  int groundIndex = -1;
 
   struct Transforms {
     glm::mat4 chassis;
@@ -21,12 +21,12 @@ struct CarData {
 
   std::vector<Transforms> latestTransformsHistory;
 
-  glm::vec3 velocity;
+  glm::vec3 velocity = {0,0,0};
 
   struct SensorData {
-    glm::vec3 near;
-    glm::vec3 far;
-    float value;
+    glm::vec3 near = {0,0,0};
+    glm::vec3 far = {0,0,0};
+    float value = 0.0f;
   };
 
   std::array<SensorData, 15> eyeSensors;

@@ -3,7 +3,7 @@
 
 #include "NeuralNetworkTopology.hpp"
 
-#include "framework/NonCopyable.hpp"
+#include "framework/system/NonCopyable.hpp"
 
 #include <memory>
 #include <vector>
