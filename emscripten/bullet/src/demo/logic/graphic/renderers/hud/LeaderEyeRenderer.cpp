@@ -34,8 +34,9 @@ void LeaderEyeRenderer::fadeIn(float delay, float duration) {
   const auto& vSize = graphic.camera.viewportSize;
   const float targetPos = vSize.x - k_sizeX + k_faceInX;
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeOutCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = true;
 }
@@ -49,8 +50,9 @@ void LeaderEyeRenderer::fadeOut(float delay, float duration) {
   const auto& vSize = graphic.camera.viewportSize;
   const float targetPos = vSize.x - k_sizeX + k_faceOutX;
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeInCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = false;
 }

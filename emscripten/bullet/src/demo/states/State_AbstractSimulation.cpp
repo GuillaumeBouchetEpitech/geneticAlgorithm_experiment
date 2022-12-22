@@ -193,6 +193,9 @@ void State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
   auto& leaderCar = logic.leaderCar;
   auto& simulation = *logic.simulation;
 
+  if (simulation.isGenerationComplete())
+    return;
+
   if (logic.isAccelerated) {
     leaderCar.reset();
   } else {

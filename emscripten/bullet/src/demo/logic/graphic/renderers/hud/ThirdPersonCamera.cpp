@@ -58,8 +58,9 @@ void ThirdPersonCamera::fadeIn(float delay, float duration) {
 
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeOutCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = true;
 }
@@ -74,8 +75,9 @@ void ThirdPersonCamera::fadeOut(float delay, float duration) {
 
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeInCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = false;
 }
@@ -153,7 +155,7 @@ void ThirdPersonCamera::render() {
     auto& stackRenderers = graphic.hud.stackRenderers;
     stackRenderers.triangles.pushQuad(_position + _size * 0.5f, _size,
                                       glm::vec4(0, 0, 0, 0.75f), -1.5f);
-    stackRenderers.wireframes.pushRectangle(_position, _size,
-                                            glm::vec4(0.8f, 0.8f, 0.8f, 1), -0.1f);
+    stackRenderers.wireframes.pushRectangle(
+      _position, _size, glm::vec4(0.8f, 0.8f, 0.8f, 1), -0.1f);
   }
 }

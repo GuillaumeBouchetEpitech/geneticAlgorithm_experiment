@@ -73,7 +73,7 @@ void LeaderCar::reset() {
   _carIndex = -1;
   _countdownUntilNewLeader = 0.0f;
   _totalTimeAsLeader = 0.0f;
-  _carPosition = { 0, 0, 0 };
+  _carPosition = {0, 0, 0};
 }
 
 bool LeaderCar::hasLeader() const { return _carIndex >= 0; }

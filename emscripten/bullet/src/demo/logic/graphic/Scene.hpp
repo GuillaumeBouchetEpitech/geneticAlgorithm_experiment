@@ -3,8 +3,8 @@
 
 #include "demo/logic/Context.hpp"
 
-#include "framework/helpers/GLMath.hpp"
 #include "framework/graphic/camera/Camera.hpp"
+#include "framework/helpers/GLMath.hpp"
 
 class Scene {
 public:

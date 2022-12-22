@@ -2,6 +2,7 @@
 #pragma once
 
 #include "demo/logic/simulation/AbstactSimulation.hpp"
+#include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
 #include "demo/logic/simulation/webworker/producer/WorkerProducer.hpp"
@@ -32,7 +33,8 @@ private:
   unsigned int _genomesPerCore = 0;
   unsigned int _totalGenomes = 0;
 
-  std::vector<bool> _carLiveStatus;
+  CarDatas _synchronisedCarsData;
+  bool _wasSynchronised = false;
 
 private:
   NeuralNetworkTopology _neuralNetworkTopology;

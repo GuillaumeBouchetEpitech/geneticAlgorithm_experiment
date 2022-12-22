@@ -11,13 +11,16 @@
 void InformationTextRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _alphaEasing = GenericEasing<2>().push(0.0f, _alpha, easing::easeOutCubic).push(1.0f, 1.0f);
+  _alphaEasing = GenericEasing<2>()
+                   .push(0.0f, _alpha, easing::easeOutCubic)
+                   .push(1.0f, 1.0f);
 }
 
 void InformationTextRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _alphaEasing = GenericEasing<2>().push(0.0f, _alpha, easing::easeInCubic).push(1.0f, 0.0f);
+  _alphaEasing =
+    GenericEasing<2>().push(0.0f, _alpha, easing::easeInCubic).push(1.0f, 0.0f);
 }
 
 void InformationTextRenderer::update(float elapsedTime) {

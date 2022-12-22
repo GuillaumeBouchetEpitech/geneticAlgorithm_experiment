@@ -103,11 +103,9 @@ void Scene::updateMatrices() {
     rotations.phi = glm::clamp(rotations.phi, -verticalLimit, verticalLimit);
 
     const float cosPhi = std::cos(rotations.phi);
-    const glm::vec3 cameraDir = {
-      cosPhi * std::cos(rotations.theta),
-      cosPhi * std::sin(rotations.theta),
-      std::sin(rotations.phi)
-    };
+    const glm::vec3 cameraDir = {cosPhi * std::cos(rotations.theta),
+                                 cosPhi * std::sin(rotations.theta),
+                                 std::sin(rotations.phi)};
     const glm::vec3 eye = camera.center + cameraDir * camera.distance;
     const glm::vec3 upAxis = {0.0f, 0.0f, 1.0f};
 

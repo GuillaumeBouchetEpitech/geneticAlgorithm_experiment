@@ -32,8 +32,9 @@ void TopologyRenderer::fadeIn(float delay, float duration) {
 
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeOutCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = true;
 }
@@ -47,8 +48,9 @@ void TopologyRenderer::fadeOut(float delay, float duration) {
 
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, targetPos);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeInCubic)
+                  .push(1.0f, targetPos);
 
   _isVisible = false;
 }

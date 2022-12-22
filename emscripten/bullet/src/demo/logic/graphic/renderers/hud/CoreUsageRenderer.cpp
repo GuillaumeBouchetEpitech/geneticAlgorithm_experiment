@@ -26,8 +26,9 @@ CoreUsageRenderer::CoreUsageRenderer() {
 void CoreUsageRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, k_faceInX);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeOutCubic)
+                  .push(1.0f, k_faceInX);
 
   _isVisible = true;
 }
@@ -35,8 +36,9 @@ void CoreUsageRenderer::fadeIn(float delay, float duration) {
 void CoreUsageRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, k_faceOutX);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeInCubic)
+                  .push(1.0f, k_faceOutX);
 
   _isVisible = false;
 }
@@ -81,8 +83,9 @@ void CoreUsageRenderer::renderWireframe() {
                                 ? glm::vec4(0.5f, 0.0f, 0.0f, 0.75f)
                                 : glm::vec4(0.0f, 0.0f, 0.0f, 0.75f);
 
-    stackRenderers.triangles.pushQuad(glm::vec3(glm::vec2(borderPos) + borderSize * 0.5f, borderPos.z),
-                                      borderSize, bgColor, -0.2f);
+    stackRenderers.triangles.pushQuad(
+      glm::vec3(glm::vec2(borderPos) + borderSize * 0.5f, borderPos.z),
+      borderSize, bgColor, -0.2f);
     stackRenderers.wireframes.pushRectangle(borderPos, borderSize, whiteColor,
                                             -0.1f);
 
@@ -99,7 +102,8 @@ void CoreUsageRenderer::renderWireframe() {
 
       stackRenderers.wireframes.pushLine(
         borderPos + glm::vec3(0, borderSize.y * ratio, 0.0f),
-        borderPos + glm::vec3(borderSize.x, borderSize.y * ratio, 0.0f), whiteColor);
+        borderPos + glm::vec3(borderSize.x, borderSize.y * ratio, 0.0f),
+        whiteColor);
     }
 
   } // dividers
@@ -157,8 +161,8 @@ void CoreUsageRenderer::renderHudText() {
 #endif
 
     std::string str = sstr.str();
-    textRenderer.push({_position.x, _position.y}, str, glm::vec4(0.8,0.8,0.8,1), 1.0f,
-                      0.25f);
+    textRenderer.push({_position.x, _position.y}, str,
+                      glm::vec4(0.8, 0.8, 0.8, 1), 1.0f, 0.25f);
   }
 
   {

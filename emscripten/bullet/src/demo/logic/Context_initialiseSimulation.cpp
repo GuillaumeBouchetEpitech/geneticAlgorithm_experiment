@@ -135,7 +135,7 @@ void Context::initialiseSimulation(unsigned int totalCores,
     circuitDimension.min + (circuitDimension.max - circuitDimension.min) * 0.5f;
 
   // graphic.camera.center = logic.simulation->getStartPosition();
-  graphic.camera.center = { 0,0,0 };
+  graphic.camera.center = {0, 0, 0};
   graphic.camera.distance = 200.0f;
 
   graphic.scene.animatedCircuitRenderer.initialise(

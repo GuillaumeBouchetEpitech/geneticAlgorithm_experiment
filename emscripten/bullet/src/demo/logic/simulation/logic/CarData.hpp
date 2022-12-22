@@ -21,11 +21,11 @@ struct CarData {
 
   std::vector<Transforms> latestTransformsHistory;
 
-  glm::vec3 velocity = {0,0,0};
+  glm::vec3 velocity = {0, 0, 0};
 
   struct SensorData {
-    glm::vec3 near = {0,0,0};
-    glm::vec3 far = {0,0,0};
+    glm::vec3 near = {0, 0, 0};
+    glm::vec3 far = {0, 0, 0};
     float value = 0.0f;
   };
 

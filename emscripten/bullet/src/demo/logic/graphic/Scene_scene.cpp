@@ -48,8 +48,7 @@ void Scene::_renderLeadingCarSensors() {
   }
 }
 
-void Scene::renderScene(const Camera& inCamera)
-{
+void Scene::renderScene(const Camera& inCamera) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
   auto& scene = graphic.scene;

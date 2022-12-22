@@ -25,10 +25,12 @@ FitnessDataRenderer::FitnessDataRenderer() {
 void FitnessDataRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeOutCubic).push(1.0f, k_faceInX);
-  _alphaEasing =
-    GenericEasing<2>().push(0.0f, _alpha, easing::easeOutCubic).push(1.0f, 1.0f);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeOutCubic)
+                  .push(1.0f, k_faceInX);
+  _alphaEasing = GenericEasing<2>()
+                   .push(0.0f, _alpha, easing::easeOutCubic)
+                   .push(1.0f, 1.0f);
 
   _isVisible = true;
 }
@@ -36,8 +38,9 @@ void FitnessDataRenderer::fadeIn(float delay, float duration) {
 void FitnessDataRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
-  _moveEasing =
-    GenericEasing<2>().push(0.0f, _position.x, easing::easeInCubic).push(1.0f, k_faceOutX);
+  _moveEasing = GenericEasing<2>()
+                  .push(0.0f, _position.x, easing::easeInCubic)
+                  .push(1.0f, k_faceOutX);
   _alphaEasing =
     GenericEasing<2>().push(0.0f, _alpha, easing::easeInCubic).push(1.0f, 0.0f);
 
@@ -89,7 +92,8 @@ void FitnessDataRenderer::renderWireframe() {
       (currData / maxFitness) * _size.y,
     };
 
-    stackRenderers.wireframes.pushLine(glm::vec3(_position + prevPos, 0.0f), glm::vec3(_position + currPos, 0.0f),
+    stackRenderers.wireframes.pushLine(glm::vec3(_position + prevPos, 0.0f),
+                                       glm::vec3(_position + currPos, 0.0f),
                                        whiteColor);
   }
 }
@@ -123,7 +127,8 @@ void FitnessDataRenderer::renderHudText() {
 
     const std::string str = sstr.str();
 
-    textRenderer.push({8, 8 + 2 * 16}, str, glm::vec4(0.8f, 0.8f, 0.8f, _alpha), 1.0f, 0.25f);
+    textRenderer.push({8, 8 + 2 * 16}, str, glm::vec4(0.8f, 0.8f, 0.8f, _alpha),
+                      1.0f, 0.25f);
   }
 
   {
@@ -140,7 +145,8 @@ void FitnessDataRenderer::renderHudText() {
                          ? 0.0f
                          : clamp(localBestFitness / bestFitness, 0.0f, 1.0f);
 
-    const glm::vec4 textColor = glm::mix(glm::vec4(1, 0, 0, _alpha), glm::vec4(0, 1, 0, _alpha), coef);
+    const glm::vec4 textColor =
+      glm::mix(glm::vec4(1, 0, 0, _alpha), glm::vec4(0, 1, 0, _alpha), coef);
 
     textRenderer.push({8, 8 + 1 * 16}, str, textColor, 1.0f, 0.25f);
   }
@@ -155,7 +161,8 @@ void FitnessDataRenderer::renderHudText() {
 
     const float coef = 1.0f - clamp(float(carsLeft) / totalCars, 0.0f, 1.0f);
 
-    const glm::vec4 textColor = glm::mix(glm::vec4(0, 1, 0, _alpha), glm::vec4(1, 0, 0, _alpha), coef);
+    const glm::vec4 textColor =
+      glm::mix(glm::vec4(0, 1, 0, _alpha), glm::vec4(1, 0, 0, _alpha), coef);
 
     textRenderer.push({8, 8 + 0 * 16}, str, textColor, 1.0f, 0.25f);
   }

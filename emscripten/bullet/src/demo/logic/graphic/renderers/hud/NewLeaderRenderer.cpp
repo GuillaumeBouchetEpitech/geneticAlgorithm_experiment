@@ -42,8 +42,8 @@ void NewLeaderRenderer::renderWireframe() {
   glm::vec3 carPos = {_screenCoord.x, _screenCoord.y, 0.0f};
   glm::vec3 textPos = {_screenCoord.x + 50, _screenCoord.y + 50, 0.0f};
 
-  Context::get().graphic.hud.stackRenderers.wireframes.pushLine(
-    carPos, textPos, {1, 1, 1});
+  Context::get().graphic.hud.stackRenderers.wireframes.pushLine(carPos, textPos,
+                                                                {1, 1, 1});
 }
 
 void NewLeaderRenderer::renderHudText() {
@@ -52,6 +52,6 @@ void NewLeaderRenderer::renderHudText() {
 
   glm::vec2 textPos = {_screenCoord.x + 50, _screenCoord.y + 50};
 
-  Context::get().graphic.hud.textRenderer.push(textPos, "NEW\nLEADER",
-                                               glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 1.1f, 0.20f);
+  Context::get().graphic.hud.textRenderer.push(
+    textPos, "NEW\nLEADER", glm::vec4(0.8f, 0.8f, 0.8f, 1.0f), 1.1f, 0.20f);
 }

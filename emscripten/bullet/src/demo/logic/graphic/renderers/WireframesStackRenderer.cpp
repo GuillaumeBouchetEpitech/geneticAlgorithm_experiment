@@ -28,10 +28,10 @@ void WireframesStackRenderer::setMatricesData(
 
 //
 
-void WireframesStackRenderer::pushLine(
-  const glm::vec3& posA, const glm::vec3& posB,
-  const glm::vec4& colorA, const glm::vec4& colorB)
-{
+void WireframesStackRenderer::pushLine(const glm::vec3& posA,
+                                       const glm::vec3& posB,
+                                       const glm::vec4& colorA,
+                                       const glm::vec4& colorB) {
   if (_vertices.size() + 2 >= _vertices.capacity())
     flush();
 
@@ -46,9 +46,10 @@ void WireframesStackRenderer::pushLine(const glm::vec3& posA,
   pushLine(posA, posB, color, color);
 }
 
-void WireframesStackRenderer::pushLine(const glm::vec3& posA, const glm::vec3& posB,
-              const glm::vec3& colorA, const glm::vec3& colorB)
-{
+void WireframesStackRenderer::pushLine(const glm::vec3& posA,
+                                       const glm::vec3& posB,
+                                       const glm::vec3& colorA,
+                                       const glm::vec3& colorB) {
   pushLine(posA, posB, glm::vec4(colorA, 1.0f), glm::vec4(colorB, 1.0f));
 }
 
