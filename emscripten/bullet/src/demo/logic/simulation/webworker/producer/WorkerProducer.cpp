@@ -4,6 +4,7 @@
 #include "demo/logic/simulation/webworker/preprocessing.hpp"
 
 #include "framework/system/ErrorHandler.hpp"
+#include "framework/system/TraceLogger.hpp"
 
 #include "demo/defines.hpp"
 

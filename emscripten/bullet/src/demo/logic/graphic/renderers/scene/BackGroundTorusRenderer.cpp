@@ -9,6 +9,7 @@
 #include "framework/system/asValue.hpp"
 #include "framework/system/containers/static_heap_grid_array.hpp"
 #include "framework/system/math/constants.hpp"
+#include "framework/system/math/DeterministicRng.hpp"
 
 constexpr float k_ringRadius = 500.0f;
 constexpr float k_tubeRadius = 100.0f;
@@ -18,7 +19,6 @@ namespace {
 struct RealVertex {
   glm::vec3 position;
   glm::vec2 texCoord;
-  glm::vec2 texCoord2;
 };
 
 void generateTorusVertices(uint32_t ringQuality, uint32_t tubeQuality,
@@ -86,10 +86,16 @@ void generateTorusVertices(uint32_t ringQuality, uint32_t tubeQuality,
     const std::size_t indexA1 = ringIndex;
     const std::size_t indexB1 = (ringIndex + 1) % std::size_t(ringQuality);
 
+    const float texCoordX1 = float(indexA1) / float(ringQuality) * 4.0f;
+    const float texCoordX2 = float(indexB1) / float(ringQuality) * 4.0f;
+
     for (std::size_t tubeIndex = 0; tubeIndex < std::size_t(tubeQuality);
          ++tubeIndex) {
       const std::size_t indexA2 = tubeIndex;
       const std::size_t indexB2 = (tubeIndex + 1) % std::size_t(tubeQuality);
+
+      const float texCoordY1 = float(indexA2) / float(tubeQuality) * 2.0f;
+      const float texCoordY2 = float(tubeIndex + 1) / float(tubeQuality) * 2.0f;
 
       const SubVertex& vertexAA = ringVertices(indexA1, indexA2);
       const SubVertex& vertexAB = ringVertices(indexA1, indexB2);
@@ -102,10 +108,10 @@ void generateTorusVertices(uint32_t ringQuality, uint32_t tubeQuality,
       const glm::vec3 posBB = vertexBB.getForward(tubeRadius);
 
       std::array<RealVertex, 4> patchVertices{{
-        {posAA, {0.0f, 0.0f}, {1.0f, 0.0f}},
-        {posAB, {0.0f, 1.0f}, {1.0f, 1.0f}},
-        {posBB, {1.0f, 1.0f}, {2.0f, 1.0f}},
-        {posBA, {1.0f, 0.0f}, {2.0f, 0.0f}},
+        {posAA, {texCoordX1, texCoordY1}},
+        {posAB, {texCoordX1, texCoordY2}},
+        {posBB, {texCoordX2, texCoordY2}},
+        {posBA, {texCoordX2, texCoordY1}},
       }};
 
       for (int index : indices)
@@ -121,41 +127,35 @@ void BackGroundTorusRenderer::initialise() {
 
   _shader = resourceManager.getShader(asValue(ShaderIds::backGroundTorus));
 
-  { // cylinders (generate the texture)
+  { // generate the texture
 
     constexpr Texture::Quality quality = Texture::Quality::smoothedAndMipMapped;
     constexpr Texture::Pattern pattern = Texture::Pattern::repeat;
 
-    const glm::ivec2 texSize = {64, 64};
+    const glm::ivec2 texSize = {32, 32};
     auto pixelsPtr =
       std::make_unique<unsigned char[]>(texSize.x * texSize.y * 4);
     unsigned char* rawPixels = pixelsPtr.get();
 
-    // fillBuffer(texSize, rawPixels);
+
+    DeterministicRng rng;
+    rng.setSeed(0);
+
     for (int yy = 0; yy < texSize.y; ++yy)
       for (int xx = 0; xx < texSize.x; ++xx) {
 
-        const int border = 6;
+        const int texelIndex = yy * 4 * texSize.x + xx * 4;
 
-        if (xx > border && xx + border < texSize.x && yy > border &&
-            yy + border < texSize.y) {
-          // black
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 0] = 16;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 1] = 16;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 2] = 16;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 3] = 255;
-        } else {
-          // white
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 0] = 0;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 1] = 64;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 2] = 0;
-          rawPixels[yy * 4 * texSize.x + xx * 4 + 3] = 255;
-        }
+        const int color = rng.getRangedValue(16, 64);
+        rawPixels[texelIndex + 0] = color;
+        rawPixels[texelIndex + 1] = color;
+        rawPixels[texelIndex + 2] = color;
+        rawPixels[texelIndex + 3] = 255;
       }
 
     _texture.allocateBlank(texSize, quality, pattern, rawPixels);
 
-  } // cylinders (generate the texture)
+  } // generate the texture
 
   {
 
@@ -180,7 +180,7 @@ void BackGroundTorusRenderer::initialise() {
 }
 
 void BackGroundTorusRenderer::update(float elapsedTime) {
-  _animationTime += elapsedTime;
+  _animationTime += elapsedTime * 0.01f;
   while (_animationTime > 1.0f)
     _animationTime -= 1.0f;
 }

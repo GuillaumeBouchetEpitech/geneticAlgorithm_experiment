@@ -26,7 +26,8 @@ private:
 
 public:
   SDLWindowWrapper(const char* name, uint32_t width, uint32_t height,
-                   uint32_t framesPerSecond, OpenGlEsVersion openGlEsVersion);
+                   uint32_t framesPerSecond, OpenGlEsVersion openGlEsVersion,
+                   bool enableResize = true);
   virtual ~SDLWindowWrapper();
 
 #ifdef __EMSCRIPTEN__

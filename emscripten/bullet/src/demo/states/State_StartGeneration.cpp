@@ -24,14 +24,13 @@ void State_StartGeneration::enter() {
 }
 
 void State_StartGeneration::leave() {
-  auto& context = Context::get();
-  context.graphic.hud.screenTitles.fadeOut(0.0f, 0.5f);
+  auto& graphic = Context::get().graphic;
+  graphic.hud.screenTitles.fadeOut(0.0f, 0.5f);
+  graphic.scene.modelsRenderer.fadeIn(0.25f, 1.0f);
 }
 
-void State_StartGeneration::update(int deltaTime) {
-  State_AbstractSimulation::update(deltaTime);
-
-  const float elapsedTime = float(deltaTime) / 1000.0f;
+void State_StartGeneration::update(float elapsedTime) {
+  State_AbstractSimulation::update(elapsedTime);
 
   _updateCommonLogic(elapsedTime);
   _updateCameraTracking(elapsedTime);

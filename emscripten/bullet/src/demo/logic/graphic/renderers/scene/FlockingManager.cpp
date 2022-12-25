@@ -9,12 +9,13 @@
 #include "framework/graphic/GlContext.hpp"
 #include "framework/system/asValue.hpp"
 #include "framework/system/math/RandomNumberGenerator.hpp"
+#include "framework/system/math/clamp.hpp"
 
 FlockingManager::Boid::Boid() {
-  position = {0, 0, 0};
-  position.x = RNG::getRangedValue(-10.0f, +10.0f);
-  position.y = RNG::getRangedValue(-10.0f, +10.0f);
-  position.z = RNG::getRangedValue(-10.0f, +10.0f);
+  position = {-200, 0, 0};
+  position.x += RNG::getRangedValue(-10.0f, +10.0f);
+  position.y += RNG::getRangedValue(-10.0f, +10.0f);
+  position.z += RNG::getRangedValue(-10.0f, +10.0f);
 
   acceleration = {0, 0, 0};
   velocity = {0, 0, 0};
@@ -143,7 +144,8 @@ void FlockingManager::update() {
     boid.separate(_boids, 1.5f, 2.0f);
     boid.wander(0.5f);
 
-    const float coef = distance > 30.0f ? 3.0f : 1.0f;
+    constexpr float k_maxDistance = 100.0f;
+    const float coef = 1.0f + 1.0f * distance / k_maxDistance;
     boid.applyAcceleration(maxAcc * coef, maxVel * coef);
 
     // make a trail by reusing the previous positions N times

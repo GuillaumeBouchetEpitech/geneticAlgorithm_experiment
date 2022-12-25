@@ -114,6 +114,7 @@ void deleteOne(uint32_t textureId);
 void active(uint32_t index);
 void bind(uint32_t textureId);
 void uploadPixels(uint32_t width, uint32_t height, const void* pixels);
+void uploadSingleFloatPixels(uint32_t width, uint32_t height);
 void setAsDepthTexture(uint32_t width, uint32_t height, DepthFormat depthFormat,
                        DepthType depthType);
 void setTextureAsRepeat(bool repeat);

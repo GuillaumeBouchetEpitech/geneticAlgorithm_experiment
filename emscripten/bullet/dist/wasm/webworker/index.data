@@ -26075,29 +26075,28 @@ uniform float u_animationCoef;
 
 in vec3 a_position;
 in vec2 a_texCoord;
-in vec2 a_texCoord2;
 
 out vec2 v_texCoord;
 
 void main(void)
 {
 	gl_Position = u_composedMatrix * vec4(a_position, 1.0);
-
-	v_texCoord = a_texCoord + (a_texCoord2 - a_texCoord) * u_animationCoef;
+	v_texCoord = vec2(a_texCoord.x + u_animationCoef, a_texCoord.y);
 }
 #version 300 es
 
 precision lowp float;
 
-in vec3 v_color;
+in vec4 v_color;
+in vec4 v_outlineColor;
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-  out_color = vec4(v_color, 1.0);
-  out_outline = vec4(1.0);
+  out_color = v_color;
+  out_outline = v_outlineColor;
 }
 #version 300 es
 
@@ -26109,20 +26108,24 @@ in vec3 a_vertex_position;
 in vec3 a_vertex_color;
 
 in mat4 a_offset_transform;
-in vec3 a_offset_color;
+in vec4 a_offset_color;
+in vec4 a_offset_outlineColor;
 
-out vec3 v_color;
+out vec4 v_color;
+out vec4 v_outlineColor;
 
 void main(void)
 {
 	gl_Position = u_composedMatrix * a_offset_transform * vec4(a_vertex_position, 1.0);
-	v_color = a_vertex_color * a_offset_color;
+	v_color = vec4(a_vertex_color * a_offset_color.rgb, a_offset_color.a);
+	v_outlineColor = a_offset_outlineColor;
 }
 #version 300 es
 
 precision lowp float;
 
-in vec3 v_color;
+in vec4 v_color;
+in vec4 v_outlineColor;
 in vec3 v_normal;
 in vec3 v_vertPos;
 
@@ -26133,8 +26136,8 @@ layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-  out_color = vec4(applyLighting(v_color, v_normal, v_vertPos), 1.0);
-  out_outline = vec4(1.0);
+  out_color = vec4(applyLighting(v_color.rgb, v_normal, v_vertPos), v_color.a);
+  out_outline = v_outlineColor;
 }
 #version 300 es
 
@@ -26148,9 +26151,11 @@ in vec3 a_vertex_color;
 in vec3 a_vertex_normal;
 
 in mat4 a_offset_transform;
-in vec3 a_offset_color;
+in vec4 a_offset_color;
+in vec4 a_offset_outlineColor;
 
-out vec3 v_color;
+out vec4 v_color;
+out vec4 v_outlineColor;
 out vec3 v_normal;
 out vec3 v_vertPos;
 
@@ -26161,7 +26166,8 @@ void main(void)
 
 	gl_Position = u_projectionMatrix * vertPos4;
 
-	v_color = a_vertex_color * a_offset_color;
+	v_color = vec4(a_vertex_color * a_offset_color.rgb, a_offset_color.a);
+	v_outlineColor = a_offset_outlineColor;
 	v_normal = vec3(transform * vec4(a_vertex_normal, 0.0));
 	v_vertPos = vec3(vertPos4) / vertPos4.w;
 }
@@ -26177,7 +26183,7 @@ layout(location = 1) out vec4 out_outline;
 void main(void)
 {
 	out_color = v_color;
-	out_outline = vec4(0.0);
+	out_outline = vec4(1.0);
 }
 #version 300 es
 

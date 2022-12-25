@@ -62,7 +62,7 @@ public:
 
 public:
   void handleEvent(const SDL_Event&);
-  void update(int);
+  void update(float);
   void render(const SDL_Window&);
   void resize(int, int);
   void visibility(bool);

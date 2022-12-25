@@ -10,7 +10,7 @@ public:
 
 public:
   virtual void handleEvent(const SDL_Event&) override;
-  virtual void update(int deltaTime) override;
+  virtual void update(float) override;
   virtual void render(const SDL_Window&) override;
   virtual void resize(int width, int height) override;
   virtual void visibility(bool visible) override;

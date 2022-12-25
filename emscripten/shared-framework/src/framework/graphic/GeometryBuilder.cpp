@@ -45,20 +45,38 @@ GeometryBuilder& GeometryBuilder::setVboAsInstanced() {
 
 GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
                                                   Geometry::AttrType type,
-                                                  std::size_t index /*= 0*/) {
+                                                  int index,
+                                                  bool isIgnored /*= false*/) {
   if (_def.vbos.empty())
     D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
-  _def.vbos.back().attrs.emplace_back(name, type, index);
+  _def.vbos.back().attrs.emplace_back(name, type, index, isIgnored);
 
   return *this;
+}
+
+GeometryBuilder& GeometryBuilder::addVboAttribute(const std::string& name,
+                                                  Geometry::AttrType type) {
+  return addVboAttribute(name, type, -1, false);
+}
+
+GeometryBuilder&
+GeometryBuilder::addIgnoredVboAttribute(const std::string& name,
+                                        Geometry::AttrType type) {
+  return addVboAttribute(name, type, -1, true);
+}
+
+GeometryBuilder&
+GeometryBuilder::addIgnoredVboAttribute(const std::string& name,
+                                        Geometry::AttrType type, int index) {
+  return addVboAttribute(name, type, index, true);
 }
 
 GeometryBuilder& GeometryBuilder::setVboStride(unsigned int stride) {
   if (_def.vbos.empty())
     D_THROW(std::runtime_error, "cannot add attrs without a vbo defined");
 
-  _def.vbos.back().stride = stride;
+  _def.vbos.back().stride = int(stride);
 
   return *this;
 }

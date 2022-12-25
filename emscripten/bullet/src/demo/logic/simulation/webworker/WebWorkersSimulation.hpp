@@ -33,8 +33,10 @@ private:
   unsigned int _genomesPerCore = 0;
   unsigned int _totalGenomes = 0;
 
-  CarDatas _synchronisedCarsData;
-  bool _wasSynchronised = false;
+  struct AllCarsData {
+    CarDatas data;
+    bool isUpToDate = false;
+  } _carsData;
 
 private:
   NeuralNetworkTopology _neuralNetworkTopology;

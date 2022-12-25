@@ -17,8 +17,8 @@ void State_Paused::handleEvent(const SDL_Event& event) {
   }
 }
 
-void State_Paused::update(int delta) {
-  static_cast<void>(delta); // <= unused
+void State_Paused::update(float elapsedTime) {
+  static_cast<void>(elapsedTime); // <= unused
 }
 
 void State_Paused::visibility(bool visible) {

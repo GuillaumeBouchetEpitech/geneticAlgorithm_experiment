@@ -22,8 +22,14 @@ public:
   GeometryBuilder& addVbo();
   GeometryBuilder& setVboAsInstanced();
   GeometryBuilder& addVboAttribute(const std::string& name,
-                                   Geometry::AttrType type,
-                                   std::size_t index = 0);
+                                   Geometry::AttrType type, int index,
+                                   bool isIgnored = false);
+  GeometryBuilder& addVboAttribute(const std::string& name,
+                                   Geometry::AttrType type);
+  GeometryBuilder& addIgnoredVboAttribute(const std::string& name,
+                                          Geometry::AttrType type);
+  GeometryBuilder& addIgnoredVboAttribute(const std::string& name,
+                                          Geometry::AttrType type, int index);
   GeometryBuilder& setVboStride(unsigned int stride);
 
   GeometryBuilder& validate();

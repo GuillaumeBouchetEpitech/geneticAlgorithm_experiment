@@ -14,7 +14,8 @@
 
 SDLWindowWrapper::SDLWindowWrapper(const char* name, uint32_t width,
                                    uint32_t height, uint32_t framesPerSecond,
-                                   OpenGlEsVersion openGlEsVersion) {
+                                   OpenGlEsVersion openGlEsVersion,
+                                   bool enableResize /*= true*/) {
   _framesPerSecond = framesPerSecond;
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -31,7 +32,9 @@ SDLWindowWrapper::SDLWindowWrapper(const char* name, uint32_t width,
 
   const int posX = SDL_WINDOWPOS_UNDEFINED;
   const int posY = SDL_WINDOWPOS_UNDEFINED;
-  const uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+  uint32_t flags = SDL_WINDOW_OPENGL;
+  if (enableResize)
+    flags |= SDL_WINDOW_RESIZABLE;
 
   _window = SDL_CreateWindow(name, posX, posY, int(width), int(height), flags);
 

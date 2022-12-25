@@ -1,5 +1,7 @@
 
+#include "framework/system/containers/dynamic_heap_array.hpp"
 #include "framework/system/containers/generic_array_container.hpp"
+#include "framework/system/containers/static_array.hpp"
 
 #include "framework/system/TraceLogger.hpp"
 
@@ -15,7 +17,7 @@
 #include <cassert>
 
 // template<typename T>
-// using test_dynamic_array = test_dynamic_array<T, std::allocator<T>, 0>;
+// using dynamic_heap_array = dynamic_heap_array<T, std::allocator<T>, 0>;
 
 struct TestData {
   int value;
@@ -167,7 +169,7 @@ assert(index == container.size());
 }
 
 {
-  // test_static_array<int, 5> myArray;
+  // static_array<int, 5> myArray;
 
   assert(container.total_iterators() == 0);
 
@@ -325,13 +327,13 @@ inline bool operator!=(const MyAllocator<T>& a, const MyAllocator<U>& b) {
 }
 } // namespace
 
-void test_dynamic_array_tests() {
+void dynamic_array_heap_tests() {
 
   {
 
     // common::enableLogs();
 
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     // std::vector<Test> vertices;
     // vertices.pre_allocate(16);
 
@@ -488,7 +490,7 @@ void test_dynamic_array_tests() {
     // std::cout << "dynamic_heap_array" << std::endl;
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     // vertices.pre_allocate(16);
 
     vertices.push_back(common::Test(1));
@@ -515,7 +517,7 @@ void test_dynamic_array_tests() {
     // std::cout << "dynamic_heap_array" << std::endl;
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     vertices.pre_allocate(5);
 
     vertices.push_back(common::Test(1));
@@ -543,7 +545,7 @@ void test_dynamic_array_tests() {
     // std::cout << "dynamic_heap_array" << std::endl;
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     vertices.pre_allocate(16);
 
     vertices.push_back(common::Test(1));
@@ -561,7 +563,7 @@ void test_dynamic_array_tests() {
 
     {
       int index = 0;
-      test_dynamic_array<common::Test>& cvertices = vertices;
+      dynamic_heap_array<common::Test>& cvertices = vertices;
       for (volatile const auto& test : cvertices) {
         assert(test.value == ((index++) + 1));
       }
@@ -581,7 +583,7 @@ void test_dynamic_array_tests() {
       constexpr std::size_t k_pre_allocated_size = 10;
 
       common::reset();
-      test_dynamic_array<common::Test, MyAllocator<common::Test>> vertices;
+      dynamic_heap_array<common::Test, MyAllocator<common::Test>> vertices;
       vertices.pre_allocate(k_pre_allocated_size);
 
       assert(common::getTotalCtor() == 0);
@@ -682,7 +684,7 @@ void test_dynamic_array_tests() {
   {
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     // vertices.pre_allocate(16);
 
     vertices.push_back(common::Test(1));
@@ -713,7 +715,7 @@ void test_dynamic_array_tests() {
   {
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
     // vertices.pre_allocate(16);
 
     // vertices.push_back();
@@ -736,7 +738,7 @@ void test_dynamic_array_tests() {
   {
 
     common::reset();
-    test_dynamic_array<common::Test> vertices;
+    dynamic_heap_array<common::Test> vertices;
 
     common::Test test1;
     test1.my_string = "666";
@@ -762,8 +764,8 @@ void test_dynamic_array_tests() {
   {
 
     common::reset();
-    test_dynamic_array<common::Test> vertices1;
-    test_dynamic_array<common::Test> vertices2;
+    dynamic_heap_array<common::Test> vertices1;
+    dynamic_heap_array<common::Test> vertices2;
     // vertices.pre_allocate(16);
 
     vertices1.emplace_back(111);
@@ -787,26 +789,26 @@ void test_generic_array_container() {
   D_MYLOG("test_generic_array_container()");
 
   {
-    D_MYLOG(" --> test_static_array");
+    D_MYLOG(" --> static_array");
 
-    test_static_array<TestData, 5> mySaticArray;
-    auto* pStaticArray = new test_static_array<TestData, 5>();
+    static_array<TestData, 5> mySaticArray;
+    auto* pStaticArray = new static_array<TestData, 5>();
 
     generic_tests(mySaticArray, pStaticArray);
   }
 
   {
-    D_MYLOG(" --> test_dynamic_array");
+    D_MYLOG(" --> dynamic_heap_array");
 
-    test_dynamic_array<TestData> myDynamicArray;
-    auto* pDynamicArray = new test_dynamic_array<TestData>();
+    dynamic_heap_array<TestData> myDynamicArray;
+    auto* pDynamicArray = new dynamic_heap_array<TestData>();
     myDynamicArray.ensure_size(5);
     pDynamicArray->ensure_size(5);
 
     generic_tests(myDynamicArray, pDynamicArray);
   }
 
-  { test_dynamic_array_tests(); }
+  { dynamic_array_heap_tests(); }
 
   D_MYLOG(" => DONE");
 }

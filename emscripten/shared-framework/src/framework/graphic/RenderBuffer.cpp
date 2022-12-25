@@ -110,6 +110,10 @@ void RenderBuffer::dispose() {
 
 const glm::uvec2& RenderBuffer::getSize() const { return _size; }
 
+bool RenderBuffer::isValid() const {
+  return _size.x > 0 && _size.x > 0 && _bufferId != 0;
+}
+
 //
 
 void RenderBuffer::bind() const {

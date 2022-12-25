@@ -24,7 +24,8 @@ private:
 
 public:
   std::shared_ptr<ShaderProgram>
-  createShader(int aliasCode, const ShaderProgram::Definition def);
+  createShader(int aliasCode, const ShaderProgram::Definition def,
+               bool allowDuplicates = false);
   std::shared_ptr<ShaderProgram> getShader(int aliasCode);
 
 private:
@@ -35,7 +36,8 @@ public:
   std::shared_ptr<Texture>
   createTexture(int aliasCode, const std::string& filename,
                 Texture::Quality quality = Texture::Quality::pixelated,
-                Texture::Pattern pattern = Texture::Pattern::clamped);
+                Texture::Pattern pattern = Texture::Pattern::clamped,
+                bool allowDuplicates = false);
   std::shared_ptr<Texture> getTexture(int aliasCode);
 
 private:
@@ -44,6 +46,7 @@ private:
 
 public:
   const Geometry::Definition&
-  createGeometryDefinition(int aliasCode, const Geometry::Definition& def);
+  createGeometryDefinition(int aliasCode, const Geometry::Definition& def,
+                           bool allowDuplicates = false);
   const Geometry::Definition& getGeometryDefinition(int aliasCode);
 };

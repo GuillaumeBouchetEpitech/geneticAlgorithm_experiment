@@ -146,6 +146,11 @@ void CoreUsageRenderer::renderHudText() {
   auto& logic = context.logic;
   auto& textRenderer = graphic.hud.textRenderer;
   auto& profileData = logic.cores.profileData;
+  auto& stackRenderers = graphic.hud.stackRenderers;
+
+  std::vector<TextRenderer::Rectangle> outRectangles;
+  const glm::vec4 color = glm::vec4(0.8, 0.8, 0.8, 1);
+  const glm::vec4 bgColor = glm::vec4(0.0f, 0.0f, 0.0f, 0.75f);
 
   {
     std::stringstream sstr;
@@ -161,8 +166,18 @@ void CoreUsageRenderer::renderHudText() {
 #endif
 
     std::string str = sstr.str();
-    textRenderer.push({_position.x, _position.y}, str,
-                      glm::vec4(0.8, 0.8, 0.8, 1), 1.0f, 0.25f);
+
+    const glm::vec2 textPos = {_position.x, _position.y};
+    const float textScale = 1.0f;
+    const float textDepth = 0.25f;
+
+    textRenderer.push(textPos, str, color, textScale, textDepth);
+
+    textRenderer.getSizes(outRectangles, textPos, str, textScale);
+    for (const auto& rec : outRectangles)
+      if (rec.size.x > 0.0f)
+        stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
+
   }
 
   {
@@ -173,12 +188,21 @@ void CoreUsageRenderer::renderHudText() {
     sstr << "CPU time: " << writeTime(totalDelta);
     std::string str = sstr.str();
 
+    const glm::vec2 textPos = {_position.x, _position.y - 16};
+    const float textScale = 1.0f;
+    const float textDepth = 0.25f;
+
     const glm::vec4 textColor =
       profileData.getAllTimeMaxDelta() > k_slowdownDelta
-        ? glm::vec4(0.8f, 0.0f, 0.0f, 1)
-        : glm::vec4(0.8f, 0.8f, 0.8f, 1);
+        ? glm::vec4(0.5f, 0.0f, 0.0f, 1)
+        : glm::vec4(0.0f, 0.0f, 0.0f, 1);
 
-    textRenderer.push({_position.x, _position.y - 16}, str, textColor, 1.0f,
-                      0.25f);
+    textRenderer.push(textPos, str, color, textScale, textDepth, textColor);
+
+    textRenderer.getSizes(outRectangles, textPos, str, textScale);
+    for (const auto& rec : outRectangles)
+      if (rec.size.x > 0.0f)
+        stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
+
   }
 }

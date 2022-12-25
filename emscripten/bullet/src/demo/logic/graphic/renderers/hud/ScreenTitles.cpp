@@ -94,6 +94,7 @@ void ScreenTitles::render() {
     const std::string message = sstr.str();
 
     const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _mainTitleAlpha);
+    const glm::vec4 outlineColor = glm::vec4(0.2f, 0.2f, 0.2f, _mainTitleAlpha);
 
     constexpr float scale = 3.0f;
 
@@ -101,7 +102,7 @@ void ScreenTitles::render() {
     textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
     textPos.y = vSize.y * 0.5f + 16 * scale;
 
-    textRenderer.push(textPos, message, color, scale, depth);
+    textRenderer.push(textPos, message, color, scale, depth, outlineColor);
   }
 
   {
@@ -121,12 +122,13 @@ void ScreenTitles::render() {
         std::string message = sstr.str();
 
         const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _fitnessTitleAlpha);
+        const glm::vec4 outlineColor = glm::vec4(0.2f, 0.2f, 0.2f, _fitnessTitleAlpha);
 
         glm::vec2 textPos;
         textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
         textPos.y = vSize.y * 0.5f + 0 * scale;
 
-        textRenderer.push(textPos, message, color, scale, depth);
+        textRenderer.push(textPos, message, color, scale, depth, outlineColor);
       }
 
       if (_commentTitleAlpha > 0.0f && currFitness != prevFitness) {
@@ -145,11 +147,17 @@ void ScreenTitles::render() {
 
         const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _commentTitleAlpha);
 
+        glm::vec4 outlineColor = glm::vec4(0.0f, 0.0f, 0.0f, _commentTitleAlpha);
+        if (currFitness > prevFitness)
+          outlineColor.y = 0.5f;
+        else if (currFitness < prevFitness)
+          outlineColor.x = 0.5f;
+
         glm::vec2 textPos;
         textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
         textPos.y = vSize.y * 0.5f - 16 * scale;
 
-        textRenderer.push(textPos, message, color, scale, depth);
+        textRenderer.push(textPos, message, color, scale, depth, outlineColor);
       }
     }
   }

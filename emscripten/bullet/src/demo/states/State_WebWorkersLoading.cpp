@@ -24,14 +24,11 @@ void State_WebWorkersLoading::handleEvent(const SDL_Event& event) {
   static_cast<void>(event); // <= unused
 }
 
-void State_WebWorkersLoading::update(int deltaTime) {
+void State_WebWorkersLoading::update(float elapsedTime) {
   if (_awaiting == true) {
     // only update to load the webworkers
     Context::get().logic.simulation->update(0.0f, 1);
   } else {
-
-    float elapsedTime = float(deltaTime) / 1000.0f;
-
     // to ensure the message is visible (<= why the user waited)
     _timer.update(elapsedTime);
     if (_timer.isDone()) {

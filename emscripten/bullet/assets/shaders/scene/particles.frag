@@ -10,5 +10,5 @@ layout(location = 1) out vec4 out_outline;
 void main(void)
 {
 	out_color = v_color;
-	out_outline = vec4(0.0);
+	out_outline = vec4(1.0);
 }

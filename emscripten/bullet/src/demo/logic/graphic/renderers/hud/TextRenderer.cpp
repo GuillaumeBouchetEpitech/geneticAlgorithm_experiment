@@ -164,7 +164,8 @@ void TextRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
 
 void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
                         const glm::vec4& inColor, float inScale /* = 1.0f */,
-                        float zDepth /*= 0.0f*/
+                        float zDepth, /*= 0.0f*/
+                        const glm::vec3& inBackColor /*= {0,0,0}*/
                         // TextAllign allign /* = TextAllign::left */
 ) {
   // TODO: support text align
@@ -208,10 +209,10 @@ void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
     _lettersOffsetColored.push_back(
       {glm::vec3(currPos, zDepth), texCoord, inColor, inScale});
 
-    const glm::vec4 blackColor = glm::vec4(0, 0, 0, inColor.a);
+    const glm::vec4 blackColor = glm::vec4(inBackColor, inColor.a);
     constexpr int range = 1;
     glm::vec3 outlinePos;
-    outlinePos.z = zDepth - 0.1f;
+    outlinePos.z = zDepth - 0.01f;
     for (int stepY = -range; stepY <= +range; stepY += range) {
 
       outlinePos.y = currPos.y + inScale * stepY;
@@ -228,6 +229,27 @@ void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
     }
 
     currPos.x += letterSize.x * inScale;
+  }
+}
+
+void TextRenderer::getSizes(std::vector<Rectangle>& outRectangles, const glm::vec2& inPosition, std::string_view inMessage, float inScale /*= 1.0f*/)
+{
+  const glm::vec2 gridSize = {16, 16};
+  const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
+
+  const float sizeY = letterSize.y * inScale;
+
+  outRectangles.clear();
+  outRectangles.reserve(64);
+  outRectangles.push_back({ { inPosition.x, inPosition.y }, { 0.0f, sizeY } });
+
+  for (char letter : inMessage) {
+    if (letter == '\n') {
+      const float lastY = outRectangles.back().pos.y;
+      outRectangles.push_back({ { inPosition.x, lastY - sizeY }, { 0.0f, sizeY } });
+      continue;
+    }
+    outRectangles.back().size.x += letterSize.x * inScale;
   }
 }
 

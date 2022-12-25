@@ -24,10 +24,11 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def) {
     if (attrs.empty())
       D_THROW(std::runtime_error, "empty vbo attribute defintion");
 
-    for (const auto& attr : attrs)
-      if (!shader.hasAttribute(attr.name.c_str()))
+    for (const auto& attr : attrs) {
+      if (attr.ignored == false && !shader.hasAttribute(attr.name.c_str()))
         D_THROW(std::runtime_error,
                 "attribute not found, name=\"" << attr.name << "\"");
+    }
   }
 
   _def = def;
@@ -45,33 +46,41 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def) {
 
     _vbo.bind(uint32_t(ii));
 
-    uint32_t stride = vbo.stride;
-    if (stride == 0) {
+    uint32_t vboStride = 0;
+    if (vbo.stride > 0) {
+      vboStride = uint32_t(vbo.stride);
+    } else {
       // auto determine stride value
+      uint32_t lastAttrIndex = 0;
       for (const auto& attr : attrs) {
+        uint32_t liveAttrIndex =
+          attr.index >= 0 ? uint32_t(attr.index) : lastAttrIndex;
         switch (attr.type) {
         case AttrType::Float:
-          stride += 1;
+          liveAttrIndex += 1;
           break;
         case AttrType::Vec2f:
-          stride += 2;
+          liveAttrIndex += 2;
           break;
         case AttrType::Vec3f:
-          stride += 3;
+          liveAttrIndex += 3;
           break;
         case AttrType::Vec4f:
-          stride += 4;
+          liveAttrIndex += 4;
           break;
         case AttrType::Mat3f:
-          stride += 9;
+          liveAttrIndex += 9;
           break;
         case AttrType::Mat4f:
-          stride += 16;
+          liveAttrIndex += 16;
           break;
         }
+        lastAttrIndex = liveAttrIndex;
       }
-      stride *= uint32_t(sizeof(float));
+      vboStride = lastAttrIndex * uint32_t(sizeof(float));
     }
+
+    uint32_t lastAttrIndex = 0;
 
     for (const auto& attr : attrs) {
       uint32_t rowSize = 1;
@@ -99,25 +108,33 @@ void Geometry::initialise(ShaderProgram& shader, const Definition& def) {
         break;
       }
 
-      const int attrLocation = shader.getAttribute(attr.name.c_str());
-
       // TODO: check if the index is 0 on k>0 and assert/throw on it
 
-      for (uint32_t kk = 0; kk < totalRows; ++kk) {
-        const uint32_t attrId = uint32_t(attrLocation) + kk;
-        const uint32_t rowIndex =
-          (uint32_t(attr.index) + kk * rowSize) * uint32_t(sizeof(float));
+      const uint32_t liveAttrIndex =
+        attr.index >= 0 ? uint32_t(attr.index) : lastAttrIndex;
 
-        GlContext::VertexBufferObject::enableAttribArray(attrId);
-        GlContext::VertexBufferObject::setAttribPointer(attrId, rowSize, stride,
-                                                        rowIndex);
-        if (vbo.instanced) {
-          GlContext::VertexBufferObject::enableAttribDivisor(attrId);
+      if (attr.ignored == false) {
 
-          if (!_isInstanced)
-            _isInstanced = true;
+        const int attrLocation = shader.getAttribute(attr.name.c_str());
+
+        for (uint32_t kk = 0; kk < totalRows; ++kk) {
+          const uint32_t attrId = uint32_t(attrLocation) + kk;
+          const uint32_t rowIndex =
+            (liveAttrIndex + kk * rowSize) * uint32_t(sizeof(float));
+
+          GlContext::VertexBufferObject::enableAttribArray(attrId);
+          GlContext::VertexBufferObject::setAttribPointer(attrId, rowSize,
+                                                          vboStride, rowIndex);
+          if (vbo.instanced) {
+            GlContext::VertexBufferObject::enableAttribDivisor(attrId);
+
+            if (!_isInstanced)
+              _isInstanced = true;
+          }
         }
       }
+
+      lastAttrIndex = liveAttrIndex + rowSize * totalRows;
     }
   }
 

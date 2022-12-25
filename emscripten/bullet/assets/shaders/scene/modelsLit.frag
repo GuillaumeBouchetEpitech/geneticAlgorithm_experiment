@@ -2,7 +2,8 @@
 
 precision lowp float;
 
-in vec3 v_color;
+in vec4 v_color;
+in vec4 v_outlineColor;
 in vec3 v_normal;
 in vec3 v_vertPos;
 
@@ -13,6 +14,6 @@ layout(location = 1) out vec4 out_outline;
 
 void main(void)
 {
-  out_color = vec4(applyLighting(v_color, v_normal, v_vertPos), 1.0);
-  out_outline = vec4(1.0);
+  out_color = vec4(applyLighting(v_color.rgb, v_normal, v_vertPos), v_color.a);
+  out_outline = v_outlineColor;
 }

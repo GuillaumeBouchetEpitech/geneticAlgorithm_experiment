@@ -1,5 +1,5 @@
 
-#include "framework/system//containers/static_stack_array.hpp"
+#include "framework/system//containers/static_array.hpp"
 
 #include "framework/system/TraceLogger.hpp"
 
@@ -17,12 +17,12 @@
 // template<typename T>
 // using empty_heap_array = dynamic_heap_array<T, std::allocator<T>, 0>;
 
-void test_static_stack_array() {
-  D_MYLOG("test_static_stack_array()");
+void test_static_array() {
+  D_MYLOG("test_static_array()");
 
   {
 
-    static_stack_array<int, 5> myArray;
+    static_array<int, 5> myArray;
 
     for (int ii = 0; ii < int(myArray.size()); ++ii)
       myArray[ii] = ii;
@@ -94,7 +94,7 @@ void test_static_stack_array() {
   }
 
   {
-    static_stack_array<int, 5> myArray;
+    static_array<int, 5> myArray;
 
     assert(myArray.total_iterators() == 0);
 
@@ -121,7 +121,7 @@ void test_static_stack_array() {
   }
 
   {
-    auto* pArray = new static_stack_array<int, 5>();
+    auto* pArray = new static_array<int, 5>();
 
     assert(pArray->total_iterators() == 0);
 

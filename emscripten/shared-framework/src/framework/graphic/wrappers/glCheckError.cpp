@@ -1,5 +1,6 @@
 
 #include "framework/helpers/internals/OpenGLES.hpp"
+#include "framework/system/ErrorHandler.hpp"
 #include "framework/system/TraceLogger.hpp"
 
 namespace debug {
@@ -68,6 +69,7 @@ void glCheckError(const char* file, unsigned int line, const char* expression) {
   D_MYLOG("Error description:");
   D_MYLOG(error);
   D_MYLOG("     " << description);
+  // D_THROW(std::runtime_error, "<3");
 }
 
 } // namespace debug

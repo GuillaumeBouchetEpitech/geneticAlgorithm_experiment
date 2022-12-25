@@ -105,6 +105,7 @@ void FitnessDataRenderer::renderHudText() {
   auto& logic = context.logic;
   auto& simulation = *logic.simulation;
   auto& textRenderer = graphic.hud.textRenderer;
+  auto& stackRenderers = graphic.hud.stackRenderers;
 
   const unsigned int totalCars = logic.cores.totalCars;
   unsigned int carsLeft = 0;
@@ -120,24 +121,36 @@ void FitnessDataRenderer::renderHudText() {
       localBestFitness = carData.fitness;
   }
 
+  const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _alpha);
+  const glm::vec4 colorRed = glm::vec4(0.5f, 0.0f, 0.0f, _alpha);
+  const glm::vec4 colorGreen = glm::vec4(0.0f, 0.5f, 0.0f, _alpha);
+  const glm::vec4 bgColor = glm::vec4(0.0f, 0.0f, 0.0f, _alpha * 0.75f);
+  const float scale = 1.0f;
+  const float depth = 0.25f;
+  const float bgDepth = depth - 0.1f;
+  std::vector<TextRenderer::Rectangle> outRectangles;
+
   {
+    const glm::vec2 textPos = {8, 8 + 2 * 16};
+
     std::stringstream sstr;
-
     sstr << "Generation: " << simulation.getGenerationNumber();
-
     const std::string str = sstr.str();
 
-    textRenderer.push({8, 8 + 2 * 16}, str, glm::vec4(0.8f, 0.8f, 0.8f, _alpha),
-                      1.0f, 0.25f);
+    textRenderer.push(textPos, str, color, scale, depth);
+
+    textRenderer.getSizes(outRectangles, textPos, str, scale);
+    for (const auto& rec : outRectangles)
+      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 
   {
-    std::stringstream sstr;
+    const glm::vec2 textPos = {8, 8 + 1 * 16};
 
+    std::stringstream sstr;
     sstr << std::fixed << std::setprecision(1);
     sstr << "Fitness: " << localBestFitness << "/"
          << simulation.getBestGenome().fitness;
-
     const std::string str = sstr.str();
 
     const float bestFitness = simulation.getBestGenome().fitness;
@@ -145,25 +158,31 @@ void FitnessDataRenderer::renderHudText() {
                          ? 0.0f
                          : clamp(localBestFitness / bestFitness, 0.0f, 1.0f);
 
-    const glm::vec4 textColor =
-      glm::mix(glm::vec4(1, 0, 0, _alpha), glm::vec4(0, 1, 0, _alpha), coef);
+    const glm::vec4 textColor = glm::mix(colorRed, colorGreen, coef);
 
-    textRenderer.push({8, 8 + 1 * 16}, str, textColor, 1.0f, 0.25f);
+    textRenderer.push(textPos, str, color, scale, depth, textColor);
+
+    textRenderer.getSizes(outRectangles, textPos, str, scale);
+    for (const auto& rec : outRectangles)
+      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 
   {
-    std::stringstream sstr;
+    const glm::vec2 textPos = {8, 8 + 0 * 16};
 
+    std::stringstream sstr;
     sstr << std::fixed << std::setprecision(1);
     sstr << "Cars: " << carsLeft << "/" << totalCars;
-
     const std::string str = sstr.str();
 
     const float coef = 1.0f - clamp(float(carsLeft) / totalCars, 0.0f, 1.0f);
 
-    const glm::vec4 textColor =
-      glm::mix(glm::vec4(0, 1, 0, _alpha), glm::vec4(1, 0, 0, _alpha), coef);
+    const glm::vec4 textColor = glm::mix(colorGreen, colorRed, coef);
 
-    textRenderer.push({8, 8 + 0 * 16}, str, textColor, 1.0f, 0.25f);
+    textRenderer.push(textPos, str, color, scale, depth, textColor);
+
+    textRenderer.getSizes(outRectangles, textPos, str, scale);
+    for (const auto& rec : outRectangles)
+      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 }

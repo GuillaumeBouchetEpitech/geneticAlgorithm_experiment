@@ -1,6 +1,7 @@
 
 #include "Demo.hpp"
 
+#include "demo/defines.hpp"
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 #include "demo/states/StateManager.hpp"
@@ -9,9 +10,18 @@
 
 #include <chrono>
 
+namespace {
+
+#if defined D_NATIVE_PTHREAD_BUILD
+constexpr bool k_canResize = true;
+#else
+constexpr bool k_canResize = false;
+#endif
+} // namespace
+
 Demo::Demo(const Definition& def)
   : SDLWindowWrapper("AI", def.width, def.height, 30,
-                     SDLWindowWrapper::OpenGlEsVersion::v3) {
+                     SDLWindowWrapper::OpenGlEsVersion::v3, k_canResize) {
   Context::create(def.width, def.height, def.totalCores, def.genomesPerCore);
   StateManager::create();
   Scene::initialise();
@@ -31,7 +41,9 @@ void Demo::_onEvent(const SDL_Event& event) {
 void Demo::_onUpdate(uint32_t deltaTime) {
   auto startTime = std::chrono::high_resolution_clock::now();
 
-  StateManager::get()->update(deltaTime);
+  const float elapsedTime = float(deltaTime) / 1000.0f;
+
+  StateManager::get()->update(elapsedTime);
 
   auto endTime = std::chrono::high_resolution_clock::now();
   auto microseconds =

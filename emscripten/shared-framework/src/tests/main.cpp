@@ -17,7 +17,7 @@ int main() {
   test_weak_ref_data_pool();
   // test_math();
   test_frustum_culling();
-  test_static_stack_array();
+  test_static_array();
   test_deterministic_rng();
   test_generic_array_container();
 

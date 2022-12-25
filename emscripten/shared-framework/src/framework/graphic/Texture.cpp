@@ -55,6 +55,29 @@ void Texture::allocateBlank(const glm::uvec2& size,
   GlContext::Texture::bind(0);
 }
 
+void Texture::allocateSingleFloat(const glm::uvec2& size) {
+  if (size.x == 0 || size.y == 0)
+    D_THROW(std::runtime_error,
+            "texture allocated with incorrect size, size.x: "
+              << size.x << ", size.y: " << size.y);
+
+  // TODO: check max texture size
+  // if (_size.x < 1 || _size.y < 1)
+  //   D_THROW(std::runtime_error, "image allocated with incorrect size");
+
+  _size = size;
+
+  if (_textureId == 0)
+    _textureId = GlContext::Texture::generateOne();
+
+  GlContext::Texture::bind(_textureId);
+
+  GlContext::Texture::uploadSingleFloatPixels(uint32_t(_size.x),
+                                              uint32_t(_size.y));
+
+  GlContext::Texture::bind(0);
+}
+
 namespace {
 GlContext::Texture::DepthFormat
 getRawDepthFormat(Texture::DepthFormat depthFormat) {

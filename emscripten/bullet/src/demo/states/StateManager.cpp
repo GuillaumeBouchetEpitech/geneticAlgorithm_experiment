@@ -86,8 +86,8 @@ void StateManager::handleEvent(const SDL_Event& event) {
   _states.at(asValue(_currentState))->handleEvent(event);
 }
 
-void StateManager::update(int delta) {
-  _states.at(asValue(_currentState))->update(delta);
+void StateManager::update(float elapsedTime) {
+  _states.at(asValue(_currentState))->update(elapsedTime);
 }
 
 void StateManager::render(const SDL_Window& window) {

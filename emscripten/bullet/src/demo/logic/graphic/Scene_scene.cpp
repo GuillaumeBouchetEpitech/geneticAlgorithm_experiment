@@ -17,11 +17,13 @@ void Scene::_renderLeadingCarSensors() {
     if (leaderCarData->groundIndex < 2)
       return;
 
-    const glm::vec3 greenColor(0.0f, 1.0f, 0.0f);
-    const glm::vec3 yellowColor(1.0f, 1.0f, 0.0f);
-    const glm::vec3 orangeColor(1.0f, 0.5f, 0.0f);
-    const glm::vec3 redColor(1.0f, 0.0f, 0.0f);
-    const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
+    constexpr float colorIntensity = 0.8f;
+
+    const glm::vec3 greenColor = glm::vec3(0.0f, 1.0f, 0.0f) * colorIntensity;
+    const glm::vec3 yellowColor = glm::vec3(1.0f, 1.0f, 0.0f) * colorIntensity;
+    const glm::vec3 orangeColor = glm::vec3(1.0f, 0.5f, 0.0f) * colorIntensity;
+    const glm::vec3 redColor = glm::vec3(1.0f, 0.0f, 0.0f) * colorIntensity;
+    const glm::vec3 whiteColor = glm::vec3(1.0f, 1.0f, 1.0f) * colorIntensity;
 
     // eye sensors
     for (const auto& sensor : leaderCarData->eyeSensors) {

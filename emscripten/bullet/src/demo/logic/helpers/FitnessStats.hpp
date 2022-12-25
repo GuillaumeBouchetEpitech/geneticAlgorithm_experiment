@@ -1,12 +1,12 @@
 
 #pragma once
 
-#include "framework/system/containers/static_stack_array.hpp"
+#include "framework/system/containers/static_array.hpp"
 
 class FitnessStats {
 private:
   std::size_t _index = 0;
-  static_stack_array<float, 10> _allFitnesses;
+  static_array<float, 10> _allFitnesses;
   float _maxFitness = 0.0f;
 
 public:

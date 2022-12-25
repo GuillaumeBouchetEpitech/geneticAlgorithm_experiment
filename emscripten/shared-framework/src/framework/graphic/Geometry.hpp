@@ -29,16 +29,18 @@ public:
       struct Attr {
         std::string name = "";
         AttrType type = AttrType::Float;
-        std::size_t index = 0;
+        int index = 0;
+        bool ignored = false;
 
         Attr() = default;
         ~Attr() = default;
 
-        Attr(const std::string& inName, AttrType inType, std::size_t inIndex)
-          : name(inName), type(inType), index(inIndex) {}
+        Attr(const std::string& inName, AttrType inType, int inIndex,
+             bool inIgnored)
+          : name(inName), type(inType), index(inIndex), ignored(inIgnored) {}
       };
 
-      unsigned int stride = 0;
+      int stride = -1;
       bool instanced = false;
 
       std::vector<Attr> attrs;

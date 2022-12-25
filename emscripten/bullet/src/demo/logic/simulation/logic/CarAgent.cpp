@@ -92,12 +92,13 @@ void CarAgent::update(float elapsedTime,
                                    _output.steer * constants::steeringMaxValue);
 
   // const float engineFore = GenericEasing<4>()
-  auto engineEasing = GenericEasing<5>()
-                        .push(0.0f, -constants::speedMaxValue)
-                        .push(0.5f, 0.0f)
-                        .push(0.75f, constants::speedMaxValue * 4.0f)
-                        .push(0.90f, constants::speedMaxValue)
-                        .push(1.0f, constants::speedMaxValue);
+  auto engineEasing =
+    GenericEasing<5>()
+      .push(0.0f, -constants::speedMaxValue)
+      .push(0.5f, 0.0f)
+      .push(0.5f + 0.5f * 0.25f, constants::speedMaxValue * 4.0f)
+      .push(0.5f + 0.5f * 0.50f, constants::speedMaxValue)
+      .push(0.5f + 0.5f * 1.00f, constants::speedMaxValue);
 
   const float engineForce = engineEasing.get(_output.speed);
 

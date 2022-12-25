@@ -40,6 +40,7 @@ public:
 
 public:
   const glm::uvec2& getSize() const;
+  bool isValid() const;
 
 public:
   void bind() const;

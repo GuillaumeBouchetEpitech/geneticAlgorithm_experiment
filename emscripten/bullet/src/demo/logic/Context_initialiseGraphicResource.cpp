@@ -29,18 +29,18 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::lines)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec4f, 3);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_color", Geometry::AttrType::Vec4f);
 
     rManager.createGeometryDefinition(
       asValue(GeometryIds::stackRendererWireframesScene),
-      geometryBuilder.getDefinition());
+      geometryBuilder.getDefinition(), true);
 
     geometryBuilder.setPrimitiveType(Geometry::PrimitiveType::triangles);
 
     rManager.createGeometryDefinition(
       asValue(GeometryIds::stackRendererTrianglesScene),
-      geometryBuilder.getDefinition());
+      geometryBuilder.getDefinition(), true);
   }
 
   {
@@ -58,18 +58,18 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::lines)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_color", Geometry::AttrType::Vec4f, 3);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_color", Geometry::AttrType::Vec4f);
 
     rManager.createGeometryDefinition(
       asValue(GeometryIds::stackRendererWireframesHud),
-      geometryBuilder.getDefinition());
+      geometryBuilder.getDefinition(), true);
 
     geometryBuilder.setPrimitiveType(Geometry::PrimitiveType::triangles);
 
     rManager.createGeometryDefinition(
       asValue(GeometryIds::stackRendererTrianglesHud),
-      geometryBuilder.getDefinition());
+      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -93,15 +93,15 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
       .addVbo()
       .setVboAsInstanced()
-      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 3)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f, 4);
+      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float)
+      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::particles),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -114,7 +114,6 @@ void Context::initialiseGraphicResource() {
       .setFragmentFilename("assets/shaders/scene/backGroundTorus.frag")
       .addAttribute("a_position")
       .addAttribute("a_texCoord")
-      .addAttribute("a_texCoord2")
       .addUniform("u_composedMatrix")
       .addUniform("u_texture")
       .addUniform("u_animationCoef");
@@ -126,12 +125,12 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3)
-      .addVboAttribute("a_texCoord2", Geometry::AttrType::Vec2f, 5);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f)
+      ;
 
     rManager.createGeometryDefinition(asValue(GeometryIds::backGroundTorus),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -154,11 +153,11 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::simpleTexture),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   {
@@ -179,12 +178,12 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 6);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_normal", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::simpleTextureLit),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -206,15 +205,15 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::lines)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0);
+      .addVboAttribute("a_position", Geometry::AttrType::Vec3f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::wireframes),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
 
     geometryBuilder.setPrimitiveType(Geometry::PrimitiveType::line_strip);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::wireframesLineStrip),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -241,14 +240,14 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .setVboStride(13 * 4)
-      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f, 9)
-      .addVboAttribute("a_vertex_index", Geometry::AttrType::Float, 12);
+      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f)
+      .addIgnoredVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_index", Geometry::AttrType::Float);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::animatedCircuit),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   {
@@ -273,14 +272,14 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f, 6)
-      .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f, 9)
-      .addVboAttribute("a_vertex_index", Geometry::AttrType::Float, 12);
+      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_index", Geometry::AttrType::Float);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::animatedCircuitLit),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -296,6 +295,7 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_vertex_color")
       .addAttribute("a_offset_transform")
       .addAttribute("a_offset_color")
+      .addAttribute("a_offset_outlineColor")
       .addUniform("u_composedMatrix");
 
     auto shader = rManager.createShader(asValue(ShaderIds::models),
@@ -305,16 +305,17 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .setVboStride(9 * 4)
-      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
+      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f)
+      .addIgnoredVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f)
       .addVbo()
       .setVboAsInstanced()
-      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f, 0)
-      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec3f, 16);
+      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f)
+      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec4f)
+      .addVboAttribute("a_offset_outlineColor", Geometry::AttrType::Vec4f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::models),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   {
@@ -327,6 +328,7 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_vertex_normal")
       .addAttribute("a_offset_transform")
       .addAttribute("a_offset_color")
+      .addAttribute("a_offset_outlineColor")
       .addUniform("u_projectionMatrix")
       .addUniform("u_modelViewMatrix");
 
@@ -337,16 +339,17 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f, 3)
-      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f, 6)
+      .addVboAttribute("a_vertex_position", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_color", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_vertex_normal", Geometry::AttrType::Vec3f)
       .addVbo()
       .setVboAsInstanced()
-      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f, 0)
-      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec3f, 16);
+      .addVboAttribute("a_offset_transform", Geometry::AttrType::Mat4f)
+      .addVboAttribute("a_offset_color", Geometry::AttrType::Vec4f)
+      .addVboAttribute("a_offset_outlineColor", Geometry::AttrType::Vec4f);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::modelsLit),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -373,17 +376,17 @@ void Context::initialiseGraphicResource() {
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec2f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 2)
+      .addVboAttribute("a_position", Geometry::AttrType::Vec2f)
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f)
       .addVbo()
       .setVboAsInstanced()
-      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f, 3)
-      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec4f, 5)
-      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float, 9);
+      .addVboAttribute("a_offsetPosition", Geometry::AttrType::Vec3f)
+      .addVboAttribute("a_offsetTexCoord", Geometry::AttrType::Vec2f)
+      .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec4f)
+      .addVboAttribute("a_offsetScale", Geometry::AttrType::Float);
 
     rManager.createGeometryDefinition(asValue(GeometryIds::hudText),
-                                      geometryBuilder.getDefinition());
+                                      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -405,15 +408,15 @@ void Context::initialiseGraphicResource() {
     auto shader = rManager.createShader(asValue(ShaderIds::postProcess),
                                         shaderProgramBuilder.getDefinition());
 
-    geometryBuilder.reset()
-      .setShader(*shader)
-      .setPrimitiveType(Geometry::PrimitiveType::triangles)
-      .addVbo()
-      .addVboAttribute("a_position", Geometry::AttrType::Vec3f, 0)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f, 3);
+    // geometryBuilder.reset()
+    //   .setShader(*shader)
+    //   .setPrimitiveType(Geometry::PrimitiveType::triangles)
+    //   .addVbo()
+    //   .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
+    //   .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::postProcess),
-                                      geometryBuilder.getDefinition());
+    // rManager.createGeometryDefinition(asValue(GeometryIds::postProcess),
+    //                                   geometryBuilder.getDefinition(), true);
   }
 
   //

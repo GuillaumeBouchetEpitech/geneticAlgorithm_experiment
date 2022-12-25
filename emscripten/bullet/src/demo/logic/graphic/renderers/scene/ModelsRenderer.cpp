@@ -6,7 +6,9 @@
 
 #include "framework/graphic/loaders/loadObjModel.hpp"
 #include "framework/system/asValue.hpp"
+#include "framework/system/math/GenericEasing.hpp"
 #include "framework/system/math/RandomNumberGenerator.hpp"
+#include "framework/system/math/easingFunctions.hpp"
 
 namespace {
 
@@ -66,6 +68,28 @@ void ModelsRenderer::initialise() {
   }
 }
 
+void ModelsRenderer::fadeIn(float delay, float duration) {
+  _timer.start(delay, duration);
+}
+
+void ModelsRenderer::update(float elapsedTime) {
+  if (_timer.isDone())
+    return;
+
+  _timer.update(elapsedTime);
+
+  _colorAlpha = GenericEasing<3>()
+                  .push(0.0f, 0.0f)
+                  .push(0.5f, 0.0f, easing::easeOutCubic)
+                  .push(1.0f, 1.0f)
+                  .get(_timer.getCoefElapsed());
+
+  _outlineColoralpha = GenericEasing<2>()
+                         .push(0.0f, 0.0f, easing::easeOutCubic)
+                         .push(0.5f, 1.0f)
+                         .get(_timer.getCoefElapsed());
+}
+
 void ModelsRenderer::render(const Camera& cameraInstance) {
   if (!_chassis.shader || !_wheels.shader)
     D_THROW(std::runtime_error, "shader not setup");
@@ -88,12 +112,13 @@ void ModelsRenderer::render(const Camera& cameraInstance) {
 
   const glm::vec3 modelHeight(0.0f, 0.0f, 0.2f);
 
-  const glm::vec3 whiteColor(1, 1, 1);
-  const glm::vec3 greenColor(0, 1, 0);
-  const glm::vec3 redColor(1, 0, 0);
-  const glm::vec3& leaderColor = whiteColor;
-  const glm::vec3& lifeColor = greenColor;
-  const glm::vec3& deathColor = redColor;
+  const glm::vec4 k_outlineColor(1, 1, 1, _outlineColoralpha);
+  const glm::vec4 k_whiteColor(1, 1, 1, _colorAlpha);
+  const glm::vec4 k_greenColor(0, 1, 0, _colorAlpha);
+  const glm::vec4 k_redColor(1, 0, 0, _colorAlpha);
+  const glm::vec4& leaderColor = k_whiteColor;
+  const glm::vec4& lifeColor = k_greenColor;
+  const glm::vec4& deathColor = k_redColor;
 
   for (unsigned int ii = 0; ii < totalCars; ++ii) {
     const auto& carData = simulation.getCarResult(ii);
@@ -116,15 +141,17 @@ void ModelsRenderer::render(const Camera& cameraInstance) {
     // color
 
     const bool isLeader = (logic.leaderCar.leaderIndex() == int(ii));
-    const glm::vec3 targetColor = isLeader ? leaderColor : lifeColor;
-    const glm::vec3 color = glm::mix(deathColor, targetColor, carData.life);
+    const glm::vec4 targetColor = isLeader ? leaderColor : lifeColor;
+    const glm::vec4 color = glm::mix(deathColor, targetColor, carData.life);
 
     //
     // transforms
 
-    _modelsChassisMatrices.emplace_back(chassisTransform, color);
+    _modelsChassisMatrices.emplace_back(chassisTransform, color,
+                                        k_outlineColor);
     for (const auto& wheelTransform : carData.liveTransforms.wheels)
-      _modelWheelsMatrices.emplace_back(wheelTransform, whiteColor);
+      _modelWheelsMatrices.emplace_back(wheelTransform, k_whiteColor,
+                                        k_outlineColor);
   }
 
   if (!_modelsChassisMatrices.empty()) {

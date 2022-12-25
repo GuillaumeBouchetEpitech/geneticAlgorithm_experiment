@@ -65,9 +65,10 @@ func_ask_build_target () {
 
     echo ""
     echo "Build target?"
-    echo "=> native:       1 (default)"
-    echo "=> web wasm:     2"
-    echo "=> full release: 3"
+    echo "=> native:            1 (default)"
+    echo "=> web wasm:          2"
+    echo "=> full hard release: 3"
+    echo "=> full soft release: 4"
     echo ""
 
     read USER_INPUT_PLATFORM
@@ -81,7 +82,7 @@ func_ask_build_target () {
         ;;
     3)
         echo ""
-        echo "selected target: full release"
+        echo "selected target: full hard release"
         echo ""
 
         echo ""
@@ -90,6 +91,24 @@ func_ask_build_target () {
 
         func_do_clean release native
         func_do_clean release web_wasm
+
+        echo ""
+        echo "=> building"
+        echo ""
+
+        func_do_build release native
+        func_do_build release web_wasm
+
+        echo ""
+        echo "=> building completed"
+        echo ""
+
+        exit 0
+        ;;
+    4)
+        echo ""
+        echo "selected target: full soft release"
+        echo ""
 
         echo ""
         echo "=> building"

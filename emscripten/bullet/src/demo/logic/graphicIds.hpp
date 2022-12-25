@@ -34,7 +34,7 @@ enum class GeometryIds : uint32_t {
   animatedCircuitLit,
   models,
   modelsLit,
-  postProcess,
+  // postProcess,
   backGroundTorus,
 };
 

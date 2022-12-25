@@ -18,7 +18,8 @@ void PostProcess::initialise(const glm::uvec2& frameSize) {
   _shader = resourceManager.getShader(asValue(ShaderIds::postProcess));
 
   auto geoDef =
-    resourceManager.getGeometryDefinition(asValue(GeometryIds::postProcess));
+    // resourceManager.getGeometryDefinition(asValue(GeometryIds::postProcess));
+    resourceManager.getGeometryDefinition(asValue(GeometryIds::simpleTexture));
   _screenQuad.initialise(*_shader, geoDef);
   _screenQuad.setPrimitiveCount(0);
 

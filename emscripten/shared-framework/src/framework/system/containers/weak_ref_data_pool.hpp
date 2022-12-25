@@ -187,6 +187,12 @@ public:
   public:
     operator bool() const { return is_active(); }
 
+    bool operator==(const weak_ref& other) const {
+      return (is_active() && other.is_active() && _pool == other._pool &&
+              _index == other._index);
+    }
+
+  public:
     bool is_active() const {
       return _index >= 0 && _pool &&
              _pool->_itemsPool.at(std::size_t(_index))._is_active;

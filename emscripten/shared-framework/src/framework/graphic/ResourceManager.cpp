@@ -12,13 +12,19 @@
 
 std::shared_ptr<ShaderProgram>
 ResourceManager::createShader(int aliasCode,
-                              const ShaderProgram::Definition def) {
+                              const ShaderProgram::Definition def,
+                              bool allowDuplicates /*= false*/) {
   std::stringstream sstr;
   sstr << def.filenames.vertex << "-" << def.filenames.fragment;
   std::string shaderUniqueName = sstr.str();
 
   auto itDef = _shaderDefsMap.find(shaderUniqueName);
   if (itDef != _shaderDefsMap.end()) {
+
+    if (!allowDuplicates) {
+      D_THROW(std::runtime_error, "resource manager shader is duplicated");
+    }
+
     auto itShader = _shadersMap.find(itDef->second);
     if (itShader == _shadersMap.end())
       D_THROW(std::runtime_error, "resource manager shader map corrupted");
@@ -54,7 +60,8 @@ std::shared_ptr<ShaderProgram> ResourceManager::getShader(int aliasCode) {
 std::shared_ptr<Texture> ResourceManager::createTexture(
   int aliasCode, const std::string& filename,
   Texture::Quality quality /*= Texture::Quality::pixelated*/,
-  Texture::Pattern pattern /*= Texture::Pattern::clamped*/) {
+  Texture::Pattern pattern /*= Texture::Pattern::clamped*/,
+  bool allowDuplicates /*= false*/) {
   std::stringstream sstr;
   sstr << filename << "-quality=" << asValue(quality)
        << "-repeat=" << asValue(pattern);
@@ -62,6 +69,11 @@ std::shared_ptr<Texture> ResourceManager::createTexture(
 
   auto itDef = _textureDefsMap.find(textureUniqueName);
   if (itDef != _textureDefsMap.end()) {
+
+    if (!allowDuplicates) {
+      D_THROW(std::runtime_error, "resource manager texture is duplicated");
+    }
+
     auto itTexture = _texturesMap.find(itDef->second);
     if (itTexture == _texturesMap.end())
       D_THROW(std::runtime_error, "resource manager texture map corrupted");
@@ -101,7 +113,8 @@ std::shared_ptr<Texture> ResourceManager::getTexture(int aliasCode) {
 
 const Geometry::Definition&
 ResourceManager::createGeometryDefinition(int aliasCode,
-                                          const Geometry::Definition& def) {
+                                          const Geometry::Definition& def,
+                                          bool allowDuplicates /*= false*/) {
   std::stringstream sstr;
 
   sstr << asValue(def.primitiveType) << "-" << def.vbos.size();
@@ -113,6 +126,7 @@ ResourceManager::createGeometryDefinition(int aliasCode,
       sstr << "-" << attr.index;
       sstr << "-" << attr.name;
       sstr << "-" << asValue(attr.type);
+      sstr << "-" << attr.ignored;
     }
   }
 
@@ -120,6 +134,12 @@ ResourceManager::createGeometryDefinition(int aliasCode,
 
   auto itDef = _geometryDefsMap.find(geoDefUniqueName);
   if (itDef != _geometryDefsMap.end()) {
+
+    if (!allowDuplicates) {
+      D_THROW(std::runtime_error,
+              "resource manager geometry definition is duplicated");
+    }
+
     auto itGeoDef = _geometriesMap.find(itDef->second);
     if (itGeoDef == _geometriesMap.end())
       D_THROW(std::runtime_error,

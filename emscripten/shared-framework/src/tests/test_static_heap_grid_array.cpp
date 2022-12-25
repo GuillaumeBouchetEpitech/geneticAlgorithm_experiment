@@ -25,42 +25,58 @@ void test_static_heap_grid_array() {
     static_heap_grid_array<common::Test> staticGrid;
     staticGrid.allocate(k_height, k_width);
 
-    for (std::size_t yy = 0; yy < staticGrid.height(); ++yy)
-      for (std::size_t xx = 0; xx < staticGrid.witdh(); ++xx)
-        staticGrid(yy, xx).value = int(1 + yy * k_width + xx);
+    for (int yy = 0; yy < int(staticGrid.height()); ++yy)
+      for (int xx = 0; xx < int(staticGrid.witdh()); ++xx)
+        staticGrid(yy, xx).value = 1 + yy * int(k_width) + xx;
 
-    for (std::size_t ii = 0; ii < staticGrid.size(); ++ii)
-      assert(staticGrid[ii].value == int(ii + 1));
-
+    for (int ii = 0; ii < int(staticGrid.size()); ++ii)
     {
-      int tmpIndex = 1;
-      for (auto& item : staticGrid)
-        assert(item.value == tmpIndex++);
+      assert(staticGrid[ii].value == ii + 1);
+      assert(staticGrid[ii + int(staticGrid.size())].value == ii + 1);
+      assert(staticGrid[ii - int(staticGrid.size())].value == ii + 1);
     }
 
-    {
-      int tmpRowIndex = 0;
-      for (auto itRow = staticGrid.beginRow(); itRow != staticGrid.endRow();
-           ++itRow) {
-        assert(itRow->value == tmpRowIndex + 1);
+    for (int yy = 0; yy < int(staticGrid.height()); ++yy)
+      for (int xx = 0; xx < int(staticGrid.witdh()); ++xx)
+      {
+        const int expectedVal = 1 + yy * int(k_width) + xx;
 
-        int tmpColumnIndex = tmpRowIndex + 1;
-        for (auto itColumn = itRow.beginColumns();
-             itColumn != itRow.endColumns(); ++itColumn)
-          assert(itColumn->value == tmpColumnIndex++);
+        assert(staticGrid(yy, xx).value == expectedVal);
 
-        tmpRowIndex += int(staticGrid.witdh());
+        for (int stepY = -1; stepY <= +1; ++stepY)
+        for (int stepX = -1; stepX <= +1; ++stepX)
+          assert(staticGrid(yy + stepY * int(staticGrid.height()), xx + stepX * int(staticGrid.witdh())).value == expectedVal);
       }
-    }
 
-    {
-      for (std::size_t row = 0; row < staticGrid.height(); ++row) {
-        int tmpColumnIndex = int(row * staticGrid.witdh()) + 1;
-        for (auto itColumn = staticGrid.beginColumns(row);
-             itColumn != staticGrid.endColumns(row); ++itColumn)
-          assert(itColumn->value == tmpColumnIndex++);
-      }
-    }
+    // {
+    //   int tmpIndex = 1;
+    //   for (auto& item : staticGrid)
+    //     assert(item.value == tmpIndex++);
+    // }
+
+    // {
+    //   int tmpRowIndex = 0;
+    //   for (auto itRow = staticGrid.beginRow(); itRow != staticGrid.endRow();
+    //        ++itRow) {
+    //     assert(itRow->value == tmpRowIndex + 1);
+
+    //     int tmpColumnIndex = tmpRowIndex + 1;
+    //     for (auto itColumn = itRow.beginColumns();
+    //          itColumn != itRow.endColumns(); ++itColumn)
+    //       assert(itColumn->value == tmpColumnIndex++);
+
+    //     tmpRowIndex += int(staticGrid.witdh());
+    //   }
+    // }
+
+    // {
+    //   for (std::size_t row = 0; row < staticGrid.height(); ++row) {
+    //     int tmpColumnIndex = int(row * staticGrid.witdh()) + 1;
+    //     for (auto itColumn = staticGrid.beginColumns(row);
+    //          itColumn != staticGrid.endColumns(row); ++itColumn)
+    //       assert(itColumn->value == tmpColumnIndex++);
+    //   }
+    // }
   }
 
   D_MYLOG(" => DONE");

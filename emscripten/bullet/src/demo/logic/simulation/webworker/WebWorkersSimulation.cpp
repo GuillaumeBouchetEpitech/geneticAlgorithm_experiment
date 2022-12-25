@@ -30,7 +30,7 @@ void WebWorkersSimulation::initialise(const Definition& def) {
   _genomesPerCore = def.genomesPerCore;
   _totalGenomes = _genomesPerCore * _totalCores;
 
-  _synchronisedCarsData.resize(_totalGenomes);
+  _carsData.data.resize(_totalGenomes);
 
   GeneticAlgorithm::Definition genAlgoDef;
   genAlgoDef.topology = def.neuralNetworkTopology;
@@ -83,7 +83,7 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps) {
 
     const auto& latestData =
       _workerProducers.at(workerIndex)->getCarsData().at(carDataIndex);
-    auto& oldData = _synchronisedCarsData.at(index);
+    auto& oldData = _carsData.data.at(index);
 
     if (oldData.isAlive && !latestData.isAlive) {
       if (_callbacks.onGenomeDie)
@@ -92,7 +92,7 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps) {
 
     oldData = latestData;
   }
-  _wasSynchronised = true;
+  _carsData.isUpToDate = true;
 
   if (_currentRequest == WorkerRequest::ResetAndProcess) {
     if (_callbacks.onGenerationReset)
@@ -135,7 +135,7 @@ void WebWorkersSimulation::breed() {
 
 bool WebWorkersSimulation::isGenerationComplete() const {
 
-  if (!_wasSynchronised)
+  if (!_carsData.isUpToDate)
     return false;
 
   for (unsigned int ii = 0; ii < _totalGenomes; ++ii)
@@ -166,7 +166,7 @@ void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime,
                                                        subNetwork);
   }
 
-  _wasSynchronised = false;
+  _carsData.isUpToDate = false;
   _currentRequest = WorkerRequest::ResetAndProcess;
 }
 
@@ -178,7 +178,7 @@ WebWorkersSimulation::getCoreState(unsigned int index) const {
 }
 
 const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const {
-  return _synchronisedCarsData.at(index);
+  return _carsData.data.at(index);
 }
 
 unsigned int WebWorkersSimulation::getTotalCars() const {

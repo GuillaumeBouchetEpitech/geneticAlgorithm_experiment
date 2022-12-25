@@ -13,5 +13,5 @@ public:
   virtual void enter() override;
 
 public:
-  virtual void update(int) override;
+  virtual void update(float) override;
 };

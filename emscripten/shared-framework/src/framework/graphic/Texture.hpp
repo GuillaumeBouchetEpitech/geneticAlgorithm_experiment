@@ -61,6 +61,7 @@ public:
                      Quality quality = Quality::pixelated,
                      Pattern pattern = Pattern::clamped,
                      const void* pixels = nullptr);
+  void allocateSingleFloat(const glm::uvec2& size);
   void allocateDepth(const glm::uvec2& size, DepthFormat depthFormat,
                      DepthType depthType);
   void allocateCompatibleDepth(const glm::uvec2& size);

@@ -21,7 +21,7 @@ const onGlobalPageLoad = async () => {
 
   const errorText = document.querySelector<HTMLParagraphElement>("#errorText")!;
   const renderArea = document.querySelector<HTMLDivElement>("#renderArea")!;
-  const mainCanvas = document.querySelector<HTMLCanvasElement>("#emscriptenCanvas")!;
+  const mainCanvas = document.querySelector<HTMLCanvasElement>("#canvas")!;
   const buttons = {
     try_with_90_cars: document.querySelector<HTMLButtonElement>("#try_with_90_cars")!,
     try_with_270_cars: document.querySelector<HTMLButtonElement>("#try_with_270_cars")!,
@@ -155,25 +155,22 @@ const onGlobalPageLoad = async () => {
     logger.error(`[JS] dependencies check failed: message="${err.message}"`);
   }
 
-  let scriptFolder = "wasm";
-
   //
   //
   // multithreading support
 
-  if (checkMultithreadingSupport()) {
+  const multithreadingSupported = checkMultithreadingSupport();
+  if (multithreadingSupported) {
     logger.log("[JS] multithreading => supported");
-    scriptFolder += "/pthread";
   } else {
     logger.log("[JS] multithreading => unsupported, fallback to webworker version");
-    scriptFolder += "/webworker";
   }
+
+  const scriptFolder = "wasm/" + multithreadingSupported ? "pthread" : "webworker";
 
   //
   //
   // setup the wasm module
-
-  // const DownloadingDataRegExp = /Downloading data\.\.\. \(([0-9]*)\/([0-9]*)\)/;
 
   const Module = {
     downloadingDataRegExp: /Downloading data\.\.\. \(([0-9]*)\/([0-9]*)\)/,
@@ -210,17 +207,42 @@ const onGlobalPageLoad = async () => {
         logger.log(`[JS] ${text}`);
       }
     },
-    onRuntimeInitialized: () => { showCanvas(); },
+    onRuntimeInitialized: () => {
+
+      console.log("=> onRuntimeInitialized()");
+
+      const wasmFunctions = {
+        startDemo: (window as any).Module.cwrap('startDemo', undefined, ['number', 'number', 'number', 'number']),
+        updateDemo: (window as any).Module.cwrap('updateDemo', undefined, ['number']),
+      };
+
+      wasmFunctions.startDemo(config.width, config.height, config.totalCores, config.genomesPerCore);
+
+      showCanvas();
+
+      const deltaTime = Math.floor(1000 / 30);
+
+      const onFrame = () => {
+        // window.requestAnimationFrame(onFrame);
+        setTimeout(onFrame, deltaTime);
+
+        wasmFunctions.updateDemo(deltaTime);
+      };
+      onFrame();
+
+    },
     canvas: mainCanvas,
     preinitializedWebGLContext: webglCtx,
-    noExitRuntime: true,
-    arguments: [
-      `${config.width}`,
-      `${config.height}`,
-      `${config.totalCores}`,
-      `${config.genomesPerCore}`
-    ],
+    // noExitRuntime: true,
+    // arguments: [
+    //   `${config.width}`,
+    //   `${config.height}`,
+    //   `${config.totalCores}`,
+    //   `${config.genomesPerCore}`
+    // ],
     // INITIAL_MEMORY: initialMemory * 1024 * 1024
+    noInitialRun: true,
+    noExitRuntime: true,
   };
 
   // this is needed by the wasm side

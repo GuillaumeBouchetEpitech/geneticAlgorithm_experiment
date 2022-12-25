@@ -8,6 +8,8 @@
 #include "demo/logic/graphic/Scene.hpp"
 
 #include "framework/helpers/GLMath.hpp"
+#include "framework/system/math/GenericEasing.hpp"
+#include "framework/system/math/easingFunctions.hpp"
 
 #include <cmath>  // std::ceil
 #include <limits> // std::numeric_limits<T>::max();
@@ -69,8 +71,7 @@ void State_AbstractSimulation::handleEvent(const SDL_Event& event) {
   }
 }
 
-void State_AbstractSimulation::update(int deltaTime) {
-  float elapsedTime = float(deltaTime) / 1000.0f;
+void State_AbstractSimulation::update(float elapsedTime) {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -185,7 +186,7 @@ void State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
   auto& logic = context.logic;
 
   glm::vec3 cameraNextCenter = logic.circuitDimension.center;
-  float cameraNextDistance = 200.0f;
+  float cameraNextDistance = 300.0f;
 
   //
   //
@@ -198,24 +199,34 @@ void State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
 
   if (logic.isAccelerated) {
     leaderCar.reset();
+    cameraNextDistance = 200.0f;
   } else {
     leaderCar.update(elapsedTime);
 
-    cameraNextDistance = 40.0f;
-
-    if (auto leaderPos = leaderCar.leaderPosition())
+    if (auto leaderPos = leaderCar.leaderPosition()) {
       cameraNextCenter = *leaderPos;
-    else
+      cameraNextDistance = 40.0f;
+    } else {
       cameraNextCenter = simulation.getStartPosition();
+      cameraNextDistance = 60.0f;
+    }
   }
 
   //
   //
 
   {
-    const float lerpRatio = 6.0f * elapsedTime;
+    constexpr float k_maxDistance = 200.0f;
+    const float distanceToTarget =
+      glm::distance(cameraNextCenter, camera.center);
+    const float moveLerpRatio = GenericEasing<2>()
+                                  .push(0.0f, 3.0f, easing::easeInOutCubic)
+                                  .push(1.0f, 1.0f)
+                                  .get(distanceToTarget / k_maxDistance) *
+                                elapsedTime;
 
-    camera.center += (cameraNextCenter - camera.center) * lerpRatio;
-    camera.distance += (cameraNextDistance - camera.distance) * lerpRatio;
+    camera.center += (cameraNextCenter - camera.center) * moveLerpRatio;
+    camera.distance +=
+      (cameraNextDistance - camera.distance) * 1.0f * elapsedTime;
   }
 }

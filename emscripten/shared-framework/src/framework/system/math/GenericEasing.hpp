@@ -34,7 +34,8 @@ public:
 public:
   GenericEasing& reset() { _size = 0; }
 
-  GenericEasing& push(float coefStep, float value, const std::function<float(float)>& easing) {
+  GenericEasing& push(float coefStep, float value,
+                      const std::function<float(float)>& easing) {
     if (_size == _MaxSize)
       D_THROW(std::runtime_error, "max steps reached, max: " << _MaxSize);
     if (_size != 0 && coefStep <= _steps.at(_size - 1).coefStep)
@@ -50,7 +51,7 @@ public:
   }
 
   GenericEasing& push(float coefStep, float value) {
-    return push(coefStep, value, [](float coef){ return coef; });
+    return push(coefStep, value, [](float coef) { return coef; });
   }
 
   float get(float coef) const {
@@ -73,7 +74,8 @@ public:
         const float subCoef =
           (coef - currStep.coefStep) / (nextStep.coefStep - currStep.coefStep);
 
-        return currStep.value + currStep.easing(subCoef) * (nextStep.value - currStep.value);
+        return currStep.value +
+               currStep.easing(subCoef) * (nextStep.value - currStep.value);
       }
     }
 

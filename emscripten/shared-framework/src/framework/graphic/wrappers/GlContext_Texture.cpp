@@ -44,6 +44,13 @@ void uploadPixels(uint32_t width, uint32_t height, const void* pixels) {
                        pixels));
 }
 
+void uploadSingleFloatPixels(uint32_t width, uint32_t height) {
+  GLint level = 0;
+  GLint border = 0;
+  glCheck(glTexImage2D(GL_TEXTURE_2D, level, GL_R32F, GLsizei(width),
+                       GLsizei(height), border, GL_RED, GL_FLOAT, nullptr));
+}
+
 namespace {
 int getRawDepthFormat(DepthFormat depthFormat) {
   switch (depthFormat) {
