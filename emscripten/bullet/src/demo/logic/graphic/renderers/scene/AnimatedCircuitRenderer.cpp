@@ -8,7 +8,8 @@
 #include "framework/helpers/GLMath.hpp"
 #include "framework/system/asValue.hpp"
 
-void AnimatedCircuitRenderer::initialise(
+void
+AnimatedCircuitRenderer::initialise(
   const std::vector<glm::vec3>& skeletonVertices,
   const AnimatedVertices& groundVertices, const AnimatedVertices& wallsVertices,
   float maxUpperValue) {
@@ -55,12 +56,14 @@ void AnimatedCircuitRenderer::initialise(
   _maxPrimitiveCount = groundVertices.size();
 }
 
-void AnimatedCircuitRenderer::setMatricesData(
+void
+AnimatedCircuitRenderer::setMatricesData(
   const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void AnimatedCircuitRenderer::update(float elapsedTime) {
+void
+AnimatedCircuitRenderer::update(float elapsedTime) {
   auto& logic = Context::get().logic;
   const auto& simulation = *logic.simulation;
 
@@ -127,7 +130,8 @@ void AnimatedCircuitRenderer::update(float elapsedTime) {
   _geometries.walls.setPrimitiveCount(indexValue * 2); // <= 2 walls
 }
 
-void AnimatedCircuitRenderer::renderWireframe() {
+void
+AnimatedCircuitRenderer::renderWireframe() {
   if (!_shaderWireframe)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -138,7 +142,8 @@ void AnimatedCircuitRenderer::renderWireframe() {
   _geometries.skeleton.render();
 }
 
-void AnimatedCircuitRenderer::renderWalls() {
+void
+AnimatedCircuitRenderer::renderWalls() {
   if (!_shaderCircuit)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -157,7 +162,8 @@ void AnimatedCircuitRenderer::renderWalls() {
   GlContext::enable(GlContext::States::depthTest);
 }
 
-void AnimatedCircuitRenderer::renderGround() {
+void
+AnimatedCircuitRenderer::renderGround() {
   if (!_shaderCircuit)
     D_THROW(std::runtime_error, "shader not setup");
 

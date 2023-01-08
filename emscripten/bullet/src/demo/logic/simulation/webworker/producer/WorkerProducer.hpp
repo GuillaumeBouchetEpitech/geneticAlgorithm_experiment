@@ -54,8 +54,9 @@ private:
   MessageBuffer _message;
 
 public:
-  WorkerProducer(const Definition& def, GeneticAlgorithm& geneticAlgorithm,
-                 uint32_t coreIndex);
+  WorkerProducer(
+    const Definition& def, GeneticAlgorithm& geneticAlgorithm,
+    uint32_t coreIndex);
 
 private:
   static void _onMessageCallback(char* dataPointer, int dataSize, void* arg);
@@ -67,8 +68,9 @@ private:
   void _sendToConsumer();
 
 public:
-  void resetAndProcessSimulation(float elapsedTime, unsigned int totalSteps,
-                                 const NeuralNetworks& neuralNetworks);
+  void resetAndProcessSimulation(
+    float elapsedTime, unsigned int totalSteps,
+    const NeuralNetworks& neuralNetworks);
   void processSimulation(float elapsedTime, unsigned int totalSteps);
 
 public:

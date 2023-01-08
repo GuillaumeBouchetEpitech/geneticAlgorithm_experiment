@@ -24,7 +24,8 @@ FlockingManager::Boid::Boid() {
     item = position;
 }
 
-void FlockingManager::Boid::seek(const glm::vec3& target, float coef) {
+void
+FlockingManager::Boid::seek(const glm::vec3& target, float coef) {
   glm::vec3 diff = target - position;
   const float diffMagnitude = glm::length(diff);
 
@@ -34,12 +35,14 @@ void FlockingManager::Boid::seek(const glm::vec3& target, float coef) {
   acceleration += diff * coef;
 }
 
-void FlockingManager::Boid::separate(const glm::vec3& target, float coef) {
+void
+FlockingManager::Boid::separate(const glm::vec3& target, float coef) {
   return seek(target, -coef);
 }
 
-void FlockingManager::Boid::separate(const std::vector<Boid>& boids,
-                                     float radius, float coef) {
+void
+FlockingManager::Boid::separate(
+  const std::vector<Boid>& boids, float radius, float coef) {
   glm::vec3 total = {0, 0, 0};
   for (const Boid& other : boids) {
     if (*this == other)
@@ -60,14 +63,16 @@ void FlockingManager::Boid::separate(const std::vector<Boid>& boids,
   acceleration += total * coef;
 }
 
-void FlockingManager::Boid::wander(float coef) {
+void
+FlockingManager::Boid::wander(float coef) {
   acceleration.x += RNG::getRangedValue(-coef, +coef);
   acceleration.y += RNG::getRangedValue(-coef, +coef);
   acceleration.z += RNG::getRangedValue(-coef, +coef);
 }
 
-void FlockingManager::Boid::applyAcceleration(float maxAcceleration,
-                                              float maxVelocity) {
+void
+FlockingManager::Boid::applyAcceleration(
+  float maxAcceleration, float maxVelocity) {
   // limitate acc
   const float accMagnitude = glm::length(acceleration);
   if (accMagnitude > maxAcceleration)
@@ -81,7 +86,8 @@ void FlockingManager::Boid::applyAcceleration(float maxAcceleration,
   position += velocity;
 }
 
-bool FlockingManager::Boid::operator==(const Boid& other) const {
+bool
+FlockingManager::Boid::operator==(const Boid& other) const {
   return this == &other;
 }
 
@@ -91,7 +97,8 @@ FlockingManager::FlockingManager() {
   _particlesInstances.reserve(totalEntities);
 }
 
-void FlockingManager::initialise() {
+void
+FlockingManager::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -108,12 +115,13 @@ void FlockingManager::initialise() {
   _geometry.setPrimitiveCount(particlesVertices.size());
 }
 
-void FlockingManager::setMatricesData(
-  const Camera::MatricesData& matricesData) {
+void
+FlockingManager::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void FlockingManager::update() {
+void
+FlockingManager::update() {
   auto& context = Context::get();
   const auto& logic = context.logic;
   const auto& simulation = *logic.simulation;
@@ -155,7 +163,8 @@ void FlockingManager::update() {
   }
 }
 
-void FlockingManager::render() {
+void
+FlockingManager::render() {
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -164,8 +173,8 @@ void FlockingManager::render() {
 
   _particlesInstances.clear();
   for (Boid& boid : _boids)
-    _particlesInstances.emplace_back(boid.position, 0.4f,
-                                     glm::vec3(0.6f, 0.6f, 0.0f));
+    _particlesInstances.emplace_back(
+      boid.position, 0.4f, glm::vec3(0.6f, 0.6f, 0.0f));
 
   if (!_particlesInstances.empty()) {
     _shader->bind();
@@ -185,8 +194,8 @@ void FlockingManager::render() {
 
   for (Boid& boid : _boids)
     for (std::size_t kk = 0; kk + 1 < boid.trail.size(); ++kk)
-      stackRenderer.pushThickTriangle3dLine(boid.trail.at(kk + 0),
-                                            boid.trail.at(kk + 1), 0.2f, color);
+      stackRenderer.pushThickTriangle3dLine(
+        boid.trail.at(kk + 0), boid.trail.at(kk + 1), 0.2f, color);
 
   stackRenderer.flush();
 

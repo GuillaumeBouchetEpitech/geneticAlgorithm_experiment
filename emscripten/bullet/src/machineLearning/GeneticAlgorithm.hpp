@@ -37,8 +37,8 @@ public: // method(s)
 
 private: // method(s)
   void _getBestGenomes(Genomes& output) const;
-  void _reproduce(const Genome& parentA, const Genome& parentB,
-                  Genome& offspring) const;
+  void _reproduce(
+    const Genome& parentA, const Genome& parentB, Genome& offspring) const;
   void _mutate(Genome& genome) const;
 
 public: // getter(s)

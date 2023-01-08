@@ -7,7 +7,8 @@
 #include "framework/system/ErrorHandler.hpp"
 #include "framework/system/asValue.hpp"
 
-void TextRenderer::initialise() {
+void
+TextRenderer::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -156,17 +157,19 @@ void TextRenderer::initialise() {
   };
 }
 
-void TextRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
+void
+TextRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
 //
 
-void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
-                        const glm::vec4& inColor, float inScale /* = 1.0f */,
-                        float zDepth, /*= 0.0f*/
-                        const glm::vec3& inBackColor /*= {0,0,0}*/
-                        // TextAllign allign /* = TextAllign::left */
+void
+TextRenderer::push(
+  const glm::vec2& inPosition, std::string_view inMessage,
+  const glm::vec4& inColor, float inScale /* = 1.0f */, float zDepth, /*= 0.0f*/
+  const glm::vec3& inBackColor /*= {0,0,0}*/
+                               // TextAllign allign /* = TextAllign::left */
 ) {
   // TODO: support text align
 
@@ -201,8 +204,9 @@ void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
     auto it = _lettersTexCoordMap.find(letter);
 
     if (it == _lettersTexCoordMap.end())
-      D_THROW(std::runtime_error, "fail to find a letter"
-                                    << ", letter=" << letter);
+      D_THROW(
+        std::runtime_error, "fail to find a letter"
+                              << ", letter=" << letter);
 
     const auto& texCoord = it->second;
 
@@ -232,8 +236,10 @@ void TextRenderer::push(const glm::vec2& inPosition, std::string_view inMessage,
   }
 }
 
-void TextRenderer::getSizes(std::vector<Rectangle>& outRectangles, const glm::vec2& inPosition, std::string_view inMessage, float inScale /*= 1.0f*/)
-{
+void
+TextRenderer::getSizes(
+  std::vector<Rectangle>& outRectangles, const glm::vec2& inPosition,
+  std::string_view inMessage, float inScale /*= 1.0f*/) {
   const glm::vec2 gridSize = {16, 16};
   const glm::vec2 letterSize = glm::vec2(_texture->getSize()) / gridSize;
 
@@ -241,24 +247,26 @@ void TextRenderer::getSizes(std::vector<Rectangle>& outRectangles, const glm::ve
 
   outRectangles.clear();
   outRectangles.reserve(64);
-  outRectangles.push_back({ { inPosition.x, inPosition.y }, { 0.0f, sizeY } });
+  outRectangles.push_back({{inPosition.x, inPosition.y}, {0.0f, sizeY}});
 
   for (char letter : inMessage) {
     if (letter == '\n') {
       const float lastY = outRectangles.back().pos.y;
-      outRectangles.push_back({ { inPosition.x, lastY - sizeY }, { 0.0f, sizeY } });
+      outRectangles.push_back({{inPosition.x, lastY - sizeY}, {0.0f, sizeY}});
       continue;
     }
     outRectangles.back().size.x += letterSize.x * inScale;
   }
 }
 
-void TextRenderer::clear() {
+void
+TextRenderer::clear() {
   _lettersOffsetColored.clear();
   _lettersOffsetBackground.clear();
 }
 
-void TextRenderer::render() {
+void
+TextRenderer::render() {
   if (_lettersOffsetColored.empty())
     return;
 

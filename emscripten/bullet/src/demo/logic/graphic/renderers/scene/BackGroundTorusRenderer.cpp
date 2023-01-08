@@ -8,8 +8,8 @@
 #include "framework/helpers/GLMath.hpp"
 #include "framework/system/asValue.hpp"
 #include "framework/system/containers/static_heap_grid_array.hpp"
-#include "framework/system/math/constants.hpp"
 #include "framework/system/math/DeterministicRng.hpp"
+#include "framework/system/math/constants.hpp"
 
 constexpr float k_ringRadius = 500.0f;
 constexpr float k_tubeRadius = 100.0f;
@@ -21,17 +21,19 @@ struct RealVertex {
   glm::vec2 texCoord;
 };
 
-void generateTorusVertices(uint32_t ringQuality, uint32_t tubeQuality,
-                           float ringRadius, float tubeRadius, float startAngle,
-                           float sweepAngle,
-                           std::vector<RealVertex>& outVertices) {
+void
+generateTorusVertices(
+  uint32_t ringQuality, uint32_t tubeQuality, float ringRadius,
+  float tubeRadius, float startAngle, float sweepAngle,
+  std::vector<RealVertex>& outVertices) {
   std::array<int, 6> indices{{0, 1, 2, 0, 2, 3}};
 
   struct SubVertex {
     glm::vec3 position;
     glm::vec3 normal;
 
-    glm::vec3 getForward(float radius) const {
+    glm::vec3
+    getForward(float radius) const {
       return position + normal * radius;
     }
   };
@@ -121,7 +123,8 @@ void generateTorusVertices(uint32_t ringQuality, uint32_t tubeQuality,
 }
 } // namespace
 
-void BackGroundTorusRenderer::initialise() {
+void
+BackGroundTorusRenderer::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -136,7 +139,6 @@ void BackGroundTorusRenderer::initialise() {
     auto pixelsPtr =
       std::make_unique<unsigned char[]>(texSize.x * texSize.y * 4);
     unsigned char* rawPixels = pixelsPtr.get();
-
 
     DeterministicRng rng;
     rng.setSeed(0);
@@ -167,8 +169,9 @@ void BackGroundTorusRenderer::initialise() {
     constexpr float k_startAngle = 0.0f;
     constexpr float k_sweepAngle = 360.0f;
 
-    generateTorusVertices(l_ringQuality, k_tubeQuality, k_ringRadius,
-                          k_tubeRadius, k_startAngle, k_sweepAngle, vertices);
+    generateTorusVertices(
+      l_ringQuality, k_tubeQuality, k_ringRadius, k_tubeRadius, k_startAngle,
+      k_sweepAngle, vertices);
 
     auto geoDef = resourceManager.getGeometryDefinition(
       asValue(GeometryIds::backGroundTorus));
@@ -179,13 +182,15 @@ void BackGroundTorusRenderer::initialise() {
   }
 }
 
-void BackGroundTorusRenderer::update(float elapsedTime) {
+void
+BackGroundTorusRenderer::update(float elapsedTime) {
   _animationTime += elapsedTime * 0.01f;
   while (_animationTime > 1.0f)
     _animationTime -= 1.0f;
 }
 
-void BackGroundTorusRenderer::render(const Camera& inCamera) {
+void
+BackGroundTorusRenderer::render(const Camera& inCamera) {
 
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");
@@ -202,8 +207,8 @@ void BackGroundTorusRenderer::render(const Camera& inCamera) {
   _shader->bind();
 
   glm::mat4 model = glm::identity<glm::mat4>();
-  model = glm::translate(model, inCamera.getTarget() +
-                                  glm::vec3(0, k_ringRadius * 1.0f, 0));
+  model = glm::translate(
+    model, inCamera.getTarget() + glm::vec3(0, k_ringRadius * 1.0f, 0));
   model = glm::rotate(model, math::hpi, glm::vec3(0, 0, 1));
   model = glm::scale(model, glm::vec3(1, 2, 1));
 

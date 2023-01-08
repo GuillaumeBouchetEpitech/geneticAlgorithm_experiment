@@ -20,8 +20,9 @@ constexpr bool k_canResize = false;
 } // namespace
 
 Demo::Demo(const Definition& def)
-  : SDLWindowWrapper("AI", def.width, def.height, 30,
-                     SDLWindowWrapper::OpenGlEsVersion::v3, k_canResize) {
+  : SDLWindowWrapper(
+      "AI", def.width, def.height, 30, SDLWindowWrapper::OpenGlEsVersion::v3,
+      k_canResize) {
   Context::create(def.width, def.height, def.totalCores, def.genomesPerCore);
   StateManager::create();
   Scene::initialise();
@@ -34,11 +35,13 @@ Demo::~Demo() {
 
 //
 
-void Demo::_onEvent(const SDL_Event& event) {
+void
+Demo::_onEvent(const SDL_Event& event) {
   StateManager::get()->handleEvent(event);
 }
 
-void Demo::_onUpdate(uint32_t deltaTime) {
+void
+Demo::_onUpdate(uint32_t deltaTime) {
   auto startTime = std::chrono::high_resolution_clock::now();
 
   const float elapsedTime = float(deltaTime) / 1000.0f;
@@ -51,7 +54,8 @@ void Demo::_onUpdate(uint32_t deltaTime) {
   Context::get().logic.metrics.updateTime = microseconds.count();
 }
 
-void Demo::_onRender(const SDL_Window& screen) {
+void
+Demo::_onRender(const SDL_Window& screen) {
   auto startTime = std::chrono::high_resolution_clock::now();
 
   StateManager::get()->render(screen);
@@ -62,10 +66,12 @@ void Demo::_onRender(const SDL_Window& screen) {
   Context::get().logic.metrics.renderTime = microseconds.count();
 }
 
-void Demo::_onResize(uint32_t width, uint32_t height) {
+void
+Demo::_onResize(uint32_t width, uint32_t height) {
   StateManager::get()->resize(width, height);
 }
 
-void Demo::_onVisibilityChange(bool visible) {
+void
+Demo::_onVisibilityChange(bool visible) {
   StateManager::get()->visibility(visible);
 }

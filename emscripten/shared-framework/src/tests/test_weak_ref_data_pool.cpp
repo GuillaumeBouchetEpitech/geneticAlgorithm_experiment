@@ -213,65 +213,227 @@ void test_weak_ref_data_pool() {
     using LocalPool = weak_ref_data_pool<common::Test, common::Test, 10, false>;
     using LocalRef = LocalPool::weak_ref;
 
-    LocalPool myPool;
-
-    assert(myPool.getRefCount(0) == 0);
-    assert(myPool.getRefCount(1) == 0);
-    assert(myPool.getRefCount(2) == 0);
-
-    // for (int ii = 0; ii < 20; ++ii)
-    //   myPool.acquire(ii);
-    LocalRef ref1 = myPool.acquire(666);
-    LocalRef ref2 = myPool.acquire(666);
-    LocalRef ref3 = myPool.acquire(666);
-
-    assert(ref1);
-    assert(ref2);
-    assert(ref3);
-    assert(myPool.getRefCount(0) == 1);
-    assert(myPool.getRefCount(1) == 1);
-    assert(myPool.getRefCount(2) == 1);
-
-    ref2.invalidate();
-
-    assert(ref1);
-    assert(!ref2);
-    assert(ref3);
-    assert(myPool.getRefCount(0) == 1);
-    assert(myPool.getRefCount(1) == 0);
-    assert(myPool.getRefCount(2) == 1);
+    LocalRef ref1 = LocalPool::weak_ref::make_invalid();
+    LocalRef ref2 = LocalPool::weak_ref::make_invalid();
+    LocalRef ref3 = LocalPool::weak_ref::make_invalid();
 
     {
-      LocalRef tmpRef = myPool.acquire(666);
+      LocalPool myPool;
+
+      assert(myPool.get_ref_count(0) == 0);
+      assert(myPool.get_ref_count(1) == 0);
+      assert(myPool.get_ref_count(2) == 0);
+
+      // LocalRef ref1 = myPool.acquire(666);
+      // LocalRef ref2 = myPool.acquire(666);
+      // LocalRef ref3 = myPool.acquire(666);
+      ref1 = myPool.acquire(666);
+      ref2 = myPool.acquire(666);
+      ref3 = myPool.acquire(666);
+
+      assert(ref1);
+      assert(ref2);
+      assert(ref3);
+      assert(myPool.get_ref_count(0) == 1);
+      assert(myPool.get_ref_count(1) == 1);
+      assert(myPool.get_ref_count(2) == 1);
+
+      ref2.invalidate();
 
       assert(ref1);
       assert(!ref2);
       assert(ref3);
-      assert(tmpRef);
-      assert(myPool.getRefCount(0) == 1);
-      assert(myPool.getRefCount(1) == 0);
-      assert(myPool.getRefCount(2) == 1);
-      assert(myPool.getRefCount(3) == 1);
+      assert(myPool.get_ref_count(0) == 1);
+      assert(myPool.get_ref_count(1) == 0);
+      assert(myPool.get_ref_count(2) == 1);
+
+      {
+        LocalRef tmpRef = myPool.acquire(666);
+
+        assert(ref1);
+        assert(!ref2);
+        assert(ref3);
+        assert(tmpRef);
+        assert(myPool.get_ref_count(0) == 1);
+        assert(myPool.get_ref_count(1) == 0);
+        assert(myPool.get_ref_count(2) == 1);
+        assert(myPool.get_ref_count(3) == 1);
+      }
+
+      assert(ref1);
+      assert(!ref2);
+      assert(ref3);
+      assert(myPool.get_ref_count(0) == 1);
+      assert(myPool.get_ref_count(1) == 0);
+      assert(myPool.get_ref_count(2) == 1);
+      assert(myPool.get_ref_count(3) == 0);
+
+      myPool.clear();
+
+      assert(!ref1);
+      assert(!ref2);
+      assert(!ref3);
+      assert(myPool.get_ref_count(0) == 0);
+      assert(myPool.get_ref_count(1) == 0);
+      assert(myPool.get_ref_count(2) == 0);
+
+      ref1 = myPool.acquire(666);
+      ref2 = myPool.acquire(666);
+      ref3 = myPool.acquire(666);
+
+      assert(ref1);
+      assert(ref2);
+      assert(ref3);
+      assert(myPool.get_ref_count(0) == 1);
+      assert(myPool.get_ref_count(1) == 1);
+      assert(myPool.get_ref_count(2) == 1);
     }
-
-    assert(ref1);
-    assert(!ref2);
-    assert(ref3);
-    assert(myPool.getRefCount(0) == 1);
-    assert(myPool.getRefCount(1) == 0);
-    assert(myPool.getRefCount(2) == 1);
-    assert(myPool.getRefCount(3) == 0);
-
-    myPool.clear();
 
     assert(!ref1);
     assert(!ref2);
     assert(!ref3);
-    assert(myPool.getRefCount(0) == 0);
-    assert(myPool.getRefCount(1) == 0);
-    assert(myPool.getRefCount(2) == 0);
 
     // assert(myPool.size() == 20); // reallocate was allowed
+  }
+
+  {
+
+    using LocalContainer = dynamic_heap_array<common::Test>;
+    using ContainersPool =
+      weak_ref_data_pool<LocalContainer, LocalContainer, 16, false>;
+    using ContainerPoolRef = ContainersPool::weak_ref;
+
+    using RefsPool =
+      weak_ref_data_pool<ContainerPoolRef, ContainerPoolRef, 32, false>;
+    using RefPoolRef = RefsPool::weak_ref;
+
+    // LocalRef ref1 = LocalPool::weak_ref::make_invalid();
+    // LocalRef ref2 = LocalPool::weak_ref::make_invalid();
+    // LocalRef ref3 = LocalPool::weak_ref::make_invalid();
+
+    {
+      ContainersPool myContainersPool;
+      RefsPool myRefsPool;
+
+      {
+        ContainerPoolRef mainRef = myContainersPool.acquire();
+        mainRef->push_back(common::Test(666));
+        mainRef->push_back(common::Test(777));
+        mainRef->push_back(common::Test(888));
+
+        RefPoolRef subRef = myRefsPool.acquire();
+        (*subRef) = std::move(mainRef);
+
+        ContainerPoolRef mainRef2 = myContainersPool.get(0);
+
+        assert((*subRef)->at(0).value == mainRef2->at(0).value);
+      }
+    }
+  }
+
+  {
+    weak_ref_data_pool<common::Test, common::Test, 10, true> myPool;
+
+    // myPool.initialiseSize(5);
+    // myPool.pre_allocate(10);
+
+    // std::cout << "myPool.size()=" << myPool.size() << std::endl;
+
+    auto ref1A = myPool.acquire(555);
+    auto ref1B = ref1A;
+    auto ref1C = ref1B;
+
+    auto ref1D_moved = ref1C;
+    auto ref1E = std::move(ref1D_moved);
+
+    assert(myPool.size() == 1);
+    assert(myPool.get_index(ref1A) == 0);
+    assert(ref1A.is_active() == true);
+    assert(ref1B.is_active() == true);
+    assert(ref1C.is_active() == true);
+    assert(ref1D_moved.is_active() == false);
+    assert(ref1E.is_active() == true);
+    assert(ref1A == true);
+    assert(ref1B == true);
+    assert(ref1C == true);
+    assert(ref1D_moved == false);
+    assert(ref1E == true);
+    assert(ref1A.get() == myPool.get(0).get());
+    assert(ref1D_moved.get() == nullptr);
+    assert(ref1A.get() == ref1B.get());
+    assert(ref1A.get() == ref1C.get());
+    assert(ref1A.get() == ref1E.get());
+
+    myPool.clear();
+
+    assert(myPool.size() == 0);
+    assert(myPool.get_index(ref1A) == -1);
+    assert(ref1A.is_active() == false);
+    assert(ref1B.is_active() == false);
+    assert(ref1C.is_active() == false);
+    assert(ref1D_moved.is_active() == false);
+    assert(ref1E.is_active() == false);
+    assert(ref1A == false);
+    assert(ref1B == false);
+    assert(ref1C == false);
+    assert(ref1D_moved == false);
+    assert(ref1E == false);
+    assert(ref1A.get() == nullptr);
+    assert(ref1B.get() == nullptr);
+    assert(ref1C.get() == nullptr);
+    assert(ref1D_moved.get() == nullptr);
+    assert(ref1E.get() == nullptr);
+  }
+
+  {
+    using Pool = weak_ref_data_pool<common::Test, common::Test, 10, true>;
+    using PoolRef = Pool::weak_ref;
+
+    struct MyAgg {
+
+      struct MySubAgg1 {
+        PoolRef ref1;
+        PoolRef ref2;
+      } mySubAgg1;
+
+      struct MySubAgg2 {
+        PoolRef ref1;
+        PoolRef ref2;
+        Pool myPool;
+        PoolRef ref3;
+        PoolRef ref4;
+      } mySubAgg2;
+
+      struct MySubAgg3 {
+        PoolRef ref1;
+        PoolRef ref2;
+      } mySubAgg3;
+    };
+
+    {
+      PoolRef ref1;
+      PoolRef ref2;
+
+      {
+        MyAgg localAgg;
+
+        // localAgg.ref1 = localAgg.myPool.acquire();
+        // localAgg.ref2 = localAgg.myPool.acquire();
+        ref1 = localAgg.mySubAgg2.myPool.acquire();
+        ref2 = localAgg.mySubAgg2.myPool.acquire();
+        localAgg.mySubAgg1.ref1 = localAgg.mySubAgg2.myPool.acquire();
+        localAgg.mySubAgg1.ref2 = localAgg.mySubAgg2.myPool.acquire();
+        localAgg.mySubAgg3.ref1 = localAgg.mySubAgg2.myPool.acquire();
+        localAgg.mySubAgg3.ref2 = localAgg.mySubAgg2.myPool.acquire();
+
+        // localAgg.ref3 = localAgg.mySubAgg2.myPool.acquire();
+
+        // localAgg.mySubAgg2.myPool.clear();
+
+        // ref2 = localAgg.mySubAgg2.myPool.acquire();
+        // localAgg.ref4 = localAgg.mySubAgg2.myPool.acquire();
+      }
+    }
   }
 
   D_MYLOG(" => DONE");

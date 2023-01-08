@@ -18,7 +18,8 @@ constexpr float k_faceOutX = +500.0f;
 
 } // namespace
 
-void ThirdPersonCamera::initialise() {
+void
+ThirdPersonCamera::initialise() {
   auto& context = Context::get();
   const auto& vSize = context.graphic.camera.viewportSize;
 
@@ -30,15 +31,17 @@ void ThirdPersonCamera::initialise() {
   _postProcess.initialise({_size.x, _size.y});
 }
 
-bool ThirdPersonCamera::canActivate() const {
+bool
+ThirdPersonCamera::canActivate() const {
   auto& context = Context::get();
   auto& logic = context.logic;
   const auto& leaderCar = logic.leaderCar;
 
   // do not update the third person camera if not in a correct state
   const StateManager::States currentState = StateManager::get()->getState();
-  if (currentState == StateManager::States::Running ||
-      currentState == StateManager::States::StartGeneration) {
+  if (
+    currentState == StateManager::States::Running ||
+    currentState == StateManager::States::StartGeneration) {
 
     // valid leading car?
     if (logic.isAccelerated || !leaderCar.hasLeader())
@@ -48,7 +51,8 @@ bool ThirdPersonCamera::canActivate() const {
   return true;
 }
 
-void ThirdPersonCamera::fadeIn(float delay, float duration) {
+void
+ThirdPersonCamera::fadeIn(float delay, float duration) {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -65,7 +69,8 @@ void ThirdPersonCamera::fadeIn(float delay, float duration) {
   _isVisible = true;
 }
 
-void ThirdPersonCamera::fadeOut(float delay, float duration) {
+void
+ThirdPersonCamera::fadeOut(float delay, float duration) {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -82,7 +87,8 @@ void ThirdPersonCamera::fadeOut(float delay, float duration) {
   _isVisible = false;
 }
 
-void ThirdPersonCamera::update(float elapsedTime) {
+void
+ThirdPersonCamera::update(float elapsedTime) {
   if (!_timer.isDone()) {
     _timer.update(elapsedTime);
     _position.x = _moveEasing.get(_timer.getCoefElapsed());
@@ -119,14 +125,16 @@ void ThirdPersonCamera::update(float elapsedTime) {
   }
 }
 
-void ThirdPersonCamera::resize() {
+void
+ThirdPersonCamera::resize() {
   if (_isVisible)
     fadeIn(0.0f, 0.2f);
   else
     fadeOut(0.0f, 0.2f);
 }
 
-void ThirdPersonCamera::render() {
+void
+ThirdPersonCamera::render() {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -153,8 +161,8 @@ void ThirdPersonCamera::render() {
     _postProcess.render();
 
     auto& stackRenderers = graphic.hud.stackRenderers;
-    stackRenderers.triangles.pushQuad(_position + _size * 0.5f, _size,
-                                      glm::vec4(0, 0, 0, 0.75f), -1.5f);
+    stackRenderers.triangles.pushQuad(
+      _position + _size * 0.5f, _size, glm::vec4(0, 0, 0, 0.75f), -1.5f);
     stackRenderers.wireframes.pushRectangle(
       _position, _size, glm::vec4(0.8f, 0.8f, 0.8f, 1), -0.1f);
   }

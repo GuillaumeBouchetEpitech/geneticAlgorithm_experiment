@@ -14,14 +14,17 @@ PthreadSimulation::~PthreadSimulation() {
   _multithreadProducer.quit();
 }
 
-void PthreadSimulation::initialise(const Definition& def) {
+void
+PthreadSimulation::initialise(const Definition& def) {
   if (def.genomesPerCore == 0)
-    D_THROW(std::invalid_argument, "received invalid number of genomes per core"
-                                     << ", input=" << def.genomesPerCore);
+    D_THROW(
+      std::invalid_argument, "received invalid number of genomes per core"
+                               << ", input=" << def.genomesPerCore);
 
   if (def.totalCores == 0)
-    D_THROW(std::invalid_argument, "received invalid number of cores"
-                                     << ", input=" << def.totalCores);
+    D_THROW(
+      std::invalid_argument, "received invalid number of cores"
+                               << ", input=" << def.totalCores);
 
   if (!def.neuralNetworkTopology.isValid())
     D_THROW(std::invalid_argument, "received invalid neural network topology");
@@ -43,27 +46,29 @@ void PthreadSimulation::initialise(const Definition& def) {
   {
 
     auto onNewPhysicGroundPatch =
-      [&](const CircuitBuilder::Vec3Array& vertices,
-          const CircuitBuilder::Vec3Array& colors,
-          const CircuitBuilder::Vec3Array& normals,
-          const CircuitBuilder::Indices& indices) -> void {
+      [&](
+        const CircuitBuilder::Vec3Array& vertices,
+        const CircuitBuilder::Vec3Array& colors,
+        const CircuitBuilder::Vec3Array& normals,
+        const CircuitBuilder::Indices& indices) -> void {
       if (def.onNewGroundPatch)
         def.onNewGroundPatch(vertices, colors, normals, indices);
     };
 
     auto onNewPhysicWallPatch =
-      [&](const CircuitBuilder::Vec3Array& vertices,
-          const CircuitBuilder::Vec3Array& colors,
-          const CircuitBuilder::Vec3Array& normals,
-          const CircuitBuilder::Indices& indices) -> void {
+      [&](
+        const CircuitBuilder::Vec3Array& vertices,
+        const CircuitBuilder::Vec3Array& colors,
+        const CircuitBuilder::Vec3Array& normals,
+        const CircuitBuilder::Indices& indices) -> void {
       if (def.onNewWallPatch)
         def.onNewWallPatch(vertices, colors, normals, indices);
     };
 
     _circuitBuilder.parse(def.filename);
     _circuitBuilder.generateWireframeSkeleton(def.onSkeletonPatch);
-    _circuitBuilder.generateCircuitGeometry(onNewPhysicGroundPatch,
-                                            onNewPhysicWallPatch);
+    _circuitBuilder.generateCircuitGeometry(
+      onNewPhysicGroundPatch, onNewPhysicWallPatch);
     _startTransform = _circuitBuilder.getStartTransform();
   }
 
@@ -78,13 +83,14 @@ void PthreadSimulation::initialise(const Definition& def) {
   for (std::size_t ii = 0; ii < _carAgents.size(); ++ii) {
     const std::size_t worldIndex = ii / _genomesPerCore;
 
-    _carAgents.at(ii).reset(_physicWorlds.at(worldIndex).get(),
-                            _startTransform.position,
-                            _startTransform.quaternion);
+    _carAgents.at(ii).reset(
+      _physicWorlds.at(worldIndex).get(), _startTransform.position,
+      _startTransform.quaternion);
   }
 }
 
-void PthreadSimulation::_resetPhysic() {
+void
+PthreadSimulation::_resetPhysic() {
   _physicWorlds.clear();
   _physicWorlds.resize(_totalCores);
   for (unsigned int ii = 0; ii < _totalCores; ++ii) {
@@ -94,10 +100,11 @@ void PthreadSimulation::_resetPhysic() {
 
       int groundIndex = 0;
       auto onNewPhysicGroundPatch =
-        [&](const CircuitBuilder::Vec3Array& vertices,
-            const CircuitBuilder::Vec3Array& colors,
-            const CircuitBuilder::Vec3Array& normals,
-            const CircuitBuilder::Indices& indices) -> void {
+        [&](
+          const CircuitBuilder::Vec3Array& vertices,
+          const CircuitBuilder::Vec3Array& colors,
+          const CircuitBuilder::Vec3Array& normals,
+          const CircuitBuilder::Indices& indices) -> void {
         static_cast<void>(colors);  // <= unused
         static_cast<void>(normals); // <= unused
 
@@ -126,10 +133,11 @@ void PthreadSimulation::_resetPhysic() {
       };
 
       auto onNewPhysicWallPatch =
-        [&](const CircuitBuilder::Vec3Array& vertices,
-            const CircuitBuilder::Vec3Array& colors,
-            const CircuitBuilder::Vec3Array& normals,
-            const CircuitBuilder::Indices& indices) -> void {
+        [&](
+          const CircuitBuilder::Vec3Array& vertices,
+          const CircuitBuilder::Vec3Array& colors,
+          const CircuitBuilder::Vec3Array& normals,
+          const CircuitBuilder::Indices& indices) -> void {
         static_cast<void>(colors);  // <= unused
         static_cast<void>(normals); // <= unused
 
@@ -151,8 +159,8 @@ void PthreadSimulation::_resetPhysic() {
         _physicWorlds.at(ii)->getPhysicBodyManager().createAndAddBody(bodyDef);
       };
 
-      _circuitBuilder.generateCircuitGeometry(onNewPhysicGroundPatch,
-                                              onNewPhysicWallPatch);
+      _circuitBuilder.generateCircuitGeometry(
+        onNewPhysicGroundPatch, onNewPhysicWallPatch);
 
     } // generate circuit
 
@@ -176,7 +184,8 @@ void PthreadSimulation::_resetPhysic() {
   }
 }
 
-void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps) {
+void
+PthreadSimulation::update(float elapsedTime, unsigned int totalSteps) {
   if (!_multithreadProducer.allCompleted())
     return;
 
@@ -279,7 +288,8 @@ void PthreadSimulation::update(float elapsedTime, unsigned int totalSteps) {
   // #endif
 }
 
-void PthreadSimulation::breed() {
+void
+PthreadSimulation::breed() {
   if (!_multithreadProducer.allCompleted())
     return;
   if (!isGenerationComplete())
@@ -308,9 +318,9 @@ void PthreadSimulation::breed() {
   for (std::size_t ii = 0; ii < _carAgents.size(); ++ii) {
     const std::size_t worldIndex = ii / _genomesPerCore;
 
-    _carAgents.at(ii).reset(_physicWorlds.at(worldIndex).get(),
-                            _startTransform.position,
-                            _startTransform.quaternion);
+    _carAgents.at(ii).reset(
+      _physicWorlds.at(worldIndex).get(), _startTransform.position,
+      _startTransform.quaternion);
   }
 
   // _updateCarResult();
@@ -318,14 +328,16 @@ void PthreadSimulation::breed() {
   _isFirstGenerationFrame = true;
 }
 
-bool PthreadSimulation::isGenerationComplete() const {
+bool
+PthreadSimulation::isGenerationComplete() const {
   for (const auto& car : _carAgents)
     if (car.isAlive())
       return false;
   return true;
 }
 
-void PthreadSimulation::_updateCarResult() {
+void
+PthreadSimulation::_updateCarResult() {
   for (std::size_t ii = 0; ii < _carAgents.size(); ++ii) {
     const auto& carAgent = _carAgents.at(ii);
     auto& carData = _carsData.at(ii);
@@ -377,57 +389,71 @@ void PthreadSimulation::_updateCarResult() {
   }
 }
 
-unsigned int PthreadSimulation::getTotalCores() const { return _totalCores; }
+unsigned int
+PthreadSimulation::getTotalCores() const {
+  return _totalCores;
+}
 
 const AbstactSimulation::CoreState&
 PthreadSimulation::getCoreState(unsigned int index) const {
   return _coreStates.at(index);
 }
 
-const CarData& PthreadSimulation::getCarResult(unsigned int index) const {
+const CarData&
+PthreadSimulation::getCarResult(unsigned int index) const {
   return _carsData.at(index);
 }
 
-unsigned int PthreadSimulation::getTotalCars() const {
+unsigned int
+PthreadSimulation::getTotalCars() const {
   return _carsData.size();
 }
 
-void PthreadSimulation::setOnGenerationResetCallback(
+void
+PthreadSimulation::setOnGenerationResetCallback(
   AbstactSimulation::SimpleCallback callback) {
   _callbacks.onResetAndProcess = callback;
 }
 
-void PthreadSimulation::setOnGenerationStepCallback(
+void
+PthreadSimulation::setOnGenerationStepCallback(
   AbstactSimulation::SimpleCallback callback) {
   _callbacks.onProcessStep = callback;
 }
 
-void PthreadSimulation::setOnGenomeDieCallback(
+void
+PthreadSimulation::setOnGenomeDieCallback(
   AbstactSimulation::GenomeDieCallback callback) {
   _callbacks.onGenomeDie = callback;
 }
 
-void PthreadSimulation::setOnGenerationEndCallback(
+void
+PthreadSimulation::setOnGenerationEndCallback(
   AbstactSimulation::GenerationEndCallback callback) {
   _callbacks.onGenerationEnd = callback;
 }
 
-const Genomes& PthreadSimulation::getGenomes() const {
+const Genomes&
+PthreadSimulation::getGenomes() const {
   return _geneticAlgorithm.getGenomes();
 }
 
-const Genome& PthreadSimulation::getBestGenome() const {
+const Genome&
+PthreadSimulation::getBestGenome() const {
   return _geneticAlgorithm.getBestGenome();
 }
 
-unsigned int PthreadSimulation::getGenerationNumber() const {
+unsigned int
+PthreadSimulation::getGenerationNumber() const {
   return _geneticAlgorithm.getGenerationNumber();
 }
 
-const glm::vec3& PthreadSimulation::getStartPosition() const {
+const glm::vec3&
+PthreadSimulation::getStartPosition() const {
   return _startTransform.position;
 }
 
-const GeneticAlgorithm& PthreadSimulation::getGeneticAlgorithm() const {
+const GeneticAlgorithm&
+PthreadSimulation::getGeneticAlgorithm() const {
   return _geneticAlgorithm;
 }

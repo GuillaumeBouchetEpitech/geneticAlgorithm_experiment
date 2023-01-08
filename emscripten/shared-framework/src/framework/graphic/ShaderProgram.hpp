@@ -62,6 +62,7 @@ public:
   void setUniform(const char* name, float x, float y, float z, float w) const;
   void setUniform(const char* name, const glm::vec3& vec3) const;
   void setUniform(const char* name, const glm::vec4& vec4) const;
+  void setUniform(const char* name, const glm::mat3& mat3) const;
   void setUniform(const char* name, const glm::mat4& mat4) const;
 
 public:
@@ -75,5 +76,6 @@ public:
   void setUniform(int location, float x, float y, float z, float w) const;
   void setUniform(int location, const glm::vec3& vec3) const;
   void setUniform(int location, const glm::vec4& vec4) const;
+  void setUniform(int location, const glm::mat3& mat3) const;
   void setUniform(int location, const glm::mat4& mat4) const;
 };

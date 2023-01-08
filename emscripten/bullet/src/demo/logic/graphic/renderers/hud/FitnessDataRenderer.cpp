@@ -22,7 +22,8 @@ FitnessDataRenderer::FitnessDataRenderer() {
   _size = {150, 75};
 }
 
-void FitnessDataRenderer::fadeIn(float delay, float duration) {
+void
+FitnessDataRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
   _moveEasing = GenericEasing<2>()
@@ -35,7 +36,8 @@ void FitnessDataRenderer::fadeIn(float delay, float duration) {
   _isVisible = true;
 }
 
-void FitnessDataRenderer::fadeOut(float delay, float duration) {
+void
+FitnessDataRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
   _moveEasing = GenericEasing<2>()
@@ -47,7 +49,8 @@ void FitnessDataRenderer::fadeOut(float delay, float duration) {
   _isVisible = false;
 }
 
-void FitnessDataRenderer::update(float elapsedTime) {
+void
+FitnessDataRenderer::update(float elapsedTime) {
   if (!_timer.isDone()) {
     _timer.update(elapsedTime);
     _position.x = _moveEasing.get(_timer.getCoefElapsed());
@@ -55,14 +58,16 @@ void FitnessDataRenderer::update(float elapsedTime) {
   }
 }
 
-void FitnessDataRenderer::resize() {
+void
+FitnessDataRenderer::resize() {
   if (_isVisible)
     fadeIn(0.0f, 0.2f);
   else
     fadeOut(0.0f, 0.2f);
 }
 
-void FitnessDataRenderer::renderWireframe() {
+void
+FitnessDataRenderer::renderWireframe() {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -72,8 +77,9 @@ void FitnessDataRenderer::renderWireframe() {
 
   const glm::vec3 whiteColor(1.0f, 1.0f, 1.0f);
 
-  stackRenderers.triangles.pushQuad(glm::vec2(_position + _size * 0.5f), _size,
-                                    glm::vec4(0, 0, 0, 0.75f), -0.1f);
+  stackRenderers.triangles.pushQuad(
+    glm::vec2(_position + _size * 0.5f), _size, glm::vec4(0, 0, 0, 0.75f),
+    -0.1f);
   stackRenderers.wireframes.pushRectangle(_position, _size, whiteColor, -0.1f);
 
   const float maxFitness = logic.fitnessStats.max();
@@ -92,13 +98,14 @@ void FitnessDataRenderer::renderWireframe() {
       (currData / maxFitness) * _size.y,
     };
 
-    stackRenderers.wireframes.pushLine(glm::vec3(_position + prevPos, 0.0f),
-                                       glm::vec3(_position + currPos, 0.0f),
-                                       whiteColor);
+    stackRenderers.wireframes.pushLine(
+      glm::vec3(_position + prevPos, 0.0f),
+      glm::vec3(_position + currPos, 0.0f), whiteColor);
   }
 }
 
-void FitnessDataRenderer::renderHudText() {
+void
+FitnessDataRenderer::renderHudText() {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -141,7 +148,8 @@ void FitnessDataRenderer::renderHudText() {
 
     textRenderer.getSizes(outRectangles, textPos, str, scale);
     for (const auto& rec : outRectangles)
-      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
+      stackRenderers.triangles.pushQuad(
+        rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 
   {
@@ -164,7 +172,8 @@ void FitnessDataRenderer::renderHudText() {
 
     textRenderer.getSizes(outRectangles, textPos, str, scale);
     for (const auto& rec : outRectangles)
-      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
+      stackRenderers.triangles.pushQuad(
+        rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 
   {
@@ -183,6 +192,7 @@ void FitnessDataRenderer::renderHudText() {
 
     textRenderer.getSizes(outRectangles, textPos, str, scale);
     for (const auto& rec : outRectangles)
-      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
+      stackRenderers.triangles.pushQuad(
+        rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
   }
 }

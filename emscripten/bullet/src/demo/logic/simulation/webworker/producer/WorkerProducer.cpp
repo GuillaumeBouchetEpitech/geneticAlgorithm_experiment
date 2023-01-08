@@ -8,9 +8,8 @@
 
 #include "demo/defines.hpp"
 
-WorkerProducer::WorkerProducer(const Definition& def,
-                               GeneticAlgorithm& geneticAlgorithm,
-                               uint32_t coreIndex)
+WorkerProducer::WorkerProducer(
+  const Definition& def, GeneticAlgorithm& geneticAlgorithm, uint32_t coreIndex)
   : _def(def), _geneticAlgorithm(geneticAlgorithm), _coreIndex(coreIndex) {
   _workerHandle = emscripten_create_worker(D_WORKER_SCRIPT_URL);
 
@@ -50,14 +49,15 @@ WorkerProducer::WorkerProducer(const Definition& def,
   } // send intiialisation message to worker consumer
 }
 
-void WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize,
-                                        void* arg) {
+void
+WorkerProducer::_onMessageCallback(char* dataPointer, int dataSize, void* arg) {
   WorkerProducer* self = static_cast<WorkerProducer*>(arg);
 
   self->_processMessage(dataPointer, dataSize);
 }
 
-void WorkerProducer::_processMessage(const char* dataPointer, int dataSize) {
+void
+WorkerProducer::_processMessage(const char* dataPointer, int dataSize) {
   _flags[asValue(Status::Processing)] = false;
 
   MessageView receivedMsg(dataPointer, dataSize);
@@ -148,7 +148,8 @@ void WorkerProducer::_processMessage(const char* dataPointer, int dataSize) {
   }
 }
 
-void WorkerProducer::_sendToConsumer() {
+void
+WorkerProducer::_sendToConsumer() {
   _flags[asValue(Status::Processing)] = true;
 
   char* dataPointer = const_cast<char*>(_message.getData());
@@ -156,11 +157,13 @@ void WorkerProducer::_sendToConsumer() {
 
   em_worker_callback_func callback = WorkerProducer::_onMessageCallback;
 
-  emscripten_call_worker(_workerHandle, D_WORKER_MAIN_STR, dataPointer,
-                         dataSize, callback, (void*)this);
+  emscripten_call_worker(
+    _workerHandle, D_WORKER_MAIN_STR, dataPointer, dataSize, callback,
+    (void*)this);
 }
 
-void WorkerProducer::resetAndProcessSimulation(
+void
+WorkerProducer::resetAndProcessSimulation(
   float elapsedTime, unsigned int totalSteps,
   const NeuralNetworks& neuralNetworks) {
   _message.clear();
@@ -179,8 +182,8 @@ void WorkerProducer::resetAndProcessSimulation(
   _sendToConsumer();
 }
 
-void WorkerProducer::processSimulation(float elapsedTime,
-                                       unsigned int totalSteps) {
+void
+WorkerProducer::processSimulation(float elapsedTime, unsigned int totalSteps) {
   _message.clear();
   _message << char(Messages::FromProducer::ProcessSimulation);
   _message << elapsedTime;
@@ -189,20 +192,27 @@ void WorkerProducer::processSimulation(float elapsedTime,
   _sendToConsumer();
 }
 
-bool WorkerProducer::isLoaded() const {
+bool
+WorkerProducer::isLoaded() const {
   return _flags[asValue(Status::WebWorkerLoaded)];
 }
 
-bool WorkerProducer::isProcessing() const {
+bool
+WorkerProducer::isProcessing() const {
   return _flags[asValue(Status::Processing)];
 }
 
-bool WorkerProducer::isUpdated() const {
+bool
+WorkerProducer::isUpdated() const {
   return _flags[asValue(Status::Updated)];
 }
 
-const CarDatas& WorkerProducer::getCarsData() const { return _carsData; }
+const CarDatas&
+WorkerProducer::getCarsData() const {
+  return _carsData;
+}
 
-const AbstactSimulation::CoreState& WorkerProducer::getCoreState() const {
+const AbstactSimulation::CoreState&
+WorkerProducer::getCoreState() const {
   return _coreState;
 }

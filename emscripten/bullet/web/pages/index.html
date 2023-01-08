@@ -8,7 +8,7 @@
     <title>AI (loading)</title>
 
     <style>
-      body, h1, p, li {
+      body, h1, h2, p, ul, li {
         background-color: #0F0F0F;
         border: 0px 0px 0px 0px;
         margin: 0px 0px 0px 0px;
@@ -18,24 +18,16 @@
       }
 
       ul {
-        border: 0px 0px 0px 0px;
-        margin: 0px 0px 0px 0px;
         padding: 0px 0px 0px 20px;
         font-family: arial;
       }
 
       h1 {
         font-size: 30px;
-        border: 0px 0px 0px 0px;
-        margin: 0px 0px 0px 0px;
-        padding: 0px 0px 0px 0px;
       }
 
       h2 {
         font-size: 20px;
-        border: 0px 0px 0px 0px;
-        margin: 0px 0px 0px 0px;
-        padding: 0px 0px 0px 0px;
       }
 
       h3 {
@@ -47,7 +39,7 @@
 
       #renderArea {
         border: 0px none;
-        margin: 0px auto; /* center */
+        margin: 0px auto; /* horizontally centered */
         padding: 0px none;
         background-color: black;
         width: 800px;
@@ -65,7 +57,7 @@
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       #canvas {
         border: 0px none;
-        margin: 0px auto;
+        margin: 0px auto; /* horizontally centered */
         padding: 0px none;
         width: 800px; /* <= fix Apple retina display issue(s)*/
         height: 600px; /* <= fix Apple retina display issue(s)*/
@@ -76,7 +68,7 @@
         position: relative;
         left: 10px;
         top: 10px;
-        margin: 0px auto;
+        margin: 0px auto; /* horizontally centered */
         padding: 0px none;
         border: 0px none;
         color: white;
@@ -88,7 +80,7 @@
 
       #loggerOutput {
         width: 99%;
-        margin: 0px auto;
+        margin: 0px auto; /* horizontally centered */
         border: 0px none;
         padding: 0px none;
         background-color: black;

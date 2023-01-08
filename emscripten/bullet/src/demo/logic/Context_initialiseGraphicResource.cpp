@@ -8,7 +8,8 @@
 #include "framework/graphic/GeometryBuilder.hpp"
 #include "framework/graphic/ShaderProgramBuilder.hpp"
 
-void Context::initialiseGraphicResource() {
+void
+Context::initialiseGraphicResource() {
   ShaderProgramBuilder shaderProgramBuilder;
   GeometryBuilder geometryBuilder;
 
@@ -22,8 +23,9 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_color")
       .addUniform("u_composedMatrix");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::stackRendererScene),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::stackRendererScene),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -51,8 +53,9 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_color")
       .addUniform("u_composedMatrix");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::stackRendererHud),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::stackRendererHud),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -86,8 +89,8 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_offsetColor")
       .addUniform("u_composedMatrix");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::particles),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::particles), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -100,8 +103,8 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_offsetScale", Geometry::AttrType::Float)
       .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec3f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::particles),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::particles), geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -118,19 +121,20 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_texture")
       .addUniform("u_animationCoef");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::backGroundTorus),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::backGroundTorus),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
       .setPrimitiveType(Geometry::PrimitiveType::triangles)
       .addVbo()
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
-      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f)
-      ;
+      .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::backGroundTorus),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::backGroundTorus), geometryBuilder.getDefinition(),
+      true);
   }
 
   //
@@ -146,8 +150,8 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_composedMatrix")
       .addUniform("u_texture");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::simpleTexture),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::simpleTexture), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -156,8 +160,9 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f)
       .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::simpleTexture),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::simpleTexture), geometryBuilder.getDefinition(),
+      true);
   }
 
   {
@@ -171,8 +176,9 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_modelViewMatrix")
       .addUniform("u_texture");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::simpleTextureLit),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::simpleTextureLit),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -182,8 +188,9 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_normal", Geometry::AttrType::Vec3f)
       .addVboAttribute("a_texCoord", Geometry::AttrType::Vec2f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::simpleTextureLit),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::simpleTextureLit), geometryBuilder.getDefinition(),
+      true);
   }
 
   //
@@ -198,8 +205,8 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_composedMatrix")
       .addUniform("u_color");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::wireframes),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::wireframes), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -207,13 +214,14 @@ void Context::initialiseGraphicResource() {
       .addVbo()
       .addVboAttribute("a_position", Geometry::AttrType::Vec3f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::wireframes),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::wireframes), geometryBuilder.getDefinition(), true);
 
     geometryBuilder.setPrimitiveType(Geometry::PrimitiveType::line_strip);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::wireframesLineStrip),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::wireframesLineStrip),
+      geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -233,8 +241,9 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_lowerLimit")
       .addUniform("u_upperLimit");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::animatedCircuit),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::animatedCircuit),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -246,8 +255,9 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f)
       .addVboAttribute("a_vertex_index", Geometry::AttrType::Float);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::animatedCircuit),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::animatedCircuit), geometryBuilder.getDefinition(),
+      true);
   }
 
   {
@@ -265,8 +275,9 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_lowerLimit")
       .addUniform("u_upperLimit");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::animatedCircuitLit),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::animatedCircuitLit),
+      shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -278,8 +289,9 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_vertex_animatedNormal", Geometry::AttrType::Vec3f)
       .addVboAttribute("a_vertex_index", Geometry::AttrType::Float);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::animatedCircuitLit),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::animatedCircuitLit), geometryBuilder.getDefinition(),
+      true);
   }
 
   //
@@ -298,8 +310,8 @@ void Context::initialiseGraphicResource() {
       .addAttribute("a_offset_outlineColor")
       .addUniform("u_composedMatrix");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::models),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::models), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -314,8 +326,8 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_offset_color", Geometry::AttrType::Vec4f)
       .addVboAttribute("a_offset_outlineColor", Geometry::AttrType::Vec4f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::models),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::models), geometryBuilder.getDefinition(), true);
   }
 
   {
@@ -332,8 +344,8 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_projectionMatrix")
       .addUniform("u_modelViewMatrix");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::modelsLit),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::modelsLit), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -348,8 +360,8 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_offset_color", Geometry::AttrType::Vec4f)
       .addVboAttribute("a_offset_outlineColor", Geometry::AttrType::Vec4f);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::modelsLit),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::modelsLit), geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -369,8 +381,8 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_composedMatrix")
       .addUniform("u_texture");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::hudText),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::hudText), shaderProgramBuilder.getDefinition());
 
     geometryBuilder.reset()
       .setShader(*shader)
@@ -385,8 +397,8 @@ void Context::initialiseGraphicResource() {
       .addVboAttribute("a_offsetColor", Geometry::AttrType::Vec4f)
       .addVboAttribute("a_offsetScale", Geometry::AttrType::Float);
 
-    rManager.createGeometryDefinition(asValue(GeometryIds::hudText),
-                                      geometryBuilder.getDefinition(), true);
+    rManager.createGeometryDefinition(
+      asValue(GeometryIds::hudText), geometryBuilder.getDefinition(), true);
   }
 
   //
@@ -405,8 +417,8 @@ void Context::initialiseGraphicResource() {
       .addUniform("u_outlineTexture")
       .addUniform("u_invResolution");
 
-    auto shader = rManager.createShader(asValue(ShaderIds::postProcess),
-                                        shaderProgramBuilder.getDefinition());
+    auto shader = rManager.createShader(
+      asValue(ShaderIds::postProcess), shaderProgramBuilder.getDefinition());
 
     // geometryBuilder.reset()
     //   .setShader(*shader)
@@ -425,9 +437,9 @@ void Context::initialiseGraphicResource() {
 
   { // font
 
-    rManager.createTexture(0, "assets/textures/ascii_font.png",
-                           Texture::Quality::pixelated,
-                           Texture::Pattern::clamped);
+    rManager.createTexture(
+      0, "assets/textures/ascii_font.png", Texture::Quality::pixelated,
+      Texture::Pattern::clamped);
 
   } // font
 }

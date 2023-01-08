@@ -30,9 +30,9 @@ public:
   using CallbackNoNormals =
     std::function<void(const Vec3Array& vertices, const Indices& indices)>;
 
-  using CallbackNormals =
-    std::function<void(const Vec3Array& vertices, const Vec3Array& colors,
-                       const Vec3Array& normals, const Indices& indices)>;
+  using CallbackNormals = std::function<void(
+    const Vec3Array& vertices, const Vec3Array& colors,
+    const Vec3Array& normals, const Indices& indices)>;
 
 private:
   StartTransform _startTransform;
@@ -44,8 +44,8 @@ public:
 
 public:
   void generateWireframeSkeleton(CallbackNoNormals onSkeletonPatch);
-  void generateCircuitGeometry(CallbackNormals onNewGroundPatch,
-                               CallbackNormals onNewWallPatch);
+  void generateCircuitGeometry(
+    CallbackNormals onNewGroundPatch, CallbackNormals onNewWallPatch);
 
 private:
   void generateSmoothedKnotsData(Knots& smoothedVertices);

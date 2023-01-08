@@ -56,26 +56,87 @@ public:
 // will survive a container reallocation
 // will survive a container destruction
 template <typename generic_array_container>
-class generic_array_container_iterator
-  : private basic_double_linked_list::link {
+class generic_array_container_base_iterator
+  : public basic_double_linked_list::link {
 
   friend generic_array_container;
 
 public:
   using ValueType = typename generic_array_container::ValueType;
 
-private:
+protected:
   generic_array_container* _container;
   int _index;
 
 public:
-  generic_array_container_iterator(generic_array_container& container,
-                                   int index)
+  generic_array_container_base_iterator(generic_array_container& container,
+                                        int index)
     : _container(&container), _index(index) {
     basic_double_linked_list::add(_container->_iterators_list, *this);
   }
 
-  ~generic_array_container_iterator() {
+  // COPY
+  generic_array_container_base_iterator(
+    const generic_array_container_base_iterator& other) {
+    if (&other == this)
+      return;
+
+    _container = other._container;
+    _index = other._index;
+    if (_container != nullptr) {
+      basic_double_linked_list::add(_container->_iterators_list, *this);
+    }
+  }
+
+  // MOVE
+  generic_array_container_base_iterator(
+    generic_array_container_base_iterator&& other) {
+    if (&other == this)
+      return;
+
+    std::swap(_container, other._container);
+    std::swap(_index, other._index);
+    if (_container != nullptr) {
+      basic_double_linked_list::replace(_container->_iterators_list, other,
+                                        *this);
+    }
+
+    basic_double_linked_list::replace(_container->_iterators_list, other,
+                                      *this);
+  }
+
+  // COPY
+  generic_array_container_base_iterator&
+  operator=(const generic_array_container_base_iterator& other) {
+    if (&other == this)
+      return *this;
+
+    _container = other._container;
+    _index = other._index;
+    if (_container != nullptr) {
+      basic_double_linked_list::add(_container->_iterators_list, *this);
+    }
+
+    return *this;
+  }
+
+  // MOVE
+  generic_array_container_base_iterator&
+  operator=(const generic_array_container_base_iterator&& other) {
+    if (&other == this)
+      return *this;
+
+    std::swap(_container, other._container);
+    std::swap(_index, other._index);
+    if (_container != nullptr) {
+      basic_double_linked_list::replace(_container->_iterators_list, other,
+                                        *this);
+    }
+
+    return *this;
+  }
+
+  ~generic_array_container_base_iterator() {
     if (_container)
       basic_double_linked_list::remove(_container->_iterators_list, *this);
   }
@@ -83,159 +144,113 @@ public:
 public:
   bool is_valid() const { return _container != nullptr; }
 
-private:
+protected:
   void _ensure_is_valid() const {
     if (!is_valid())
       D_THROW(std::runtime_error, "invalid iterator");
   }
 
 public:
-  generic_array_container_iterator& operator++() // ++pre
+  generic_array_container_base_iterator& operator++() // ++pre
   {
     _ensure_is_valid();
     if (_index < int(_container->size()))
       ++_index;
     return *this;
   }
-  generic_array_container_iterator& operator++(int) // post++
+  generic_array_container_base_iterator& operator++(int) // post++
   {
-    generic_array_container_iterator copy = *this;
+    generic_array_container_base_iterator copy = *this;
     ++(*this);
     return copy;
   }
 
-  generic_array_container_iterator& operator--() // --pre
+  generic_array_container_base_iterator& operator--() // --pre
   {
     _ensure_is_valid();
     if (_index > 0)
       --_index;
     return *this;
   }
-  generic_array_container_iterator& operator--(int) // post--
+  generic_array_container_base_iterator& operator--(int) // post--
   {
-    generic_array_container_iterator copy = *this;
+    generic_array_container_base_iterator copy = *this;
     --(*this);
     return copy;
   }
 
 public:
-  ValueType& operator[](int index) {
-    _ensure_is_valid();
-    return (*_container)[_index + index];
-  }
-  ValueType* operator->() {
-    _ensure_is_valid();
-    return &((*_container)[_index]);
-  }
-  ValueType& operator*() {
-    _ensure_is_valid();
-    return (*_container)[_index];
-  }
-
-public:
-  bool operator==(const generic_array_container_iterator& other) const {
+  bool operator==(const generic_array_container_base_iterator& other) const {
     return (_container == other._container && _index == other._index);
   }
-  bool operator!=(const generic_array_container_iterator& other) const {
+  bool operator!=(const generic_array_container_base_iterator& other) const {
     return !(*this == other);
   }
 };
 
-//
-//
-//
-//
-//
+// will survive a container reallocation
+// will survive a container destruction
+template <typename generic_array_container>
+class generic_array_container_iterator
+  : public generic_array_container_base_iterator<generic_array_container> {
+
+  friend generic_array_container;
+
+public:
+  using BaseType =
+    generic_array_container_base_iterator<generic_array_container>;
+  using ValueType = typename BaseType::ValueType;
+
+public:
+  generic_array_container_iterator(generic_array_container& container,
+                                   int index)
+    : BaseType(container, index) {}
+
+public:
+  ValueType& operator[](int index) {
+    BaseType::_ensure_is_valid();
+    return (*BaseType::_container)[BaseType::_index + index];
+  }
+  ValueType* operator->() {
+    BaseType::_ensure_is_valid();
+    return &((*BaseType::_container)[BaseType::_index]);
+  }
+  ValueType& operator*() {
+    BaseType::_ensure_is_valid();
+    return (*BaseType::_container)[BaseType::_index];
+  }
+};
 
 // will survive a container reallocation
 // will survive a container destruction
 template <typename generic_array_container>
 class generic_array_container_const_iterator
-  : private basic_double_linked_list::link {
+  : public generic_array_container_base_iterator<generic_array_container> {
 
   friend generic_array_container;
 
 public:
-  using ValueType = typename generic_array_container::ValueType;
-
-private:
-  const generic_array_container* _container;
-  int _index;
+  using BaseType =
+    generic_array_container_base_iterator<generic_array_container>;
+  using ValueType = typename BaseType::ValueType;
 
 public:
-  generic_array_container_const_iterator(
-    const generic_array_container& container, int index)
-    : _container(&container), _index(index) {
-    basic_double_linked_list::add(
-      const_cast<generic_array_container*>(_container)->_const_iterators_list,
-      *this);
-  }
-
-  ~generic_array_container_const_iterator() {
-    if (_container)
-      basic_double_linked_list::remove(
-        const_cast<generic_array_container*>(_container)->_const_iterators_list,
-        *this);
-  }
-
-public:
-  bool is_valid() const { return _container != nullptr; }
-
-private:
-  void _ensure_is_valid() const {
-    if (!is_valid())
-      D_THROW(std::runtime_error, "invalid iterator");
-  }
-
-public:
-  generic_array_container_const_iterator& operator++() // ++pre
-  {
-    _ensure_is_valid();
-    if (_index < int(_container->size()))
-      ++_index;
-    return *this;
-  }
-  generic_array_container_const_iterator& operator++(int) // post++
-  {
-    generic_array_container_const_iterator copy = *this;
-    ++(*this);
-    return copy;
-  }
-
-  generic_array_container_const_iterator& operator--() // --pre
-  {
-    _ensure_is_valid();
-    if (_index > 0)
-      --_index;
-    return *this;
-  }
-  generic_array_container_const_iterator& operator--(int) // post--
-  {
-    generic_array_container_const_iterator copy = *this;
-    --(*this);
-    return copy;
-  }
+  generic_array_container_const_iterator(generic_array_container& container,
+                                         int index)
+    : BaseType(container, index) {}
 
 public:
   const ValueType& operator[](int index) const {
-    _ensure_is_valid();
-    return (*_container)[_index + index];
+    BaseType::_ensure_is_valid();
+    return (*BaseType::_container)[BaseType::_index + index];
   }
   const ValueType* operator->() const {
-    _ensure_is_valid();
-    return &((*_container)[_index]);
+    BaseType::_ensure_is_valid();
+    return &((*BaseType::_container)[BaseType::_index]);
   }
   const ValueType& operator*() const {
-    _ensure_is_valid();
-    return (*_container)[_index];
-  }
-
-public:
-  bool operator==(const generic_array_container_const_iterator& other) const {
-    return (_container == other._container && _index == other._index);
-  }
-  bool operator!=(const generic_array_container_const_iterator& other) const {
-    return !(*this == other);
+    BaseType::_ensure_is_valid();
+    return (*BaseType::_container)[BaseType::_index];
   }
 };
 
@@ -248,12 +263,15 @@ public:
 template <typename Type> class generic_array_container {
 public:
   using ValueType = Type;
+  using BaseIterator =
+    generic_array_container_base_iterator<generic_array_container<Type>>;
   using Iterator =
     generic_array_container_iterator<generic_array_container<Type>>;
   using ConstIterator =
     generic_array_container_const_iterator<generic_array_container<Type>>;
 
 protected:
+  friend BaseIterator;
   friend Iterator;
   friend ConstIterator;
 
@@ -310,8 +328,13 @@ public:
   Iterator begin() { return Iterator(*this, 0); }
   Iterator end() { return Iterator(*this, int(_size)); }
 
-  ConstIterator begin() const { return ConstIterator(*this, 0); }
-  ConstIterator end() const { return ConstIterator(*this, int(_size)); }
+  ConstIterator begin() const {
+    return ConstIterator(*const_cast<generic_array_container*>(this), 0);
+  }
+  ConstIterator end() const {
+    return ConstIterator(*const_cast<generic_array_container*>(this),
+                         int(_size));
+  }
 
   void invalidate_all_iterators() {
     basic_double_linked_list::loop_and_reset<Iterator>(

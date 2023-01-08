@@ -9,7 +9,8 @@
 #include "demo/logic/Context.hpp"
 #include "demo/logic/graphic/Scene.hpp"
 
-void State_WebWorkersLoading::enter() {
+void
+State_WebWorkersLoading::enter() {
 
   _awaiting = true;
 
@@ -20,11 +21,13 @@ void State_WebWorkersLoading::enter() {
   });
 }
 
-void State_WebWorkersLoading::handleEvent(const SDL_Event& event) {
+void
+State_WebWorkersLoading::handleEvent(const SDL_Event& event) {
   static_cast<void>(event); // <= unused
 }
 
-void State_WebWorkersLoading::update(float elapsedTime) {
+void
+State_WebWorkersLoading::update(float elapsedTime) {
   if (_awaiting == true) {
     // only update to load the webworkers
     Context::get().logic.simulation->update(0.0f, 1);
@@ -37,13 +40,15 @@ void State_WebWorkersLoading::update(float elapsedTime) {
   }
 }
 
-void State_WebWorkersLoading::render(const SDL_Window& window) {
+void
+State_WebWorkersLoading::render(const SDL_Window& window) {
   static_cast<void>(window); // <= unused
 
   Scene::renderSimple();
 }
 
-void State_WebWorkersLoading::visibility(bool visible) {
+void
+State_WebWorkersLoading::visibility(bool visible) {
   static_cast<void>(visible); // <= unused
 
   // do nothing, we do not want the parent's class logic

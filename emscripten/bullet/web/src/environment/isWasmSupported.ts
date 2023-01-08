@@ -1,7 +1,5 @@
 
-import Logger from "../Logger";
-
-export const ensureWasmSupport = (logger: Logger, displayErrorText: (msg: string) => void): void => {
+export const isWasmSupported = (): boolean => {
   const wasmSupported = (() => {
     try {
       if (typeof(WebAssembly) === "object" && typeof(WebAssembly.instantiate) === "function") {
@@ -13,11 +11,5 @@ export const ensureWasmSupport = (logger: Logger, displayErrorText: (msg: string
     return false;
   })();
 
-  if (!wasmSupported) {
-    const errMsg = "missing WebAssembly feature (unsuported)";
-    displayErrorText(errMsg);
-    throw new Error(errMsg);
-  }
-
-  logger.log("[JS] WebAssembly feature => supported");
+  return wasmSupported;
 };

@@ -8,7 +8,8 @@
 
 #include <iomanip>
 
-void InformationTextRenderer::fadeIn(float delay, float duration) {
+void
+InformationTextRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
   _alphaEasing = GenericEasing<2>()
@@ -16,21 +17,24 @@ void InformationTextRenderer::fadeIn(float delay, float duration) {
                    .push(1.0f, 1.0f);
 }
 
-void InformationTextRenderer::fadeOut(float delay, float duration) {
+void
+InformationTextRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
   _alphaEasing =
     GenericEasing<2>().push(0.0f, _alpha, easing::easeInCubic).push(1.0f, 0.0f);
 }
 
-void InformationTextRenderer::update(float elapsedTime) {
+void
+InformationTextRenderer::update(float elapsedTime) {
   if (!_timer.isDone()) {
     _timer.update(elapsedTime);
     _alpha = _alphaEasing.get(_timer.getCoefElapsed());
   }
 }
 
-void InformationTextRenderer::render() {
+void
+InformationTextRenderer::render() {
   auto& context = Context::get();
   auto& logic = context.logic;
   auto& graphic = context.graphic;
@@ -51,12 +55,14 @@ void InformationTextRenderer::render() {
 
     const glm::vec2 textPos = {8, vSize.y - 16 - 8};
 
-    textRenderer.push(textPos, logic.hudText.header, color, scale, depth, outlineColor);
+    textRenderer.push(
+      textPos, logic.hudText.header, color, scale, depth, outlineColor);
 
     textRenderer.getSizes(outRectangles, textPos, logic.hudText.header, scale);
 
     for (const auto& rec : outRectangles)
-      stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
+      stackRenderers.triangles.pushQuad(
+        rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
 
   } // top-left header text
 
@@ -72,13 +78,15 @@ void InformationTextRenderer::render() {
 
     const glm::vec2 textPos = {8, vSize.y - 5 * 16 - 8};
 
-    textRenderer.push({8, vSize.y - 5 * 16 - 8}, str, color, scale, depth, outlineColor);
+    textRenderer.push(
+      {8, vSize.y - 5 * 16 - 8}, str, color, scale, depth, outlineColor);
 
     textRenderer.getSizes(outRectangles, textPos, str, scale);
 
     for (const auto& rec : outRectangles)
       if (rec.size.x > 0.0f)
-        stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
+        stackRenderers.triangles.pushQuad(
+          rec.pos + rec.size * 0.5f, rec.size, bgColor, bgDepth);
 
   } // top-left performance stats
 }

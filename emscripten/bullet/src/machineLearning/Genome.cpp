@@ -22,7 +22,8 @@ Genome::Genome(Genome&& other) {
 }
 
 // copy operator
-Genome& Genome::operator=(const Genome& other) {
+Genome&
+Genome::operator=(const Genome& other) {
   id = other.id;
   fitness = other.fitness;
   weights = other.weights; // reallocation
@@ -31,7 +32,8 @@ Genome& Genome::operator=(const Genome& other) {
 }
 
 // move operator
-Genome& Genome::operator=(Genome&& other) {
+Genome&
+Genome::operator=(Genome&& other) {
   if (this == &other)
     return *this;
 

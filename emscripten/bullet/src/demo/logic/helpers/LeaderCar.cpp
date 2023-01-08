@@ -4,7 +4,8 @@
 #include "demo/logic/Context.hpp"
 #include "demo/states/StateManager.hpp"
 
-void LeaderCar::update(float elapsedTime) {
+void
+LeaderCar::update(float elapsedTime) {
 
   const StateManager::States currentState = StateManager::get()->getState();
   const bool validSate = (currentState == StateManager::States::Running);
@@ -69,29 +70,41 @@ void LeaderCar::update(float elapsedTime) {
   }
 }
 
-void LeaderCar::reset() {
+void
+LeaderCar::reset() {
   _carIndex = -1;
   _countdownUntilNewLeader = 0.0f;
   _totalTimeAsLeader = 0.0f;
   _carPosition = {0, 0, 0};
 }
 
-bool LeaderCar::hasLeader() const { return _carIndex >= 0; }
+bool
+LeaderCar::hasLeader() const {
+  return _carIndex >= 0;
+}
 
-int LeaderCar::leaderIndex() const { return _carIndex; }
+int
+LeaderCar::leaderIndex() const {
+  return _carIndex;
+}
 
-std::optional<CarData> LeaderCar::leaderData() const {
+std::optional<CarData>
+LeaderCar::leaderData() const {
   if (_carIndex < 0)
     return {};
 
   return Context::get().logic.simulation->getCarResult(_carIndex);
 }
 
-std::optional<glm::vec3> LeaderCar::leaderPosition() const {
+std::optional<glm::vec3>
+LeaderCar::leaderPosition() const {
   if (_carIndex < 0)
     return {};
 
   return _carPosition;
 }
 
-float LeaderCar::totalTimeAsLeader() const { return _totalTimeAsLeader; }
+float
+LeaderCar::totalTimeAsLeader() const {
+  return _totalTimeAsLeader;
+}

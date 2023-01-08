@@ -28,7 +28,7 @@ public:
   public:
     int _index = -1;
     bool _is_active = false;
-    basic_double_linked_list _list;
+    basic_double_linked_list _weak_ref_list;
 
   public:
     using InternalBaseType::InternalBaseType; // reuse parent InternalBaseType
@@ -40,7 +40,7 @@ public:
       _doMove(other);
     }
 
-    ~internal_data() { invalidate_all_ref(); }
+    virtual ~internal_data() { invalidate_all_ref(); }
 
     // internal_data(PublicBaseType&& other)
     //   : InternalBaseType(std::move(other))
@@ -51,6 +51,8 @@ public:
   public:
     internal_data& operator=(const internal_data& other) = delete; // block copy
     internal_data& operator=(internal_data&& other) {
+      if (&other == this)
+        return *this;
       _doMove(other);
       return InternalBaseType::operator=(std::move(other));
     }
@@ -75,13 +77,18 @@ public:
         return;
       std::swap(_index, other._index);
       std::swap(_is_active, other._is_active);
-      std::swap(_list, other._list);
+      std::swap(_weak_ref_list.head_link, other._weak_ref_list.head_link);
+      std::swap(_weak_ref_list.size, other._weak_ref_list.size);
+      sync_all_ref_index();
+      other.sync_all_ref_index();
     }
 
   public:
     void invalidate_all_ref() {
       basic_double_linked_list::loop_and_reset<weak_ref>(
-        _list, [](weak_ref* currLink) {
+        _weak_ref_list, [](weak_ref* currLink) {
+          // D_MYLOG("invalidate: " << currLink);
+
           currLink->_pool = nullptr;
           currLink->_index = -1;
         });
@@ -89,17 +96,18 @@ public:
 
     void sync_all_ref_index() {
       basic_double_linked_list::loop<weak_ref>(
-        _list, [this](weak_ref* currLink) { currLink->_index = _index; });
+        _weak_ref_list,
+        [this](weak_ref* currLink) { currLink->_index = _index; });
     }
 
     void sync_all_ref_pool(weak_ref_data_pool* pool) {
       basic_double_linked_list::loop<weak_ref>(
-        _list, [pool](weak_ref* currLink) { currLink->_pool = pool; });
+        _weak_ref_list, [pool](weak_ref* currLink) { currLink->_pool = pool; });
     }
   };
 
 public:
-  struct weak_ref : protected basic_double_linked_list::link {
+  struct weak_ref : public basic_double_linked_list::link {
     friend weak_ref_data_pool;
 
   private:
@@ -121,46 +129,68 @@ public:
       _pool = inPool;
       _index = inIndex;
       basic_double_linked_list& list =
-        _pool->_itemsPool.at(std::size_t(_index))._list;
+        _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
       basic_double_linked_list::add(list, *this);
     }
 
   public:
-    weak_ref(const weak_ref& other) { _doCopy(other); }
+    // COPY
+    weak_ref(const weak_ref& other) {
+      if (&other == this)
+        return;
+      _doCopy(other);
+    }
 
-    weak_ref(weak_ref&& other) { _doMove(std::move(other)); }
+    // MOVE
+    weak_ref(weak_ref&& other) {
+      if (&other == this)
+        return;
+      _doMove(std::move(other));
+    }
 
-    ~weak_ref() { invalidate(); }
+    virtual ~weak_ref() {
+      // D_MYLOG("this: " << this);
+      invalidate();
+    }
+
+  public:
+    // COPY
+    weak_ref& operator=(const weak_ref& other) {
+      if (&other == this)
+        return *this;
+      _doCopy(other);
+      return *this;
+    }
+
+    // MOVE
+    weak_ref& operator=(weak_ref&& other) {
+      if (&other == this)
+        return *this;
+      _doMove(std::move(other));
+      return *this;
+    }
 
   public:
     static weak_ref make_invalid() { return weak_ref(); }
 
     void invalidate() {
-      if (_pool) {
+      if (_pool != nullptr) {
         basic_double_linked_list& list =
-          _pool->_itemsPool.at(std::size_t(_index))._list;
+          _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
         basic_double_linked_list::remove(list, *this);
-      } else {
-        basic_double_linked_list::reset_link(*this);
       }
 
+      basic_double_linked_list::reset_link(*this);
       _pool = nullptr;
       _index = -1;
     }
 
-  public:
-    weak_ref& operator=(const weak_ref& other) {
-      _doCopy(other);
-      return *this;
-    }
-
-    weak_ref& operator=(weak_ref&& other) {
-      _doMove(std::move(other));
-      return *this;
-    }
-
   private:
     void _doCopy(const weak_ref& other) {
+
+      if (&other == this)
+        return;
+
       _pool = other._pool;
       _index = other._index;
 
@@ -168,11 +198,14 @@ public:
         return;
 
       basic_double_linked_list& list =
-        _pool->_itemsPool.at(std::size_t(_index))._list;
+        _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
       basic_double_linked_list::add(list, *this);
     }
 
     void _doMove(weak_ref&& other) {
+      if (&other == this)
+        return;
+
       std::swap(_pool, other._pool);
       std::swap(_index, other._index);
 
@@ -180,7 +213,7 @@ public:
         return;
 
       basic_double_linked_list& list =
-        _pool->_itemsPool.at(std::size_t(_index))._list;
+        _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
       basic_double_linked_list::replace(list, other, *this);
     }
 
@@ -194,8 +227,9 @@ public:
 
   public:
     bool is_active() const {
-      return _index >= 0 && _pool &&
-             _pool->_itemsPool.at(std::size_t(_index))._is_active;
+      return (_index >= 0 && _pool &&
+              // !_pool->_itemsPool.is_out_of_range(std::size_t(_index)) &&
+              _pool->_itemsPool.at(std::size_t(_index))._is_active);
     }
 
     PublicBaseType* get() {
@@ -335,14 +369,24 @@ public:
   bool is_empty() const { return _itemsPool.is_empty(); }
 
 public:
-  uint32_t getRefCount(uint32_t index) {
-    return index < _itemsPool.size() ? _itemsPool.at(index)._list.size : 0;
+  uint32_t get_ref_count(uint32_t index) {
+    if (_itemsPool.is_out_of_range(index))
+      return 0;
+    return _itemsPool.at(index)._weak_ref_list.size;
+  }
+
+  uint32_t get_ref_count(weak_ref& ref) {
+    return get_ref_count(uint32_t(get_index(ref)));
+  }
+
+  uint32_t get_ref_count(const PublicBaseType& target) {
+    return get_ref_count(uint32_t(get_index(&target)));
   }
 
 public:
   int32_t get_index(weak_ref& ref) { return ref._index; }
-  int32_t get_index(PublicBaseType* pTarget) const {
-    return reinterpret_cast<internal_data*>(pTarget)->_index;
+  int32_t get_index(const PublicBaseType* pTarget) const {
+    return static_cast<const internal_data*>(pTarget)->_index;
   }
 
 public:
@@ -363,8 +407,7 @@ public:
     // std::cout << "test test test value=" << pExternalData->value <<
     // std::endl;
 
-    internal_data* pinternal_data =
-      reinterpret_cast<internal_data*>(pExternalData);
+    internal_data* pinternal_data = static_cast<internal_data*>(pExternalData);
 
     // std::cout << "test test test _index=" << pinternal_data->_index <<
     // std::endl; std::cout << "test test test _is_active=" <<

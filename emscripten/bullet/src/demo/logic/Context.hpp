@@ -54,12 +54,14 @@ private:
   ~Context();
 
 private:
-  void initialise(unsigned int width, unsigned int height,
-                  unsigned int totalCores, unsigned int genomesPerCore);
+  void initialise(
+    unsigned int width, unsigned int height, unsigned int totalCores,
+    unsigned int genomesPerCore);
 
 public:
-  static void create(unsigned int width, unsigned int height,
-                     unsigned int totalCores, unsigned int genomesPerCore);
+  static void create(
+    unsigned int width, unsigned int height, unsigned int totalCores,
+    unsigned int genomesPerCore);
   static void destroy();
   static Context& get();
 
@@ -69,8 +71,8 @@ public:
 
 private:
   void initialiseGraphicResource();
-  void initialiseSimulation(unsigned int totalCores,
-                            unsigned int genomesPerCore);
+  void
+  initialiseSimulation(unsigned int totalCores, unsigned int genomesPerCore);
   void initialiseSimulationCallbacks();
 
 public:

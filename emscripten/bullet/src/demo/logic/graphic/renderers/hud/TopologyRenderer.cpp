@@ -13,7 +13,8 @@ constexpr float k_faceOutX = +200.0f;
 
 } // namespace
 
-void TopologyRenderer::initialise() {
+void
+TopologyRenderer::initialise() {
   auto& context = Context::get();
   const auto& vSize = context.graphic.camera.viewportSize;
 
@@ -23,7 +24,8 @@ void TopologyRenderer::initialise() {
   _position.y = 170;
 }
 
-void TopologyRenderer::fadeIn(float delay, float duration) {
+void
+TopologyRenderer::fadeIn(float delay, float duration) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
@@ -39,7 +41,8 @@ void TopologyRenderer::fadeIn(float delay, float duration) {
   _isVisible = true;
 }
 
-void TopologyRenderer::fadeOut(float delay, float duration) {
+void
+TopologyRenderer::fadeOut(float delay, float duration) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 
@@ -55,7 +58,8 @@ void TopologyRenderer::fadeOut(float delay, float duration) {
   _isVisible = false;
 }
 
-void TopologyRenderer::update(float elapsedTime) {
+void
+TopologyRenderer::update(float elapsedTime) {
   _animationTime += elapsedTime * 2.0f;
   while (_animationTime > 1.0f)
     _animationTime -= 1.0f;
@@ -66,14 +70,16 @@ void TopologyRenderer::update(float elapsedTime) {
   }
 }
 
-void TopologyRenderer::resize() {
+void
+TopologyRenderer::resize() {
   if (_isVisible)
     fadeIn(0.0f, 0.2f);
   else
     fadeOut(0.0f, 0.2f);
 }
 
-void TopologyRenderer::render() {
+void
+TopologyRenderer::render() {
   auto& context = Context::get();
   auto& logic = context.logic;
   auto& graphic = context.graphic;
@@ -83,8 +89,8 @@ void TopologyRenderer::render() {
   const glm::vec4 blueColor(0.5f, 0.5f, 1.0f, 0.85f);
 
   auto& stackRenderers = graphic.hud.stackRenderers;
-  stackRenderers.triangles.pushQuad(_position + _size * 0.5f, _size,
-                                    glm::vec4(0, 0, 0, 0.75f), -0.2f);
+  stackRenderers.triangles.pushQuad(
+    _position + _size * 0.5f, _size, glm::vec4(0, 0, 0, 0.75f), -0.2f);
   stackRenderers.wireframes.pushRectangle(_position, _size, whiteColor, -0.1f);
 
   if (!logic.leaderCar.hasLeader())
@@ -94,9 +100,9 @@ void TopologyRenderer::render() {
     return;
 
   std::vector<unsigned int> topologyArray;
-  topologyArray.reserve(logic.annTopology.getInput() +
-                        logic.annTopology.getHiddens().size() +
-                        logic.annTopology.getOutput());
+  topologyArray.reserve(
+    logic.annTopology.getInput() + logic.annTopology.getHiddens().size() +
+    logic.annTopology.getOutput());
   topologyArray.push_back(logic.annTopology.getInput());
   for (const auto& hidden : logic.annTopology.getHiddens())
     topologyArray.push_back(hidden);
@@ -192,8 +198,8 @@ void TopologyRenderer::render() {
         const float coef = glm::clamp(neuron.value, 0.0f, 1.0f);
         const float radius = 2.0f + coef * 2.0f;
 
-        stackRenderers.triangles.pushCircle(glm::vec3(neuron.position, +0.2f),
-                                            radius, whiteColor);
+        stackRenderers.triangles.pushCircle(
+          glm::vec3(neuron.position, +0.2f), radius, whiteColor);
       }
     }
 
@@ -256,8 +262,8 @@ void TopologyRenderer::render() {
               initialThickness +
               weight * (weight > 0.0f ? +extraThickness : -extraThickness);
 
-            const glm::vec4 targetColor(weight > 0.0f ? positiveColor
-                                                      : negativeColor);
+            const glm::vec4 targetColor(
+              weight > 0.0f ? positiveColor : negativeColor);
 
             stackRenderers.triangles.pushThickTriangle2dLine(
               prevNeuron.position, currNeuron.position, targetThickness,

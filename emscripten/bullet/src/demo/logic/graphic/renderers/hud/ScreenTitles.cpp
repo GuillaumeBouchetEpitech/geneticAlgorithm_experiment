@@ -7,7 +7,8 @@
 
 #include <iomanip>
 
-void ScreenTitles::fadeIn(float delay, float duration) {
+void
+ScreenTitles::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
   constexpr float step1 = 0.25f;
@@ -33,7 +34,8 @@ void ScreenTitles::fadeIn(float delay, float duration) {
                           .push(1.00f, 1.0f);
 }
 
-void ScreenTitles::fadeOut(float delay, float duration) {
+void
+ScreenTitles::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
   constexpr float step1 = 0.2f;
@@ -59,7 +61,8 @@ void ScreenTitles::fadeOut(float delay, float duration) {
                         .push(1.00f, 0.0f);
 }
 
-void ScreenTitles::update(float elapsedTime) {
+void
+ScreenTitles::update(float elapsedTime) {
   if (!_timer.isDone()) {
     _timer.update(elapsedTime);
 
@@ -72,7 +75,8 @@ void ScreenTitles::update(float elapsedTime) {
   }
 }
 
-void ScreenTitles::render() {
+void
+ScreenTitles::render() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
   auto& textRenderer = graphic.hud.textRenderer;
@@ -122,7 +126,8 @@ void ScreenTitles::render() {
         std::string message = sstr.str();
 
         const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _fitnessTitleAlpha);
-        const glm::vec4 outlineColor = glm::vec4(0.2f, 0.2f, 0.2f, _fitnessTitleAlpha);
+        const glm::vec4 outlineColor =
+          glm::vec4(0.2f, 0.2f, 0.2f, _fitnessTitleAlpha);
 
         glm::vec2 textPos;
         textPos.x = vSize.x * 0.5f - float(message.size()) / 2 * 16 * scale;
@@ -147,7 +152,8 @@ void ScreenTitles::render() {
 
         const glm::vec4 color = glm::vec4(0.8f, 0.8f, 0.8f, _commentTitleAlpha);
 
-        glm::vec4 outlineColor = glm::vec4(0.0f, 0.0f, 0.0f, _commentTitleAlpha);
+        glm::vec4 outlineColor =
+          glm::vec4(0.0f, 0.0f, 0.0f, _commentTitleAlpha);
         if (currFitness > prevFitness)
           outlineColor.y = 0.5f;
         else if (currFitness < prevFitness)

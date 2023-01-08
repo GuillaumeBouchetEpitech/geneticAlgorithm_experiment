@@ -22,7 +22,8 @@
 //
 //
 
-void CircuitBuilder::parse(const std::string_view& filename) {
+void
+CircuitBuilder::parse(const std::string_view& filename) {
   //
   //
   // open/read file
@@ -50,68 +51,71 @@ void CircuitBuilder::parse(const std::string_view& filename) {
   std::unordered_map<std::string, std::function<void(std::istringstream&)>>
     commandsMap;
 
+  const std::string cmd_name_agent_start_transform = "AGENTS_START_TRANSFORM";
+  const std::string cmd_name_next_knots_states = "NEXT_KNOTS_STATES";
+  const std::string cmd_name_push_knots = "PUSH_KNOTS";
+
   {
     // AGENTS_START_TRANSFORM    position="{float},{float},{float}"
 
-    const std::string cmd_name = "AGENTS_START_TRANSFORM";
-    commandsMap[cmd_name] = [&cmd_name, &regexpParser,
-                             this](std::istringstream& isstr) {
-      regexpParser.setErrorHint(cmd_name);
-      regexpParser.forEachArgs(
-        isstr.str(), [this, &regexpParser](const std::string& key,
-                                           const std::string& value) {
-          if (key == "position") {
-            _startTransform.position =
-              regexpParser.get3F(value, -10000.0f, +10000.0f);
-          } else if (key == "quaternion") {
-            _startTransform.quaternion =
-              regexpParser.get4F(value, -10000.0f, +10000.0f);
-          }
-        });
-    };
+    commandsMap[cmd_name_agent_start_transform] =
+      [&cmd_name_agent_start_transform, &regexpParser,
+       this](std::istringstream& isstr) {
+        regexpParser.setErrorHint(cmd_name_agent_start_transform);
+        regexpParser.forEachArgs(
+          isstr.str(), [this, &regexpParser](
+                         const std::string& key, const std::string& value) {
+            if (key == "position") {
+              _startTransform.position =
+                regexpParser.get3F(value, -10000.0f, +10000.0f);
+            } else if (key == "quaternion") {
+              _startTransform.quaternion =
+                regexpParser.get4F(value, -10000.0f, +10000.0f);
+            }
+          });
+      };
   }
 
   {
     // NEXT_KNOTS_STATES   size="{float}" color="{float},{float},{float}"
-    const std::string cmd_name = "NEXT_KNOTS_STATES";
-    commandsMap[cmd_name] = [&cmd_name, &regexpParser, &currentKnotsSize,
-                             &currentColor](std::istringstream& isstr) {
-      regexpParser.setErrorHint(cmd_name);
-      regexpParser.forEachArgs(
-        isstr.str(), [&regexpParser, &currentKnotsSize, &currentColor](
-                       const std::string& key, const std::string& value) {
-          if (key == "size") {
-            currentKnotsSize = regexpParser.get1F(value, 0.001f, +10000.0f);
-          } else if (key == "color") {
-            currentColor = regexpParser.get3F(value, 0.0f, +1.0f);
-          }
-        });
-    };
+    commandsMap[cmd_name_next_knots_states] =
+      [&cmd_name_next_knots_states, &regexpParser, &currentKnotsSize,
+       &currentColor](std::istringstream& isstr) {
+        regexpParser.setErrorHint(cmd_name_next_knots_states);
+        regexpParser.forEachArgs(
+          isstr.str(), [&regexpParser, &currentKnotsSize, &currentColor](
+                         const std::string& key, const std::string& value) {
+            if (key == "size") {
+              currentKnotsSize = regexpParser.get1F(value, 0.001f, +10000.0f);
+            } else if (key == "color") {
+              currentColor = regexpParser.get3F(value, 0.0f, +1.0f);
+            }
+          });
+      };
   }
 
   {
     // PUSH_KNOTS   left="{float},{float},{float}"
     // right="{float},{float},{float}"
-    const std::string cmd_name = "PUSH_KNOTS";
-    commandsMap[cmd_name] = [&cmd_name, &regexpParser, &rawKnots,
-                             &currentKnotsSize,
-                             &currentColor](std::istringstream& isstr) {
-      glm::vec3 left = {0, 0, 0};
-      glm::vec3 right = {0, 0, 0};
+    commandsMap[cmd_name_push_knots] =
+      [&cmd_name_push_knots, &regexpParser, &rawKnots, &currentKnotsSize,
+       &currentColor](std::istringstream& isstr) {
+        glm::vec3 left = {0, 0, 0};
+        glm::vec3 right = {0, 0, 0};
 
-      regexpParser.setErrorHint(cmd_name);
-      regexpParser.forEachArgs(
-        isstr.str(), [&regexpParser, &left, &right](const std::string& key,
-                                                    const std::string& value) {
-          if (key == "left") {
-            left = regexpParser.get3F(value, -10000.0, +10000.0f);
-          } else if (key == "right") {
-            right = regexpParser.get3F(value, -10000.0, +10000.0f);
-          }
-        });
+        regexpParser.setErrorHint(cmd_name_push_knots);
+        regexpParser.forEachArgs(
+          isstr.str(), [&regexpParser, &left, &right](
+                         const std::string& key, const std::string& value) {
+            if (key == "left") {
+              left = regexpParser.get3F(value, -10000.0, +10000.0f);
+            } else if (key == "right") {
+              right = regexpParser.get3F(value, -10000.0, +10000.0f);
+            }
+          });
 
-      rawKnots.push_back({left, right, currentKnotsSize, currentColor});
-    };
+        rawKnots.push_back({left, right, currentKnotsSize, currentColor});
+      };
   }
 
   //
@@ -162,8 +166,10 @@ void CircuitBuilder::parse(const std::string_view& filename) {
   }
 }
 
-void CircuitBuilder::load(const CircuitBuilder::StartTransform& startTransform,
-                          const CircuitBuilder::Knots& knots) {
+void
+CircuitBuilder::load(
+  const CircuitBuilder::StartTransform& startTransform,
+  const CircuitBuilder::Knots& knots) {
   _startTransform = startTransform;
   _knots = knots;
 }
@@ -171,8 +177,8 @@ void CircuitBuilder::load(const CircuitBuilder::StartTransform& startTransform,
 //
 //
 
-void CircuitBuilder::generateWireframeSkeleton(
-  CallbackNoNormals onSkeletonPatch) {
+void
+CircuitBuilder::generateWireframeSkeleton(CallbackNoNormals onSkeletonPatch) {
   if (!onSkeletonPatch)
     D_THROW(std::invalid_argument, "no callback provided");
 
@@ -237,7 +243,8 @@ void CircuitBuilder::generateWireframeSkeleton(
   onSkeletonPatch(vertices, indices);
 }
 
-void CircuitBuilder::generateSmoothedKnotsData(Knots& smoothedKnotsData) {
+void
+CircuitBuilder::generateSmoothedKnotsData(Knots& smoothedKnotsData) {
   smoothedKnotsData.clear();
   smoothedKnotsData.reserve(2048); // pre-allocate, ease the reallocation
 
@@ -284,15 +291,17 @@ void CircuitBuilder::generateSmoothedKnotsData(Knots& smoothedKnotsData) {
       // both left and right vertices must be far enough to be included
       const auto& lastVertex = smoothedKnotsData.back();
 
-      if (glm::distance(lastVertex.left, vertex.left) < knotSize ||
-          glm::distance(lastVertex.right, vertex.right) < knotSize)
+      if (
+        glm::distance(lastVertex.left, vertex.left) < knotSize ||
+        glm::distance(lastVertex.right, vertex.right) < knotSize)
         continue;
     }
 
     // check for invalid values (it create graphic and physic artifacts)
     const float minLength = 0.001f;
-    if (glm::length(vertex.left) < minLength ||
-        glm::length(vertex.right) < minLength)
+    if (
+      glm::length(vertex.left) < minLength ||
+      glm::length(vertex.right) < minLength)
       continue; // TODO: fix it
 
     vertex.color.r = bsplineSmoother.calcAt(coef, asValue(SplineType::colorR));
@@ -303,8 +312,9 @@ void CircuitBuilder::generateSmoothedKnotsData(Knots& smoothedKnotsData) {
   }
 }
 
-void CircuitBuilder::generateCircuitGeometry(CallbackNormals onNewGroundPatch,
-                                             CallbackNormals onNewWallPatch) {
+void
+CircuitBuilder::generateCircuitGeometry(
+  CallbackNormals onNewGroundPatch, CallbackNormals onNewWallPatch) {
   if (_knots.empty())
     D_THROW(std::runtime_error, "not initialised");
 
@@ -444,14 +454,14 @@ void CircuitBuilder::generateCircuitGeometry(CallbackNormals onNewGroundPatch,
     }
 
     if (onNewGroundPatch)
-      onNewGroundPatch(ground.vertices, circuitPatchColors, ground.normals,
-                       indices);
+      onNewGroundPatch(
+        ground.vertices, circuitPatchColors, ground.normals, indices);
 
     if (onNewWallPatch) {
-      onNewWallPatch(leftWall.vertices, circuitPatchColors, leftWall.normals,
-                     indices);
-      onNewWallPatch(rightWall.vertices, circuitPatchColors, rightWall.normals,
-                     indices);
+      onNewWallPatch(
+        leftWall.vertices, circuitPatchColors, leftWall.normals, indices);
+      onNewWallPatch(
+        rightWall.vertices, circuitPatchColors, rightWall.normals, indices);
     }
   }
 }
@@ -461,4 +471,7 @@ CircuitBuilder::getStartTransform() const {
   return _startTransform;
 }
 
-const CircuitBuilder::Knots& CircuitBuilder::getKnots() const { return _knots; }
+const CircuitBuilder::Knots&
+CircuitBuilder::getKnots() const {
+  return _knots;
+}

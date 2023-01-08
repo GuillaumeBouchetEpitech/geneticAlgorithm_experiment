@@ -6,14 +6,17 @@
 
 #include "demo/defines.hpp"
 
-void WebWorkersSimulation::initialise(const Definition& def) {
+void
+WebWorkersSimulation::initialise(const Definition& def) {
   if (def.genomesPerCore == 0)
-    D_THROW(std::invalid_argument, "received invalid number of genomes per core"
-                                     << ", input=" << def.genomesPerCore);
+    D_THROW(
+      std::invalid_argument, "received invalid number of genomes per core"
+                               << ", input=" << def.genomesPerCore);
 
   if (def.totalCores == 0)
-    D_THROW(std::invalid_argument, "received invalid number of cores"
-                                     << ", input=" << def.totalCores);
+    D_THROW(
+      std::invalid_argument, "received invalid number of cores"
+                               << ", input=" << def.totalCores);
 
   if (!def.neuralNetworkTopology.isValid())
     D_THROW(std::invalid_argument, "received invalid neural network topology");
@@ -56,7 +59,8 @@ void WebWorkersSimulation::initialise(const Definition& def) {
   _currentRequest = WorkerRequest::WorkersLoading;
 }
 
-void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps) {
+void
+WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps) {
   // do nothing if the worker(s) are:
   // => not initialised
   // => not finished working
@@ -109,7 +113,8 @@ void WebWorkersSimulation::update(float elapsedTime, unsigned int totalSteps) {
   _processSimulation(elapsedTime, totalSteps);
 }
 
-void WebWorkersSimulation::breed() {
+void
+WebWorkersSimulation::breed() {
   if (!isGenerationComplete())
     return;
 
@@ -133,7 +138,8 @@ void WebWorkersSimulation::breed() {
   _resetAndProcessSimulation(elapsedTime, totalSteps);
 }
 
-bool WebWorkersSimulation::isGenerationComplete() const {
+bool
+WebWorkersSimulation::isGenerationComplete() const {
 
   if (!_carsData.isUpToDate)
     return false;
@@ -145,16 +151,18 @@ bool WebWorkersSimulation::isGenerationComplete() const {
   return true;
 }
 
-void WebWorkersSimulation::_processSimulation(float elapsedTime,
-                                              unsigned int totalSteps) {
+void
+WebWorkersSimulation::_processSimulation(
+  float elapsedTime, unsigned int totalSteps) {
   for (auto workerProducer : _workerProducers)
     workerProducer->processSimulation(elapsedTime, totalSteps);
 
   _currentRequest = WorkerRequest::Process;
 }
 
-void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime,
-                                                      unsigned int totalSteps) {
+void
+WebWorkersSimulation::_resetAndProcessSimulation(
+  float elapsedTime, unsigned int totalSteps) {
   const auto& NNetworks = _geneticAlgorithm.getNeuralNetworks();
 
   for (std::size_t ii = 0; ii < _workerProducers.size(); ++ii) {
@@ -162,70 +170,85 @@ void WebWorkersSimulation::_resetAndProcessSimulation(float elapsedTime,
     auto last = NNetworks.begin() + (ii + 1) * _genomesPerCore;
     const NeuralNetworks subNetwork(first, last);
 
-    _workerProducers.at(ii)->resetAndProcessSimulation(elapsedTime, totalSteps,
-                                                       subNetwork);
+    _workerProducers.at(ii)->resetAndProcessSimulation(
+      elapsedTime, totalSteps, subNetwork);
   }
 
   _carsData.isUpToDate = false;
   _currentRequest = WorkerRequest::ResetAndProcess;
 }
 
-unsigned int WebWorkersSimulation::getTotalCores() const { return _totalCores; }
+unsigned int
+WebWorkersSimulation::getTotalCores() const {
+  return _totalCores;
+}
 
 const AbstactSimulation::CoreState&
 WebWorkersSimulation::getCoreState(unsigned int index) const {
   return _workerProducers.at(index)->getCoreState();
 }
 
-const CarData& WebWorkersSimulation::getCarResult(unsigned int index) const {
+const CarData&
+WebWorkersSimulation::getCarResult(unsigned int index) const {
   return _carsData.data.at(index);
 }
 
-unsigned int WebWorkersSimulation::getTotalCars() const {
+unsigned int
+WebWorkersSimulation::getTotalCars() const {
   return _totalGenomes;
 }
 
-void WebWorkersSimulation::setOnWorkersReadyCallback(
+void
+WebWorkersSimulation::setOnWorkersReadyCallback(
   AbstactSimulation::SimpleCallback callback) {
   _callbacks.onWorkersReady = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationResetCallback(
+void
+WebWorkersSimulation::setOnGenerationResetCallback(
   AbstactSimulation::SimpleCallback callback) {
   _callbacks.onGenerationReset = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationStepCallback(
+void
+WebWorkersSimulation::setOnGenerationStepCallback(
   AbstactSimulation::SimpleCallback callback) {
   _callbacks.onGenerationStep = callback;
 }
 
-void WebWorkersSimulation::setOnGenomeDieCallback(
+void
+WebWorkersSimulation::setOnGenomeDieCallback(
   AbstactSimulation::GenomeDieCallback callback) {
   _callbacks.onGenomeDie = callback;
 }
 
-void WebWorkersSimulation::setOnGenerationEndCallback(
+void
+WebWorkersSimulation::setOnGenerationEndCallback(
   AbstactSimulation::GenerationEndCallback callback) {
   _callbacks.onGenerationEnd = callback;
 }
 
-const Genomes& WebWorkersSimulation::getGenomes() const {
+const Genomes&
+WebWorkersSimulation::getGenomes() const {
   return _geneticAlgorithm.getGenomes();
 }
 
-const Genome& WebWorkersSimulation::getBestGenome() const {
+const Genome&
+WebWorkersSimulation::getBestGenome() const {
   return _geneticAlgorithm.getBestGenome();
 }
 
-unsigned int WebWorkersSimulation::getGenerationNumber() const {
+unsigned int
+WebWorkersSimulation::getGenerationNumber() const {
   return _geneticAlgorithm.getGenerationNumber();
 }
 
-const glm::vec3& WebWorkersSimulation::getStartPosition() const {
+const glm::vec3&
+WebWorkersSimulation::getStartPosition() const {
   return _startPosition;
 }
 
-const GeneticAlgorithm& WebWorkersSimulation::getGeneticAlgorithm() const {
+const GeneticAlgorithm&
+WebWorkersSimulation::getGeneticAlgorithm() const {
   return _geneticAlgorithm;
 }

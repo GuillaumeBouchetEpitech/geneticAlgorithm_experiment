@@ -18,10 +18,11 @@ std::array<const glm::vec3, 3> k_particleColors{{
   {1.0f, 0.5f, 0.0f}, // orange
 }};
 
-glm::vec3 getRandomVec3(float radius) {
-  return glm::vec3(RNG::getRangedValue(-radius, radius),
-                   RNG::getRangedValue(-radius, radius),
-                   RNG::getRangedValue(-radius, radius));
+glm::vec3
+getRandomVec3(float radius) {
+  return glm::vec3(
+    RNG::getRangedValue(-radius, radius), RNG::getRangedValue(-radius, radius),
+    RNG::getRangedValue(-radius, radius));
 }
 
 }; // namespace
@@ -32,17 +33,17 @@ ParticleManager::ExplosionParticle::ExplosionParticle(
   : position(position), linearVelocity(linearVelocity), scale(scale),
     color(color), life(life), maxLife(life) {}
 
-ParticleManager::TrailParticle::TrailParticle(const glm::vec3& position,
-                                              const glm::vec3& linearVelocity,
-                                              const glm::vec3& color,
-                                              float scale, float life)
+ParticleManager::TrailParticle::TrailParticle(
+  const glm::vec3& position, const glm::vec3& linearVelocity,
+  const glm::vec3& color, float scale, float life)
   : ExplosionParticle(position, linearVelocity, color, scale, life) {
   // initialise the particle's trail
   for (auto& trailPos : trail)
     trailPos = position;
 }
 
-void ParticleManager::initialise() {
+void
+ParticleManager::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -68,12 +69,13 @@ void ParticleManager::initialise() {
   _bigSphereInstances.reserve(2048);   // pre-allocate
 }
 
-void ParticleManager::setMatricesData(
-  const Camera::MatricesData& matricesData) {
+void
+ParticleManager::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void ParticleManager::update(float delta) {
+void
+ParticleManager::update(float delta) {
   // update particle's life and handle removal of dead particles
   for (std::size_t ii = 0; ii < _trailParticles.size();) {
     _trailParticles.at(ii).life -= delta;
@@ -159,22 +161,23 @@ void ParticleManager::update(float delta) {
   }
 }
 
-void ParticleManager::render() {
+void
+ParticleManager::render() {
 
   for (auto& particle : _smallExplosionParticles) {
     // update scale
     const float localScale = particle.life / particle.maxLife * particle.scale;
 
-    _smallSphereInstances.emplace_back(particle.position, localScale,
-                                       particle.color);
+    _smallSphereInstances.emplace_back(
+      particle.position, localScale, particle.color);
   }
 
   for (auto& particle : _bigExplosionParticles) {
     // update scale
     const float localScale = particle.life / particle.maxLife * particle.scale;
 
-    _bigSphereInstances.emplace_back(particle.position, localScale,
-                                     particle.color);
+    _bigSphereInstances.emplace_back(
+      particle.position, localScale, particle.color);
   }
 
   if (!_smallSphereInstances.empty() || !_bigSphereInstances.empty()) {
@@ -218,14 +221,15 @@ void ParticleManager::render() {
         stackRenderer.pushThickTriangle3dLine(
           trail.at(ii + 0), trail.at(ii + 1), localScale * 0.5f, particleColor);
       }
-      stackRenderer.pushThickTriangle3dLine(trailParticle.position, trail.at(0),
-                                            localScale * 0.5f, particleColor);
+      stackRenderer.pushThickTriangle3dLine(
+        trailParticle.position, trail.at(0), localScale * 0.5f, particleColor);
     }
   }
 }
 
-void ParticleManager::emitParticles(const glm::vec3& position,
-                                    const glm::vec3& velocity) {
+void
+ParticleManager::emitParticles(
+  const glm::vec3& position, const glm::vec3& velocity) {
   const unsigned int totalParticles = RNG::getRangedValue(5, 8);
 
   const float maxVelLength = 10.0f;
@@ -261,8 +265,8 @@ void ParticleManager::emitParticles(const glm::vec3& position,
 
     const float life = RNG::getRangedValue(0.5f, 1.5f);
 
-    _smallExplosionParticles.emplace_back(particlePos, linearVelocity, color,
-                                          scale, life);
+    _smallExplosionParticles.emplace_back(
+      particlePos, linearVelocity, color, scale, life);
   }
 
   for (unsigned int ii = 0; ii < 3; ++ii) {
@@ -277,7 +281,7 @@ void ParticleManager::emitParticles(const glm::vec3& position,
 
     const float life = RNG::getRangedValue(0.25f, 0.75f);
 
-    _bigExplosionParticles.emplace_back(particlePos, linearVelocity, color,
-                                        scale, life);
+    _bigExplosionParticles.emplace_back(
+      particlePos, linearVelocity, color, scale, life);
   }
 }

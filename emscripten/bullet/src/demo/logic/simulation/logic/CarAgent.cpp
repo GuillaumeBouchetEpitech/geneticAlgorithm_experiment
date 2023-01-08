@@ -29,17 +29,18 @@ const std::array<float, 3> eyeElevations = {
   -eyeElevation,
 };
 
-const std::array<float, 5> eyeAngles = {-eyeWidthStep * 2.0f, -eyeWidthStep,
-                                        0.0f, +eyeWidthStep,
-                                        +eyeWidthStep * 2.0f};
+const std::array<float, 5> eyeAngles = {
+  -eyeWidthStep * 2.0f, -eyeWidthStep, 0.0f, +eyeWidthStep,
+  +eyeWidthStep * 2.0f};
 
 constexpr float groundMaxRange = 10.0f; // <= ground sensor
 constexpr float groundHeight = 1.0f;
 
 } // namespace constants
 
-void CarAgent::update(float elapsedTime,
-                      const std::shared_ptr<NeuralNetwork> neuralNetwork) {
+void
+CarAgent::update(
+  float elapsedTime, const std::shared_ptr<NeuralNetwork> neuralNetwork) {
   if (!_isAlive)
     return;
 
@@ -86,10 +87,10 @@ void CarAgent::update(float elapsedTime,
   _output.steer = output.at(0); // steering angle: left/right
   _output.speed = output.at(1); // speed coef: forward/backward
 
-  _physicVehicle->setSteeringValue(0,
-                                   _output.steer * constants::steeringMaxValue);
-  _physicVehicle->setSteeringValue(1,
-                                   _output.steer * constants::steeringMaxValue);
+  _physicVehicle->setSteeringValue(
+    0, _output.steer * constants::steeringMaxValue);
+  _physicVehicle->setSteeringValue(
+    1, _output.steer * constants::steeringMaxValue);
 
   // const float engineFore = GenericEasing<4>()
   auto engineEasing =
@@ -108,7 +109,8 @@ void CarAgent::update(float elapsedTime,
   ++_totalUpdateNumber;
 }
 
-void CarAgent::_createVehicle() {
+void
+CarAgent::_createVehicle() {
   if (_physicVehicle)
     _physicWorld->getPhysicVehicleManager().destroyVehicle(_physicVehicle);
   if (_physicBody)
@@ -242,7 +244,8 @@ void CarAgent::_createVehicle() {
     _physicWorld->getPhysicVehicleManager().createAndAddVehicle(vehicleDef);
 }
 
-void CarAgent::_updateSensors() {
+void
+CarAgent::_updateSensors() {
   glm::mat4 vehicleTransform;
   _physicBody->getTransform(vehicleTransform);
 
@@ -257,9 +260,10 @@ void CarAgent::_updateSensors() {
       for (const auto& eyeAngle : constants::eyeAngles) {
         CarAgent::Sensor& eyeSensor = _eyeSensors.at(sensorIndex++);
 
-        const glm::vec4 newFarValue(constants::eyeMaxRange * std::sin(eyeAngle),
-                                    constants::eyeMaxRange * std::cos(eyeAngle),
-                                    constants::eyeHeight + eyeElevation, 1.0f);
+        const glm::vec4 newFarValue(
+          constants::eyeMaxRange * std::sin(eyeAngle),
+          constants::eyeMaxRange * std::cos(eyeAngle),
+          constants::eyeHeight + eyeElevation, 1.0f);
 
         eyeSensor.near = newNearValue;
         eyeSensor.far = vehicleTransform * newFarValue;
@@ -278,14 +282,15 @@ void CarAgent::_updateSensors() {
   } // ground sensor
 }
 
-void CarAgent::_collideEyeSensors() {
+void
+CarAgent::_collideEyeSensors() {
   for (auto& sensor : _eyeSensors) {
     sensor.value = 1.0f;
 
     // eye sensors collide ground + walls
-    Raycaster::RaycastParams params(sensor.near, sensor.far, 0,
-                                    asValue(Groups::sensor),
-                                    asValue(Masks::eyeSensor));
+    Raycaster::RaycastParams params(
+      sensor.near, sensor.far, 0, asValue(Groups::sensor),
+      asValue(Masks::eyeSensor));
 
     Raycaster::RaycastParams::ResultArray<1> result;
 
@@ -301,13 +306,14 @@ void CarAgent::_collideEyeSensors() {
   }
 }
 
-bool CarAgent::_collideGroundSensor() {
+bool
+CarAgent::_collideGroundSensor() {
   // raycast the ground to get the checkpoints validation
 
   // ground sensor collide only ground
-  Raycaster::RaycastParams params(_groundSensor.near, _groundSensor.far, 0,
-                                  asValue(Groups::sensor),
-                                  asValue(Masks::groundSensor));
+  Raycaster::RaycastParams params(
+    _groundSensor.near, _groundSensor.far, 0, asValue(Groups::sensor),
+    asValue(Masks::groundSensor));
 
   Raycaster::RaycastParams::ResultArray<1> result;
 
@@ -348,8 +354,10 @@ bool CarAgent::_collideGroundSensor() {
   return true;
 }
 
-void CarAgent::reset(PhysicWorld* physicWorld, const glm::vec3& position,
-                     const glm::vec4& quaternion) {
+void
+CarAgent::reset(
+  PhysicWorld* physicWorld, const glm::vec3& position,
+  const glm::vec4& quaternion) {
   _isAlive = true;
   _fitness = 0;
   _totalUpdateNumber = 0;
@@ -372,32 +380,52 @@ void CarAgent::reset(PhysicWorld* physicWorld, const glm::vec3& position,
   _physicVehicle->reset();
 }
 
-const CarAgent::Sensors& CarAgent::getEyeSensors() const { return _eyeSensors; }
+const CarAgent::Sensors&
+CarAgent::getEyeSensors() const {
+  return _eyeSensors;
+}
 
-const CarAgent::Sensor& CarAgent::getGroundSensor() const {
+const CarAgent::Sensor&
+CarAgent::getGroundSensor() const {
   return _groundSensor;
 }
 
-float CarAgent::getFitness() const { return _fitness; }
+float
+CarAgent::getFitness() const {
+  return _fitness;
+}
 
-bool CarAgent::isAlive() const { return _isAlive; }
+bool
+CarAgent::isAlive() const {
+  return _isAlive;
+}
 
-int CarAgent::getGroundIndex() const { return _groundIndex; }
+int
+CarAgent::getGroundIndex() const {
+  return _groundIndex;
+}
 
-const CarAgent::NeuralNetworkOutput& CarAgent::getNeuralNetworkOutput() const {
+const CarAgent::NeuralNetworkOutput&
+CarAgent::getNeuralNetworkOutput() const {
   return _output;
 }
 
-const PhysicBodyManager::BodyWeakRef CarAgent::getBody() const {
+const PhysicBodyManager::BodyWeakRef
+CarAgent::getBody() const {
   return _physicBody;
 }
 
-const PhysicVehicleManager::VehicleWeakRef CarAgent::getVehicle() const {
+const PhysicVehicleManager::VehicleWeakRef
+CarAgent::getVehicle() const {
   return _physicVehicle;
 }
 
-float CarAgent::getLife() const {
+float
+CarAgent::getLife() const {
   return float(_health) / constants::healthMaxValue;
 }
 
-unsigned int CarAgent::getTotalUpdates() const { return _totalUpdateNumber; }
+unsigned int
+CarAgent::getTotalUpdates() const {
+  return _totalUpdateNumber;
+}

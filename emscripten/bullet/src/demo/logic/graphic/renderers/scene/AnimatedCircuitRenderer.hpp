@@ -21,9 +21,9 @@ public:
 
     AnimatedVertex() = default;
 
-    AnimatedVertex(const glm::vec3& postion, const glm::vec3& color,
-                   const glm::vec3& normal, const glm::vec3& animatedNormal,
-                   float limitId)
+    AnimatedVertex(
+      const glm::vec3& postion, const glm::vec3& color, const glm::vec3& normal,
+      const glm::vec3& animatedNormal, float limitId)
       : postion(postion), color(color), normal(normal),
         animatedNormal(animatedNormal), limitId(limitId) {}
   };
@@ -35,9 +35,10 @@ public:
   ~AnimatedCircuitRenderer() = default;
 
 public:
-  void initialise(const std::vector<glm::vec3>& skeletonVertices,
-                  const AnimatedVertices& groundVertices,
-                  const AnimatedVertices& wallsVertices, float maxUpperValue);
+  void initialise(
+    const std::vector<glm::vec3>& skeletonVertices,
+    const AnimatedVertices& groundVertices,
+    const AnimatedVertices& wallsVertices, float maxUpperValue);
   void setMatricesData(const Camera::MatricesData& matricesData);
 
 public:

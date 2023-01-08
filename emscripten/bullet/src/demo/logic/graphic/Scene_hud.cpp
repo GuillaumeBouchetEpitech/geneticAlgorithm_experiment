@@ -13,7 +13,8 @@
 #include <iomanip>
 #include <sstream>
 
-void Scene::_renderHUD_ortho() {
+void
+Scene::_renderHUD_ortho() {
 
   auto& graphic = Context::get().graphic;
   auto& stackRenderer = graphic.hud.stackRenderers;
@@ -79,7 +80,8 @@ void Scene::_renderHUD_ortho() {
   textRenderer.render();
 }
 
-void Scene::_renderHUD() {
+void
+Scene::_renderHUD() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
 

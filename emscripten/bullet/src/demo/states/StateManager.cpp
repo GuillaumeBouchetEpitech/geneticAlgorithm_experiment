@@ -47,20 +47,28 @@ StateManager::StateManager() {
 
 //
 
-void StateManager::create() {
+void
+StateManager::create() {
   if (!_instance)
     _instance = new StateManager();
 }
 
-void StateManager::destroy() { delete _instance, _instance = nullptr; }
+void
+StateManager::destroy() {
+  delete _instance, _instance = nullptr;
+}
 
-StateManager* StateManager::get() { return _instance; }
+StateManager*
+StateManager::get() {
+  return _instance;
+}
 
 // singleton
 //
 //
 
-void StateManager::changeState(States nextState) {
+void
+StateManager::changeState(States nextState) {
   _states.at(asValue(_currentState))->leave();
 
   _previousState = _currentState;
@@ -69,7 +77,8 @@ void StateManager::changeState(States nextState) {
   _states.at(asValue(_currentState))->enter();
 }
 
-void StateManager::returnToPreviousState() {
+void
+StateManager::returnToPreviousState() {
   if (_currentState == _previousState)
     return;
 
@@ -80,24 +89,32 @@ void StateManager::returnToPreviousState() {
   _states.at(asValue(_currentState))->enter();
 }
 
-StateManager::States StateManager::getState() const { return _currentState; }
+StateManager::States
+StateManager::getState() const {
+  return _currentState;
+}
 
-void StateManager::handleEvent(const SDL_Event& event) {
+void
+StateManager::handleEvent(const SDL_Event& event) {
   _states.at(asValue(_currentState))->handleEvent(event);
 }
 
-void StateManager::update(float elapsedTime) {
+void
+StateManager::update(float elapsedTime) {
   _states.at(asValue(_currentState))->update(elapsedTime);
 }
 
-void StateManager::render(const SDL_Window& window) {
+void
+StateManager::render(const SDL_Window& window) {
   _states.at(asValue(_currentState))->render(window);
 }
 
-void StateManager::resize(int width, int height) {
+void
+StateManager::resize(int width, int height) {
   _states.at(asValue(_currentState))->resize(width, height);
 }
 
-void StateManager::visibility(bool visible) {
+void
+StateManager::visibility(bool visible) {
   _states.at(asValue(_currentState))->visibility(visible);
 }

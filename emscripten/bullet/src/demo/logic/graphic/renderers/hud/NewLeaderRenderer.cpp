@@ -3,7 +3,8 @@
 
 #include "demo/logic/Context.hpp"
 
-void NewLeaderRenderer::compute() {
+void
+NewLeaderRenderer::compute() {
   auto& context = Context::get();
   auto& graphic = context.graphic;
   auto& logic = context.logic;
@@ -26,27 +27,30 @@ void NewLeaderRenderer::compute() {
 
       const bool isVisible = scene.sceneToHudCoord(carPos, _screenCoord);
 
-      if (isVisible &&
-          // out of range?
-          _screenCoord.z < 1.0f) {
+      if (
+        isVisible &&
+        // out of range?
+        _screenCoord.z < 1.0f) {
         _isVisible = true;
       }
     }
   }
 }
 
-void NewLeaderRenderer::renderWireframe() {
+void
+NewLeaderRenderer::renderWireframe() {
   if (!_isVisible)
     return;
 
   glm::vec3 carPos = {_screenCoord.x, _screenCoord.y, 0.0f};
   glm::vec3 textPos = {_screenCoord.x + 50, _screenCoord.y + 50, 0.0f};
 
-  Context::get().graphic.hud.stackRenderers.wireframes.pushLine(carPos, textPos,
-                                                                {1, 1, 1});
+  Context::get().graphic.hud.stackRenderers.wireframes.pushLine(
+    carPos, textPos, {1, 1, 1});
 }
 
-void NewLeaderRenderer::renderHudText() {
+void
+NewLeaderRenderer::renderHudText() {
   if (!_isVisible)
     return;
 

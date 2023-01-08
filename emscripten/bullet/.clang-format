@@ -2,11 +2,15 @@
 Language:        Cpp
 # BasedOnStyle:  LLVM
 AccessModifierOffset: -2
-AlignAfterOpenBracket: Align
+
+# AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: AlwaysBreak
+
 AlignConsecutiveMacros: false
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: Right
+# AlignEscapedNewlines: Right
+AlignEscapedNewlines: Left
 AlignOperands:   true
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
@@ -18,7 +22,10 @@ AllowShortFunctionsOnASingleLine: All
 AllowShortLambdasOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
+
+# AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterDefinitionReturnType: All
+
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: MultiLine

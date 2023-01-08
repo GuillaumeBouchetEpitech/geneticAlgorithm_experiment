@@ -47,8 +47,9 @@ public: // ctor/dtor
 
 public: // methods
   void update(float elapsedTime, const std::shared_ptr<NeuralNetwork> nn);
-  void reset(PhysicWorld* physicWorld, const glm::vec3& position,
-             const glm::vec4& quaternion);
+  void reset(
+    PhysicWorld* physicWorld, const glm::vec3& position,
+    const glm::vec4& quaternion);
 
 private: // methods
   void _createVehicle();

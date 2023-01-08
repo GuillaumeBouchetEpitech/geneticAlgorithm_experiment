@@ -23,17 +23,19 @@ Context* Context::_instance = nullptr;
 
 Context::~Context() {}
 
-void Context::initialise(unsigned int width, unsigned int height,
-                         unsigned int totalCores, unsigned int genomesPerCore) {
+void
+Context::initialise(
+  unsigned int width, unsigned int height, unsigned int totalCores,
+  unsigned int genomesPerCore) {
   {
     graphic.camera.viewportSize = {width, height};
 
     graphic.camera.scene.setPerspective(70.0f, 0.1f, 1500.0f);
 
-    graphic.camera.hud.setOrthographic(0.0f, float(width), 0.0f, float(height),
-                                       -10.0f, +10.0f);
-    graphic.camera.hud.lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0),
-                              glm::vec3(0, 1, 0));
+    graphic.camera.hud.setOrthographic(
+      0.0f, float(width), 0.0f, float(height), -10.0f, +10.0f);
+    graphic.camera.hud.lookAt(
+      glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
     graphic.camera.hud.computeMatrices();
   }
 
@@ -115,15 +117,17 @@ void Context::initialise(unsigned int width, unsigned int height,
     graphic.hud.leaderEyeRenderer.initialise();
 
     graphic.hud.postProcess.initialise({width, height});
-    graphic.hud.postProcess.setGeometry(glm::vec2(0, 0),
-                                        glm::vec2(width, height), -2.0f);
+    graphic.hud.postProcess.setGeometry(
+      glm::vec2(0, 0), glm::vec2(width, height), -2.0f);
   }
 }
 
 //
 
-void Context::create(unsigned int width, unsigned int height,
-                     unsigned int totalCores, unsigned int genomesPerCore) {
+void
+Context::create(
+  unsigned int width, unsigned int height, unsigned int totalCores,
+  unsigned int genomesPerCore) {
   if (_instance)
     D_THROW(std::runtime_error, "Context singleton already initialised");
 
@@ -131,14 +135,16 @@ void Context::create(unsigned int width, unsigned int height,
   _instance->initialise(width, height, totalCores, genomesPerCore);
 }
 
-void Context::destroy() {
+void
+Context::destroy() {
   if (!_instance)
     D_THROW(std::runtime_error, "Context singleton already destroyed");
 
   delete _instance, _instance = nullptr;
 }
 
-Context& Context::get() {
+Context&
+Context::get() {
   if (!_instance)
     D_THROW(std::runtime_error, "Context singleton not initialised");
 

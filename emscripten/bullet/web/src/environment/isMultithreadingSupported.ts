@@ -1,5 +1,5 @@
 
-export const checkMultithreadingSupport = (): boolean => {
+export const isMultithreadingSupported = (): boolean => {
 
   const initialTest = ((window as any).SharedArrayBuffer !== undefined);
 

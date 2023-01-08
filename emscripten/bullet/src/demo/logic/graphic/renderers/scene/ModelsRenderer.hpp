@@ -26,8 +26,9 @@ private:
     glm::vec4 color;
     glm::vec4 outlineColor;
 
-    Attributes(const glm::mat4& tranform, const glm::vec4& color,
-               const glm::vec4& outlineColor)
+    Attributes(
+      const glm::mat4& tranform, const glm::vec4& color,
+      const glm::vec4& outlineColor)
       : tranform(tranform), color(color), outlineColor(outlineColor) {}
   };
 

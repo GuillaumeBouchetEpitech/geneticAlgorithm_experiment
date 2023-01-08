@@ -12,14 +12,15 @@
 
 namespace {
 
-void updateVerticesNormals(loader::ModelVertices& vertices) {
+void
+updateVerticesNormals(loader::ModelVertices& vertices) {
   for (std::size_t index = 0; index < vertices.size(); index += 3) {
     loader::ModelVertex& vertexA = vertices.at(index + 0);
     loader::ModelVertex& vertexB = vertices.at(index + 1);
     loader::ModelVertex& vertexC = vertices.at(index + 2);
 
-    const glm::vec3 normal = glm::cross(vertexA.position - vertexB.position,
-                                        vertexA.position - vertexC.position);
+    const glm::vec3 normal = glm::cross(
+      vertexA.position - vertexB.position, vertexA.position - vertexC.position);
 
     vertexA.normal = normal;
     vertexB.normal = normal;
@@ -29,15 +30,16 @@ void updateVerticesNormals(loader::ModelVertices& vertices) {
 
 } // namespace
 
-void ModelsRenderer::initialise() {
+void
+ModelsRenderer::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
   { // chassis geometry (instanced)
 
     loader::ModelVertices modelVertices;
-    loader::loadObjModel("./assets/model/CarNoWheels.obj", "./assets/model/",
-                         modelVertices);
+    loader::loadObjModel(
+      "./assets/model/CarNoWheels.obj", "./assets/model/", modelVertices);
 
     updateVerticesNormals(modelVertices);
 
@@ -53,8 +55,8 @@ void ModelsRenderer::initialise() {
   { // wheel geometry (instanced)
 
     loader::ModelVertices modelVertices;
-    loader::loadObjModel("./assets/model/CarWheel.obj", "./assets/model/",
-                         modelVertices);
+    loader::loadObjModel(
+      "./assets/model/CarWheel.obj", "./assets/model/", modelVertices);
 
     updateVerticesNormals(modelVertices); // TODO: useful?
 
@@ -68,11 +70,13 @@ void ModelsRenderer::initialise() {
   }
 }
 
-void ModelsRenderer::fadeIn(float delay, float duration) {
+void
+ModelsRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 }
 
-void ModelsRenderer::update(float elapsedTime) {
+void
+ModelsRenderer::update(float elapsedTime) {
   if (_timer.isDone())
     return;
 
@@ -90,7 +94,8 @@ void ModelsRenderer::update(float elapsedTime) {
                          .get(_timer.getCoefElapsed());
 }
 
-void ModelsRenderer::render(const Camera& cameraInstance) {
+void
+ModelsRenderer::render(const Camera& cameraInstance) {
   if (!_chassis.shader || !_wheels.shader)
     D_THROW(std::runtime_error, "shader not setup");
 
@@ -147,11 +152,11 @@ void ModelsRenderer::render(const Camera& cameraInstance) {
     //
     // transforms
 
-    _modelsChassisMatrices.emplace_back(chassisTransform, color,
-                                        k_outlineColor);
+    _modelsChassisMatrices.emplace_back(
+      chassisTransform, color, k_outlineColor);
     for (const auto& wheelTransform : carData.liveTransforms.wheels)
-      _modelWheelsMatrices.emplace_back(wheelTransform, k_whiteColor,
-                                        k_outlineColor);
+      _modelWheelsMatrices.emplace_back(
+        wheelTransform, k_whiteColor, k_outlineColor);
   }
 
   if (!_modelsChassisMatrices.empty()) {

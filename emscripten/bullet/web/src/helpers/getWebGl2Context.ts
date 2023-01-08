@@ -1,34 +1,13 @@
 
 import Logger from "../Logger";
 
-export const getWebGl2Context = (inCanvas: HTMLCanvasElement, logger: Logger, displayErrorText: (msg: string) => void): WebGL2RenderingContext => {
-
-  // const onContextCreationError = (event: WebGLContextEvent): void => {
-  //   const statusMessage = event.statusMessage || "Unknown error";
-  //   displayErrorText(`Could not create a WebGL2 context, statusMessage=${statusMessage}.`);
-  const onContextCreationError = (): void => {
-    displayErrorText(`Could not create a WebGL2 context.`);
-  };
-  // inCanvas.addEventListener<WebGLContextEvent>("webglcontextcreationerror", onContextCreationError, false);
-  inCanvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
-
-  const onWebGlContextLost = (): void => {
-    displayErrorText("WebGL2 context lost. You will need to reload the page.");
-  };
-  inCanvas.addEventListener("webglcontextlost", onWebGlContextLost, false);
-
-  // this prevent the contextual menu to appear on a right click
-  const onContextMenu = (event: MouseEvent): void => {
-    event.preventDefault();
-  };
-  inCanvas.addEventListener("contextmenu", onContextMenu, false);
+export const getWebGl2Context = (
+  inCanvas: HTMLCanvasElement,
+): WebGL2RenderingContext => {
 
   if (!window.WebGL2RenderingContext) {
-    displayErrorText("Missing WebGL2 feature (unsuported)");
     throw new Error("missing WebGL2 feature (unsuported)");
   }
-
-  logger.log("[JS] WebGL2 feature => supported");
 
   const renderingContextAttribs: WebGLContextAttributes = {
     // Boolean that indicates if the canvas contains an alpha buffer.
@@ -73,11 +52,8 @@ export const getWebGl2Context = (inCanvas: HTMLCanvasElement, logger: Logger, di
 
   if (!webglCtx) {
     const errMsg = "WebGL2 context failed (initialisation)";
-    displayErrorText(errMsg);
     throw new Error(errMsg);
   }
-
-  logger.log("[JS] WebGL2 context => initialised");
 
   return webglCtx;
 };

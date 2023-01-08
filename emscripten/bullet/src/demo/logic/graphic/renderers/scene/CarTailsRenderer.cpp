@@ -6,7 +6,8 @@
 
 #include "framework/system/asValue.hpp"
 
-void CarTailsRenderer::initialise() {
+void
+CarTailsRenderer::initialise() {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -24,12 +25,13 @@ void CarTailsRenderer::initialise() {
     }
 }
 
-void CarTailsRenderer::setMatricesData(
-  const Camera::MatricesData& matricesData) {
+void
+CarTailsRenderer::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void CarTailsRenderer::updateLatestTrail() {
+void
+CarTailsRenderer::updateLatestTrail() {
   auto& context = Context::get();
   auto& logic = context.logic;
 
@@ -52,7 +54,8 @@ void CarTailsRenderer::updateLatestTrail() {
     (_currentTrailIndex + 1) % _geometries.bestNewCarsTrails.size();
 }
 
-void CarTailsRenderer::render() {
+void
+CarTailsRenderer::render() {
 
   if (!_shader)
     D_THROW(std::runtime_error, "shader not setup");

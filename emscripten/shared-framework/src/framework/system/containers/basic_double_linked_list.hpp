@@ -16,6 +16,9 @@ struct basic_double_linked_list {
   static void add(basic_double_linked_list& list, link& new_link) {
     // add as head of list
 
+    // FROM: (headLink) -> ...
+    // TO:   (headLink) -> (newLink) <--> ...
+
     new_link.prev_link = nullptr;
     new_link.next_link = list.head_link;
     if (list.head_link)
@@ -28,11 +31,16 @@ struct basic_double_linked_list {
   static void remove(basic_double_linked_list& list, link& old_link) {
     // remove from list
 
+    // FROM: ... <--> (oldLink) <--> ...
+    // TO:   ... <--> ...
+
     if (old_link.prev_link)
       old_link.prev_link->next_link = old_link.next_link;
     if (old_link.next_link)
       old_link.next_link->prev_link = old_link.prev_link;
 
+    // FROM: (headLink) -> (oldLink) -> ...
+    // TO:   (headLink) -> ...
     if (list.head_link == &old_link)
       list.head_link = old_link.next_link;
 
@@ -45,6 +53,9 @@ struct basic_double_linked_list {
                       link& new_link) {
     // replace in list
 
+    // FROM: ... <--> (oldLink) <--> ...
+    // TO:   ... <--> (newLink) <--> ...
+
     new_link.prev_link = old_link.prev_link;
     new_link.next_link = old_link.next_link;
 
@@ -56,6 +67,8 @@ struct basic_double_linked_list {
     if (new_link.next_link)
       new_link.next_link->prev_link = &new_link;
 
+    // FROM: (headLink) -> (oldLink) -> ...
+    // TO:   (headLink) -> (newLink) -> ...
     if (list.head_link == &old_link)
       list.head_link = &new_link;
   }
@@ -83,7 +96,7 @@ struct basic_double_linked_list {
                    const std::function<void(T*)>& callback) {
     link* curr_link = list.head_link;
     while (curr_link) {
-      callback(reinterpret_cast<T*>(curr_link));
+      callback(static_cast<T*>(curr_link));
       curr_link = curr_link->next_link;
     }
   }
@@ -95,7 +108,7 @@ struct basic_double_linked_list {
     while (curr_link) {
       link* to_reset_link = curr_link;
 
-      callback(reinterpret_cast<T*>(curr_link));
+      callback(static_cast<T*>(curr_link));
       curr_link = curr_link->next_link;
 
       reset_link(*to_reset_link);

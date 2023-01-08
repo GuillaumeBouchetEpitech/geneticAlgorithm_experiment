@@ -5,7 +5,8 @@
 
 #include "framework/system/ErrorHandler.hpp"
 
-void CarWheelsTrails::reset(const AbstactSimulation& simulation) {
+void
+CarWheelsTrails::reset(const AbstactSimulation& simulation) {
   _genomeIndexMap.clear();
 
   const unsigned int totalCars = simulation.getTotalCars();
@@ -29,12 +30,16 @@ void CarWheelsTrails::reset(const AbstactSimulation& simulation) {
   }
 }
 
-void CarWheelsTrails::push(unsigned int carIndex, int wheelIndex,
-                           const glm::vec3& value) {
+void
+CarWheelsTrails::push(
+  unsigned int carIndex, int wheelIndex, const glm::vec3& value) {
   _allWheelsTrails.at(carIndex).wheels.at(wheelIndex).emplace_back(value);
 }
 
-bool CarWheelsTrails::isEmpty() const { return _allWheelsTrails.empty(); }
+bool
+CarWheelsTrails::isEmpty() const {
+  return _allWheelsTrails.empty();
+}
 
 const CarWheelsTrails::WheelsTrail&
 CarWheelsTrails::getTrailByIndex(int index) const {

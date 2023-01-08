@@ -231,6 +231,10 @@ void ShaderProgram::setUniform(const char* name, const glm::vec4& vec4) const {
   setUniform(getUniform(name), vec4.x, vec4.y, vec4.z, vec4.w);
 }
 
+void ShaderProgram::setUniform(const char* name, const glm::mat3& mat3) const {
+  setUniform(getUniform(name), mat3);
+}
+
 void ShaderProgram::setUniform(const char* name, const glm::mat4& mat4) const {
   setUniform(getUniform(name), mat4);
 }
@@ -276,6 +280,10 @@ void ShaderProgram::setUniform(int location, const glm::vec3& vec3) const {
 
 void ShaderProgram::setUniform(int location, const glm::vec4& vec4) const {
   GlContext::Shader::setUniform(location, vec4.x, vec4.y, vec4.z, vec4.w);
+}
+
+void ShaderProgram::setUniform(int location, const glm::mat3& mat3) const {
+  GlContext::Shader::setUniform(location, mat3);
 }
 
 void ShaderProgram::setUniform(int location, const glm::mat4& mat4) const {

@@ -1,148 +1,237 @@
 
 #pragma once
 
+#include "basic_double_linked_list.hpp"
 #include "dynamic_heap_array.hpp"
+
+#include "framework/system/ErrorHandler.hpp"
 
 #include <vector>
 // #include <functional>
 #include <iostream>
 #include <utility>
 
-// template <typename static_heap_grid_array>
-// class static_heap_grid_array_iterator {
-// public:
-//   using ValueType = typename static_heap_grid_array::ValueType;
+template <typename static_heap_grid_array>
+class static_heap_grid_array_column_iterator
+  : public basic_double_linked_list::link {
 
-// protected:
-//   ValueType* _ptr;
+  friend static_heap_grid_array;
 
-// public:
-//   static_heap_grid_array_iterator(ValueType* ptr) : _ptr(ptr) {}
+public:
+  using ValueType = typename static_heap_grid_array::ValueType;
 
-//   static_heap_grid_array_iterator& operator++() // ++pre
-//   {
-//     ++_ptr;
-//     return *this;
-//   }
-//   static_heap_grid_array_iterator& operator++(int) // post++
-//   {
-//     static_heap_grid_array_iterator copy = *this;
-//     ++(*this);
-//     return copy;
-//   }
+protected:
+  static_heap_grid_array* _container;
+  int _row;
+  int _column;
 
-//   static_heap_grid_array_iterator& operator--() // --pre
-//   {
-//     --_ptr;
-//     return *this;
-//   }
-//   static_heap_grid_array_iterator& operator--(int) // post--
-//   {
-//     static_heap_grid_array_iterator copy = *this;
-//     --(*this);
-//     return copy;
-//   }
+public:
+  static_heap_grid_array_column_iterator(static_heap_grid_array& container,
+                                         int row, int column)
+    : _container(&container), _row(row), _column(column) {
+    basic_double_linked_list::add(_container->_column_iterators_list, *this);
+  }
 
-//   static_heap_grid_array_iterator operator+(std::size_t value) {
-//     // _ptr += value;
-//     // return *this;
-//     static_heap_grid_array_iterator copy = *this;
-//     copy._ptr += value;
-//     return copy;
-//   }
-//   static_heap_grid_array_iterator operator-(std::size_t value) {
-//     static_heap_grid_array_iterator copy = *this;
-//     copy._ptr -= value;
-//     return copy;
-//   }
+  ~static_heap_grid_array_column_iterator() {
+    if (_container)
+      basic_double_linked_list::remove(_container->_column_iterators_list,
+                                       *this);
+  }
 
-//   ValueType& operator[](int index) { return *(_ptr + index); }
-//   ValueType* operator->() { return _ptr; }
-//   ValueType& operator*() { return *_ptr; }
+public:
+  bool is_valid() const { return _container != nullptr; }
 
-//   bool operator==(const static_heap_grid_array_iterator& other) const {
-//     return _ptr == other._ptr;
-//   }
-//   bool operator!=(const static_heap_grid_array_iterator& other) const {
-//     return !(*this == other);
-//   }
-// };
+private:
+  void _ensure_is_valid() const {
+    if (!is_valid())
+      D_THROW(std::runtime_error, "invalid iterator");
+  }
 
-// //
-// //
-// //
-// //
-// //
+public:
+  static_heap_grid_array_column_iterator& operator++() // ++pre
+  {
+    _ensure_is_valid();
+    // if (_column < int(_container->size()))
+    ++_column;
+    return *this;
+  }
+  static_heap_grid_array_column_iterator& operator++(int) // post++
+  {
+    static_heap_grid_array_column_iterator copy = *this;
+    ++(*this);
+    return copy;
+  }
 
-// template <typename static_heap_grid_array>
-// class static_heap_grid_array_row_iterator {
-// public:
-//   using ValueType = typename static_heap_grid_array::ValueType;
-//   using Iterator = typename static_heap_grid_array::Iterator;
+  static_heap_grid_array_column_iterator& operator--() // --pre
+  {
+    _ensure_is_valid();
+    // if (_column > 0)
+    --_column;
+    return *this;
+  }
+  static_heap_grid_array_column_iterator& operator--(int) // post--
+  {
+    static_heap_grid_array_column_iterator copy = *this;
+    --(*this);
+    return copy;
+  }
 
-// protected:
-//   ValueType* _ptr;
-//   std::size_t _width;
+public:
+  ValueType& operator[](int index) {
+    _ensure_is_valid();
+    return (*_container)(_row, _column + index);
+  }
+  ValueType* operator->() {
+    _ensure_is_valid();
+    return &((*_container)(_row, _column));
+  }
+  ValueType& operator*() {
+    _ensure_is_valid();
+    return (*_container)(_row, _column);
+  }
 
-// public:
-//   static_heap_grid_array_row_iterator(ValueType* ptr, std::size_t width)
-//     : _ptr(ptr), _width(width) {}
+public:
+  bool operator==(const static_heap_grid_array_column_iterator& other) const {
+    return (_container == other._container && _row == other._row &&
+            _column == other._column);
+  }
+  bool operator!=(const static_heap_grid_array_column_iterator& other) const {
+    return !(*this == other);
+  }
 
-//   static_heap_grid_array_row_iterator& operator++() // ++pre
-//   {
-//     _ptr += _width;
-//     return *this;
-//   }
-//   static_heap_grid_array_row_iterator& operator++(int) // post++
-//   {
-//     static_heap_grid_array_row_iterator copy = *this;
-//     _ptr += _width;
-//     return copy;
-//   }
+public:
+  static_heap_grid_array_column_iterator operator+(int value) {
+    static_heap_grid_array_column_iterator copy = *this;
+    copy._column += value;
+    return copy;
+  }
+  static_heap_grid_array_column_iterator operator-(int value) {
+    static_heap_grid_array_column_iterator copy = *this;
+    copy._column -= value;
+    return copy;
+  }
+};
 
-//   static_heap_grid_array_row_iterator& operator--() // --pre
-//   {
-//     _ptr -= _width;
-//     return *this;
-//   }
-//   static_heap_grid_array_row_iterator& operator--(int) // post--
-//   {
-//     static_heap_grid_array_row_iterator copy = *this;
-//     _ptr -= _width;
-//     return copy;
-//   }
+//
+//
+//
+//
+//
 
-//   static_heap_grid_array_row_iterator operator+(std::size_t value) {
-//     static_heap_grid_array_row_iterator copy = *this;
-//     copy._ptr += _width * value;
-//     return copy;
-//   }
-//   static_heap_grid_array_row_iterator operator-(std::size_t value) {
-//     static_heap_grid_array_row_iterator copy = *this;
-//     copy._ptr -= _width * value;
-//     return copy;
-//   }
+template <typename static_heap_grid_array>
+class static_heap_grid_array_row_iterator
+  : public basic_double_linked_list::link {
 
-//   ValueType& operator[](int index) { return *(_ptr + index); }
-//   ValueType* operator->() { return _ptr; }
-//   ValueType& operator*() { return *_ptr; }
+  friend static_heap_grid_array;
 
-//   bool operator==(const static_heap_grid_array_row_iterator& other) const {
-//     return _ptr == other._ptr;
-//   }
-//   bool operator!=(const static_heap_grid_array_row_iterator& other) const {
-//     return !(*this == other);
-//   }
+public:
+  using ValueType = typename static_heap_grid_array::ValueType;
+  using ColumnIterator = typename static_heap_grid_array::ColumnIterator;
 
-//   Iterator beginColumns() { return Iterator(_ptr); }
-//   Iterator endColumns() { return Iterator(_ptr + _width); }
-// };
+protected:
+  static_heap_grid_array* _container;
+  int _row;
+  int _column;
 
-// //
-// //
-// //
-// //
-// //
+public:
+  static_heap_grid_array_row_iterator(static_heap_grid_array& container,
+                                      int row, int column)
+    : _container(&container), _row(row), _column(column) {
+    basic_double_linked_list::add(_container->_row_iterators_list, *this);
+  }
+
+  ~static_heap_grid_array_row_iterator() {
+    if (_container)
+      basic_double_linked_list::remove(_container->_row_iterators_list, *this);
+  }
+
+public:
+  bool is_valid() const { return _container != nullptr; }
+
+private:
+  void _ensure_is_valid() const {
+    if (!is_valid())
+      D_THROW(std::runtime_error, "invalid iterator");
+  }
+
+public:
+  static_heap_grid_array_row_iterator& operator++() // ++pre
+  {
+    _ensure_is_valid();
+    // if (_column < int(_container->size()))
+    ++_row;
+    return *this;
+  }
+  static_heap_grid_array_row_iterator& operator++(int) // post++
+  {
+    static_heap_grid_array_row_iterator copy = *this;
+    ++(*this);
+    return copy;
+  }
+
+  static_heap_grid_array_row_iterator& operator--() // --pre
+  {
+    _ensure_is_valid();
+    // if (_column > 0)
+    --_row;
+    return *this;
+  }
+  static_heap_grid_array_row_iterator& operator--(int) // post--
+  {
+    static_heap_grid_array_row_iterator copy = *this;
+    --(*this);
+    return copy;
+  }
+
+public:
+  ValueType& operator[](int index) {
+    _ensure_is_valid();
+    return (*_container)(_row + index, _column);
+  }
+  ValueType* operator->() {
+    _ensure_is_valid();
+    return &((*_container)(_row, _column));
+  }
+  ValueType& operator*() {
+    _ensure_is_valid();
+    return (*_container)(_row, _column);
+  }
+
+public:
+  bool operator==(const static_heap_grid_array_row_iterator& other) const {
+    return (_container == other._container && _row == other._row &&
+            _column == other._column);
+  }
+  bool operator!=(const static_heap_grid_array_row_iterator& other) const {
+    return !(*this == other);
+  }
+
+public:
+  ColumnIterator beginColumns() {
+    return ColumnIterator(*_container, _row, _column);
+  }
+  ColumnIterator endColumns() {
+    return ColumnIterator(*_container, _row, _column + int(_container->_width));
+  }
+
+public:
+  static_heap_grid_array_row_iterator operator+(int value) {
+    static_heap_grid_array_row_iterator copy = *this;
+    copy._row += value;
+    return copy;
+  }
+  static_heap_grid_array_row_iterator operator-(int value) {
+    static_heap_grid_array_row_iterator copy = *this;
+    copy._row -= value;
+    return copy;
+  }
+};
+
+//
+//
+//
+//
+//
 
 /**
  * static_heap_grid_array
@@ -152,19 +241,26 @@
 template <typename Type> class static_heap_grid_array {
 public:
   using ValueType = Type;
-  // using Iterator =
-  //   static_heap_grid_array_iterator<static_heap_grid_array<Type>>;
-  // using RowIterator =
-  //   static_heap_grid_array_row_iterator<static_heap_grid_array<Type>>;
+  using ColumnIterator =
+    static_heap_grid_array_column_iterator<static_heap_grid_array<Type>>;
+  using RowIterator =
+    static_heap_grid_array_row_iterator<static_heap_grid_array<Type>>;
+
+protected:
+  friend ColumnIterator;
+  friend RowIterator;
 
 private:
   dynamic_heap_array<Type> _data;
   std::size_t _height = 0;
   std::size_t _width = 0;
 
+  basic_double_linked_list _row_iterators_list;
+  basic_double_linked_list _column_iterators_list;
+
 public:
   static_heap_grid_array() = default;
-  ~static_heap_grid_array() { clear(); }
+  virtual ~static_heap_grid_array() { clear(); }
 
   // disable move/copy
   static_heap_grid_array(const static_heap_grid_array& other) = delete;
@@ -174,13 +270,17 @@ public:
   static_heap_grid_array& operator=(static_heap_grid_array&& other) = delete;
   // disable move/copy
 
+public:
   void allocate(std::size_t height, std::size_t width) {
     _height = height;
     _width = width;
     _data.ensure_size(_height * _width);
   }
 
-  void clear() { _data.clear(); }
+  void clear() {
+    invalidate_all_iterators();
+    _data.clear();
+  }
 
 private:
   int _get_index(int index, std::size_t size) const {
@@ -196,20 +296,13 @@ private:
   }
 
 public:
-
-  Type& get(int row, int column) {
-    return _data[_get_data_index(row, column)];
-  }
-  Type& operator()(int row, int column) {
-    return get(row, column);
-  }
+  Type& get(int row, int column) { return _data[_get_data_index(row, column)]; }
+  Type& operator()(int row, int column) { return get(row, column); }
 
   const Type& get(int row, int column) const {
     return _data[_get_data_index(row, column)];
   }
-  const Type& operator()(int row, int column) const {
-    return get(row, column);
-  }
+  const Type& operator()(int row, int column) const { return get(row, column); }
 
   const Type& operator[](int index) const { return _data[index]; }
   Type& operator[](int index) { return _data[index]; }
@@ -219,26 +312,30 @@ public:
   std::size_t size() const { return _data.size(); }
   bool is_empty() const { return _data.is_empty(); }
 
-  // Iterator begin() { return Iterator(_data.data()); }
-  // Iterator end() { return Iterator(_data.data() + _data.size()); }
+public:
+  ColumnIterator beginColumns(uint32_t row) {
+    return ColumnIterator(*this, int(row), 0);
+  }
+  ColumnIterator endColumns(uint32_t row) {
+    return ColumnIterator(*this, int(row), int(_width));
+  }
 
-  // // Iterator beginColumns(uint32_t row) { return Iterator(_data + row *
-  // // _width); } Iterator endColumns(uint32_t row) { return Iterator(_data + (row
-  // // + 1) * _width); }
+  RowIterator beginRows(uint32_t row) {
+    return RowIterator(*this, int(row), 0);
+  }
+  RowIterator endRows(uint32_t row) {
+    return RowIterator(*this, int(row) + 1, 0);
+  }
 
-  // // RowIterator beginRow(uint32_t row) { return RowIterator(_data + row *
-  // // _width, _width); } RowIterator endRow(uint32_t row) { return
-  // // RowIterator(_data + (row + 1) * _width, _width); }
+  RowIterator beginRows() { return RowIterator(*this, 0, 0); }
+  RowIterator endRows() { return RowIterator(*this, int(_height), 0); }
 
-  // RowIterator beginRow() { return RowIterator(_data.data(), _width); }
-  // RowIterator endRow() {
-  //   return RowIterator(_data.data() + _data.size(), _width);
-  // }
-
-  // Iterator beginColumns(std::size_t row) {
-  //   return Iterator(_data.data() + row * _width);
-  // }
-  // Iterator endColumns(std::size_t row) {
-  //   return Iterator(_data.data() + (row + 1) * _width);
-  // }
+  void invalidate_all_iterators() {
+    basic_double_linked_list::loop_and_reset<ColumnIterator>(
+      _column_iterators_list,
+      [](ColumnIterator* it) -> void { it->_container = nullptr; });
+    basic_double_linked_list::loop_and_reset<RowIterator>(
+      _row_iterators_list,
+      [](RowIterator* it) -> void { it->_container = nullptr; });
+  }
 };

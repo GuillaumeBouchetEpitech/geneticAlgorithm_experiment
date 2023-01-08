@@ -27,8 +27,8 @@ public: // ctor/dtor
   NeuralNetwork(const NeuralNetworkTopology& topology);
 
 public: // methods
-  void compute(const std::vector<float>& inputValues,
-               std::vector<float>& outputValues);
+  void compute(
+    const std::vector<float>& inputValues, std::vector<float>& outputValues);
 
 public: // setter
   void setWeights(const std::vector<float>& inputWeights);

@@ -5,9 +5,10 @@
 
 namespace {
 
-void drawSpherePatch(std::vector<glm::vec3>& vertices, uint32_t quality,
-                     float radius, const glm::vec3& v01, const glm::vec3& v02,
-                     const glm::vec3& v03) {
+void
+drawSpherePatch(
+  std::vector<glm::vec3>& vertices, uint32_t quality, float radius,
+  const glm::vec3& v01, const glm::vec3& v02, const glm::vec3& v03) {
   if (quality <= 0) {
     vertices.push_back({v01 * radius});
     vertices.push_back({v03 * radius});
@@ -28,8 +29,9 @@ void drawSpherePatch(std::vector<glm::vec3>& vertices, uint32_t quality,
 
 } // namespace
 
-void generateSphereVerticesFilled(float radius, unsigned int quality,
-                                  std::vector<glm::vec3>& vertices) {
+void
+generateSphereVerticesFilled(
+  float radius, unsigned int quality, std::vector<glm::vec3>& vertices) {
   constexpr float k_icx = 0.525731112119133606f;
   constexpr float k_icz = 0.850650808352039932f;
 
@@ -58,7 +60,8 @@ void generateSphereVerticesFilled(float radius, unsigned int quality,
   vertices.clear();
   vertices.reserve(indices.size() * 3); // pre-allocate
   for (const glm::ivec3& index : indices) {
-    drawSpherePatch(vertices, quality, radius, positions.at(index.x),
-                    positions.at(index.y), positions.at(index.z));
+    drawSpherePatch(
+      vertices, quality, radius, positions.at(index.x), positions.at(index.y),
+      positions.at(index.z));
   }
 }

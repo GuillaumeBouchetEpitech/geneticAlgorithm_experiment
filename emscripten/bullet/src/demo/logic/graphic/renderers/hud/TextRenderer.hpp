@@ -54,10 +54,11 @@ public:
   void setMatricesData(const Camera::MatricesData& matricesData);
 
 public:
-  void push(const glm::vec2& position, std::string_view message,
-            const glm::vec4& color, float scale = 1.0f, float zDepth = 0.0f,
-            const glm::vec3& inBackColor = {0,0,0}
-            // TextAllign allign = TextAllign::left
+  void push(
+    const glm::vec2& position, std::string_view message, const glm::vec4& color,
+    float scale = 1.0f, float zDepth = 0.0f,
+    const glm::vec3& inBackColor = {0, 0, 0}
+    // TextAllign allign = TextAllign::left
   );
 
   struct Rectangle {
@@ -65,7 +66,9 @@ public:
     glm::vec2 size;
   };
 
-  void getSizes(std::vector<Rectangle>& outRectangles, const glm::vec2& position, std::string_view message, float scale = 1.0f);
+  void getSizes(
+    std::vector<Rectangle>& outRectangles, const glm::vec2& position,
+    std::string_view message, float scale = 1.0f);
 
   void clear();
 

@@ -80,7 +80,7 @@ public:
 
   virtual ~dynamic_heap_array() {
 
-    // invalidate_all_iterators();
+    // base_class::invalidate_all_iterators();
 
     clear();
     deallocate_memory(this->_data, _capacity);

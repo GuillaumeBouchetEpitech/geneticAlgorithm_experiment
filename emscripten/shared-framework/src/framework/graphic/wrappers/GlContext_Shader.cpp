@@ -179,6 +179,10 @@ void setUniform(int location, float x, float y, float z, float w) {
   glCheck(glUniform4f(location, x, y, z, w));
 }
 
+void setUniform(int location, const glm::mat3& matrix) {
+  glCheck(glUniformMatrix3fv(location, 1, false, glm::value_ptr(matrix)));
+}
+
 void setUniform(int location, const glm::mat4& matrix) {
   glCheck(glUniformMatrix4fv(location, 1, false, glm::value_ptr(matrix)));
 }

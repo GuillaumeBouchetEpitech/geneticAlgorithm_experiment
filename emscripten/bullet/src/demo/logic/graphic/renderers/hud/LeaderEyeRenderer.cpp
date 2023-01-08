@@ -17,7 +17,8 @@ constexpr float k_sizeX = 100.0f;
 
 } // namespace
 
-void LeaderEyeRenderer::initialise() {
+void
+LeaderEyeRenderer::initialise() {
   auto& context = Context::get();
   const auto& vSize = context.graphic.camera.viewportSize;
 
@@ -25,7 +26,8 @@ void LeaderEyeRenderer::initialise() {
   _position.y = 10;
 }
 
-void LeaderEyeRenderer::fadeIn(float delay, float duration) {
+void
+LeaderEyeRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
   auto& context = Context::get();
@@ -41,7 +43,8 @@ void LeaderEyeRenderer::fadeIn(float delay, float duration) {
   _isVisible = true;
 }
 
-void LeaderEyeRenderer::fadeOut(float delay, float duration) {
+void
+LeaderEyeRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
   auto& context = Context::get();
@@ -57,14 +60,16 @@ void LeaderEyeRenderer::fadeOut(float delay, float duration) {
   _isVisible = false;
 }
 
-void LeaderEyeRenderer::resize() {
+void
+LeaderEyeRenderer::resize() {
   if (_isVisible)
     fadeIn(0.0f, 0.1f);
   else
     fadeOut(0.0f, 0.2f);
 }
 
-void LeaderEyeRenderer::update(float elapsedTime) {
+void
+LeaderEyeRenderer::update(float elapsedTime) {
 
   auto& context = Context::get();
   auto& logic = context.logic;
@@ -86,7 +91,8 @@ void LeaderEyeRenderer::update(float elapsedTime) {
   }
 }
 
-void LeaderEyeRenderer::render() {
+void
+LeaderEyeRenderer::render() {
   auto& context = Context::get();
   auto& logic = context.logic;
 
@@ -140,8 +146,8 @@ void LeaderEyeRenderer::render() {
   }
 
   for (const auto& position : allPositions) {
-    stackRenderers.wireframes.pushRectangle(position - eyeSize * 0.5f, eyeSize,
-                                            whiteColor, 0.5f);
+    stackRenderers.wireframes.pushRectangle(
+      position - eyeSize * 0.5f, eyeSize, whiteColor, 0.5f);
   }
 
   stackRenderers.wireframes.pushRectangle(position, size, whiteColor, 0.5f);

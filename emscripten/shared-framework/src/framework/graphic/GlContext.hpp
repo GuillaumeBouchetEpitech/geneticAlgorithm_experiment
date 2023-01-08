@@ -88,6 +88,7 @@ void setUniform(int location, float value);
 void setUniform(int location, float x, float y);
 void setUniform(int location, float x, float y, float z);
 void setUniform(int location, float x, float y, float z, float w);
+void setUniform(int location, const glm::mat3& matrix);
 void setUniform(int location, const glm::mat4& matrix);
 
 } // namespace Shader

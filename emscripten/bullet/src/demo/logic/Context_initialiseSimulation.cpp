@@ -5,8 +5,9 @@
 
 #include <limits> // <= std::numeric_limits<T>::max()
 
-void Context::initialiseSimulation(unsigned int totalCores,
-                                   unsigned int genomesPerCore) {
+void
+Context::initialiseSimulation(
+  unsigned int totalCores, unsigned int genomesPerCore) {
   std::vector<glm::vec3> skeletonVertices;
   AnimatedCircuitRenderer::AnimatedVertices groundVertices;
   AnimatedCircuitRenderer::AnimatedVertices wallsVertices;
@@ -14,8 +15,8 @@ void Context::initialiseSimulation(unsigned int totalCores,
   // pre-allocattions
   skeletonVertices.reserve(1024);
   groundVertices.reserve(4 * 1024);
-  wallsVertices.reserve(groundVertices.capacity() *
-                        2); // walls twice bigger that ground geometry
+  wallsVertices.reserve(
+    groundVertices.capacity() * 2); // walls twice bigger that ground geometry
 
   const glm::vec3 greyColor = {0.7f, 0.7f, 0.7f};
   const glm::vec3 whiteColor = {1.0f, 1.0f, 1.0f};
@@ -47,11 +48,11 @@ void Context::initialiseSimulation(unsigned int totalCores,
   constexpr float k_maxDeformation = 0.5f;
 
   auto onGroundPatchCallback =
-    [&latestSize, &whiteColor, &groundVertices,
-     &maxUpperValue](const CircuitBuilder::Vec3Array& vertices,
-                     const CircuitBuilder::Vec3Array& colors,
-                     const CircuitBuilder::Vec3Array& normals,
-                     const CircuitBuilder::Indices& indices) -> void {
+    [&latestSize, &whiteColor, &groundVertices, &maxUpperValue](
+      const CircuitBuilder::Vec3Array& vertices,
+      const CircuitBuilder::Vec3Array& colors,
+      const CircuitBuilder::Vec3Array& normals,
+      const CircuitBuilder::Indices& indices) -> void {
     // save it for "onWallPatch" bellow
     latestSize = float(groundVertices.size());
 
@@ -70,8 +71,8 @@ void Context::initialiseSimulation(unsigned int totalCores,
 
       const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
-      groundVertices.emplace_back(vertices.at(index), color, normals.at(index),
-                                  animNormal, limitValue);
+      groundVertices.emplace_back(
+        vertices.at(index), color, normals.at(index), animNormal, limitValue);
 
       limitValue += limitStep;
     }
@@ -79,12 +80,12 @@ void Context::initialiseSimulation(unsigned int totalCores,
     maxUpperValue += 1.0f;
   };
 
-  auto onWallPatchCallback =
-    [&latestSize, &whiteColor, &greyColor,
-     &wallsVertices](const CircuitBuilder::Vec3Array& vertices,
-                     const CircuitBuilder::Vec3Array& colors,
-                     const CircuitBuilder::Vec3Array& normals,
-                     const CircuitBuilder::Indices& indices) -> void {
+  auto onWallPatchCallback = [&latestSize, &whiteColor, &greyColor,
+                              &wallsVertices](
+                               const CircuitBuilder::Vec3Array& vertices,
+                               const CircuitBuilder::Vec3Array& colors,
+                               const CircuitBuilder::Vec3Array& normals,
+                               const CircuitBuilder::Indices& indices) -> void {
     static_cast<void>(colors); // <= unused
 
     float limitValue = latestSize / indices.size();
@@ -102,8 +103,8 @@ void Context::initialiseSimulation(unsigned int totalCores,
 
       const glm::vec3 animNormal = (normals.at(index) + deformation) * 4.0f;
 
-      wallsVertices.emplace_back(vertices.at(index), color, normals.at(index),
-                                 animNormal, limitValue);
+      wallsVertices.emplace_back(
+        vertices.at(index), color, normals.at(index), animNormal, limitValue);
 
       limitValue += limitStep;
     }

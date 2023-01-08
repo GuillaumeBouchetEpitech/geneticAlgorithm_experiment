@@ -13,7 +13,8 @@
 
 #include <emscripten/emscripten.h> // <= emscripten_worker_respond()
 
-void WorkerConsumer::processMessage(const char* dataPointer, int dataSize) {
+void
+WorkerConsumer::processMessage(const char* dataPointer, int dataSize) {
   MessageView receivedMsg(dataPointer, dataSize);
 
   char messageType = 0;
@@ -50,12 +51,14 @@ void WorkerConsumer::processMessage(const char* dataPointer, int dataSize) {
   }
 }
 
-void WorkerConsumer::_sendBackToProducer() {
-  emscripten_worker_respond(const_cast<char*>(_messageToSend.getData()),
-                            _messageToSend.getSize());
+void
+WorkerConsumer::_sendBackToProducer() {
+  emscripten_worker_respond(
+    const_cast<char*>(_messageToSend.getData()), _messageToSend.getSize());
 }
 
-void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg) {
+void
+WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg) {
   CircuitBuilder::Knots circuitKnots;
 
   bool isUsingBias = true;
@@ -124,8 +127,8 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg) {
 
   { // generate neural networks
 
-    _neuralNetworkTopology.init(layerInput, layerHidden, layerOutput,
-                                isUsingBias);
+    _neuralNetworkTopology.init(
+      layerInput, layerHidden, layerOutput, isUsingBias);
 
     _neuralNetworks.reserve(_genomesPerCore); // pre-allocate
     for (unsigned int ii = 0; ii < _genomesPerCore; ++ii)
@@ -140,7 +143,8 @@ void WorkerConsumer::_initialiseSimulation(MessageView& receivedMsg) {
   _sendBackToProducer();
 }
 
-void WorkerConsumer::_resetSimulation(MessageView& receivedMsg) {
+void
+WorkerConsumer::_resetSimulation(MessageView& receivedMsg) {
   _resetPhysic();
 
   const unsigned int floatWeightsSize =
@@ -159,13 +163,13 @@ void WorkerConsumer::_resetSimulation(MessageView& receivedMsg) {
     std::memcpy(weightsBufferRaw, newWeightsRaw, byteWeightsSize);
     _neuralNetworks.at(ii)->setWeights(weightsBuffer);
 
-    _carAgents.at(ii).reset(_physicWorld.get(), _startTransform.position,
-                            _startTransform.quaternion);
+    _carAgents.at(ii).reset(
+      _physicWorld.get(), _startTransform.position, _startTransform.quaternion);
   }
 }
 
-void WorkerConsumer::_processSimulation(float elapsedTime,
-                                        unsigned int totalSteps) {
+void
+WorkerConsumer::_processSimulation(float elapsedTime, unsigned int totalSteps) {
   // update the simulation
 
   const auto startTime = std::chrono::high_resolution_clock::now();
@@ -212,8 +216,8 @@ void WorkerConsumer::_processSimulation(float elapsedTime,
 
   const auto finishTime = std::chrono::high_resolution_clock::now();
   const auto milliseconds =
-    std::chrono::duration_cast<std::chrono::milliseconds>(finishTime -
-                                                          startTime);
+    std::chrono::duration_cast<std::chrono::milliseconds>(
+      finishTime - startTime);
   const unsigned int delta = milliseconds.count() * 1000;
 
   //
@@ -293,18 +297,19 @@ void WorkerConsumer::_processSimulation(float elapsedTime,
   _sendBackToProducer();
 }
 
-void WorkerConsumer::_resetPhysic() {
+void
+WorkerConsumer::_resetPhysic() {
   _physicWorld = std::make_unique<PhysicWorld>();
 
   { // generate circuit
 
     int groundIndex = 0;
 
-    auto onNewGroundPatch =
-      [&](const CircuitBuilder::Vec3Array& vertices,
-          const CircuitBuilder::Vec3Array& colors,
-          const CircuitBuilder::Vec3Array& normals,
-          const CircuitBuilder::Indices& indices) -> void {
+    auto onNewGroundPatch = [&](
+                              const CircuitBuilder::Vec3Array& vertices,
+                              const CircuitBuilder::Vec3Array& colors,
+                              const CircuitBuilder::Vec3Array& normals,
+                              const CircuitBuilder::Indices& indices) -> void {
       static_cast<void>(colors);  // <= unused
       static_cast<void>(normals); // <= unused
 
@@ -329,10 +334,11 @@ void WorkerConsumer::_resetPhysic() {
       body->setUserValue(groundIndex++);
     };
 
-    auto onNewWallPatch = [&](const CircuitBuilder::Vec3Array& vertices,
-                              const CircuitBuilder::Vec3Array& colors,
-                              const CircuitBuilder::Vec3Array& normals,
-                              const CircuitBuilder::Indices& indices) -> void {
+    auto onNewWallPatch = [&](
+                            const CircuitBuilder::Vec3Array& vertices,
+                            const CircuitBuilder::Vec3Array& colors,
+                            const CircuitBuilder::Vec3Array& normals,
+                            const CircuitBuilder::Indices& indices) -> void {
       static_cast<void>(colors);  // <= unused
       static_cast<void>(normals); // <= unused
 

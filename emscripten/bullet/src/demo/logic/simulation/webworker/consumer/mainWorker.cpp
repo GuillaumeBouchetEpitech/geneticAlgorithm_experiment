@@ -13,7 +13,8 @@ WorkerConsumer* consumer = nullptr;
 extern "C" {
 
 EMSCRIPTEN_KEEPALIVE
-void D_WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg) {
+void
+D_WORKER_MAIN_FUNC(char* dataPointer, int dataSize, void* arg) {
   static_cast<void>(arg); // <= unused
 
   if (!consumer)

@@ -26,7 +26,10 @@ namespace activations {
  * => use "desmos.com" to visualise the curve
  * => link: https://www.desmos.com/calculator
  */
-float steeperSigmoid(float x) { return 1.0f / (1.0f + expf(-4.9f * x)); }
+float
+steeperSigmoid(float x) {
+  return 1.0f / (1.0f + expf(-4.9f * x));
+}
 
 #else
 
@@ -40,14 +43,18 @@ float steeperSigmoid(float x) { return 1.0f / (1.0f + expf(-4.9f * x)); }
  * => link:
  * https://stats.stackexchange.com/questions/126238/what-are-the-advantages-of-relu-over-sigmoid-function-in-deep-neural-networks
  */
-float rectifiedLinearUnit(float x) { return std::max(0.0f, x); }
+float
+rectifiedLinearUnit(float x) {
+  return std::max(0.0f, x);
+}
 
 /**
  * classic clamp function
  * => input:  [-value..value]
  * => output: [minVal..maxVal]
  */
-float clamp(float value, float minVal, float maxVal) {
+float
+clamp(float value, float minVal, float maxVal) {
   return std::min(std::max(value, minVal), maxVal);
 }
 
@@ -56,7 +63,10 @@ float clamp(float value, float minVal, float maxVal) {
  * => input:  [-x..x]
  * => output: [0..1]
  */
-float customRectifiedLinearUnit(float x) { return clamp(x, 0.0f, 1.0f); }
+float
+customRectifiedLinearUnit(float x) {
+  return clamp(x, 0.0f, 1.0f);
+}
 
 #endif
 
@@ -82,9 +92,10 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
 
   unsigned int previousLayerSize = _topology.getInput();
 
-  auto fillLayerCallback = [](NeuralNetwork::Layer& currentLayer,
-                              unsigned int prevLayerSize,
-                              unsigned int currLayerSize) {
+  auto fillLayerCallback = [](
+                             NeuralNetwork::Layer& currentLayer,
+                             unsigned int prevLayerSize,
+                             unsigned int currLayerSize) {
     currentLayer.resize(currLayerSize);
     for (Neuron& newNeuron : currentLayer) {
       newNeuron.connectionsWeights.resize(prevLayerSize);
@@ -118,14 +129,16 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkTopology& topology)
   fillLayerCallback(outputLayer, _topology.getOutput(), previousLayerSize);
 }
 
-void NeuralNetwork::compute(const std::vector<float>& inputValues,
-                            std::vector<float>& outputValues) {
+void
+NeuralNetwork::compute(
+  const std::vector<float>& inputValues, std::vector<float>& outputValues) {
   auto& inputLayer = _layers.front();
 
   if (inputValues.size() != inputLayer.size())
-    D_THROW(std::invalid_argument, "invalid number of input"
-                                     << ", input=" << inputValues.size()
-                                     << ", expected=" << inputLayer.size());
+    D_THROW(
+      std::invalid_argument, "invalid number of input"
+                               << ", input=" << inputValues.size()
+                               << ", expected=" << inputLayer.size());
 
   //
   //
@@ -175,14 +188,16 @@ void NeuralNetwork::compute(const std::vector<float>& inputValues,
     outputValues.push_back(neuron.value);
 }
 
-void NeuralNetwork::setWeights(const std::vector<float>& inputWeights) {
+void
+NeuralNetwork::setWeights(const std::vector<float>& inputWeights) {
   const unsigned int totalWeights = _topology.getTotalWeights();
 
   // defensive check
   if (inputWeights.size() != totalWeights)
-    D_THROW(std::invalid_argument, "received invalid number of weights"
-                                     << ", expected=" << totalWeights
-                                     << ", input=" << inputWeights.size());
+    D_THROW(
+      std::invalid_argument, "received invalid number of weights"
+                               << ", expected=" << totalWeights
+                               << ", input=" << inputWeights.size());
 
   unsigned int weightsIndex = 0;
 
@@ -192,7 +207,8 @@ void NeuralNetwork::setWeights(const std::vector<float>& inputWeights) {
         connectionsWeight = inputWeights.at(weightsIndex++);
 }
 
-void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const {
+void
+NeuralNetwork::getWeights(std::vector<float>& outputWeights) const {
   outputWeights.clear();
   outputWeights.reserve(_topology.getTotalWeights()); // pre-allocate
 
@@ -202,11 +218,13 @@ void NeuralNetwork::getWeights(std::vector<float>& outputWeights) const {
         outputWeights.push_back(connectionsWeight);
 }
 
-const NeuralNetworkTopology& NeuralNetwork::getTopology() const {
+const NeuralNetworkTopology&
+NeuralNetwork::getTopology() const {
   return _topology;
 }
 
-void NeuralNetwork::getNeuronsValues(std::vector<float>& neuronsOutput) {
+void
+NeuralNetwork::getNeuronsValues(std::vector<float>& neuronsOutput) {
   neuronsOutput.clear();
   neuronsOutput.reserve(_topology.getTotalNeurons());
 
@@ -215,7 +233,8 @@ void NeuralNetwork::getNeuronsValues(std::vector<float>& neuronsOutput) {
       neuronsOutput.push_back(neuron.value);
 }
 
-void NeuralNetwork::setNeuronsValues(const std::vector<float>& neuronsvalues) {
+void
+NeuralNetwork::setNeuronsValues(const std::vector<float>& neuronsvalues) {
   int valueIndex = 0;
   for (auto& layer : _layers)
     for (auto& neuron : layer)

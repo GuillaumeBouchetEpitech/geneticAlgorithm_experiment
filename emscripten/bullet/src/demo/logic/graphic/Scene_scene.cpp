@@ -3,7 +3,8 @@
 
 #include "framework/graphic/GlContext.hpp"
 
-void Scene::_renderLeadingCarSensors() {
+void
+Scene::_renderLeadingCarSensors() {
   auto& context = Context::get();
   const auto& leaderCar = context.logic.leaderCar;
   auto& stackRenderer = context.graphic.scene.stackRenderers.wireframes;
@@ -50,7 +51,8 @@ void Scene::_renderLeadingCarSensors() {
   }
 }
 
-void Scene::renderScene(const Camera& inCamera) {
+void
+Scene::renderScene(const Camera& inCamera) {
   auto& context = Context::get();
   auto& graphic = context.graphic;
   auto& scene = graphic.scene;

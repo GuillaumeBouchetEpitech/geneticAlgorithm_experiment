@@ -23,7 +23,8 @@ CoreUsageRenderer::CoreUsageRenderer() {
   _size = {150, 100};
 }
 
-void CoreUsageRenderer::fadeIn(float delay, float duration) {
+void
+CoreUsageRenderer::fadeIn(float delay, float duration) {
   _timer.start(delay, duration);
 
   _moveEasing = GenericEasing<2>()
@@ -33,7 +34,8 @@ void CoreUsageRenderer::fadeIn(float delay, float duration) {
   _isVisible = true;
 }
 
-void CoreUsageRenderer::fadeOut(float delay, float duration) {
+void
+CoreUsageRenderer::fadeOut(float delay, float duration) {
   _timer.start(delay, duration);
 
   _moveEasing = GenericEasing<2>()
@@ -43,21 +45,24 @@ void CoreUsageRenderer::fadeOut(float delay, float duration) {
   _isVisible = false;
 }
 
-void CoreUsageRenderer::update(float elapsedTime) {
+void
+CoreUsageRenderer::update(float elapsedTime) {
   if (!_timer.isDone()) {
     _timer.update(elapsedTime);
     _position.x = _moveEasing.get(_timer.getCoefElapsed());
   }
 }
 
-void CoreUsageRenderer::resize() {
+void
+CoreUsageRenderer::resize() {
   if (_isVisible)
     fadeIn(0.0f, 0.2f);
   else
     fadeOut(0.0f, 0.2f);
 }
 
-void CoreUsageRenderer::renderWireframe() {
+void
+CoreUsageRenderer::renderWireframe() {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -86,8 +91,8 @@ void CoreUsageRenderer::renderWireframe() {
     stackRenderers.triangles.pushQuad(
       glm::vec3(glm::vec2(borderPos) + borderSize * 0.5f, borderPos.z),
       borderSize, bgColor, -0.2f);
-    stackRenderers.wireframes.pushRectangle(borderPos, borderSize, whiteColor,
-                                            -0.1f);
+    stackRenderers.wireframes.pushRectangle(
+      borderPos, borderSize, whiteColor, -0.1f);
 
   } // background
 
@@ -139,7 +144,8 @@ void CoreUsageRenderer::renderWireframe() {
   stackRenderers.triangles.flush();
 }
 
-void CoreUsageRenderer::renderHudText() {
+void
+CoreUsageRenderer::renderHudText() {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -176,8 +182,8 @@ void CoreUsageRenderer::renderHudText() {
     textRenderer.getSizes(outRectangles, textPos, str, textScale);
     for (const auto& rec : outRectangles)
       if (rec.size.x > 0.0f)
-        stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
-
+        stackRenderers.triangles.pushQuad(
+          rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
   }
 
   {
@@ -202,7 +208,7 @@ void CoreUsageRenderer::renderHudText() {
     textRenderer.getSizes(outRectangles, textPos, str, textScale);
     for (const auto& rec : outRectangles)
       if (rec.size.x > 0.0f)
-        stackRenderers.triangles.pushQuad(rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
-
+        stackRenderers.triangles.pushQuad(
+          rec.pos + rec.size * 0.5f, rec.size, bgColor, textDepth - 0.1f);
   }
 }

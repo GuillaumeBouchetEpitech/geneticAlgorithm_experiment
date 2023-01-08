@@ -3,7 +3,8 @@
 #include <sstream>
 #include <string>
 
-std::string writeTime(unsigned int time) {
+std::string
+writeTime(unsigned int time) {
   std::stringstream sstr;
   sstr << std::setw(5) << std::fixed << std::setprecision(1);
 

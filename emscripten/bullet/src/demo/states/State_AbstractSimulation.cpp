@@ -14,17 +14,20 @@
 #include <cmath>  // std::ceil
 #include <limits> // std::numeric_limits<T>::max();
 
-void State_AbstractSimulation::enter() {
+void
+State_AbstractSimulation::enter() {
   // D_MYLOG("step");
 }
 
-void State_AbstractSimulation::leave() {
+void
+State_AbstractSimulation::leave() {
   // D_MYLOG("step");
 }
 
 //
 
-void State_AbstractSimulation::handleEvent(const SDL_Event& event) {
+void
+State_AbstractSimulation::handleEvent(const SDL_Event& event) {
   auto& context = Context::get();
   auto& keys = context.inputs.keys;
   auto& mouse = context.inputs.mouse;
@@ -71,7 +74,8 @@ void State_AbstractSimulation::handleEvent(const SDL_Event& event) {
   }
 }
 
-void State_AbstractSimulation::update(float elapsedTime) {
+void
+State_AbstractSimulation::update(float elapsedTime) {
 
   auto& context = Context::get();
   auto& graphic = context.graphic;
@@ -97,21 +101,25 @@ void State_AbstractSimulation::update(float elapsedTime) {
 
       auto& keys = context.inputs.keys;
 
-      bool rotateLeft = (keys[SDLK_LEFT] || // ARROW
-                         keys[SDLK_q] ||    // QWERTY (UK-US keyboard layout)
-                         keys[SDLK_a]       // AZERTY (FR keyboard layout)
-      );
+      bool rotateLeft =
+        (keys[SDLK_LEFT] || // ARROW
+         keys[SDLK_q] ||    // QWERTY (UK-US keyboard layout)
+         keys[SDLK_a]       // AZERTY (FR keyboard layout)
+        );
 
-      bool rotateRight = (keys[SDLK_RIGHT] || // ARROW
-                          keys[SDLK_d]);
+      bool rotateRight =
+        (keys[SDLK_RIGHT] || // ARROW
+         keys[SDLK_d]);
 
-      bool rotateUp = (keys[SDLK_UP] || // ARROW
-                       keys[SDLK_w] ||  // QWERTY (UK-US keyboard layout)
-                       keys[SDLK_z]     // AZERTY (FR keyboard layout)
-      );
+      bool rotateUp =
+        (keys[SDLK_UP] || // ARROW
+         keys[SDLK_w] ||  // QWERTY (UK-US keyboard layout)
+         keys[SDLK_z]     // AZERTY (FR keyboard layout)
+        );
 
-      bool rotateDown = (keys[SDLK_DOWN] || // ARROW
-                         keys[SDLK_s]);
+      bool rotateDown =
+        (keys[SDLK_DOWN] || // ARROW
+         keys[SDLK_s]);
 
       if (rotateLeft)
         rotations.theta += 2.0f * elapsedTime;
@@ -130,20 +138,22 @@ void State_AbstractSimulation::update(float elapsedTime) {
   } // events
 }
 
-void State_AbstractSimulation::render(const SDL_Window& window) {
+void
+State_AbstractSimulation::render(const SDL_Window& window) {
   static_cast<void>(window); // <= unused
 
   Scene::renderAll();
 }
 
-void State_AbstractSimulation::resize(int width, int height) {
+void
+State_AbstractSimulation::resize(int width, int height) {
   auto& graphic = Context::get().graphic;
 
   graphic.camera.viewportSize = {width, height};
 
   graphic.hud.postProcess.resize({width, height});
-  graphic.hud.postProcess.setGeometry(glm::vec2(0, 0), glm::vec2(width, height),
-                                      -2.0f);
+  graphic.hud.postProcess.setGeometry(
+    glm::vec2(0, 0), glm::vec2(width, height), -2.0f);
 
   graphic.hud.topologyRenderer.resize();
   graphic.hud.thirdPersonCamera.resize();
@@ -152,7 +162,8 @@ void State_AbstractSimulation::resize(int width, int height) {
   graphic.hud.leaderEyeRenderer.resize();
 }
 
-void State_AbstractSimulation::visibility(bool visible) {
+void
+State_AbstractSimulation::visibility(bool visible) {
 #if 0 // disable pause state?
     static_cast<void>(visible); // unused
 #else
@@ -164,7 +175,8 @@ void State_AbstractSimulation::visibility(bool visible) {
 #endif
 }
 
-void State_AbstractSimulation::_updateCommonLogic(float elapsedTime) {
+void
+State_AbstractSimulation::_updateCommonLogic(float elapsedTime) {
   auto& graphic = Context::get().graphic;
 
   graphic.scene.particleManager.update(elapsedTime);
@@ -180,7 +192,8 @@ void State_AbstractSimulation::_updateCommonLogic(float elapsedTime) {
   graphic.hud.leaderEyeRenderer.update(elapsedTime);
 }
 
-void State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
+void
+State_AbstractSimulation::_updateCameraTracking(float elapsedTime) {
   auto& context = Context::get();
   auto& camera = context.graphic.camera;
   auto& logic = context.logic;

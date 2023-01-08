@@ -1,7 +1,6 @@
 
 class Logger {
 
-  // private _textAreaElement: HTMLElement;
   private _textAreaElement: HTMLTextAreaElement;
   private _lines: string[];
   private _maxLines: number;

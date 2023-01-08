@@ -9,7 +9,8 @@ FitnessStats::FitnessStats() {
     fitness = 0.0f;
 }
 
-void FitnessStats::update(float latestFitness) {
+void
+FitnessStats::update(float latestFitness) {
   const float lastFitness = get(-1);
   const float secondLastFitness = get(-2);
   const bool lastFitnessWasSmarter = lastFitness > secondLastFitness;
@@ -20,10 +21,17 @@ void FitnessStats::update(float latestFitness) {
   _maxFitness = std::max(_maxFitness, latestFitness);
 }
 
-float FitnessStats::get(int index) const {
+float
+FitnessStats::get(int index) const {
   return _allFitnesses[int(_index) + index];
 }
 
-std::size_t FitnessStats::size() const { return _allFitnesses.size(); }
+std::size_t
+FitnessStats::size() const {
+  return _allFitnesses.size();
+}
 
-float FitnessStats::max() const { return _maxFitness; }
+float
+FitnessStats::max() const {
+  return _maxFitness;
+}

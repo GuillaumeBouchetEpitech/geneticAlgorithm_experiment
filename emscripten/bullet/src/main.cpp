@@ -17,19 +17,21 @@
 
 namespace {
 
-void validateInputs(uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
-                    uint32_t inGenomesPerCore) {
+void
+validateInputs(
+  uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
+  uint32_t inGenomesPerCore) {
 
   if (::isinf(inWidth) || ::isnan(inWidth))
     D_THROW(std::runtime_error, "argument 0 (width) is not a valid number");
   if (::isinf(inHeight) || ::isnan(inHeight))
     D_THROW(std::runtime_error, "argument 1 (height) is not a valid number");
   if (::isinf(inTotalCores) || ::isnan(inTotalCores))
-    D_THROW(std::runtime_error,
-            "argument 2 (totalCores) is not a valid number");
+    D_THROW(
+      std::runtime_error, "argument 2 (totalCores) is not a valid number");
   if (::isinf(inGenomesPerCore) || ::isnan(inGenomesPerCore))
-    D_THROW(std::runtime_error,
-            "argument 3 (genomesPerCore) is not a valid number");
+    D_THROW(
+      std::runtime_error, "argument 3 (genomesPerCore) is not a valid number");
 
   if (inWidth < 100)
     D_THROW(std::runtime_error, "argument 0 (width) cannot be < 100");
@@ -43,7 +45,8 @@ void validateInputs(uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
 
 namespace {
 
-void processCommandLineArgs(Demo::Definition& def, int argc, char** argv) {
+void
+processCommandLineArgs(Demo::Definition& def, int argc, char** argv) {
   // array of pointers toward the demo definition arguments
   std::array<uint32_t*, 4> arguments{{
     &def.width,
@@ -71,7 +74,8 @@ void processCommandLineArgs(Demo::Definition& def, int argc, char** argv) {
 
 } // namespace
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv) {
   Demo::Definition def;
   def.width = 800;
   def.height = 600;
@@ -98,8 +102,10 @@ Demo* myDemo = nullptr;
 extern "C" {
 
 EMSCRIPTEN_KEEPALIVE
-void startDemo(uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
-               uint32_t inGenomesPerCore) {
+void
+startDemo(
+  uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
+  uint32_t inGenomesPerCore) {
   if (myDemo)
     return;
 
@@ -115,7 +121,8 @@ void startDemo(uint32_t inWidth, uint32_t inHeight, uint32_t inTotalCores,
 }
 
 EMSCRIPTEN_KEEPALIVE
-void updateDemo(uint32_t inDelta) {
+void
+updateDemo(uint32_t inDelta) {
   if (!myDemo)
     return;
 

@@ -8,11 +8,13 @@
 #include <algorithm> // <= std::sort
 #include <iomanip>   // <= std::fixed / setprecision
 
-void GeneticAlgorithm::initialise(const Definition& def) {
+void
+GeneticAlgorithm::initialise(const Definition& def) {
   if (def.totalGenomes < 10)
-    D_THROW(std::invalid_argument, "received invalid number of genomes"
-                                     << ", input=" << def.totalGenomes
-                                     << ", expected >= 10");
+    D_THROW(
+      std::invalid_argument, "received invalid number of genomes"
+                               << ", input=" << def.totalGenomes
+                               << ", expected >= 10");
 
   if (!def.topology.isValid())
     D_THROW(std::invalid_argument, "received invalid topology");
@@ -46,7 +48,8 @@ void GeneticAlgorithm::initialise(const Definition& def) {
   }
 }
 
-bool GeneticAlgorithm::breedPopulation() {
+bool
+GeneticAlgorithm::breedPopulation() {
   if (_genomes.empty())
     D_THROW(std::runtime_error, "not initialised");
 
@@ -60,13 +63,14 @@ bool GeneticAlgorithm::breedPopulation() {
   bool isStallingGeneration =
     (latestBestGenome.fitness == oldBestGenome.fitness);
 
-  D_MYLOG((isSmarterGeneration ? "++" : (isStallingGeneration ? "==" : "--"))
-          << " generation=" << _currentGeneration << std::fixed
-          << std::setprecision(1) << ", fitness:"
-          << " [best=" << oldBestGenome.fitness << "]"
-          << " [latest=" << latestBestGenome.fitness << "]"
-          << ", diff=" << (isSmarterGeneration ? "+" : "")
-          << (latestBestGenome.fitness - oldBestGenome.fitness));
+  D_MYLOG(
+    (isSmarterGeneration ? "++" : (isStallingGeneration ? "==" : "--"))
+    << " generation=" << _currentGeneration << std::fixed
+    << std::setprecision(1) << ", fitness:"
+    << " [best=" << oldBestGenome.fitness << "]"
+    << " [latest=" << latestBestGenome.fitness << "]"
+    << ", diff=" << (isSmarterGeneration ? "+" : "")
+    << (latestBestGenome.fitness - oldBestGenome.fitness));
 
   { // refresh the elite genomes internal array
 
@@ -129,14 +133,16 @@ bool GeneticAlgorithm::breedPopulation() {
         parentsPairsGenomes.push_back({ii, jj});
 
     // sort the possible "parents" pair by summed fitness
-    auto cmpFunc = [&latestBestGenomes](const ParentPair& a,
-                                        const ParentPair& b) {
-      float fitnessPairA = (latestBestGenomes.at(a.parentA).fitness +
-                            latestBestGenomes.at(a.parentB).fitness);
-      float fitnessPairB = (latestBestGenomes.at(b.parentA).fitness +
-                            latestBestGenomes.at(b.parentB).fitness);
-      return (fitnessPairA > fitnessPairB); // <= the higher the better
-    };
+    auto cmpFunc =
+      [&latestBestGenomes](const ParentPair& a, const ParentPair& b) {
+        float fitnessPairA =
+          (latestBestGenomes.at(a.parentA).fitness +
+           latestBestGenomes.at(a.parentB).fitness);
+        float fitnessPairB =
+          (latestBestGenomes.at(b.parentA).fitness +
+           latestBestGenomes.at(b.parentB).fitness);
+        return (fitnessPairA > fitnessPairB); // <= the higher the better
+      };
     std::sort(parentsPairsGenomes.begin(), parentsPairsGenomes.end(), cmpFunc);
 
     int maxOffspring = int(_genomes.size() * 0.9f);
@@ -193,7 +199,8 @@ bool GeneticAlgorithm::breedPopulation() {
   return isSmarterGeneration;
 }
 
-void GeneticAlgorithm::_getBestGenomes(Genomes& output) const {
+void
+GeneticAlgorithm::_getBestGenomes(Genomes& output) const {
   output.clear();
 
   struct SortPair {
@@ -218,8 +225,9 @@ void GeneticAlgorithm::_getBestGenomes(Genomes& output) const {
     output.push_back(_genomes.at(sortedGenome.index));
 }
 
-void GeneticAlgorithm::_reproduce(const Genome& parentA, const Genome& parentB,
-                                  Genome& offspring) const {
+void
+GeneticAlgorithm::_reproduce(
+  const Genome& parentA, const Genome& parentB, Genome& offspring) const {
   // default of 50/50 chances for both parents
   int chancesForParentA = 50; // 50%
 
@@ -244,7 +252,8 @@ void GeneticAlgorithm::_reproduce(const Genome& parentA, const Genome& parentB,
   }
 }
 
-void GeneticAlgorithm::_mutate(Genome& genome) const {
+void
+GeneticAlgorithm::_mutate(Genome& genome) const {
   constexpr int mutationMaxChance = 10;     // 10%
   constexpr float mutationMaxEffect = 0.2f; // 20% x 2 = 40%
 
@@ -255,23 +264,30 @@ void GeneticAlgorithm::_mutate(Genome& genome) const {
 
 //
 
-const NeuralNetworks& GeneticAlgorithm::getNeuralNetworks() const {
+const NeuralNetworks&
+GeneticAlgorithm::getNeuralNetworks() const {
   return _neuralNetworks;
 }
 
-const Genomes& GeneticAlgorithm::getGenomes() const { return _genomes; }
+const Genomes&
+GeneticAlgorithm::getGenomes() const {
+  return _genomes;
+}
 
-const Genome& GeneticAlgorithm::getBestGenome() const {
+const Genome&
+GeneticAlgorithm::getBestGenome() const {
   return _eliteGenomes.at(0);
 }
 
-unsigned int GeneticAlgorithm::getGenerationNumber() const {
+unsigned int
+GeneticAlgorithm::getGenerationNumber() const {
   return _currentGeneration;
 }
 
 //
 
-void GeneticAlgorithm::rateGenome(unsigned int index, float fitness) {
+void
+GeneticAlgorithm::rateGenome(unsigned int index, float fitness) {
   if (_genomes.empty())
     D_THROW(std::runtime_error, "not initialised");
 

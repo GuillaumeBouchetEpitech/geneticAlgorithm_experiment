@@ -7,11 +7,13 @@
 #include "framework/graphic/GlContext.hpp"
 #include "framework/system/asValue.hpp"
 
-void PostProcess::setMatricesData(const Camera::MatricesData& matricesData) {
+void
+PostProcess::setMatricesData(const Camera::MatricesData& matricesData) {
   _matricesData = matricesData;
 }
 
-void PostProcess::initialise(const glm::uvec2& frameSize) {
+void
+PostProcess::initialise(const glm::uvec2& frameSize) {
 
   auto& resourceManager = Context::get().graphic.resourceManager;
 
@@ -26,29 +28,32 @@ void PostProcess::initialise(const glm::uvec2& frameSize) {
   resize(frameSize);
 }
 
-void PostProcess::startRecording() {
+void
+PostProcess::startRecording() {
   _frameBuffer.bind();
 
   GlContext::setViewport(0, 0, _frameSize.x, _frameSize.y);
   GlContext::clearColor(0, 0, 0, 0);
   GlContext::clearDepth(1.0f);
-  GlContext::clear(asValue(GlContext::Buffers::color) |
-                   asValue(GlContext::Buffers::depth));
+  GlContext::clear(
+    asValue(GlContext::Buffers::color) | asValue(GlContext::Buffers::depth));
 
   GlContext::setDepthFunc(GlContext::DepthFuncs::less);
 }
 
-void PostProcess::stopRecording() {
+void
+PostProcess::stopRecording() {
   FrameBuffer::unbind();
   GlContext::setViewport(0, 0, _frameSize.x, _frameSize.y);
 }
 
-void PostProcess::render() {
+void
+PostProcess::render() {
 
   _shader->bind();
   _shader->setUniform("u_composedMatrix", _matricesData.composed);
-  _shader->setUniform("u_invResolution", 1.0f / float(_frameSize.x),
-                      1.0f / float(_frameSize.y));
+  _shader->setUniform(
+    "u_invResolution", 1.0f / float(_frameSize.x), 1.0f / float(_frameSize.y));
 
   _shader->setUniform("u_colorTexture", 0);
   GlContext::Texture::active(0);
@@ -63,16 +68,17 @@ void PostProcess::render() {
   GlContext::Texture::active(0);
 }
 
-void PostProcess::resize(const glm::uvec2& inFrameSize) {
+void
+PostProcess::resize(const glm::uvec2& inFrameSize) {
 
   _frameSize = inFrameSize;
 
   {
 
-    _colorTexture.allocateBlank(_frameSize, Texture::Quality::pixelated,
-                                Texture::Pattern::clamped);
-    _outlineTexture.allocateBlank(_frameSize, Texture::Quality::pixelated,
-                                  Texture::Pattern::clamped);
+    _colorTexture.allocateBlank(
+      _frameSize, Texture::Quality::pixelated, Texture::Pattern::clamped);
+    _outlineTexture.allocateBlank(
+      _frameSize, Texture::Quality::pixelated, Texture::Pattern::clamped);
     _depthRenderBuffer.allocateCompatibleDepth(_frameSize);
 
     FrameBuffer::Definition def;
@@ -83,8 +89,9 @@ void PostProcess::resize(const glm::uvec2& inFrameSize) {
   }
 }
 
-void PostProcess::setGeometry(const glm::vec2& inPos, const glm::vec2& inSize,
-                              float depth /*= 0.0f*/) {
+void
+PostProcess::setGeometry(
+  const glm::vec2& inPos, const glm::vec2& inSize, float depth /*= 0.0f*/) {
   struct Vertex {
     glm::vec3 position;
     glm::vec2 texCoord;
@@ -103,7 +110,7 @@ void PostProcess::setGeometry(const glm::vec2& inPos, const glm::vec2& inSize,
   for (std::size_t index = 0; index < indices.size(); ++index)
     vertices.at(index) = quadVertices.at(indices.at(index));
 
-  _screenQuad.updateBuffer(0, vertices.data(),
-                           uint32_t(vertices.size() * sizeof(Vertex)));
+  _screenQuad.updateBuffer(
+    0, vertices.data(), uint32_t(vertices.size() * sizeof(Vertex)));
   _screenQuad.setPrimitiveCount(uint32_t(vertices.size()));
 }

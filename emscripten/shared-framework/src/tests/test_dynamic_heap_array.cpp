@@ -195,6 +195,13 @@ void test_dynamic_heap_array() {
     assert(common::getTotalMoveCtor() == 11);
     assert(common::getTotalDtor() == 11);
 
+    common::reset();
+    vertices.clear();
+    assert(common::getTotalCtor() == 0);
+    assert(common::getTotalCopyCtor() == 0);
+    assert(common::getTotalMoveCtor() == 0);
+    assert(common::getTotalDtor() == 5);
+
     // for (volatile auto lol : vertices)
     //     ;
 

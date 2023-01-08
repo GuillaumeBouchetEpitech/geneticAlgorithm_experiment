@@ -20,11 +20,12 @@ private: // attributes
 public:
   NeuralNetworkTopology() = default;
 
-  void init(unsigned int input, const HiddenLayers& hiddens,
-            unsigned int output, bool useBias = true);
+  void init(
+    unsigned int input, const HiddenLayers& hiddens, unsigned int output,
+    bool useBias = true);
 
-  void init(const std::initializer_list<unsigned int>& list,
-            bool useBias = true);
+  void
+  init(const std::initializer_list<unsigned int>& list, bool useBias = true);
 
 private:
   void _computeTotalWeights();
