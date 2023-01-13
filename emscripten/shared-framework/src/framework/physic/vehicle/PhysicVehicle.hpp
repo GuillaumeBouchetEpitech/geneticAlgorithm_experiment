@@ -19,6 +19,8 @@ public:
   virtual ~AbstractPhysicVehicle() = default;
   AbstractPhysicVehicle(AbstractPhysicVehicle& other) = delete;
   AbstractPhysicVehicle& operator=(const AbstractPhysicVehicle& other) = delete;
+  AbstractPhysicVehicle&
+  operator=(const AbstractPhysicVehicle&& other) = delete;
 
 public:
   virtual void applyEngineForce(int index, float force) = 0;
@@ -54,7 +56,12 @@ public:
   virtual ~PhysicVehicle();
 
   PhysicVehicle(PhysicVehicle&& other);
-  PhysicVehicle& operator=(PhysicVehicle&& other);
+
+  PhysicVehicle(PhysicVehicle& other) = delete;
+  PhysicVehicle& operator=(const PhysicVehicle& other) = delete;
+  PhysicVehicle& operator=(PhysicVehicle&& other) = delete;
+
+  void applySwap(PhysicVehicle& other);
 
 public:
   virtual void applyEngineForce(int index, float force) override;

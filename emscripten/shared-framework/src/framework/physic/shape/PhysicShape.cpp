@@ -67,32 +67,30 @@ StaticMeshShape::StaticMeshShape(const PhysicShapeDef& def, bool isDynamic)
   const auto& data = def.data.staticMesh;
 
   const int32_t vertNumber = int32_t(data.verticesLength) * 3;
-  _verticesData = new float[std::size_t(vertNumber)];
+  _verticesData = std::make_unique<float[]>(std::size_t(vertNumber));
   const uint32_t verticesSizeInBytes =
     uint32_t(data.verticesLength) * uint32_t(sizeof(glm::vec3));
-  std::memcpy(_verticesData, data.verticesData, verticesSizeInBytes);
+  std::memcpy(_verticesData.get(), data.verticesData, verticesSizeInBytes);
   const int verticesStride = sizeof(glm::vec3);
 
   const int32_t triangleNumber = int32_t(data.indicesLength) / 3;
-  _indicesData = new int32_t[std::size_t(data.indicesLength)];
+  _indicesData = std::make_unique<int32_t[]>(std::size_t(data.indicesLength));
   const uint32_t indicesSizeInBytes =
     uint32_t(data.indicesLength) * uint32_t(sizeof(int));
-  std::memcpy(_indicesData, data.indicesData, indicesSizeInBytes);
+  std::memcpy(_indicesData.get(), data.indicesData, indicesSizeInBytes);
   const int indicesStride = 3 * sizeof(int);
 
-  btTriangleIndexVertexArray* indexVertexArrays =
-    new btTriangleIndexVertexArray(triangleNumber, _indicesData, indicesStride,
-                                   vertNumber, _verticesData, verticesStride);
+  _indexVertexArrays = new btTriangleIndexVertexArray(
+    triangleNumber, _indicesData.get(), indicesStride, vertNumber,
+    _verticesData.get(), verticesStride);
 
-  const bool useQuantizedAabbCompression = true;
+  constexpr bool useQuantizedAabbCompression = true;
   _bullet.shape =
-    new btBvhTriangleMeshShape(indexVertexArrays, useQuantizedAabbCompression);
+    new btBvhTriangleMeshShape(_indexVertexArrays, useQuantizedAabbCompression);
 }
 
 StaticMeshShape::~StaticMeshShape() {
-  delete _bullet.shape, _bullet.shape = nullptr;
-  delete _verticesData, _verticesData = nullptr;
-  delete _indicesData, _indicesData = nullptr;
+  delete _indexVertexArrays, _indexVertexArrays = nullptr;
 }
 
 //
@@ -103,28 +101,27 @@ CompoundShape::CompoundShape(const PhysicShapeDef& def, bool isDynamic)
   : PhysicShape(def) {
   const auto& data = def.data.compound;
 
-  btCompoundShape* compound = new btCompoundShape();
+  btCompoundShape* compoundShape = new btCompoundShape();
 
   btTransform localTrans;
 
-  for (auto& childShape : data.childShapes) {
+  _children.reserve(data.childShapes.size());
+  for (auto& shapeDef : data.childShapes) {
     localTrans.setIdentity();
-    localTrans.setFromOpenGLMatrix(glm::value_ptr(childShape.transform));
+    localTrans.setFromOpenGLMatrix(glm::value_ptr(shapeDef.transform));
 
-    PhysicShape* child = PhysicShape::create(*childShape.shape, isDynamic);
+    PhysicShape* childShape = PhysicShape::create(*shapeDef.shape, isDynamic);
+    _children.push_back(childShape);
 
-    compound->addChildShape(localTrans, child->getRawShape());
+    compoundShape->addChildShape(localTrans, childShape->getRawShape());
   }
 
-  _bullet.shape = compound;
+  _bullet.shape = compoundShape;
 }
 
 CompoundShape::~CompoundShape() {
-  btCompoundShape* compound = static_cast<btCompoundShape*>(_bullet.shape);
-  while (compound->getNumChildShapes() > 0) {
-    delete compound->getChildShape(0);
-    compound->removeChildShape(0);
-  }
-
   delete _bullet.shape, _bullet.shape = nullptr;
+  for (PhysicShape* childShape : _children)
+    delete childShape;
+  _children.clear();
 }

@@ -80,12 +80,10 @@ CarAgent::update(
   output.at(0) = glm::clamp(output.at(0), 0.0f, 1.0f);
   output.at(1) = glm::clamp(output.at(1), 0.0f, 1.0f);
 
-  // switch output range to [-1..1]
-  output.at(0) = output.at(0) * 2.0f - 1.0f;
-  // output.at(1) = output.at(1) * 2.0f - 1.0f;
-
-  _output.steer = output.at(0); // steering angle: left/right
-  _output.speed = output.at(1); // speed coef: forward/backward
+  // steering angle: left/right
+  _output.steer = output.at(0) * 2.0f - 1.0f; // [-1..+1]
+  // speed coef: forward/backward
+  _output.speed = output.at(1); // [0..+1]
 
   _physicVehicle->setSteeringValue(
     0, _output.steer * constants::steeringMaxValue);
@@ -97,6 +95,7 @@ CarAgent::update(
     GenericEasing<5>()
       .push(0.0f, -constants::speedMaxValue)
       .push(0.5f, 0.0f)
+      // fast initial acceleration
       .push(0.5f + 0.5f * 0.25f, constants::speedMaxValue * 4.0f)
       .push(0.5f + 0.5f * 0.50f, constants::speedMaxValue)
       .push(0.5f + 0.5f * 1.00f, constants::speedMaxValue);

@@ -44,11 +44,22 @@ void uploadPixels(uint32_t width, uint32_t height, const void* pixels) {
                        pixels));
 }
 
-void uploadSingleFloatPixels(uint32_t width, uint32_t height) {
+void uploadFloatPixels(uint32_t width, uint32_t height, const void* pixels) {
   GLint level = 0;
   GLint border = 0;
-  glCheck(glTexImage2D(GL_TEXTURE_2D, level, GL_R32F, GLsizei(width),
-                       GLsizei(height), border, GL_RED, GL_FLOAT, nullptr));
+  glCheck(glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA32F, GLsizei(width),
+                       GLsizei(height), border, GL_RGBA, GL_FLOAT, pixels));
+}
+
+void uploadSingleFloatPixels(uint32_t width, uint32_t height,
+                             const void* pixels) {
+  GLint level = 0;
+  GLint internalFormat = GL_R32F;
+  GLint border = 0;
+  GLenum format = GL_RED;
+  GLenum type = GL_FLOAT;
+  glCheck(glTexImage2D(GL_TEXTURE_2D, level, internalFormat, GLsizei(width),
+                       GLsizei(height), border, format, type, pixels));
 }
 
 namespace {

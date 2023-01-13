@@ -29,13 +29,14 @@ public:
   static_heap_grid_array_column_iterator(static_heap_grid_array& container,
                                          int row, int column)
     : _container(&container), _row(row), _column(column) {
-    basic_double_linked_list::add(_container->_column_iterators_list, *this);
+    basic_double_linked_list::add_link_to_list(
+      _container->_column_iterators_list, *this);
   }
 
   ~static_heap_grid_array_column_iterator() {
     if (_container)
-      basic_double_linked_list::remove(_container->_column_iterators_list,
-                                       *this);
+      basic_double_linked_list::remove_link_from_list(
+        _container->_column_iterators_list, *this);
   }
 
 public:
@@ -137,12 +138,14 @@ public:
   static_heap_grid_array_row_iterator(static_heap_grid_array& container,
                                       int row, int column)
     : _container(&container), _row(row), _column(column) {
-    basic_double_linked_list::add(_container->_row_iterators_list, *this);
+    basic_double_linked_list::add_link_to_list(_container->_row_iterators_list,
+                                               *this);
   }
 
   ~static_heap_grid_array_row_iterator() {
     if (_container)
-      basic_double_linked_list::remove(_container->_row_iterators_list, *this);
+      basic_double_linked_list::remove_link_from_list(
+        _container->_row_iterators_list, *this);
   }
 
 public:
@@ -331,10 +334,10 @@ public:
   RowIterator endRows() { return RowIterator(*this, int(_height), 0); }
 
   void invalidate_all_iterators() {
-    basic_double_linked_list::loop_and_reset<ColumnIterator>(
+    basic_double_linked_list::loop_list_links_and_reset<ColumnIterator>(
       _column_iterators_list,
       [](ColumnIterator* it) -> void { it->_container = nullptr; });
-    basic_double_linked_list::loop_and_reset<RowIterator>(
+    basic_double_linked_list::loop_list_links_and_reset<RowIterator>(
       _row_iterators_list,
       [](RowIterator* it) -> void { it->_container = nullptr; });
   }

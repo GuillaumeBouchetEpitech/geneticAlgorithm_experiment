@@ -33,6 +33,16 @@ ParticleManager::ExplosionParticle::ExplosionParticle(
   : position(position), linearVelocity(linearVelocity), scale(scale),
     color(color), life(life), maxLife(life) {}
 
+void ParticleManager::ExplosionParticle::applySwap(ExplosionParticle& other)
+{
+  std::swap(position, other.position);
+  std::swap(linearVelocity, other.linearVelocity);
+  std::swap(scale, other.scale);
+  std::swap(color, other.color);
+  std::swap(life, other.life);
+  std::swap(maxLife, other.maxLife);
+}
+
 ParticleManager::TrailParticle::TrailParticle(
   const glm::vec3& position, const glm::vec3& linearVelocity,
   const glm::vec3& color, float scale, float life)
@@ -40,6 +50,11 @@ ParticleManager::TrailParticle::TrailParticle(
   // initialise the particle's trail
   for (auto& trailPos : trail)
     trailPos = position;
+}
+
+void ParticleManager::TrailParticle::applySwap(TrailParticle& other)
+{
+  std::swap(trail, other.trail);
 }
 
 void

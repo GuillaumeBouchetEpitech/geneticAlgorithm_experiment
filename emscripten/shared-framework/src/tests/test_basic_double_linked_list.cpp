@@ -16,11 +16,11 @@ void test_single_link() {
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
-  List::add(list, link1);
+  List::add_link_to_list(list, link1);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -32,11 +32,11 @@ void test_single_link() {
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link1);
+  List::remove_link_from_list(list, link1);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count](Link*) { count += 1; });
+    List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
     assert(count == 0);
   }
 
@@ -58,12 +58,12 @@ void test_double_link() {
   assert(link2.prev_link == nullptr);
   assert(link2.next_link == nullptr);
 
-  List::add(list, link1);
-  List::add(list, link2);
+  List::add_link_to_list(list, link1);
+  List::add_link_to_list(list, link2);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1, &link2](Link* currLink) {
       if (count == 0)
         assert(currLink == &link2);
       else
@@ -80,11 +80,11 @@ void test_double_link() {
   assert(link1.prev_link == &link2);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link2);
+  List::remove_link_from_list(list, link2);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -96,11 +96,11 @@ void test_double_link() {
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link1);
+  List::remove_link_from_list(list, link1);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count](Link*) { count += 1; });
+    List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
     assert(count == 0);
   }
 
@@ -125,21 +125,22 @@ void test_triple_link() {
   assert(link3.prev_link == nullptr);
   assert(link3.next_link == nullptr);
 
-  List::add(list, link1);
-  List::add(list, link2);
-  List::add(list, link3);
+  List::add_link_to_list(list, link1);
+  List::add_link_to_list(list, link2);
+  List::add_link_to_list(list, link3);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
-      if (count == 0)
-        assert(currLink == &link3);
-      else if (count == 1)
-        assert(currLink == &link2);
-      else
-        assert(currLink == &link1);
-      count += 1;
-    });
+    List::loop_list_links<Link>(
+      list, [&count, &link1, &link2, &link3](Link* currLink) {
+        if (count == 0)
+          assert(currLink == &link3);
+        else if (count == 1)
+          assert(currLink == &link2);
+        else
+          assert(currLink == &link1);
+        count += 1;
+      });
     assert(count == 3);
   }
 
@@ -152,11 +153,11 @@ void test_triple_link() {
   assert(link1.prev_link == &link2);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link2);
+  List::remove_link_from_list(list, link2);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link3](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1, &link3](Link* currLink) {
       if (count == 0)
         assert(currLink == &link3);
       else
@@ -173,11 +174,11 @@ void test_triple_link() {
   assert(link1.prev_link == &link3);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link3);
+  List::remove_link_from_list(list, link3);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -189,11 +190,11 @@ void test_triple_link() {
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link1);
+  List::remove_link_from_list(list, link1);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count](Link*) { count += 1; });
+    List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
     assert(count == 0);
   }
 
@@ -221,21 +222,22 @@ void test_triple_link_replaced() {
   assert(link4.prev_link == nullptr);
   assert(link4.next_link == nullptr);
 
-  List::add(list, link1);
-  List::add(list, link2);
-  List::add(list, link3);
+  List::add_link_to_list(list, link1);
+  List::add_link_to_list(list, link2);
+  List::add_link_to_list(list, link3);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link2, &link3](Link* currLink) {
-      if (count == 0)
-        assert(currLink == &link3);
-      else if (count == 1)
-        assert(currLink == &link2);
-      else
-        assert(currLink == &link1);
-      count += 1;
-    });
+    List::loop_list_links<Link>(
+      list, [&count, &link1, &link2, &link3](Link* currLink) {
+        if (count == 0)
+          assert(currLink == &link3);
+        else if (count == 1)
+          assert(currLink == &link2);
+        else
+          assert(currLink == &link1);
+        count += 1;
+      });
     assert(count == 3);
   }
 
@@ -248,19 +250,20 @@ void test_triple_link_replaced() {
   assert(link1.prev_link == &link2);
   assert(link1.next_link == nullptr);
 
-  List::replace(list, link2, link4);
+  List::replace_link_from_list(list, link2, link4);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link4, &link3](Link* currLink) {
-      if (count == 0)
-        assert(currLink == &link3);
-      else if (count == 1)
-        assert(currLink == &link4);
-      else
-        assert(currLink == &link1);
-      count += 1;
-    });
+    List::loop_list_links<Link>(
+      list, [&count, &link1, &link4, &link3](Link* currLink) {
+        if (count == 0)
+          assert(currLink == &link3);
+        else if (count == 1)
+          assert(currLink == &link4);
+        else
+          assert(currLink == &link1);
+        count += 1;
+      });
     assert(count == 3);
   }
 
@@ -276,11 +279,11 @@ void test_triple_link_replaced() {
   assert(link2.prev_link == nullptr);
   assert(link2.next_link == nullptr);
 
-  List::remove(list, link4);
+  List::remove_link_from_list(list, link4);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1, &link3](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1, &link3](Link* currLink) {
       if (count == 0)
         assert(currLink == &link3);
       else
@@ -297,11 +300,11 @@ void test_triple_link_replaced() {
   assert(link1.prev_link == &link3);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link3);
+  List::remove_link_from_list(list, link3);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count, &link1](Link* currLink) {
+    List::loop_list_links<Link>(list, [&count, &link1](Link* currLink) {
       assert(currLink == &link1);
       count += 1;
     });
@@ -313,11 +316,11 @@ void test_triple_link_replaced() {
   assert(link1.prev_link == nullptr);
   assert(link1.next_link == nullptr);
 
-  List::remove(list, link1);
+  List::remove_link_from_list(list, link1);
 
   {
     int count = 0;
-    List::loop<Link>(list, [&count](Link*) { count += 1; });
+    List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
     assert(count == 0);
   }
 
@@ -351,22 +354,22 @@ void test_basic_double_linked_list() {
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == nullptr);
 
-      List::add(list, link1);
-      List::add(list, link2);
-      List::add(list, link3);
+      List::add_link_to_list(list, link1);
+      List::add_link_to_list(list, link2);
+      List::add_link_to_list(list, link3);
 
       {
         int count = 0;
-        List::loop<Link>(list,
-                         [&count, &link1, &link2, &link3](Link* currLink) {
-                           if (count == 0)
-                             assert(currLink == &link3);
-                           else if (count == 1)
-                             assert(currLink == &link2);
-                           else
-                             assert(currLink == &link1);
-                           count += 1;
-                         });
+        List::loop_list_links<Link>(
+          list, [&count, &link1, &link2, &link3](Link* currLink) {
+            if (count == 0)
+              assert(currLink == &link3);
+            else if (count == 1)
+              assert(currLink == &link2);
+            else
+              assert(currLink == &link1);
+            count += 1;
+          });
         assert(count == 3);
       }
 
@@ -383,7 +386,7 @@ void test_basic_double_linked_list() {
 
       {
         int count = 0;
-        List::loop<Link>(list, [&count](Link*) { count += 1; });
+        List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
         assert(count == 0);
       }
 
@@ -412,22 +415,22 @@ void test_basic_double_linked_list() {
       assert(link3.prev_link == nullptr);
       assert(link3.next_link == nullptr);
 
-      List::add(list, link1);
-      List::add(list, link2);
-      List::add(list, link3);
+      List::add_link_to_list(list, link1);
+      List::add_link_to_list(list, link2);
+      List::add_link_to_list(list, link3);
 
       {
         int count = 0;
-        List::loop<Link>(list,
-                         [&count, &link1, &link2, &link3](Link* currLink) {
-                           if (count == 0)
-                             assert(currLink == &link3);
-                           else if (count == 1)
-                             assert(currLink == &link2);
-                           else
-                             assert(currLink == &link1);
-                           count += 1;
-                         });
+        List::loop_list_links<Link>(
+          list, [&count, &link1, &link2, &link3](Link* currLink) {
+            if (count == 0)
+              assert(currLink == &link3);
+            else if (count == 1)
+              assert(currLink == &link2);
+            else
+              assert(currLink == &link1);
+            count += 1;
+          });
         assert(count == 3);
       }
 
@@ -442,7 +445,7 @@ void test_basic_double_linked_list() {
 
       {
         int count = 0;
-        List::loop_and_reset<Link>(
+        List::loop_list_links_and_reset<Link>(
           list, [&count, &link1, &link2, &link3](Link* currLink) {
             if (count == 0)
               assert(currLink == &link3);
@@ -457,7 +460,7 @@ void test_basic_double_linked_list() {
 
       {
         int count = 0;
-        List::loop<Link>(list, [&count](Link*) { count += 1; });
+        List::loop_list_links<Link>(list, [&count](Link*) { count += 1; });
         assert(count == 0);
       }
 

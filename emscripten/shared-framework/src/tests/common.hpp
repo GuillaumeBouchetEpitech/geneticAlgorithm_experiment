@@ -27,6 +27,8 @@ struct Test {
   Test(Test&& other);
   Test& operator=(const Test& other);
   Test& operator=(Test&& other);
+
+  void applySwap(Test& other);
 };
 
 struct Test2 {

@@ -118,14 +118,12 @@ public:
   PhysicBody(const PhysicBodyDef& def);
   virtual ~PhysicBody();
 
-  // PhysicBody(PhysicBody& other) = delete;
+  PhysicBody(PhysicBody& other) = delete;
   PhysicBody(PhysicBody&& other);
-  // PhysicBody& operator=(const PhysicBody& other) = delete;
-  PhysicBody& operator=(PhysicBody&& other);
+  PhysicBody& operator=(const PhysicBody& other) = delete;
+  PhysicBody& operator=(PhysicBody&& other) = delete;
 
-  // private:
-  //   void _onContactChange(ContactEvent event, PhysicContactData* contactData,
-  //   bool isB);
+  void applySwap(PhysicBody& other);
 
 public:
   virtual bool isDynamic() const override;

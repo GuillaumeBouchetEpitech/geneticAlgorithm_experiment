@@ -27,29 +27,29 @@ LOG_INFO= '[$(build_mode)] [$(build_platform)]'
 
 ifeq ($(build_platform),native)
 
-DIR_LIB=	./lib/native
+DIR_LIB=		./lib/native
 DIR_TESTS=	./bin
 
-NAME_TESTS=			$(DIR_TESTS)/exec
-NAME_FRAMEWORK_SYSTEM=			$(DIR_LIB)/lib_framework_system.a
-NAME_FRAMEWORK_GRAPHIC=			$(DIR_LIB)/lib_framework_graphic.a
-NAME_FRAMEWORK_PHYSIC=			$(DIR_LIB)/lib_framework_physic.a
-NAME_FRAMEWORK_AUDIO=			$(DIR_LIB)/lib_framework_audio.a
+NAME_TESTS=							$(DIR_TESTS)/exec
+NAME_FRAMEWORK_SYSTEM=	$(DIR_LIB)/lib_framework_system.a
+NAME_FRAMEWORK_GRAPHIC=	$(DIR_LIB)/lib_framework_graphic.a
+NAME_FRAMEWORK_PHYSIC=	$(DIR_LIB)/lib_framework_physic.a
+NAME_FRAMEWORK_AUDIO=		$(DIR_LIB)/lib_framework_audio.a
 NAME_BULLET_LINEARMATH=	$(DIR_LIB)/lib_bullet_linearmath.a
 NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_bullet_collision.a
-NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_bullet_dynamics.a
+NAME_BULLET_DYNAMICS=		$(DIR_LIB)/lib_bullet_dynamics.a
 
 else ifeq ($(build_platform),web_wasm)
 
-DIR_LIB=	./lib/web
+DIR_LIB=		./lib/web
 
-NAME_FRAMEWORK_SYSTEM=			$(DIR_LIB)/lib_framework_system.bc
-NAME_FRAMEWORK_GRAPHIC=			$(DIR_LIB)/lib_framework_graphic.bc
-NAME_FRAMEWORK_PHYSIC=			$(DIR_LIB)/lib_framework_physic.bc
-NAME_FRAMEWORK_AUDIO=			$(DIR_LIB)/lib_framework_audio.bc
+NAME_FRAMEWORK_SYSTEM=	$(DIR_LIB)/lib_framework_system.bc
+NAME_FRAMEWORK_GRAPHIC=	$(DIR_LIB)/lib_framework_graphic.bc
+NAME_FRAMEWORK_PHYSIC=	$(DIR_LIB)/lib_framework_physic.bc
+NAME_FRAMEWORK_AUDIO=		$(DIR_LIB)/lib_framework_audio.bc
 NAME_BULLET_LINEARMATH=	$(DIR_LIB)/lib_bullet_linearmath.bc
 NAME_BULLET_COLLISION=	$(DIR_LIB)/lib_bullet_collision.bc
-NAME_BULLET_DYNAMICS=	$(DIR_LIB)/lib_bullet_dynamics.bc
+NAME_BULLET_DYNAMICS=		$(DIR_LIB)/lib_bullet_dynamics.bc
 
 endif
 
@@ -90,59 +90,75 @@ endif
 
 #### SRC
 
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/files/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/math/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/math/proceduralGeneration/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/string/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/multithreading/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/multithreading/internals/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/messaging/*.cpp)
-SRC_FRAMEWORK_SYSTEM+=	$(wildcard $(DIR_SRC)/framework/system/parser_utils/*.cpp)
+SRC_FRAMEWORK_SYSTEM+=	\
+	$(wildcard \
+		$(DIR_SRC)/framework/system/*.cpp \
+		$(DIR_SRC)/framework/system/files/*.cpp \
+		$(DIR_SRC)/framework/system/math/*.cpp \
+		$(DIR_SRC)/framework/system/math/proceduralGeneration/*.cpp \
+		$(DIR_SRC)/framework/system/string/*.cpp \
+		$(DIR_SRC)/framework/system/compression/*.cpp \
+		$(DIR_SRC)/framework/system/multithreading/*.cpp \
+		$(DIR_SRC)/framework/system/multithreading/internals/*.cpp \
+		$(DIR_SRC)/framework/system/messaging/*.cpp \
+		$(DIR_SRC)/framework/system/parser_utils/*.cpp)
 
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/*.cpp)
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/sdl/*.cpp)
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/camera/*.cpp)
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/vertexBuffers/*.cpp)
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/loaders/*.cpp)
-SRC_FRAMEWORK_GRAPHIC+=	$(wildcard $(DIR_SRC)/framework/graphic/wrappers/*.cpp)
+SRC_FRAMEWORK_GRAPHIC+=	\
+	$(wildcard \
+		$(DIR_SRC)/framework/graphic/*.cpp \
+		$(DIR_SRC)/framework/graphic/sdl/*.cpp \
+		$(DIR_SRC)/framework/graphic/camera/*.cpp \
+		$(DIR_SRC)/framework/graphic/vertexBuffers/*.cpp \
+		$(DIR_SRC)/framework/graphic/loaders/*.cpp \
+		$(DIR_SRC)/framework/graphic/wrappers/*.cpp)
 
-SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/*.cpp)
-SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/body/*.cpp)
-SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/shape/*.cpp)
-SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/vehicle/*.cpp)
-SRC_FRAMEWORK_PHYSIC+=	$(wildcard $(DIR_SRC)/framework/physic/queries/*.cpp)
+SRC_FRAMEWORK_PHYSIC+=	\
+	$(wildcard \
+		$(DIR_SRC)/framework/physic/*.cpp \
+		$(DIR_SRC)/framework/physic/body/*.cpp \
+		$(DIR_SRC)/framework/physic/shape/*.cpp \
+		$(DIR_SRC)/framework/physic/vehicle/*.cpp \
+		$(DIR_SRC)/framework/physic/queries/*.cpp)
 
-SRC_FRAMEWORK_AUDIO+=	$(wildcard $(DIR_SRC)/framework/audio/*.cpp)
-SRC_FRAMEWORK_AUDIO+=	$(wildcard $(DIR_SRC)/framework/audio/decoders/*.cpp)
+SRC_FRAMEWORK_AUDIO+=	\
+	$(wildcard \
+		$(DIR_SRC)/framework/audio/*.cpp \
+		$(DIR_SRC)/framework/audio/decoders/*.cpp)
 
-SRC_BULLET_LINEARMATH+= $(wildcard $(DIR_BULLET)/LinearMath/*.cpp)
+SRC_BULLET_LINEARMATH+= \
+	$(wildcard \
+		$(DIR_BULLET)/LinearMath/*.cpp)
 
-SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/BroadphaseCollision/*.cpp)
-SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/CollisionShapes/*.cpp)
-SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/CollisionDispatch/*.cpp)
-SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/NarrowPhaseCollision/*.cpp)
+SRC_BULLET_COLLISION+= \
+	$(wildcard \
+		$(DIR_BULLET)/BulletCollision/BroadphaseCollision/*.cpp \
+		$(DIR_BULLET)/BulletCollision/CollisionShapes/*.cpp \
+		$(DIR_BULLET)/BulletCollision/CollisionDispatch/*.cpp \
+		$(DIR_BULLET)/BulletCollision/NarrowPhaseCollision/*.cpp)
 # SRC_BULLET_COLLISION+= $(wildcard $(DIR_BULLET)/BulletCollision/Gimpact/*.cpp) # TODO: useful?
 
 # SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/Character/*.cpp) # TODO: useful?
-SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/Dynamics/*.cpp)
-SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/Vehicle/*.cpp)
-SRC_BULLET_DYNAMICS+= $(wildcard $(DIR_BULLET)/BulletDynamics/ConstraintSolver/*.cpp) # TODO: useful?
+SRC_BULLET_DYNAMICS+= \
+	$(wildcard \
+		$(DIR_BULLET)/BulletDynamics/Dynamics/*.cpp \
+		$(DIR_BULLET)/BulletDynamics/Vehicle/*.cpp \
+		$(DIR_BULLET)/BulletDynamics/ConstraintSolver/*.cpp) # TODO: useful?
 
-SRC_TESTS+=	$(wildcard $(DIR_SRC)/tests/*.cpp)
-SRC_TESTS+=	$(wildcard $(DIR_SRC)/tests/audio/*.cpp)
+SRC_TESTS+=	\
+	$(wildcard \
+		$(DIR_SRC)/tests/*.cpp \
+		$(DIR_SRC)/tests/audio/*.cpp)
 
 #
 
-OBJ_FRAMEWORK_SYSTEM=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_SYSTEM))
+OBJ_FRAMEWORK_SYSTEM=		$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_SYSTEM))
 OBJ_FRAMEWORK_GRAPHIC=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_GRAPHIC))
-OBJ_FRAMEWORK_PHYSIC=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_PHYSIC))
-OBJ_FRAMEWORK_AUDIO=	$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_AUDIO))
+OBJ_FRAMEWORK_PHYSIC=		$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_PHYSIC))
+OBJ_FRAMEWORK_AUDIO=		$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_AUDIO))
 
 OBJ_BULLET_LINEARMATH=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_LINEARMATH)/%.o, $(SRC_BULLET_LINEARMATH))
-OBJ_BULLET_COLLISION=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_COLLISION)/%.o, $(SRC_BULLET_COLLISION))
-OBJ_BULLET_DYNAMICS=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_DYNAMICS)/%.o, $(SRC_BULLET_DYNAMICS))
+OBJ_BULLET_COLLISION=		$(patsubst %.cpp, $(DIR_OBJ_BULLET_COLLISION)/%.o, $(SRC_BULLET_COLLISION))
+OBJ_BULLET_DYNAMICS=		$(patsubst %.cpp, $(DIR_OBJ_BULLET_DYNAMICS)/%.o, $(SRC_BULLET_DYNAMICS))
 
 ifeq ($(build_platform),native)
 
@@ -195,9 +211,16 @@ CXXFLAGS_TESTS += -Wall -W -Wextra -Wunused -Wpedantic -Wshadow -Wconversion -We
 CXXFLAGS_TESTS += -I$(DIR_SRC)
 
 LDFLAGS_TESTS += $(BUILD_FLAG)
-LDFLAGS_TESTS += $(NAME_FRAMEWORK_AUDIO)
-LDFLAGS_TESTS += $(NAME_FRAMEWORK_GRAPHIC)
-LDFLAGS_TESTS += $(NAME_FRAMEWORK_SYSTEM)
+
+LDFLAGS_TESTS += \
+	$(NAME_FRAMEWORK_AUDIO) \
+	$(NAME_FRAMEWORK_PHYSIC) \
+	$(NAME_FRAMEWORK_GRAPHIC) \
+	$(NAME_FRAMEWORK_SYSTEM) \
+	$(NAME_BULLET_DYNAMICS) \
+	$(NAME_BULLET_COLLISION) \
+	$(NAME_BULLET_LINEARMATH)
+
 LDFLAGS_TESTS += -lopenal
 
 else ifeq ($(build_platform),web_wasm)
@@ -297,31 +320,40 @@ bullet_dynamics:	$(OBJ_BULLET_DYNAMICS)
 # => compile in a ".o" file
 
 $(DIR_OBJ_FRAMEWORK)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_FRAMEWORK) $< -c -o $@
+
+# $(CXX) $(CXXFLAGS_FRAMEWORK) -MMD -MT $@ -MF $@.dep -o $@ $<
+
+# $(BIN)/%.cpp.o: %.cpp
+# 	@mkdir -p $(dir $@)
+# 	$(CXX) -c $(CXXFLAGS) -MMD -MT "$@" -MF "$@.dep" -o "$@" $<
+
+
+
 
 ifeq ($(build_platform),native)
 
 $(DIR_OBJ_TESTS)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_TESTS) $< -c -o $@
 
 endif
 
 $(DIR_OBJ_BULLET_LINEARMATH)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 $(DIR_OBJ_BULLET_COLLISION)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 
 $(DIR_OBJ_BULLET_DYNAMICS)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS_BULLET) $< -c -o $@
 

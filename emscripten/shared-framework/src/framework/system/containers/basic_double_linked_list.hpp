@@ -13,7 +13,7 @@ struct basic_double_linked_list {
   link* head_link = nullptr;
   uint32_t size = 0;
 
-  static void add(basic_double_linked_list& list, link& new_link) {
+  static void add_link_to_list(basic_double_linked_list& list, link& new_link) {
     // add as head of list
 
     // FROM: (headLink) -> ...
@@ -28,7 +28,8 @@ struct basic_double_linked_list {
     list.size += 1;
   }
 
-  static void remove(basic_double_linked_list& list, link& old_link) {
+  static void remove_link_from_list(basic_double_linked_list& list,
+                                    link& old_link) {
     // remove from list
 
     // FROM: ... <--> (oldLink) <--> ...
@@ -49,8 +50,8 @@ struct basic_double_linked_list {
     list.size -= 1;
   }
 
-  static void replace(basic_double_linked_list& list, link& old_link,
-                      link& new_link) {
+  static void replace_link_from_list(basic_double_linked_list& list,
+                                     link& old_link, link& new_link) {
     // replace in list
 
     // FROM: ... <--> (oldLink) <--> ...
@@ -59,8 +60,7 @@ struct basic_double_linked_list {
     new_link.prev_link = old_link.prev_link;
     new_link.next_link = old_link.next_link;
 
-    old_link.prev_link = nullptr;
-    old_link.next_link = nullptr;
+    reset_link(old_link);
 
     if (new_link.prev_link)
       new_link.prev_link->next_link = &new_link;
@@ -92,8 +92,8 @@ struct basic_double_linked_list {
   // TODO: loop -> for_each ?
 
   template <typename T>
-  static void loop(basic_double_linked_list& list,
-                   const std::function<void(T*)>& callback) {
+  static void loop_list_links(basic_double_linked_list& list,
+                              const std::function<void(T*)>& callback) {
     link* curr_link = list.head_link;
     while (curr_link) {
       callback(static_cast<T*>(curr_link));
@@ -102,8 +102,9 @@ struct basic_double_linked_list {
   }
 
   template <typename T>
-  static void loop_and_reset(basic_double_linked_list& list,
-                             const std::function<void(T*)>& callback) {
+  static void
+  loop_list_links_and_reset(basic_double_linked_list& list,
+                            const std::function<void(T*)>& callback) {
     link* curr_link = list.head_link;
     while (curr_link) {
       link* to_reset_link = curr_link;

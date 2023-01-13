@@ -19,7 +19,6 @@ protected:
   Type* allocate_memory(std::size_t size) {
     Allocator alloc;
     Type* newData = alloc.allocate(size);
-
     return newData;
   }
 
@@ -51,9 +50,9 @@ protected:
   }
 
   // call the destructor only, do not deallocate memory
-  void call_destructor(std::size_t index) {
+  void call_destructor(Type* data, std::size_t index) {
     Allocator alloc;
-    traits_t::destroy(alloc, this->_data + index);
+    traits_t::destroy(alloc, data + index);
   }
 
 public:
@@ -125,16 +124,19 @@ public:
 
     --this->_size;
 
-    call_destructor(this->_size);
+    call_destructor(this->_data, this->_size);
   }
 
   // no reallocation
-  void unsorted_erase(std::size_t index) {
-    if (this->_size > 1 && index + 1 < this->_size) {
-      // move target to the back
-      call_move_constructor(this->_data, index,
-                            std::move(this->_data[this->_size - 1]));
+  void unsorted_erase(std::size_t inIndex) {
+    if (this->is_out_of_range(inIndex))
+      return;
+
+    // swap data at the end
+    if (this->_size > 1 && inIndex < this->_size - 1) {
+      this->_data[inIndex].applySwap(this->_data[this->_size - 1]);
     }
+
     // remove the back
     pop_back();
   }
@@ -144,20 +146,18 @@ public:
     if (this->is_out_of_range(inIndex))
       return;
 
-    // call target destructor
-    call_destructor(inIndex);
-
-    // move data after the target
+    // swap data at the end
     for (std::size_t ii = inIndex; ii + 1 < this->_size; ++ii)
-      call_move_constructor(this->_data, ii, std::move(this->_data[ii + 1]));
+      this->_data[ii].applySwap(this->_data[ii + 1]);
 
-    --this->_size;
+    // remove the back
+    pop_back();
   }
 
 public:
   void clear() {
     for (std::size_t ii = 0; ii < this->_size; ++ii)
-      call_destructor(ii);
+      call_destructor(this->_data, ii);
 
     this->_size = 0;
   }
@@ -193,7 +193,7 @@ protected:
       call_move_constructor(newData, ii, std::move(this->_data[ii]));
 
     for (std::size_t ii = 0; ii < this->_size; ++ii)
-      call_destructor(ii);
+      call_destructor(this->_data, ii);
 
     if (_capacity > 0)
       deallocate_memory(this->_data, _capacity);

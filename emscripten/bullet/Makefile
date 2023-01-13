@@ -176,6 +176,10 @@ BUILD_FLAG=		-g3 # debug flag
 
 endif
 
+# DEPENDENCIES += sdl2 glesv2 egl openal
+DEPENDENCIES_LIST += sdl2 glesv2 egl
+DEPENDENCIES_CXXFLAGS += $(shell pkg-config $(DEPENDENCIES_LIST) --cflags)
+DEPENDENCIES_LDFLAGS += $(shell pkg-config $(DEPENDENCIES_LIST) --libs)
 
 CXXFLAGS += $(BUILD_FLAG)
 CXXFLAGS += -std=c++17
@@ -188,19 +192,18 @@ ifeq ($(build_platform),native_pthread)
 CXX=clang++
 AR=ar
 
-CXXFLAGS += -D_REENTRANT -I/usr/include/SDL2
+CXXFLAGS += $(DEPENDENCIES_CXXFLAGS)
 
 LDFLAGS += $(BUILD_FLAG)
 LDFLAGS += $(NAME_LIB_FRAMEWORK_PHYSIC)
 LDFLAGS += $(NAME_LIB_FRAMEWORK_GRAPHIC)
 LDFLAGS += $(NAME_LIB_FRAMEWORK_SYSTEM)
 LDFLAGS += $(NAME_MACHINE_LEARNING)
-LDFLAGS += -lSDL2
-LDFLAGS += -lGLESv2
-LDFLAGS += -pthread
 LDFLAGS += $(NAME_LIB_BULLET_DYNAMICS)
 LDFLAGS += $(NAME_LIB_BULLET_COLLISION)
 LDFLAGS += $(NAME_LIB_BULLET_LINEARMATH)
+LDFLAGS += $(DEPENDENCIES_LDFLAGS)
+LDFLAGS += -pthread
 
 else
 
@@ -319,21 +322,21 @@ machine_learning:	ensurefolders $(OBJ_MACHINE_LEARNING)
 # => compile in a ".o" file
 
 $(DIR_OBJ)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 ifeq ($(build_platform),web_wasm_webworker)
 
 $(DIR_OBJ_WEB_WORKER)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 
 endif
 
 $(DIR_OBJ_MACHINE_LEARNING)/%.o: %.cpp
-	@mkdir -p `dirname $@`
+	@mkdir -p $(dir $@)
 	@echo ' ---> processing $(LOG_INFO):' $<
 	@$(CXX) $(CXXFLAGS) $< -c -o $@
 

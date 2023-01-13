@@ -24,6 +24,8 @@ private:
     ExplosionParticle(
       const glm::vec3& position, const glm::vec3& linearVelocity,
       const glm::vec3& color, float scale, float life);
+
+    void applySwap(ExplosionParticle& other);
   };
 
   struct TrailParticle : public ExplosionParticle {
@@ -33,6 +35,8 @@ private:
     TrailParticle(
       const glm::vec3& position, const glm::vec3& linearVelocity,
       const glm::vec3& color, float scale, float life);
+
+    void applySwap(TrailParticle& other);
   };
 
   using ExplosionParticles = dynamic_heap_array<ExplosionParticle>;

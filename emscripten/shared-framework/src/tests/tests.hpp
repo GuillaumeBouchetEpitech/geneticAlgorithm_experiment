@@ -10,5 +10,7 @@ void test_frustum_culling();
 void test_static_array();
 void test_deterministic_rng();
 void test_generic_array_container();
+void test_compression();
 
 void test_audio();
+void test_physics();

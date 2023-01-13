@@ -104,6 +104,11 @@ Test& Test::operator=(Test&& other) {
   return *this;
 }
 
+void Test::applySwap(Test& other) {
+  std::swap(value, other.value);
+  std::swap(my_string, other.my_string);
+}
+
 //
 //
 //

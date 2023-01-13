@@ -111,14 +111,13 @@ PhysicVehicle::PhysicVehicle(PhysicVehicle&& other) {
   std::swap(_body, other._body);
 }
 
-PhysicVehicle& PhysicVehicle::operator=(PhysicVehicle&& other) {
+void PhysicVehicle::applySwap(PhysicVehicle& other) {
   if (this == &other)
-    return *this;
+    return;
 
   std::swap(_bullet.vehicleRayCaster, other._bullet.vehicleRayCaster);
   std::swap(_bullet.vehicle, other._bullet.vehicle);
   std::swap(_body, other._body);
-  return *this;
 }
 
 //

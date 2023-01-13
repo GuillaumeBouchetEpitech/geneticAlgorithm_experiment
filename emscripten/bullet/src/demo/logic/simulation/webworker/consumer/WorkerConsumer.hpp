@@ -4,7 +4,6 @@
 #include "demo/logic/simulation/logic/CarAgent.hpp"
 #include "demo/logic/simulation/logic/CarData.hpp"
 #include "demo/logic/simulation/logic/CircuitBuilder.hpp"
-// #include "demo/logic/simulation/logic/physic/PhysicWorld.hpp"
 #include "demo/logic/simulation/webworker/common.hpp"
 
 #include "machineLearning/NeuralNetwork.hpp"

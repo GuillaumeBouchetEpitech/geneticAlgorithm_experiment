@@ -9,4 +9,4 @@ make build_mode="debug" build_platform="native" fclean_tests
 make build_mode="debug" build_platform="native" build-tests -j6
 
 # ./bin/exec
-valgrind ./bin/exec
+valgrind --leak-check=full ./bin/exec

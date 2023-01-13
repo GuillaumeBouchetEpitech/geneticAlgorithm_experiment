@@ -33,6 +33,7 @@ public:
   void destroyBody(BodyWeakRef ref);
 
   void addBody(BodyWeakRef ref, short group, short mask);
+  void removeBody(AbstractPhysicBody& body);
   void removeBody(BodyWeakRef ref);
 
   BodyWeakRef getBody(unsigned int index);

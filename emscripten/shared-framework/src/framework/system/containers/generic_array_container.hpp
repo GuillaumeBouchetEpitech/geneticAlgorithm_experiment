@@ -10,49 +10,6 @@
 #include <memory>
 #include <string>
 
-#if 0
-
-template <typename Type>
-class custom_allocator
-{
-public:
-  // allocate memory only, will not call any constructor
-  Type* allocate_memory(std::size_t size) {
-    return (Type*) ::operator new (size * sizeof(Type));
-  }
-
-  // deallocate memory only, will not call any destructor
-  void deallocate_memory(Type* data, std::size_t size) {
-    ::operator delete(data, size * sizeof(Type));
-  }
-
-  // call the move constructor only, do not allocate memory
-  void call_move_constructor(Type* data, std::size_t index, Type&& value) {
-    new (&data[index]) Type(std::move(value));
-  }
-
-  // call the move constructor only, do not allocate memory
-  template <typename... Args>
-  Type& emplace_move_constructor(Type* data, std::size_t index,
-                                 Args&&... args) {
-    new (&data[index]) Type(std::forward<Args>(args)...);
-    return data[index];
-  }
-
-  // call the destructor only, do not deallocate memory
-  void call_destructor(std::size_t index) {
-    _data[index].~Type();
-  }
-};
-
-#endif
-
-//
-//
-//
-//
-//
-
 // will survive a container reallocation
 // will survive a container destruction
 template <typename generic_array_container>
@@ -72,7 +29,8 @@ public:
   generic_array_container_base_iterator(generic_array_container& container,
                                         int index)
     : _container(&container), _index(index) {
-    basic_double_linked_list::add(_container->_iterators_list, *this);
+    basic_double_linked_list::add_link_to_list(_container->_iterators_list,
+                                               *this);
   }
 
   // COPY
@@ -84,7 +42,8 @@ public:
     _container = other._container;
     _index = other._index;
     if (_container != nullptr) {
-      basic_double_linked_list::add(_container->_iterators_list, *this);
+      basic_double_linked_list::add_link_to_list(_container->_iterators_list,
+                                                 *this);
     }
   }
 
@@ -97,12 +56,12 @@ public:
     std::swap(_container, other._container);
     std::swap(_index, other._index);
     if (_container != nullptr) {
-      basic_double_linked_list::replace(_container->_iterators_list, other,
-                                        *this);
+      basic_double_linked_list::replace_link_from_list(
+        _container->_iterators_list, other, *this);
     }
 
-    basic_double_linked_list::replace(_container->_iterators_list, other,
-                                      *this);
+    basic_double_linked_list::replace_link_from_list(
+      _container->_iterators_list, other, *this);
   }
 
   // COPY
@@ -114,7 +73,8 @@ public:
     _container = other._container;
     _index = other._index;
     if (_container != nullptr) {
-      basic_double_linked_list::add(_container->_iterators_list, *this);
+      basic_double_linked_list::add_link_to_list(_container->_iterators_list,
+                                                 *this);
     }
 
     return *this;
@@ -129,8 +89,8 @@ public:
     std::swap(_container, other._container);
     std::swap(_index, other._index);
     if (_container != nullptr) {
-      basic_double_linked_list::replace(_container->_iterators_list, other,
-                                        *this);
+      basic_double_linked_list::replace_link_from_list(
+        _container->_iterators_list, other, *this);
     }
 
     return *this;
@@ -138,7 +98,8 @@ public:
 
   ~generic_array_container_base_iterator() {
     if (_container)
-      basic_double_linked_list::remove(_container->_iterators_list, *this);
+      basic_double_linked_list::remove_link_from_list(
+        _container->_iterators_list, *this);
   }
 
 public:
@@ -337,9 +298,9 @@ public:
   }
 
   void invalidate_all_iterators() {
-    basic_double_linked_list::loop_and_reset<Iterator>(
+    basic_double_linked_list::loop_list_links_and_reset<Iterator>(
       _iterators_list, [](Iterator* it) -> void { it->_container = nullptr; });
-    basic_double_linked_list::loop_and_reset<ConstIterator>(
+    basic_double_linked_list::loop_list_links_and_reset<ConstIterator>(
       _const_iterators_list,
       [](ConstIterator* it) -> void { it->_container = nullptr; });
   }

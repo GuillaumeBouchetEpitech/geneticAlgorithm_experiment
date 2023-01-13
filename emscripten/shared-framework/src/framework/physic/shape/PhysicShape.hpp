@@ -3,7 +3,10 @@
 
 #include "PhysicShapeDef.hpp"
 
+#include <memory>
+
 class btCollisionShape;
+class btTriangleIndexVertexArray;
 
 class PhysicShape {
 protected:
@@ -17,7 +20,13 @@ protected:
   PhysicShape(const PhysicShapeDef& def);
 
 public:
-  ~PhysicShape();
+  PhysicShape(const PhysicShape& other) = delete;
+  PhysicShape& operator=(const PhysicShape& other) = delete;
+
+  PhysicShape(PhysicShape&& other) = delete;
+  PhysicShape& operator=(PhysicShape&& other) = delete;
+
+  virtual ~PhysicShape();
 
 public:
   static PhysicShape* create(const PhysicShapeDef& def, bool isDynamic);
@@ -67,11 +76,14 @@ class StaticMeshShape : public PhysicShape {
   friend PhysicShape;
 
 private:
-  float* _verticesData = nullptr;
-  int32_t* _indicesData = nullptr;
+  std::unique_ptr<float[]> _verticesData{nullptr};
+  std::unique_ptr<int32_t[]> _indicesData{nullptr};
+  btTriangleIndexVertexArray* _indexVertexArrays = nullptr;
 
 protected:
   StaticMeshShape(const PhysicShapeDef& def, bool isDynamic);
+
+public:
   ~StaticMeshShape();
 };
 
@@ -82,7 +94,12 @@ protected:
 class CompoundShape : public PhysicShape {
   friend PhysicShape;
 
+private:
+  std::vector<PhysicShape*> _children;
+
 protected:
   CompoundShape(const PhysicShapeDef& def, bool isDynamic);
+
+public:
   ~CompoundShape();
 };

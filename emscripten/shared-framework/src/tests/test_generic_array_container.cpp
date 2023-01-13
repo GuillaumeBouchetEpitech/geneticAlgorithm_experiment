@@ -650,7 +650,7 @@ void dynamic_array_heap_tests() {
 
       assert(common::getTotalCtor() == 0);
       assert(common::getTotalCopyCtor() == 0);
-      assert(common::getTotalMoveCtor() == 7);
+      assert(common::getTotalMoveCtor() == 0);
       assert(common::getTotalDtor() == 1);
       common::reset();
 
@@ -672,7 +672,7 @@ void dynamic_array_heap_tests() {
 
       assert(common::getTotalCtor() == 0);
       assert(common::getTotalCopyCtor() == 0);
-      assert(common::getTotalMoveCtor() == 1);
+      assert(common::getTotalMoveCtor() == 0);
       assert(common::getTotalDtor() == 1);
       common::reset();
     }

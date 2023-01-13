@@ -11,6 +11,8 @@ int main() {
   // D_MYLOG("test " << glm::vec3(1,2,3));
   // D_MYLOG("test " << true);
 
+  // test_custom_allocator();
+
   test_basic_double_linked_list();
   test_dynamic_heap_array();
   test_static_heap_grid_array();
@@ -20,8 +22,11 @@ int main() {
   test_static_array();
   test_deterministic_rng();
   test_generic_array_container();
+  test_compression();
 
   // test_audio();
+
+  test_physics();
 
   D_MYLOG("");
   D_MYLOG("");

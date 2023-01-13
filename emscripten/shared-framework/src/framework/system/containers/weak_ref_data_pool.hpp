@@ -37,44 +37,23 @@ public:
   public:
     internal_data(const internal_data& other) = delete; // block copy
     internal_data(internal_data&& other) : InternalBaseType(std::move(other)) {
-      _doMove(other);
+      if (&other == this)
+        return;
+      std::swap(_index, other._index);
+      std::swap(_is_active, other._is_active);
+      std::swap(_weak_ref_list.head_link, other._weak_ref_list.head_link);
+      std::swap(_weak_ref_list.size, other._weak_ref_list.size);
+      sync_all_ref_index();
     }
 
     virtual ~internal_data() { invalidate_all_ref(); }
 
-    // internal_data(PublicBaseType&& other)
-    //   : InternalBaseType(std::move(other))
-    // {
-    //   // _doMove(other);
-    // }
-
-  public:
-    internal_data& operator=(const internal_data& other) = delete; // block copy
-    internal_data& operator=(internal_data&& other) {
-      if (&other == this)
-        return *this;
-      _doMove(other);
-      return InternalBaseType::operator=(std::move(other));
-    }
-
-    // internal_data& operator=(PublicBaseType&& other)
-    // {
-    //   InternalBaseType&& internal =
-    //   reinterpret_cast<InternalBaseType&&>(other); _doMove(internal); return
-    //   InternalBaseType::operator=(std::move(internal));
-    // }
-
-  private:
-    // void _doCopy(const internal_data& other)
-    // {
-    //   _index = other._index;
-    //   _is_active = other._is_active;
-    //   _list = other._list;
-    // }
-
-    void _doMove(internal_data& other) {
+    void applySwap(internal_data& other) {
       if (&other == this)
         return;
+
+      InternalBaseType::applySwap(other);
+
       std::swap(_index, other._index);
       std::swap(_is_active, other._is_active);
       std::swap(_weak_ref_list.head_link, other._weak_ref_list.head_link);
@@ -84,8 +63,12 @@ public:
     }
 
   public:
+    internal_data& operator=(const internal_data& other) = delete; // block copy
+    internal_data& operator=(internal_data&& other) = delete;      // block move
+
+  public:
     void invalidate_all_ref() {
-      basic_double_linked_list::loop_and_reset<weak_ref>(
+      basic_double_linked_list::loop_list_links_and_reset<weak_ref>(
         _weak_ref_list, [](weak_ref* currLink) {
           // D_MYLOG("invalidate: " << currLink);
 
@@ -95,13 +78,13 @@ public:
     }
 
     void sync_all_ref_index() {
-      basic_double_linked_list::loop<weak_ref>(
+      basic_double_linked_list::loop_list_links<weak_ref>(
         _weak_ref_list,
         [this](weak_ref* currLink) { currLink->_index = _index; });
     }
 
     void sync_all_ref_pool(weak_ref_data_pool* pool) {
-      basic_double_linked_list::loop<weak_ref>(
+      basic_double_linked_list::loop_list_links<weak_ref>(
         _weak_ref_list, [pool](weak_ref* currLink) { currLink->_pool = pool; });
     }
   };
@@ -130,7 +113,7 @@ public:
       _index = inIndex;
       basic_double_linked_list& list =
         _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
-      basic_double_linked_list::add(list, *this);
+      basic_double_linked_list::add_link_to_list(list, *this);
     }
 
   public:
@@ -177,7 +160,7 @@ public:
       if (_pool != nullptr) {
         basic_double_linked_list& list =
           _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
-        basic_double_linked_list::remove(list, *this);
+        basic_double_linked_list::remove_link_from_list(list, *this);
       }
 
       basic_double_linked_list::reset_link(*this);
@@ -199,7 +182,7 @@ public:
 
       basic_double_linked_list& list =
         _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
-      basic_double_linked_list::add(list, *this);
+      basic_double_linked_list::add_link_to_list(list, *this);
     }
 
     void _doMove(weak_ref&& other) {
@@ -214,7 +197,7 @@ public:
 
       basic_double_linked_list& list =
         _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
-      basic_double_linked_list::replace(list, other, *this);
+      basic_double_linked_list::replace_link_from_list(list, other, *this);
     }
 
   public:
@@ -263,16 +246,12 @@ public:
     _itemsPool = std::move(other._itemsPool);
     for (auto& item : _itemsPool)
       item.sync_all_ref_pool(this);
-    for (auto& item : other._itemsPool)
-      item.sync_all_ref_pool(&other);
   }
 
   weak_ref_data_pool& operator=(weak_ref_data_pool&& other) {
     _itemsPool = std::move(other._itemsPool);
     for (auto& item : _itemsPool)
       item.sync_all_ref_pool(this);
-    for (auto& item : other._itemsPool)
-      item.sync_all_ref_pool(&other);
 
     return *this;
   }
@@ -404,24 +383,15 @@ public:
 
   void release(PublicBaseType* pExternalData) {
 
-    // std::cout << "test test test value=" << pExternalData->value <<
-    // std::endl;
+    internal_data* pInternal_data = static_cast<internal_data*>(pExternalData);
 
-    internal_data* pinternal_data = static_cast<internal_data*>(pExternalData);
-
-    // std::cout << "test test test _index=" << pinternal_data->_index <<
-    // std::endl; std::cout << "test test test _is_active=" <<
-    // pinternal_data->_is_active << std::endl;
-
-    if (pinternal_data->_is_active == false)
+    if (pInternal_data->_is_active == false)
       return;
 
-    pinternal_data->invalidate_all_ref();
+    pInternal_data->invalidate_all_ref();
 
-    pinternal_data->_is_active = false;
-    std::size_t index = std::size_t(pinternal_data->_index);
-
-    // std::cout << "pre" << std::endl;
+    pInternal_data->_is_active = false;
+    std::size_t index = std::size_t(pInternal_data->_index);
 
     _itemsPool.unsorted_erase(std::size_t(index));
 

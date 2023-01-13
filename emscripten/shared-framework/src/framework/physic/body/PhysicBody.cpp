@@ -42,6 +42,9 @@ PhysicBody::~PhysicBody() {
 }
 
 PhysicBody::PhysicBody(PhysicBody&& other) {
+  if (this == &other)
+    return;
+
   std::swap(_bullet.motionState, other._bullet.motionState);
   std::swap(_bullet.body, other._bullet.body);
   std::swap(_shape, other._shape);
@@ -51,9 +54,9 @@ PhysicBody::PhysicBody(PhysicBody&& other) {
   std::swap(_isAdded, other._isAdded);
 }
 
-PhysicBody& PhysicBody::operator=(PhysicBody&& other) {
+void PhysicBody::applySwap(PhysicBody& other) {
   if (this == &other)
-    return *this;
+    return;
 
   std::swap(_bullet.motionState, other._bullet.motionState);
   std::swap(_bullet.body, other._bullet.body);
@@ -62,7 +65,6 @@ PhysicBody& PhysicBody::operator=(PhysicBody&& other) {
   std::swap(_userValue, other._userValue);
   std::swap(_userData, other._userData);
   std::swap(_isAdded, other._isAdded);
-  return *this;
 }
 
 // void PhysicBody::_onContactChange(ContactEvent event, PhysicContactData*
