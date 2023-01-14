@@ -28,9 +28,7 @@ LOG_INFO= '[$(build_mode)] [$(build_platform)]'
 ifeq ($(build_platform),native)
 
 DIR_LIB=		./lib/native
-DIR_TESTS=	./bin
 
-NAME_TESTS=							$(DIR_TESTS)/exec
 NAME_FRAMEWORK_SYSTEM=	$(DIR_LIB)/lib_framework_system.a
 NAME_FRAMEWORK_GRAPHIC=	$(DIR_LIB)/lib_framework_graphic.a
 NAME_FRAMEWORK_PHYSIC=	$(DIR_LIB)/lib_framework_physic.a
@@ -81,12 +79,6 @@ DIR_OBJ_BULLET_LINEARMATH=	$(DIR_OBJ_BULLET)/linearmath
 DIR_OBJ_BULLET_COLLISION=	$(DIR_OBJ_BULLET)/collision
 DIR_OBJ_BULLET_DYNAMICS=		$(DIR_OBJ_BULLET)/dynamic
 
-ifeq ($(build_platform),native)
-
-DIR_OBJ_TESTS=	$(DIR_OBJ)/tests
-
-endif
-
 
 #### SRC
 
@@ -97,6 +89,7 @@ SRC_FRAMEWORK_SYSTEM+=	\
 		$(DIR_SRC)/framework/system/math/*.cpp \
 		$(DIR_SRC)/framework/system/math/proceduralGeneration/*.cpp \
 		$(DIR_SRC)/framework/system/string/*.cpp \
+		$(DIR_SRC)/framework/system/containers/*.cpp \
 		$(DIR_SRC)/framework/system/compression/*.cpp \
 		$(DIR_SRC)/framework/system/multithreading/*.cpp \
 		$(DIR_SRC)/framework/system/multithreading/internals/*.cpp \
@@ -144,11 +137,6 @@ SRC_BULLET_DYNAMICS+= \
 		$(DIR_BULLET)/BulletDynamics/Vehicle/*.cpp \
 		$(DIR_BULLET)/BulletDynamics/ConstraintSolver/*.cpp) # TODO: useful?
 
-SRC_TESTS+=	\
-	$(wildcard \
-		$(DIR_SRC)/tests/*.cpp \
-		$(DIR_SRC)/tests/audio/*.cpp)
-
 #
 
 OBJ_FRAMEWORK_SYSTEM=		$(patsubst %.cpp, $(DIR_OBJ_FRAMEWORK)/%.o, $(SRC_FRAMEWORK_SYSTEM))
@@ -160,19 +148,7 @@ OBJ_BULLET_LINEARMATH=	$(patsubst %.cpp, $(DIR_OBJ_BULLET_LINEARMATH)/%.o, $(SRC
 OBJ_BULLET_COLLISION=		$(patsubst %.cpp, $(DIR_OBJ_BULLET_COLLISION)/%.o, $(SRC_BULLET_COLLISION))
 OBJ_BULLET_DYNAMICS=		$(patsubst %.cpp, $(DIR_OBJ_BULLET_DYNAMICS)/%.o, $(SRC_BULLET_DYNAMICS))
 
-ifeq ($(build_platform),native)
-
-OBJ_TESTS=	$(patsubst %.cpp, $(DIR_OBJ_TESTS)/%.o, $(SRC_TESTS))
-
-endif
-
 #
-
-#
-
-#### /BULLET_SRC
-
-
 
 #######
 
@@ -205,24 +181,6 @@ AR=ar
 CXXFLAGS_FRAMEWORK += $(COMMON_FLAGS)
 CXXFLAGS_FRAMEWORK += -D_REENTRANT -I/usr/include/SDL2
 
-CXXFLAGS_TESTS += $(BUILD_FLAG)
-CXXFLAGS_TESTS += -std=c++17
-CXXFLAGS_TESTS += -Wall -W -Wextra -Wunused -Wpedantic -Wshadow -Wconversion -Werror
-CXXFLAGS_TESTS += -I$(DIR_SRC)
-
-LDFLAGS_TESTS += $(BUILD_FLAG)
-
-LDFLAGS_TESTS += \
-	$(NAME_FRAMEWORK_AUDIO) \
-	$(NAME_FRAMEWORK_PHYSIC) \
-	$(NAME_FRAMEWORK_GRAPHIC) \
-	$(NAME_FRAMEWORK_SYSTEM) \
-	$(NAME_BULLET_DYNAMICS) \
-	$(NAME_BULLET_COLLISION) \
-	$(NAME_BULLET_LINEARMATH)
-
-LDFLAGS_TESTS += -lopenal
-
 else ifeq ($(build_platform),web_wasm)
 
 CXX=em++
@@ -250,9 +208,6 @@ all:	\
 ensure_folders:
 	@mkdir -p $(DIR_LIB)
 
-# framework:	ensure_folders $(OBJ_FRAMEWORK)
-# 	# $(AR) cr $(NAME_FRAMEWORK) $(OBJ_FRAMEWORK)
-
 framework:	\
 	ensure_folders	\
 	framework_system	\
@@ -279,18 +234,6 @@ framework_audio:	ensure_folders $(OBJ_FRAMEWORK_AUDIO)
 	@echo ' ---> building $(LOG_INFO): "framework audio library"'
 	@$(AR) cr $(NAME_FRAMEWORK_AUDIO) $(OBJ_FRAMEWORK_AUDIO)
 	@echo '   --> built $(LOG_INFO): "framework audio library"'
-
-ifeq ($(build_platform),native)
-
-ensure_tests_folders: ensure_folders
-	@mkdir -p $(DIR_TESTS)
-
-build-tests: ensure_tests_folders $(OBJ_TESTS)
-	@echo ' ---> building $(LOG_INFO): "tests"'
-	@$(CXX) $(CXXFLAGS_TESTS) $(OBJ_TESTS) -o $(NAME_TESTS) $(LDFLAGS_TESTS)
-	@echo '   --> built $(LOG_INFO): "tests"'
-
-endif
 
 bullet:	\
 	ensure_folders	\
@@ -331,17 +274,6 @@ $(DIR_OBJ_FRAMEWORK)/%.o: %.cpp
 # 	$(CXX) -c $(CXXFLAGS) -MMD -MT "$@" -MF "$@.dep" -o "$@" $<
 
 
-
-
-ifeq ($(build_platform),native)
-
-$(DIR_OBJ_TESTS)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	@echo ' --> processing $(LOG_INFO):' $<
-	@$(CXX) $(CXXFLAGS_TESTS) $< -c -o $@
-
-endif
-
 $(DIR_OBJ_BULLET_LINEARMATH)/%.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo ' --> processing $(LOG_INFO):' $<
@@ -372,20 +304,6 @@ fclean: clean
 	@$(RM) $(NAME_FRAMEWORK_AUDIO)
 	@echo '   -> cleaned $(LOG_INFO): framework library file(s)'
 
-ifeq ($(build_platform),native)
-
-clean_tests:
-	@echo ' -> cleaning $(LOG_INFO): tests build file(s)'
-	@$(RM) $(DIR_OBJ_TESTS)
-	@echo '   -> cleaned $(LOG_INFO): tests build file(s)'
-
-fclean_tests: clean_tests
-	@echo ' -> cleaning $(LOG_INFO): tests file(s)'
-	@$(RM) $(NAME_TESTS)
-	@echo '   -> cleaned $(LOG_INFO): tests file(s)'
-
-endif
-
 clean_bullet:
 	@echo ' -> cleaning $(LOG_INFO): bullet physics library build file(s)'
 	@$(RM) $(DIR_OBJ_BULLET)
@@ -405,8 +323,6 @@ re:			fclean all
 		framework \
 		clean \
 		fclean \
-		clean_tests \
-		fclean_tests \
 		re \
 		bullet \
 		bullet_linearmath \

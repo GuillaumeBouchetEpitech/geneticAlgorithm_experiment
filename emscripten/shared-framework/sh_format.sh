@@ -8,5 +8,5 @@
 # find ./src/ -iname *.h -iname *.hpp -o -iname *.cpp | xargs clang-format -i
 
 find ./src/framework -iname *.h -o -iname *.hpp -o -iname *.cpp | xargs clang-format -i
-find ./src/tests -iname *.h -o -iname *.hpp -o -iname *.cpp | xargs clang-format -i
+find ./tests/src -iname *.h -o -iname *.hpp -o -iname *.cpp | xargs clang-format -i
 

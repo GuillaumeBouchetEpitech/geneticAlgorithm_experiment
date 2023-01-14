@@ -50,8 +50,9 @@ struct basic_double_linked_list {
     list.size -= 1;
   }
 
-  static void replace_link_from_list(basic_double_linked_list& list,
-                                     link& old_link, link& new_link) {
+  static void discard_and_replace_link_from_list(basic_double_linked_list& list,
+                                                 link& old_link,
+                                                 link& new_link) {
     // replace in list
 
     // FROM: ... <--> (oldLink) <--> ...

@@ -197,7 +197,8 @@ public:
 
       basic_double_linked_list& list =
         _pool->_itemsPool.at(std::size_t(_index))._weak_ref_list;
-      basic_double_linked_list::replace_link_from_list(list, other, *this);
+      basic_double_linked_list::discard_and_replace_link_from_list(list, other,
+                                                                   *this);
     }
 
   public:

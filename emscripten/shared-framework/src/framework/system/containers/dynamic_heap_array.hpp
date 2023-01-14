@@ -29,30 +29,29 @@ protected:
   }
 
   // call the move constructor only, do not allocate memory
-  void call_constructor(Type* data, std::size_t index) {
+  void call_constructor(Type* dataPtr) {
     Allocator alloc;
-    traits_t::construct(alloc, data + index);
+    traits_t::construct(alloc, dataPtr);
   }
 
   // call the move constructor only, do not allocate memory
-  void call_move_constructor(Type* data, std::size_t index, Type&& value) {
+  void call_move_constructor(Type* dataPtr, Type&& value) {
     Allocator alloc;
-    traits_t::construct(alloc, data + index, std::move(value));
+    traits_t::construct(alloc, dataPtr, std::move(value));
   }
 
   // call the move constructor only, do not allocate memory
   template <typename... Args>
-  Type& emplace_move_constructor(Type* data, std::size_t index,
-                                 Args&&... args) {
+  Type& emplace_move_constructor(Type* dataPtr, Args&&... args) {
     Allocator alloc;
-    traits_t::construct(alloc, data + index, std::forward<Args>(args)...);
-    return data[index];
+    traits_t::construct(alloc, dataPtr, std::forward<Args>(args)...);
+    return *dataPtr;
   }
 
   // call the destructor only, do not deallocate memory
-  void call_destructor(Type* data, std::size_t index) {
+  void call_destructor(Type* dataPtr) {
     Allocator alloc;
-    traits_t::destroy(alloc, data + index);
+    traits_t::destroy(alloc, dataPtr);
   }
 
 public:
@@ -99,7 +98,7 @@ public:
     if (this->_size == _capacity)
       _realloc(_capacity * 2);
 
-    call_move_constructor(this->_data, this->_size, std::move(value));
+    call_move_constructor(this->_data + this->_size, std::move(value));
 
     ++this->_size;
   }
@@ -109,7 +108,7 @@ public:
     if (this->_size == _capacity)
       _realloc(_capacity * 2);
 
-    Type& result = emplace_move_constructor(this->_data, this->_size,
+    Type& result = emplace_move_constructor(this->_data + this->_size,
                                             std::forward<Args>(args)...);
 
     ++this->_size;
@@ -124,7 +123,7 @@ public:
 
     --this->_size;
 
-    call_destructor(this->_data, this->_size);
+    call_destructor(this->_data + this->_size);
   }
 
   // no reallocation
@@ -157,7 +156,7 @@ public:
 public:
   void clear() {
     for (std::size_t ii = 0; ii < this->_size; ++ii)
-      call_destructor(this->_data, ii);
+      call_destructor(this->_data + ii);
 
     this->_size = 0;
   }
@@ -169,7 +168,7 @@ public:
     _realloc(target_size);
 
     for (std::size_t ii = this->_size; ii < target_size; ++ii)
-      call_constructor(this->_data, ii);
+      call_constructor(this->_data + ii);
 
     this->_size = target_size;
   }
@@ -184,16 +183,16 @@ protected:
     if (newCapacity == 0) // true the first time
       newCapacity = 1;
 
-    if (newCapacity < _capacity)
+    if (newCapacity <= _capacity)
       return;
 
     Type* newData = allocate_memory(newCapacity);
 
     for (std::size_t ii = 0; ii < this->_size; ++ii)
-      call_move_constructor(newData, ii, std::move(this->_data[ii]));
+      call_move_constructor(newData + ii, std::move(this->_data[ii]));
 
     for (std::size_t ii = 0; ii < this->_size; ++ii)
-      call_destructor(this->_data, ii);
+      call_destructor(this->_data + ii);
 
     if (_capacity > 0)
       deallocate_memory(this->_data, _capacity);

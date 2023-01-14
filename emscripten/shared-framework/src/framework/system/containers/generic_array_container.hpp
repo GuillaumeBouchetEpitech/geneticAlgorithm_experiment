@@ -56,11 +56,11 @@ public:
     std::swap(_container, other._container);
     std::swap(_index, other._index);
     if (_container != nullptr) {
-      basic_double_linked_list::replace_link_from_list(
+      basic_double_linked_list::discard_and_replace_link_from_list(
         _container->_iterators_list, other, *this);
     }
 
-    basic_double_linked_list::replace_link_from_list(
+    basic_double_linked_list::discard_and_replace_link_from_list(
       _container->_iterators_list, other, *this);
   }
 
@@ -82,14 +82,14 @@ public:
 
   // MOVE
   generic_array_container_base_iterator&
-  operator=(const generic_array_container_base_iterator&& other) {
+  operator=(generic_array_container_base_iterator&& other) {
     if (&other == this)
       return *this;
 
     std::swap(_container, other._container);
     std::swap(_index, other._index);
     if (_container != nullptr) {
-      basic_double_linked_list::replace_link_from_list(
+      basic_double_linked_list::discard_and_replace_link_from_list(
         _container->_iterators_list, other, *this);
     }
 
