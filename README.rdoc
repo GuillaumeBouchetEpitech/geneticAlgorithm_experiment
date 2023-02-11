@@ -3,6 +3,24 @@
 
 A simple introduction to how genetic algorithm works.
 
+-----
+-----
+-----
+
+= /!\ UNMAINTAINED /!\
+
+A better built version can be found here: 
+
+https://github.com/GuillaumeBouchetEpitech/self-learning-3d-cars
+
+Thanks!
+
+-----
+-----
+-----
+
+
+
 
 == Online demo 3D (new and fast, C++/WebAssembly with pthread/webworkers)
 
