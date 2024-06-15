@@ -15,7 +15,9 @@
 
 ## Online live demo 3D
 
-http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html
+- [Demo Link](http://guillaumebouchetepitech.github.io/geneticAlgorithm_experiment/emscripten/bullet/dist/index.html)
+
+- [<b>NEWER version Demo Link</b>](http://guillaumebouchetepitech.github.io/self-learning-3d-cars/dist/index.html)
 
 ## Diagrams
 
